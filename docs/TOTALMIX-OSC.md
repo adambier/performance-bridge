@@ -12,8 +12,8 @@ a copy of RME's documentation.
 
 A statement with neither marker is an inference, and says so.
 
-**Status.** Three tests so far (section 6). They cover what TotalMix sends with "Send faders in
-linear scale" off and on, and three of the messages it accepts.
+**Status.** Four tests so far (section 6). They cover what TotalMix sends with "Send faders in
+linear scale" off and on, and the fader messages it accepts.
 
 ## 1. Connection
 
@@ -95,7 +95,7 @@ The three rows of the mixer are spelled three ways (`TotalMixBus`). [RME doc]
 ## 5. Open questions to settle by testing
 
 - **Accepting fader messages with "Send faders in linear scale" off.** With the option on, TotalMix accepted `volume`, `faderlin`, and `fader` (test 2). Whether it accepts them with the option off is untested.
-- **Echoes.** Does TotalMix send back the value an OSC command set, and does it ever answer one command with a second value? In test 3, output 9/10 reported 0.499274 and then, 82 ms later, 0.817204 (0 dB). This was around the time a `faderlin` 0.5 command was sent from another window, and the order of the commands is not known. `sbdev roundtrip` settles this.
+- **Echoes.** Does TotalMix send back the value an OSC command set? In test 3, outputs 9/10 reported 0.499274 when a `faderlin` 0.5 command was sent from another window, which suggests an echo, quantized. It also reported 0 dB 82 ms later. In test 4, the same command left the fader at −12.1 dB, so the inference is that the 0 dB was a reset made in TotalMix's window. `sbdev roundtrip`'s output from test 4 will settle the echo.
 - **The current submix.** Input and playback channels sent no channel-level `volume` or `faderlin`: their faders in TotalMix's window arrived as mixer nodes of the selected submix. [test 1] Whether TotalMix accepts a channel-level `volume` for inputs, and what it would act on, is untested.
 - **Unanswered `/sendall`.** One `/sendall` went unanswered: status messages arrived, but nothing else. A later one, with the same settings, was answered in full. [test 1] The cause is unknown; the app should repeat the request if no reply comes.
 - **`/sologroup` and `/fadergroup`.** The document gives no value type for either. Both were sent as 0 or 1 by group. [test 1]
@@ -155,3 +155,20 @@ known.
 - **Bundles everywhere.** No message arrived outside a bundle. Each change, and each status message, came in a bundle of its own.
 - **Update rate.** While a fader moved, updates again arrived every 20 ms.
 - **The 0.5 command.** Output 9/10 reported 0.499274 (−12.17 dB) at the time a `faderlin` 0.5 command was sent, and 0.817204 (0 dB) 82 ms later. See "Echoes" in section 5.
+
+### Test 4 (2026-10-28): fader commands, one at a time
+
+**Setup.** As in test 3, with "Send faders in linear scale" on. Each command was sent with
+`sbdev roundtrip`, and the fader's value was read in TotalMix's window afterward.
+
+**Findings.** Each command left the fader at the value expected, and the value stayed:
+
+| Command | Fader in TotalMix's window |
+|---|---|
+| `/output/8/faderlin` 0.5 | −12.1 dB |
+| `/output/8/volume` −20 | −20 dB |
+| `/mix/in/8/2/faderlin` 0.5 | −12.1 dB |
+| `/mix/in/8/2/fader` −10 | −10 dB |
+
+- **Positions.** The gain for position 0.5 matches `FaderCurve`'s −12.13 dB, for outputs and mixer nodes alike.
+- **Both forms are accepted.** TotalMix accepts dB (`volume`, `fader`) and positions (`faderlin`) with "Send faders in linear scale" on; the option governs only what TotalMix sends.
