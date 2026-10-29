@@ -27,6 +27,13 @@ tested.
 - **Stereo channels.** A stereo channel is addressed by its left channel. A few parameters differ between left and right, and their right side is addressed as the left channel + 1. [RME doc] Those parameters are `phase`, `gain`, `delay`, and the Room EQ bands and types.
 - **Index values.** List-box settings, such as `reflevel` and the EQ band types, are index values from 0. Their meaning depends on the device. [RME doc]
 - **Value types.** TotalMix accepts true/false and integers wherever it expects a float. [RME doc] `OSCArgument.numericValue` reads all of these forms.
+- **`groupflags`.** The bits count from 0. Outputs 3/4 and 7/8, members of mute group 1, report 4098 = 2¹² + 2¹. So bit 1 is mute group 1 [test 1]; had the bits counted from 1, mute group 1 would have been the value 1. The document's ranges, read from 0, then give:
+  - mute groups 1–4 in bits 1–4;
+  - solo groups 1–4 in bits 6–9;
+  - fader groups 1–4 in bits 12–15. The document writes "12..16", taken here to be a slip.
+
+  Only the mute bit is confirmed; the solo and fader positions follow from the document. `TotalMixGroupFlags` decodes the value.
+- **Control-room assignments.** `mainout`, `mainoutb`, `phones1`–`phones4`, `cuechan`, `extinchannel`, and `talkchannel` hold the 0-based number of the assigned channel's left channel, and −1 for none. Main Out = 0 ("Monitors", outputs 1/2), Phones 1 = 2 ("ADI-2 3/4"), and Phones 2 = 6 ("Phones 2", outputs 7/8) were sent and match TotalMix's window. [test 1] The same reading for the other assignments is an inference.
 - **Triggers.** For trigger messages (`/undo`, `/sendall`, and so on), a value is optional. A value below 0.5 makes TotalMix ignore the message, so `TotalMixCommand` always sends 1.0. [RME doc]
 
 ## 3. Addresses this project uses
@@ -80,20 +87,18 @@ The three rows of the mixer are spelled three ways (`TotalMixBus`). [RME doc]
 
 - **`volume` and `faderlin` with "Send faders in linear scale" on.** With the option off, output faders arrive as `volume` in dB and mixer nodes as `fader` in dB, and no `faderlin` was sent at all. [test 1] The inference is that the option switches both to `faderlin`. Which messages TotalMix accepts in each setting is also untested.
 - **The current submix.** Input and playback channels sent no channel-level `volume` or `faderlin`: their faders in TotalMix's window arrived as mixer nodes of the selected submix. [test 1] Whether TotalMix accepts a channel-level `volume` for inputs, and what it would act on, is untested.
-- **`groupflags`.** The document gives bits 1–4 for mute groups 1–4 and bits 6–9 for solo groups 1–4. For fader groups 1–4 it gives "12..16", which is five bits for four groups. Bit numbering from 0 or from 1 is also not stated. Outputs 3/4 and 7/8 reported 4098 = 2¹² + 2¹ [test 1]. Read from 0, that is mute group 1 and fader group 1; read from 1, mute group 2 and fader group 2. The groups those outputs belong to in TotalMix will settle it.
 - **Unanswered `/sendall`.** One `/sendall` went unanswered: status messages arrived, but nothing else. A later one, with the same settings, was answered in full. [test 1] The cause is unknown; the app should repeat the request if no reply comes.
 - **`/sologroup` and `/fadergroup`.** The document gives no value type for either. Both were sent as 0 or 1 by group. [test 1]
 - **Bundles.** Does TotalMix send bundles? `sbdev monitor --packets` shows them.
-- **Control-room assignments.** `mainout`, `phones1`, and `phones2` arrived as 0, 2, and 6, and the unused assignments as −1. [test 1] The inference, from the channel names, is that each value is the 0-based number of the assigned output's left channel (0 = "Monitors", 2 = "ADI-2 3/4", 6 = "Phones 2"), and −1 means none.
-- **The re-send options.** RME notes that the re-send options can trigger "ping-pong transmissions and lag of faders and dials". How do they interact with a motorized surface? Surface Bridge's plan is to leave them off and suppress echoes itself.
-- **"Not implemented."** The document's legend marks unimplemented commands in red. In revision 2026-07-21 no populated cell is red, so the inference is that everything listed is implemented.
+- **Fader groups in `groupflags`.** Bits 12–15 are taken to be fader groups 1–4 (see section 2). Outputs 3/4 and 7/8 have bit 12 set [test 1]; whether they are in fader group 1 has not been checked in TotalMix's window.
 
 ## 6. Tests
 
 ### Test 1 (2026-10-28): what TotalMix sends
 
-**Setup.** TotalMix FX 2.1 beta (exact build to be recorded) with a Digiface AES, and `sbdev monitor`
-on the same Mac:
+**Setup.** TotalMix FX shown as "2.10 (1)" in its About window, with a Digiface AES, and `sbdev monitor`
+on the same Mac. RME's protocol document is for 2.1 beta 2; whether "2.10 (1)" is that build is not
+known.
 
 - **TotalMix's OSC preferences.** Controller 4, Global OSC mode, incoming port 7004, outgoing port 9004, remote host localhost.
 - **Details options.** "Send changes" and "Send status" on. "Send all data on start", "Send faders in linear scale", "Re-send received", and "Send Level Data" off.

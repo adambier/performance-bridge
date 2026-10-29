@@ -71,6 +71,20 @@ final class TotalMixEventTests: XCTestCase {
         XCTAssertNil(TotalMixBus(word: "main"))
     }
 
+    func testGroupFlags() {
+        // Outputs 3/4 and 7/8 in test 1: members of mute group 1, reporting 4098.
+        let flags = TotalMixGroupFlags(4098)
+        XCTAssertEqual(flags.muteGroups, [1])
+        XCTAssertEqual(flags.soloGroups, [])
+        XCTAssertEqual(flags.faderGroups, [1])
+        XCTAssertEqual(TotalMixGroupFlags(rawValue: 0).muteGroups, [])
+        // Every group: bits 1–4, 6–9, and 12–15.
+        let all = TotalMixGroupFlags(rawValue: 0b1111_0011_1101_1110)
+        XCTAssertEqual(all.muteGroups, [1, 2, 3, 4])
+        XCTAssertEqual(all.soloGroups, [1, 2, 3, 4])
+        XCTAssertEqual(all.faderGroups, [1, 2, 3, 4])
+    }
+
     func testEndpointDefaults() {
         let endpoint = TotalMixEndpoint.standard
         XCTAssertEqual(endpoint.host, "localhost")
