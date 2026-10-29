@@ -15,11 +15,12 @@ import UDPTransport
 let usage = """
     Usage:
       sbdev monitor [--host H] [--in-port P] [--out-port P] [--sendall | --sendstate | --sendsettings]
-                    [--no-levels] [--no-status] [--raw]
+                    [--no-levels] [--no-status] [--packets] [--raw]
           Listens on TotalMix's outgoing port and prints each message TotalMix sends.
           --sendall etc. ask TotalMix to send its current state once listening has started.
           --no-levels leaves out /level messages; --no-status leaves out /status messages
-          (TotalMix sends one about every second); --raw prints the OSC arguments as received.
+          (TotalMix sends one about every second); --packets marks each OSC bundle and how many
+          messages it holds; --raw prints the OSC arguments as received.
       sbdev send [--host H] [--in-port P] <address> [value…]
           Sends one message to TotalMix's incoming port. Numbers are sent as floats (what
           TotalMix expects); anything else as a string. With no value, 1.0 is sent (a trigger).
@@ -37,6 +38,7 @@ struct Options {
     var request: OSCMessage?
     var showLevels = true
     var showStatus = true
+    var showPackets = false
     var raw = false
     var positional: [String] = []
 }
@@ -65,6 +67,7 @@ func parseOptions(_ arguments: ArraySlice<String>) -> Options {
         case "--sendsettings": options.request = TotalMixCommand.sendSettings()
         case "--no-levels": options.showLevels = false
         case "--no-status": options.showStatus = false
+        case "--packets": options.showPackets = true
         case "--raw": options.raw = true
         case "-h", "--help": print(usage); exit(0)
         default:
@@ -145,6 +148,9 @@ func monitor(_ options: Options) -> Never {
         } catch {
             print("\(timestamp())  [\(sender)] not OSC (\(error)), \(bytes.count) bytes")
             return
+        }
+        if options.showPackets, case .bundle = packet {
+            print("\(timestamp())  [bundle of \(packet.messages.count) messages, \(bytes.count) bytes, from \(sender)]")
         }
         for message in packet.messages {
             let event = TotalMixEvent(message)
