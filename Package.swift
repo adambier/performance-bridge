@@ -1,0 +1,57 @@
+// swift-tools-version:5.9
+import PackageDescription
+import Foundation
+
+// totalmix-surface-tools: Surface Bridge, a macOS app that connects hardware control surfaces to
+// RME TotalMix FX through its Global OSC interface, and the Swift libraries behind it.
+// Not affiliated with or endorsed by RME, Melbourne Instruments, or Novation.
+//
+//   OSCCodec       OSC 1.0 messages and bundles, encoded and decoded; Foundation only, builds on
+//                  macOS, Linux, and Windows
+//   TotalMixOSC    TotalMix FX Global OSC: addresses, the values TotalMix sends and accepts, and the
+//                  fader curve; Foundation only
+//   UDPTransport   a small UDP socket for talking to TotalMix (POSIX on macOS and Linux; not yet
+//                  implemented on Windows, where it throws)
+//   sbdev          developer tool for checking the libraries against TotalMix and the surfaces
+//
+// Planned: SurfaceCore (surface-neutral channel strips and paging), RotoControl and
+// LaunchControlXL3 (one driver per surface), and the SurfaceBridge app (SwiftUI, macOS only,
+// built by make-app.sh).
+//
+// On a Mac the test targets are opt-in (SURFACE_BRIDGE_TESTS=1), as in 3rd-wave-tools: with only
+// the Command Line Tools, SwiftPM fails while looking for XCTest even for a plain `swift build`.
+
+let onMac: Bool = {
+    #if os(macOS)
+    return true
+    #else
+    return false
+    #endif
+}()
+let includeTests = !onMac || ProcessInfo.processInfo.environment["SURFACE_BRIDGE_TESTS"] != nil
+
+var targets: [Target] = [
+    .target(name: "OSCCodec"),
+    .target(name: "TotalMixOSC", dependencies: ["OSCCodec"]),
+    .target(name: "UDPTransport"),
+    .executableTarget(name: "sbdev", dependencies: ["OSCCodec", "TotalMixOSC", "UDPTransport"]),
+]
+let products: [Product] = [
+    .library(name: "OSCCodec", targets: ["OSCCodec"]),
+    .library(name: "TotalMixOSC", targets: ["TotalMixOSC"]),
+    .library(name: "UDPTransport", targets: ["UDPTransport"]),
+    .executable(name: "sbdev", targets: ["sbdev"]),
+]
+
+if includeTests {
+    targets.append(.testTarget(name: "OSCCodecTests", dependencies: ["OSCCodec"]))
+    targets.append(.testTarget(name: "TotalMixOSCTests", dependencies: ["OSCCodec", "TotalMixOSC"]))
+    targets.append(.testTarget(name: "UDPTransportTests", dependencies: ["UDPTransport"]))
+}
+
+let package = Package(
+    name: "totalmix-surface-tools",
+    platforms: [.macOS(.v13)],
+    products: products,
+    targets: targets
+)

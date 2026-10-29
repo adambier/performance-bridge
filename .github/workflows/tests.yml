@@ -1,0 +1,44 @@
+# Runs the libraries' tests on Linux, macOS, and Windows on every push and pull request, so that the
+# Foundation-only libraries keep building everywhere Swift runs. The macOS app will be built and
+# released separately with make-app.sh.
+
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    container: swift:6.0-noble
+    steps:
+      - uses: actions/checkout@v5
+      - name: Test
+        run: swift test
+
+  macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v5
+      - name: Test
+        run: SURFACE_BRIDGE_TESTS=1 swift test
+
+  windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v5
+      # As in 3rd-wave-tools: Swift 6.0.3 cannot build a package manifest against the runner's
+      # current Windows SDK; 6.2 can.
+      - uses: compnerd/gha-setup-swift@main
+        with:
+          swift-version: swift-6.2-release
+          swift-build: 6.2-RELEASE
+      - name: Test
+        env:
+          SURFACE_BRIDGE_TESTS: "1"
+        run: swift test

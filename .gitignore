@@ -1,0 +1,13 @@
+.build/
+*.app
+.DS_Store
+.swiftpm/
+hw-tests/
+build/
+*.zip
+*.dSYM
+Package.resolved
+# Vendor documents (RME's protocol document, Melbourne Instruments' and Novation's API PDFs) are
+# referenced by link, never committed.
+*.ods
+*.pdf
