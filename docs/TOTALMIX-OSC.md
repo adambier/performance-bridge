@@ -12,7 +12,7 @@ a copy of RME's documentation.
 
 A statement with neither marker is an inference, and says so.
 
-**Status.** Four tests so far (section 6). They cover what TotalMix sends with "Send faders in
+**Status.** Five tests so far (section 6). They cover what TotalMix sends with "Send faders in
 linear scale" off and on, and the fader messages it accepts.
 
 ## 1. Connection
@@ -95,7 +95,8 @@ The three rows of the mixer are spelled three ways (`TotalMixBus`). [RME doc]
 ## 5. Open questions to settle by testing
 
 - **Accepting fader messages with "Send faders in linear scale" off.** With the option on, TotalMix accepted `volume`, `faderlin`, and `fader` (test 2). Whether it accepts them with the option off is untested.
-- **Echoes.** Does TotalMix send back the value an OSC command set? In test 3, outputs 9/10 reported 0.499274 when a `faderlin` 0.5 command was sent from another window, which suggests an echo, quantized. It also reported 0 dB 82 ms later. In test 4, the same command left the fader at −12.1 dB, so the inference is that the 0 dB was a reset made in TotalMix's window. `sbdev roundtrip`'s output from test 4 will settle the echo.
+- **Echoes to other clients.** TotalMix does not send a command's result back to the client that sent it (test 5). Whether it tells other OSC remotes (controllers 1–4) about the change is untested.
+- **The test 3 value.** In test 3, outputs 9/10 reported 0.499274 around the time a `faderlin` 0.5 command was sent from another window, and 0 dB 82 ms later. Given test 5, that was not an echo. The inference is that both values came from changes made in TotalMix's window.
 - **The current submix.** Input and playback channels sent no channel-level `volume` or `faderlin`: their faders in TotalMix's window arrived as mixer nodes of the selected submix. [test 1] Whether TotalMix accepts a channel-level `volume` for inputs, and what it would act on, is untested.
 - **Unanswered `/sendall`.** One `/sendall` went unanswered: status messages arrived, but nothing else. A later one, with the same settings, was answered in full. [test 1] The cause is unknown; the app should repeat the request if no reply comes.
 - **`/sologroup` and `/fadergroup`.** The document gives no value type for either. Both were sent as 0 or 1 by group. [test 1]
@@ -172,3 +173,20 @@ known.
 
 - **Positions.** The gain for position 0.5 matches `FaderCurve`'s −12.13 dB, for outputs and mixer nodes alike.
 - **Both forms are accepted.** TotalMix accepts dB (`volume`, `fader`) and positions (`faderlin`) with "Send faders in linear scale" on; the option governs only what TotalMix sends.
+
+### Test 5 (2026-10-28): does TotalMix echo a command?
+
+**Setup.** As in test 4. Each command was sent with `sbdev roundtrip`, which listens on the outgoing
+port and prints everything TotalMix sends in the second after the command (status and level
+messages left out).
+
+**Findings.** Nothing came back for any of `/output/8/faderlin` 0.5, `/output/8/volume` −20,
+`/mix/in/8/2/faderlin` 0.5, and `/mix/in/8/2/fader` −10. This held for the first `faderlin` 0.5,
+which moved the fader from −20 dB to −12.1 dB, so the value did change.
+
+So, with "Re-send received" off, TotalMix does not echo a command to its sender. Surface Bridge
+therefore records the values it sends itself. The only messages that can move a surface's control
+are changes made elsewhere, in TotalMix's window or from another client.
+
+That `roundtrip` receives on the outgoing port is checked on the test computer by a command that
+must be answered: `/sendchan/output/8`.
