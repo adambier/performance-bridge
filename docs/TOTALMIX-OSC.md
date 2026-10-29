@@ -189,5 +189,6 @@ So, with "Re-send received" off, TotalMix does not echo a command to its sender.
 therefore records the values it sends itself. The only messages that can move a surface's control
 are changes made elsewhere, in TotalMix's window or from another client.
 
-That `roundtrip` receives on the outgoing port is checked on the test computer by a command that
-must be answered: `/sendchan/output/8`.
+**The check.** `roundtrip` does receive on the outgoing port. `/sendchan/output/8`, a request that
+must be answered, came back with output 9's settings: the first bundle after 21 ms and the last
+after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last command had set.
