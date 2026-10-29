@@ -180,9 +180,10 @@ known.
 port and prints everything TotalMix sends in the second after the command (status and level
 messages left out).
 
-**Findings.** Nothing came back for any of `/output/8/faderlin` 0.5, `/output/8/volume` −20,
-`/mix/in/8/2/faderlin` 0.5, and `/mix/in/8/2/fader` −10. This held for the first `faderlin` 0.5,
-which moved the fader from −20 dB to −12.1 dB, so the value did change.
+**Findings.** Nothing came back for any of the commands:
+
+- `/output/8/faderlin` 0.5 and `/output/8/volume` −20 were sent alternately, three times each. Each one therefore changed the fader, between −12.1 dB and −20 dB.
+- `/mix/in/8/2/faderlin` 0.5 was sent, then `/mix/in/8/2/fader` −10.
 
 So, with "Re-send received" off, TotalMix does not echo a command to its sender. Surface Bridge
 therefore records the values it sends itself. The only messages that can move a surface's control
