@@ -15,10 +15,11 @@ import UDPTransport
 let usage = """
     Usage:
       sbdev monitor [--host H] [--in-port P] [--out-port P] [--sendall | --sendstate | --sendsettings]
-                    [--no-levels] [--raw]
+                    [--no-levels] [--no-status] [--raw]
           Listens on TotalMix's outgoing port and prints each message TotalMix sends.
           --sendall etc. ask TotalMix to send its current state once listening has started.
-          --no-levels leaves out /level messages; --raw prints the OSC arguments as received.
+          --no-levels leaves out /level messages; --no-status leaves out /status messages
+          (TotalMix sends one about every second); --raw prints the OSC arguments as received.
       sbdev send [--host H] [--in-port P] <address> [value…]
           Sends one message to TotalMix's incoming port. Numbers are sent as floats (what
           TotalMix expects); anything else as a string. With no value, 1.0 is sent (a trigger).
@@ -35,6 +36,7 @@ struct Options {
     var endpoint = TotalMixEndpoint.standard
     var request: OSCMessage?
     var showLevels = true
+    var showStatus = true
     var raw = false
     var positional: [String] = []
 }
@@ -62,6 +64,7 @@ func parseOptions(_ arguments: ArraySlice<String>) -> Options {
         case "--sendstate": options.request = TotalMixCommand.sendState()
         case "--sendsettings": options.request = TotalMixCommand.sendSettings()
         case "--no-levels": options.showLevels = false
+        case "--no-status": options.showStatus = false
         case "--raw": options.raw = true
         case "-h", "--help": print(usage); exit(0)
         default:
@@ -146,6 +149,7 @@ func monitor(_ options: Options) -> Never {
         for message in packet.messages {
             let event = TotalMixEvent(message)
             if !options.showLevels, case .level = event { continue }
+            if !options.showStatus, message.address.hasPrefix("/status/") { continue }
             let text: String
             if options.raw || event == nil {
                 text = message.address + " " + message.arguments.map(describe).joined(separator: " ")
