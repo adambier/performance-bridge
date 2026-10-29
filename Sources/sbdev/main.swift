@@ -4,6 +4,8 @@
 //   sbdev monitor [options]           print what TotalMix's Global OSC sends
 //   sbdev send [options] <address> [value…]
 //                                     send one message to TotalMix
+//   sbdev roundtrip [options] <address> [value…]
+//                                     send one message and print what TotalMix sends back
 //   sbdev curve <position | gain dB>  convert between fader position and gain
 //   sbdev curve --table               print the curve in steps of 1 dB
 
@@ -24,6 +26,11 @@ let usage = """
       sbdev send [--host H] [--in-port P] <address> [value…]
           Sends one message to TotalMix's incoming port. Numbers are sent as floats (what
           TotalMix expects); anything else as a string. With no value, 1.0 is sent (a trigger).
+      sbdev roundtrip [--host H] [--in-port P] [--out-port P] [--wait MS] <address> [value…]
+          Listens on TotalMix's outgoing port, sends one message as send does, and prints every
+          message TotalMix sends in the next MS milliseconds (default 1000), with the time since
+          sending, leaving out /status and /level messages. Stop sbdev monitor first: both need
+          the outgoing port.
       sbdev curve <position 0…1 | gain, e.g. -6dB>
       sbdev curve --table
 
@@ -39,6 +46,7 @@ struct Options {
     var showLevels = true
     var showStatus = true
     var showPackets = false
+    var waitMilliseconds = 1000
     var raw = false
     var positional: [String] = []
 }
@@ -68,6 +76,9 @@ func parseOptions(_ arguments: ArraySlice<String>) -> Options {
         case "--no-levels": options.showLevels = false
         case "--no-status": options.showStatus = false
         case "--packets": options.showPackets = true
+        case "--wait":
+            guard let text = rest.popFirst(), let value = Int(text), value > 0 else { fail("--wait needs a number of milliseconds.") }
+            options.waitMilliseconds = value
         case "--raw": options.raw = true
         case "-h", "--help": print(usage); exit(0)
         default:
@@ -178,15 +189,63 @@ func monitor(_ options: Options) -> Never {
     while true { Thread.sleep(forTimeInterval: 60) }
 }
 
-func send(_ options: Options) -> Never {
+/// The message given on the command line: the address, then values (numbers as floats, anything
+/// else as a string; no value gives 1.0, a trigger).
+func commandLineMessage(_ options: Options, for command: String) -> OSCMessage {
     guard let address = options.positional.first, address.hasPrefix("/") else {
-        fail("send needs an address starting with \"/\".\n\n\(usage)")
+        fail("\(command) needs an address starting with \"/\".\n\n\(usage)")
     }
     let values = options.positional.dropFirst()
     let arguments: [OSCArgument] = values.isEmpty
         ? [.float(1)]
         : values.map { text in Float(text).map(OSCArgument.float) ?? .string(text) }
-    let message = OSCMessage(address, arguments)
+    return OSCMessage(address, arguments)
+}
+
+func roundtrip(_ options: Options) -> Never {
+    let message = commandLineMessage(options, for: "roundtrip")
+    let socket: UDPSocket
+    do {
+        socket = try UDPSocket(listeningOn: options.endpoint.outgoingPort)
+    } catch {
+        fail("\(error)")
+    }
+    let lock = NSLock()
+    var received: [(TimeInterval, String)] = []
+    let start = Date()
+    socket.startReceiving { bytes, _ in
+        let elapsed = Date().timeIntervalSince(start)
+        guard let packet = try? OSCPacket(decoding: bytes) else { return }
+        for item in packet.messages where !item.address.hasPrefix("/status/") && !item.address.hasPrefix("/level/") {
+            let text = TotalMixEvent(item).map(describe) ?? item.address
+            lock.lock()
+            received.append((elapsed, text))
+            lock.unlock()
+        }
+    }
+    do {
+        try socket.send(message.encoded(), to: options.endpoint.host, port: options.endpoint.incomingPort)
+    } catch {
+        fail("\(error)")
+    }
+    print("Sent \(message.address) \(message.arguments.map(describe).joined(separator: " ")) to \(options.endpoint.host):\(options.endpoint.incomingPort).")
+    Thread.sleep(forTimeInterval: Double(options.waitMilliseconds) / 1000)
+    socket.stop()
+    lock.lock()
+    let replies = received
+    lock.unlock()
+    if replies.isEmpty {
+        print("Nothing came back within \(options.waitMilliseconds) ms (status and level messages left out).")
+    } else {
+        for (elapsed, text) in replies { print(String(format: "+%5.0f ms  ", elapsed * 1000) + text) }
+    }
+    exit(0)
+}
+
+func send(_ options: Options) -> Never {
+    let message = commandLineMessage(options, for: "send")
+    let address = message.address
+    let arguments = message.arguments
     do {
         let socket = try UDPSocket(listeningOn: 0)
         try socket.send(message.encoded(), to: options.endpoint.host, port: options.endpoint.incomingPort)
@@ -226,6 +285,7 @@ guard let command = arguments.first else { print(usage); exit(0) }
 switch command {
 case "monitor": monitor(parseOptions(arguments.dropFirst()))
 case "send": send(parseOptions(arguments.dropFirst()))
+case "roundtrip": roundtrip(parseOptions(arguments.dropFirst()))
 case "curve": curve(Array(arguments.dropFirst()))
 case "-h", "--help", "help": print(usage); exit(0)
 default: fail("Unknown command \(command).\n\n\(usage)")

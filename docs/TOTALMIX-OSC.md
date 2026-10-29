@@ -12,13 +12,17 @@ a copy of RME's documentation.
 
 A statement with neither marker is an inference, and says so.
 
-**Status.** Two tests so far (section 6): what TotalMix sends, and three of the messages it
-accepts.
+**Status.** Three tests so far (section 6). They cover what TotalMix sends with "Send faders in
+linear scale" off and on, and three of the messages it accepts.
 
 ## 1. Connection
 
 - TotalMix receives on its "incoming" port and sends to its "outgoing" port. Both ports, and the address of the computer that receives TotalMix's messages, are set in TotalMix's preferences. Surface Bridge's defaults are localhost, incoming 7001, and outgoing 9001.
-- The document does not say whether TotalMix sends bundles or single messages, how many clients it serves, or what limits its sending rate. The OSC codec accepts both bundles and single messages.
+- **Bundles.** TotalMix sends every message inside an OSC bundle. [test 3]
+  - A single change, or a status message, comes as a bundle of one message.
+  - The `/sendall` reply comes as bundles of up to 16 messages, none larger than 480 bytes.
+  - The OSC codec accepts both bundles and single messages.
+- The document does not say how many clients TotalMix serves.
 - The document says "Follow Submix" should be off when Global OSC is used. [RME doc]
   - TotalMix's Options menu has no item by that name. The closest is "Submix linked to MIDI / OSC controller (1-4)": "The 8-channel group follows the currently selected submix", whether the submix is chosen on the remote or in TotalMix, and it "can be useful to deactivate this feature for specific windows". [RME manual]
   - The inference is that this is the setting the document means. Test 1, with it on, showed no effect on what Global OSC sends.
@@ -90,11 +94,11 @@ The three rows of the mixer are spelled three ways (`TotalMixBus`). [RME doc]
 
 ## 5. Open questions to settle by testing
 
-- **What "Send faders in linear scale" changes in what TotalMix sends.** With the option off, output faders arrive as `volume` in dB and mixer nodes as `fader` in dB, and no `faderlin` was sent at all. [test 1] The inference is that the option switches both to `faderlin`. With the option on, TotalMix accepted `volume`, `faderlin`, and `fader` (test 2); whether it accepts them with the option off is untested.
+- **Accepting fader messages with "Send faders in linear scale" off.** With the option on, TotalMix accepted `volume`, `faderlin`, and `fader` (test 2). Whether it accepts them with the option off is untested.
+- **Echoes.** Does TotalMix send back the value an OSC command set, and does it ever answer one command with a second value? In test 3, output 9/10 reported 0.499274 and then, 82 ms later, 0.817204 (0 dB). This was around the time a `faderlin` 0.5 command was sent from another window, and the order of the commands is not known. `sbdev roundtrip` settles this.
 - **The current submix.** Input and playback channels sent no channel-level `volume` or `faderlin`: their faders in TotalMix's window arrived as mixer nodes of the selected submix. [test 1] Whether TotalMix accepts a channel-level `volume` for inputs, and what it would act on, is untested.
 - **Unanswered `/sendall`.** One `/sendall` went unanswered: status messages arrived, but nothing else. A later one, with the same settings, was answered in full. [test 1] The cause is unknown; the app should repeat the request if no reply comes.
 - **`/sologroup` and `/fadergroup`.** The document gives no value type for either. Both were sent as 0 or 1 by group. [test 1]
-- **Bundles.** Does TotalMix send bundles? `sbdev monitor --packets` shows them.
 - **Fader groups in `groupflags`.** Bits 12–15 are taken to be fader groups 1–4 (see section 2). Outputs 3/4 and 7/8 have bit 12 set [test 1]; whether they are in fader group 1 has not been checked in TotalMix's window.
 
 ## 6. Tests
@@ -128,6 +132,18 @@ known.
   - While a fader moves, updates arrive every 20 ms. Pauses come in multiples of 20 ms, so the inference is that TotalMix sends changes on a 20 ms cycle.
   - Values from mouse moves in the upper part of the fader's travel are multiples of 3/28 dB, e.g. −0.107143, −0.214287, and 0.642857. The inference is that this is the resolution of the fader in TotalMix's window, not of Global OSC.
 - **Duplicates.** One message (`/mix/pb/10/12/groupflags`) was sent twice in the reply.
+
+### Test 3 (2026-10-28): what TotalMix sends with "Send faders in linear scale" on
+
+**Setup.** As in test 1, with "Send faders in linear scale" on, and `sbdev monitor --packets`.
+
+**Findings:**
+
+- **Fader messages.** Output faders and mixer nodes now arrive as `faderlin`, positions from 0 to 1; no `volume` or `fader` was sent. A mixer node that is off reports 0. The option therefore switches what TotalMix sends between dB (off) and positions (on).
+- **The `/sendall` reply.** The same 962 messages as in test 1, in 79 bundles of up to 16 messages and at most 480 bytes, within 0.2 s.
+- **Bundles everywhere.** No message arrived outside a bundle. Each change, and each status message, came in a bundle of its own.
+- **Update rate.** While a fader moved, updates again arrived every 20 ms.
+- **The 0.5 command.** Output 9/10 reported 0.499274 (−12.17 dB) at the time a `faderlin` 0.5 command was sent, and 0.817204 (0 dB) 82 ms later. See "Echoes" in section 5.
 
 ### Test 2 (2026-10-28): what TotalMix accepts
 
