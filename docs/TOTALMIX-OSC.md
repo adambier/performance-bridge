@@ -133,6 +133,17 @@ known.
   - Values from mouse moves in the upper part of the fader's travel are multiples of 3/28 dB, e.g. −0.107143, −0.214287, and 0.642857. The inference is that this is the resolution of the fader in TotalMix's window, not of Global OSC.
 - **Duplicates.** One message (`/mix/pb/10/12/groupflags`) was sent twice in the reply.
 
+### Test 2 (2026-10-28): what TotalMix accepts
+
+**Setup.** As in test 1, with "Send faders in linear scale" on. Each message was sent with
+`sbdev send`, and the fader was watched in TotalMix's window.
+
+**Findings.** Each message moved the fader as expected:
+
+- `/output/8/volume` −20 set outputs 9/10 ("ADAT 1/2") to −20 dB. TotalMix accepts an output's fader in dB.
+- `/output/8/faderlin` 0.5 set the same output to about −12.1 dB, the gain `FaderCurve` gives for position 0.5. TotalMix accepts the position, and its curve agrees with `FaderCurve`.
+- `/mix/in/8/2/fader` −10 set the send from inputs 9/10 ("ADAT 3/4") to outputs 3/4 ("ADI-2 3/4") to −10 dB. TotalMix accepts a mixer node's fader in dB. Whether this also works while the window shows a different submix was not checked.
+
 ### Test 3 (2026-10-28): what TotalMix sends with "Send faders in linear scale" on
 
 **Setup.** As in test 1, with "Send faders in linear scale" on, and `sbdev monitor --packets`.
@@ -144,14 +155,3 @@ known.
 - **Bundles everywhere.** No message arrived outside a bundle. Each change, and each status message, came in a bundle of its own.
 - **Update rate.** While a fader moved, updates again arrived every 20 ms.
 - **The 0.5 command.** Output 9/10 reported 0.499274 (−12.17 dB) at the time a `faderlin` 0.5 command was sent, and 0.817204 (0 dB) 82 ms later. See "Echoes" in section 5.
-
-### Test 2 (2026-10-28): what TotalMix accepts
-
-**Setup.** As in test 1, with "Send faders in linear scale" on. Each message was sent with
-`sbdev send`, and the fader was watched in TotalMix's window.
-
-**Findings.** Each message moved the fader as expected:
-
-- `/output/8/volume` −20 set outputs 9/10 ("ADAT 1/2") to −20 dB. TotalMix accepts an output's fader in dB.
-- `/output/8/faderlin` 0.5 set the same output to about −12.1 dB, the gain `FaderCurve` gives for position 0.5. TotalMix accepts the position, and its curve agrees with `FaderCurve`.
-- `/mix/in/8/2/fader` −10 set the send from inputs 9/10 ("ADAT 3/4") to outputs 3/4 ("ADI-2 3/4") to −10 dB. TotalMix accepts a mixer node's fader in dB. Whether this also works while the window shows a different submix was not checked.
