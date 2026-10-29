@@ -71,8 +71,14 @@ final class OSCCodecTests: XCTestCase {
         // An unknown type tag.
         let unknown: [UInt8] = Array("/a".utf8) + [0, 0] + Array(",q".utf8) + [0, 0]
         XCTAssertThrowsError(try OSCPacket(decoding: unknown)) { XCTAssertEqual($0 as? OSCDecodeError, .unsupportedType("q")) }
-        // A bundle element whose size runs past the end.
-        let bundle: [UInt8] = Array("#bundle".utf8) + [0] + [0, 0, 0, 0, 0, 0, 0, 1] + [0, 0, 0, 16] + Array("/a".utf8) + [0, 0]
+        // A bundle element whose size runs past the end. Built in steps: older compilers time out
+        // type-checking one long concatenation.
+        var bundle: [UInt8] = Array("#bundle".utf8)
+        bundle += [0]
+        bundle += [0, 0, 0, 0, 0, 0, 0, 1]
+        bundle += [0, 0, 0, 16]
+        bundle += Array("/a".utf8)
+        bundle += [0, 0]
         XCTAssertThrowsError(try OSCPacket(decoding: bundle)) { XCTAssertEqual($0 as? OSCDecodeError, .truncated) }
     }
 

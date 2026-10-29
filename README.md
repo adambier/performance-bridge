@@ -8,7 +8,7 @@ The repository also holds the Swift libraries behind the app, and a developer to
 them against TotalMix. The libraries depend only on Foundation, and they build on macOS, Linux, and
 Windows.
 
-Not affiliated with or endorsed by RME, Melbourne Instruments, Novation, or Softube.
+Not affiliated with or endorsed by RME, Melbourne Instruments, or Novation.
 
 ## Status
 
@@ -23,7 +23,6 @@ This project is in early development, and there is no app yet. What exists:
 
 - **The Roto-Control.** Melbourne Instruments' Roto-Control comes first, driven through its published SysEx API. Its eight motorized knobs follow TotalMix.
 - **The Launch Control XL 3.** Novation's Launch Control XL 3 comes second, in its DAW mode. Its faders are not motorized, so they pick up TotalMix's values.
-- **Mackie Control surfaces.** Surfaces that speak Mackie Control, such as the Softube Console 1 Fader, come later.
 - **The app.** A macOS app (macOS 13 or later) with in-app updates.
 
 ## Requirements

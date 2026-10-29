@@ -13,8 +13,8 @@ statement there carries its evidence.
 |---|---|
 | Repository | `adambier/totalmix-surface-tools` (GitHub), Swift package `totalmix-surface-tools` |
 | What it is | Surface Bridge, a macOS app (planned) that connects hardware control surfaces to RME TotalMix FX through its Global OSC interface, plus the libraries and developer tool behind it |
-| Surfaces | Melbourne Instruments Roto-Control first; Novation Launch Control XL 3 second; Mackie Control (MCU) surfaces, such as the Softube Console 1 Fader, later |
-| License | MIT (`LICENSE`); not affiliated with or endorsed by RME, Melbourne Instruments, Novation, or Softube |
+| Surfaces | Melbourne Instruments Roto-Control first; Novation Launch Control XL 3 second; Mackie Control (MCU) surfaces possibly later |
+| License | MIT (`LICENSE`); not affiliated with or endorsed by RME, Melbourne Instruments, or Novation |
 | Language, tooling | Swift, `swift-tools-version:5.9`; CI uses the `swift:6.0-noble` image on Linux, Swift 6.2 on Windows, and the runner's Xcode on macOS; XCTest |
 | App platform | macOS 13 or later (`platforms: [.macOS(.v13)]`); SwiftUI plus AppKit; no Xcode project; Sparkle 2 for updates |
 | Library platforms | macOS, Linux, and Windows (CI tests all three on every push and pull request) |
