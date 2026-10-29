@@ -7,24 +7,29 @@ a copy of RME's documentation.
 **Sources.** Two kinds of evidence back the statements below:
 
 - **[RME doc]**: RME's Global OSC protocol document for TotalMix FX 2.1 beta 2, revision 2026-07-21. It is not included in this repository.
+- **[RME manual]**: the TotalMix FX chapter of RME's Digiface AES User's Guide (PDF dated 2023-11-20). It predates Global OSC, so it describes TotalMix's settings, not this protocol.
 - **[test N]**: a test against TotalMix, described in section 6 with the TotalMix version, the interface, and the settings used.
 
 A statement with neither marker is an inference, and says so.
 
-**Status.** One test so far (section 6), covering what TotalMix sends. What it accepts is not yet
-tested.
+**Status.** Two tests so far (section 6): what TotalMix sends, and three of the messages it
+accepts.
 
 ## 1. Connection
 
 - TotalMix receives on its "incoming" port and sends to its "outgoing" port. Both ports, and the address of the computer that receives TotalMix's messages, are set in TotalMix's preferences. Surface Bridge's defaults are localhost, incoming 7001, and outgoing 9001.
 - The document does not say whether TotalMix sends bundles or single messages, how many clients it serves, or what limits its sending rate. The OSC codec accepts both bundles and single messages.
 - The document says "Follow Submix" should be off when Global OSC is used. [RME doc]
+  - TotalMix's Options menu has no item by that name. The closest is "Submix linked to MIDI / OSC controller (1-4)": "The 8-channel group follows the currently selected submix", whether the submix is chosen on the remote or in TotalMix, and it "can be useful to deactivate this feature for specific windows". [RME manual]
+  - The inference is that this is the setting the document means. Test 1, with it on, showed no effect on what Global OSC sends.
+- "Lock Remote to submix", on the OSC page of TotalMix's preferences, lets a remote "only modify the submix selected from the drop-down list". [RME manual] It is left off: Surface Bridge chooses submixes itself.
 - The document says status is sent at about one parameter per second. [RME doc] It does not define "status"; the inference here is that it means the `/status/…` messages.
 
 ## 2. Numbering and values
 
 - Channels count from 0 in addresses: `/input/2/…` is input 3 in TotalMix's window. Snapshots, layouts, and groups count from 1. [RME doc]
 - **Stereo channels.** A stereo channel is addressed by its left channel. A few parameters differ between left and right, and their right side is addressed as the left channel + 1. [RME doc] Those parameters are `phase`, `gain`, `delay`, and the Room EQ bands and types.
+- **Hidden channels.** Options → Channel Layout can hide channels from each OSC remote ("Hide Channel in OSC Remote 1-4"). Channels hidden in the mixer are also unavailable to OSC. [RME manual] With classic OSC, hidden channels are skipped within a block of faders. [RME manual] With Global OSC, the document says hidden channels "may be received by option" (TotalMix's "Receive to hidden channels"). [RME doc] Whether hiding renumbers the channels Global OSC sends is untested. In test 1 nothing was hidden, and the channel numbers matched the Digiface AES's 14 inputs, 16 playbacks, and 16 outputs. [RME manual, test 1]
 - **Index values.** List-box settings, such as `reflevel` and the EQ band types, are index values from 0. Their meaning depends on the device. [RME doc]
 - **Value types.** TotalMix accepts true/false and integers wherever it expects a float. [RME doc] `OSCArgument.numericValue` reads all of these forms.
 - **`groupflags`.** The bits count from 0. Outputs 3/4 and 7/8, members of mute group 1, report 4098 = 2¹² + 2¹. So bit 1 is mute group 1 [test 1]; had the bits counted from 1, mute group 1 would have been the value 1. The document's ranges, read from 0, then give:
@@ -85,7 +90,7 @@ The three rows of the mixer are spelled three ways (`TotalMixBus`). [RME doc]
 
 ## 5. Open questions to settle by testing
 
-- **`volume` and `faderlin` with "Send faders in linear scale" on.** With the option off, output faders arrive as `volume` in dB and mixer nodes as `fader` in dB, and no `faderlin` was sent at all. [test 1] The inference is that the option switches both to `faderlin`. Which messages TotalMix accepts in each setting is also untested.
+- **What "Send faders in linear scale" changes in what TotalMix sends.** With the option off, output faders arrive as `volume` in dB and mixer nodes as `fader` in dB, and no `faderlin` was sent at all. [test 1] The inference is that the option switches both to `faderlin`. With the option on, TotalMix accepted `volume`, `faderlin`, and `fader` (test 2); whether it accepts them with the option off is untested.
 - **The current submix.** Input and playback channels sent no channel-level `volume` or `faderlin`: their faders in TotalMix's window arrived as mixer nodes of the selected submix. [test 1] Whether TotalMix accepts a channel-level `volume` for inputs, and what it would act on, is untested.
 - **Unanswered `/sendall`.** One `/sendall` went unanswered: status messages arrived, but nothing else. A later one, with the same settings, was answered in full. [test 1] The cause is unknown; the app should repeat the request if no reply comes.
 - **`/sologroup` and `/fadergroup`.** The document gives no value type for either. Both were sent as 0 or 1 by group. [test 1]
@@ -102,7 +107,7 @@ known.
 
 - **TotalMix's OSC preferences.** Controller 4, Global OSC mode, incoming port 7004, outgoing port 9004, remote host localhost.
 - **Details options.** "Send changes" and "Send status" on. "Send all data on start", "Send faders in linear scale", "Re-send received", and "Send Level Data" off.
-- **Options menu.** "Submix linked to MIDI / OSC control" on.
+- **Options menu.** "Submix linked to MIDI / OSC controller (1-4)" on.
 - **Moves.** Faders were moved with the mouse in TotalMix's window; no surface was connected.
 
 **Findings:**
@@ -123,3 +128,14 @@ known.
   - While a fader moves, updates arrive every 20 ms. Pauses come in multiples of 20 ms, so the inference is that TotalMix sends changes on a 20 ms cycle.
   - Values from mouse moves in the upper part of the fader's travel are multiples of 3/28 dB, e.g. −0.107143, −0.214287, and 0.642857. The inference is that this is the resolution of the fader in TotalMix's window, not of Global OSC.
 - **Duplicates.** One message (`/mix/pb/10/12/groupflags`) was sent twice in the reply.
+
+### Test 2 (2026-10-28): what TotalMix accepts
+
+**Setup.** As in test 1, with "Send faders in linear scale" on. Each message was sent with
+`sbdev send`, and the fader was watched in TotalMix's window.
+
+**Findings.** Each message moved the fader as expected:
+
+- `/output/8/volume` −20 set outputs 9/10 ("ADAT 1/2") to −20 dB. TotalMix accepts an output's fader in dB.
+- `/output/8/faderlin` 0.5 set the same output to about −12.1 dB, the gain `FaderCurve` gives for position 0.5. TotalMix accepts the position, and its curve agrees with `FaderCurve`.
+- `/mix/in/8/2/fader` −10 set the send from inputs 9/10 ("ADAT 3/4") to outputs 3/4 ("ADI-2 3/4") to −10 dB. TotalMix accepts a mixer node's fader in dB. Whether this also works while the window shows a different submix was not checked.
