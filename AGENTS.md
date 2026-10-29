@@ -58,7 +58,7 @@ small driver of its own.
   - `make-app.sh` compiles every source folder into one module with `swiftc`;
   - Sparkle 2.10.1 is pinned with its SHA-256, and the XPC services are removed;
   - the app is signed with a Developer ID, notarized, and updated through `appcast.xml` on `main`;
-  - it has its own Sparkle signing key, under the keychain account `org.biers.surfacebridge`.
+  - it has its own Sparkle signing key, under the keychain account `org.biers.surfacebridge`. The public half, for `SUPublicEDKey`, is `KTt3BYFC8qH22G0zlWbtdfe7E9OGSw14LgkrZQCmfC4=`; the private half stays in the release signer's keychain.
 
 ## 4. Rules (do / don't)
 
