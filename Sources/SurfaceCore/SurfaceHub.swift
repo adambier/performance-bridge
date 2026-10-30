@@ -273,6 +273,8 @@ public struct SurfaceHub: Sendable {
             return TotalMixCommand.set(ref.bus, ref.channel, "mute", value)
         case .pfl(let ref):
             return TotalMixCommand.set(ref.bus, ref.channel, "pfl", value)
+        case .record(let ref):
+            return TotalMixCommand.set(ref.bus, ref.channel, "record", value)
         case .solo(let ref, let submix):
             return TotalMixCommand.setMix(from: ref.bus, ref.channel, to: submix, "solo", value)
         }
@@ -344,6 +346,7 @@ public struct SurfaceHub: Sendable {
         switch function {
         case .mute: return .mute(ref)
         case .pfl: return .pfl(ref)
+        case .record: return .record(ref)
         case .solo:
             guard soloEnabled, ref.isSource, let home else { return nil }
             return .solo(ref, submix: home)
@@ -384,6 +387,7 @@ public struct SurfaceHub: Sendable {
         case .pan: return "Pan"
         case .mute: return "Mute"
         case .pfl: return "PFL"
+        case .record: return "Rec"
         case .solo: return "Solo"
         }
     }

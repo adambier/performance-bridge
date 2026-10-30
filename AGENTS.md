@@ -43,7 +43,7 @@ small driver of its own.
 
 - **SurfaceCore** (`Sources/SurfaceCore/`). The aim is TotalMix FX as a performance mixer, for live use. Channel strips, each with:
   - a knob or fader: level, pan, or a send;
-  - a switch: mute, PFL, or solo (off by default);
+  - a switch: mute, PFL, record-enable (for DURec, an inference), or solo (off by default);
   - a name, a color, and a meter. Playbacks are named "PB 1/2" and so on, not after the outputs TotalMix names them for.
 
   Around the strips:
@@ -61,7 +61,7 @@ small driver of its own.
   - its resolution;
   - its displays.
 - **Drivers**, one per surface:
-  - **RotoDriver** (`Sources/RotoDriver/`): the Roto-Control's SysEx API, with 14-bit motorized knobs. MIX mode drives the channel strips: the audio track set is the sources view and the master and return set the outputs view; record arm is PFL. Until TotalMix's colors are matched to the Roto-Control's, monitoring outputs show green and sends blue. PLUGIN mode, for the parts of TotalMix that MIX mode can't reach, is not driven yet. The driver is pure, like `SurfaceHub`; the app (or `sbdev bridge`) connects it to `MIDITransport`.
+  - **RotoDriver** (`Sources/RotoDriver/`): the Roto-Control's SysEx API, with 14-bit motorized knobs. MIX mode drives the channel strips: the audio track set is the sources view and the master and return set the outputs view; the solo switches are PFL (as TotalMix's Solo is in Live Mode) and the record-arm switches are record-enable. Until TotalMix's colors are matched to the Roto-Control's, monitoring outputs show green and sends blue. PLUGIN mode, for the parts of TotalMix that MIX mode can't reach, is not driven yet. The driver is pure, like `SurfaceHub`; the app (or `sbdev bridge`) connects it to `MIDITransport`.
   - **LaunchControlXL3**: the Launch Control XL 3's DAW mode, with 7-bit faders that are not motorized and endless encoders.
   - **MackieControl**: later.
 - **Protocol sources.** Each driver's protocol facts go in a `docs/` file of their own, with evidence, as `TOTALMIX-OSC.md` does for TotalMix. The vendors' documents are linked, not committed:

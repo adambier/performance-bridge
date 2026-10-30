@@ -44,6 +44,10 @@ public enum SwitchFunction: Hashable, Codable, Sendable {
     /// (`SurfaceHub.soloEnabled`): what TotalMix's solo does to the rest of the submix is unchecked,
     /// and in live use it could silence the audience's mix.
     case solo
+    /// The channel's record-enable (`/<bus>/<channel>/record`). RME's document lists `record` as a
+    /// channel setting without saying what it does; that it arms the channel for DURec, TotalMix's
+    /// recorder on interfaces that have one, is an inference (docs/TOTALMIX-OSC.md).
+    case record
     /// Nothing: the switch does nothing and shows off.
     case none
 }
@@ -58,13 +62,15 @@ public enum ControlTarget: Hashable, Sendable {
     case mute(ChannelRef)
     /// A channel's PFL.
     case pfl(ChannelRef)
+    /// A channel's record-enable.
+    case record(ChannelRef)
     /// A source's solo in a submix.
     case solo(ChannelRef, submix: Int)
 
     /// The channel the target belongs to.
     public var channel: ChannelRef {
         switch self {
-        case .level(let ref, _), .pan(let ref, _), .mute(let ref), .pfl(let ref), .solo(let ref, _):
+        case .level(let ref, _), .pan(let ref, _), .mute(let ref), .pfl(let ref), .record(let ref), .solo(let ref, _):
             return ref
         }
     }
@@ -72,7 +78,7 @@ public enum ControlTarget: Hashable, Sendable {
     /// Whether the target is an on/off value (a switch) rather than a continuous one.
     public var isSwitch: Bool {
         switch self {
-        case .mute, .pfl, .solo: return true
+        case .mute, .pfl, .record, .solo: return true
         case .level, .pan: return false
         }
     }

@@ -34,8 +34,8 @@ public struct RotoStep: Equatable, Sendable {
 /// How the Roto-Control's MIX mode maps onto the core (docs/ROTO-CONTROL.md):
 /// - the audio track set is the sources view, and the master and return set the outputs view;
 /// - the level, pan, and send knob modes are the core's `level`, `pan`, and `send(n)`;
-/// - the mute and solo switch modes are mute and solo; record arm is PFL (the Roto-Control still
-///   labels it "ARM REC");
+/// - the mute switch mode is mute; solo is PFL, as TotalMix's own Solo button is in its Live Mode
+///   (docs/TOTALMIX-OSC.md, test 6); record arm is the channel's record-enable (`record`);
 /// - single-track mode is the core's focus mode on the selected track: level, pan, and six sends
 ///   on page 0, and eight sends on each later page.
 ///
@@ -322,12 +322,13 @@ public struct RotoDriver: Sendable {
         }
     }
 
-    /// The core's switch function for a Roto-Control switch mode: record arm is PFL.
+    /// The core's switch function for a Roto-Control switch mode: solo is PFL, and record arm is
+    /// the channel's record-enable.
     public static func switchFunction(_ mode: RotoSwitchMode) -> SwitchFunction {
         switch mode {
         case .mute: return .mute
-        case .solo: return .solo
-        case .arm: return .pfl
+        case .solo: return .pfl
+        case .arm: return .record
         }
     }
 

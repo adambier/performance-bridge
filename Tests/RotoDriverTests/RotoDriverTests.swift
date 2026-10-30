@@ -145,11 +145,24 @@ final class RotoDriverTests: XCTestCase {
         var (driver, hub, _) = connected()
         // SET MIX ALL TRACKS MODE: audio tracks, pan, record arm, send 0.
         let step = driver.receive(sysEx(.mix, 0x01, [0x00, 0x01, 0x02, 0x00]), hub: &hub, now: 1)
-        XCTAssertEqual(hub.mode(of: rotoID), .strips(view: .sources, first: 0, knob: .pan, switch: .pfl))
+        XCTAssertEqual(hub.mode(of: rotoID), .strips(view: .sources, first: 0, knob: .pan, switch: .record))
         XCTAssertEqual(step.midi.occurrences([0xBF, RotoCC.knobHigh + 0]), 1, "knob positions are sent again")
         XCTAssertTrue(step.midi.contains(RotoFeedback.knob(3, position: RotoFeedback.position(0.5))))
         let press = driver.receive(cc(RotoCC.switchFirst, 127), hub: &hub, now: 2)
-        XCTAssertEqual(press.core.messages, [TotalMixCommand.set(.input, 0, "pfl", 1)], "arm is PFL")
+        XCTAssertEqual(press.core.messages, [TotalMixCommand.set(.input, 0, "record", 1)], "arm is record-enable")
+        XCTAssertTrue(press.midi.contains(RotoFeedback.switchLight(0, on: true)))
+        _ = hub.handle(.channel(bus: .input, channel: 0, parameter: "record", value: .number(0)), now: 3)
+        XCTAssertEqual(hub.mirror.value(of: .record(ChannelRef(.input, 0))), 0, "TotalMix's record state is followed")
+    }
+
+    func testSoloSwitchesArePFL() {
+        var (driver, hub, _) = connected()
+        // SET MIX ALL TRACKS MODE: audio tracks, level, solo, send 0.
+        _ = driver.receive(sysEx(.mix, 0x01, [0x00, 0x00, 0x01, 0x00]), hub: &hub, now: 1)
+        XCTAssertEqual(hub.mode(of: rotoID), .strips(view: .sources, first: 0, knob: .level, switch: .pfl))
+        let press = driver.receive(cc(RotoCC.switchFirst + 1, 127), hub: &hub, now: 2)
+        XCTAssertEqual(press.core.messages, [TotalMixCommand.set(.input, 2, "pfl", 1)])
+        XCTAssertTrue(press.midi.contains(RotoFeedback.switchLight(1, on: true)))
     }
 
     func testSendModeSendsTheSendNames() {

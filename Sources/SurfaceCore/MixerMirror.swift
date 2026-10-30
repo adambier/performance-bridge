@@ -16,6 +16,8 @@ public struct ChannelState: Equatable, Sendable {
     public var mute = false
     /// The channel's PFL.
     public var pfl = false
+    /// The channel's record-enable (`record`).
+    public var record = false
     /// An output's own fader position (0…1); `nil` for inputs and playbacks, whose level is a node.
     public var level: Double?
     /// An output's own pan (−1…+1); `nil` for inputs and playbacks.
@@ -152,6 +154,9 @@ public struct MixerMirror: Sendable {
         case "pfl":
             guard let number = value.number else { return nil }
             state.pfl = number >= 0.5
+        case "record":
+            guard let number = value.number else { return nil }
+            state.record = number >= 0.5
         case "volume" where ref.bus == .output:
             guard let number = value.number else { return nil }
             state.level = FaderCurve.position(gainDB: number)
@@ -203,6 +208,8 @@ public struct MixerMirror: Sendable {
             return channels[ref].map { $0.mute ? 1 : 0 }
         case .pfl(let ref):
             return channels[ref].map { $0.pfl ? 1 : 0 }
+        case .record(let ref):
+            return channels[ref].map { $0.record ? 1 : 0 }
         case .solo(let ref, let submix):
             return nodes[NodeKey(ref, submix)].map { $0.solo ? 1 : 0 }
         }
@@ -229,6 +236,8 @@ public struct MixerMirror: Sendable {
             return setChannel(ref) { $0.mute = value >= 0.5 }
         case .pfl(let ref):
             return setChannel(ref) { $0.pfl = value >= 0.5 }
+        case .record(let ref):
+            return setChannel(ref) { $0.record = value >= 0.5 }
         case .solo(let ref, let submix):
             return setNode(NodeKey(ref, submix)) { $0.solo = value >= 0.5 }
         }

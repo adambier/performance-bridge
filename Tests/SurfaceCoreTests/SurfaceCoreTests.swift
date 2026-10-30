@@ -229,6 +229,13 @@ final class SurfaceHubTests: XCTestCase {
         XCTAssertTrue(off.updates[roto]?.contains(.switchState(index: 2, on: false)) ?? false)
     }
 
+    func testRecordSwitchesSetRecordEnable() {
+        var hub = loadedHub(mode: .strips(view: .sources, first: 0, knob: .level, switch: .record))
+        XCTAssertEqual(hub.strips(of: roto)?[1].info?.switchLabel, "Rec")
+        XCTAssertEqual(hub.switchPressed(roto, strip: 1, now: 1).messages, [TotalMixCommand.set(.input, 2, "record", 1)])
+        XCTAssertEqual(hub.switchPressed(roto, strip: 1, now: 2).messages, [TotalMixCommand.set(.input, 2, "record", 0)])
+    }
+
     func testSimultaneousSwitchPressesAllGoOut() {
         var hub = loadedHub()
         var messages: [OSCMessage] = []
