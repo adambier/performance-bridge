@@ -255,6 +255,7 @@ and step names.
 5. **The FX label.** With SEL held, screen 3's bottom half shows "FX" under "Send 1" (seen); the SysEx doc names no FX switch mode.
 6. **PLUGIN mode with no plugins.** `RotoDriver` does not drive PLUGIN mode yet, and answers SET PLUGIN MODE with NUM PLUGINS 0, FIRST PLUGIN 0, and PLUGIN DETAILS END. Does that settle the Roto-Control, or does it repeat SET PLUGIN MODE as it did with type `03`?
 7. **The meter thresholds.** `RotoDriver` sets yellow at 126 and red at 127, so that red means full scale. Does a meter turn red at the red threshold, or only above it?
+8. **A "magnet".** `RotoDriver` can pull a level knob that comes to rest near its 0 dB indent into it with the motor (`magnet N` in `sbdev bridge`; off by default). Does it feel right, at what window, and does the motor fight a hand left on the knob?
 
 ## 9. Tests
 

@@ -101,6 +101,15 @@ public struct RotoDriver: Sendable {
     private var trackSet: RotoTrackSet = .audio
     private var infos: [StripInfo?] = Array(repeating: nil, count: RotoCC.controlCount)
     private var page = (first: 0, count: 0)
+    private var lastKnob: [(position: Int, time: Double, settled: Bool)?] = Array(repeating: nil, count: RotoCC.controlCount)
+
+    /// An experiment (off by default): the "magnet". When a level or send knob comes to rest within
+    /// this many counts of its 0 dB indent, but not in it, the driver moves the knob into the
+    /// indent with the motor and sets 0 dB. `nil` turns it off. Whether this feels right, and
+    /// whether the motor fights a hand left on the knob, is untested.
+    public var magnetWindow: Int?
+    /// How long a knob must send nothing before the magnet acts, in seconds.
+    public static let magnetDelay: Double = 0.2
 
     /// A driver for one Roto-Control, which will claim `hostType` (Bitwig by default).
     public init(id: SurfaceID, hostType: RotoHostType = .bitwig) {
@@ -192,6 +201,7 @@ public struct RotoDriver: Sendable {
         guard handshake.isConnected, !inPluginMode else { return }
         switch event {
         case .knob(let index, let position):
+            if lastKnob.indices.contains(index) { lastKnob[index] = (position, now, false) }
             var value = RotoFeedback.fraction(position)
             if isLevel(index, hub: hub) { value = Self.faderPosition(forKnob: value, indent: indent) }
             take(hub.controlMoved(id, strip: index, to: value, now: now), hub: hub, into: &step)
@@ -204,6 +214,23 @@ public struct RotoDriver: Sendable {
         case .transport, .levelToZeroDB, .otherCC:
             break
         }
+    }
+
+    /// Runs the timed parts of the driver: for now only the magnet (`magnetWindow`). The app calls
+    /// it as often as `SurfaceHub.tick(now:)`.
+    public mutating func tick(hub: inout SurfaceHub, now: Double) -> RotoStep {
+        var step = RotoStep()
+        guard handshake.isConnected, !inPluginMode, let window = magnetWindow, let indent else { return step }
+        let indentCount = RotoFeedback.position(indent)
+        for index in lastKnob.indices {
+            guard let last = lastKnob[index], !last.settled, now - last.time >= Self.magnetDelay else { continue }
+            lastKnob[index]?.settled = true
+            let distance = abs(last.position - indentCount)
+            guard distance > 0, distance <= window, isLevel(index, hub: hub) else { continue }
+            step.midi += RotoFeedback.knob(index, position: indentCount)
+            take(hub.controlMoved(id, strip: index, to: FaderCurve.unityPosition, now: now), hub: hub, into: &step)
+        }
+        return step
     }
 
     /// Moves this surface's updates out of a core output and into MIDI.

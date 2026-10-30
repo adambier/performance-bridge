@@ -29,6 +29,9 @@ let bridgeCommandHelp = """
     Commands:
       home N | home main   the home submix: output N (from 1), or TotalMix's Main Out
       solo on | solo off   allow or forbid solo on the switches (off at the start)
+      magnet N | magnet off
+                           experiment: a level knob left within N counts (of 16383) of its 0 dB
+                           indent is pulled into it by the motor (off at the start)
       sendall              ask TotalMix for its state again
       status               the mode, the home submix, the send targets, and the strips
       quit
@@ -148,6 +151,10 @@ final class BridgeSession: @unchecked Sendable {
         lock.lock()
         defer { lock.unlock() }
         dispatch(hub.tick(now: now))
+        let step = driver.tick(hub: &hub, now: now)
+        if !step.midi.isEmpty { log("magnet: knob into the 0 dB indent") }
+        sendToRoto(step.midi)
+        dispatch(step.core)
     }
 
     // MARK: Output
@@ -209,6 +216,15 @@ final class BridgeSession: @unchecked Sendable {
                 return true
             }
             dispatch(hub.setSoloEnabled(words[1] == "on", now: now))
+        case "magnet":
+            if words.count == 2, words[1] == "off" {
+                driver.magnetWindow = nil
+            } else if words.count == 2, let counts = Int(words[1]), counts > 0 {
+                driver.magnetWindow = counts
+            } else {
+                print("magnet N (counts either side of the indent, of 16383) or magnet off")
+            }
+            log("Magnet: \(driver.magnetWindow.map { "\($0) counts either side of the indent" } ?? "off")")
         case "sendall":
             dispatch(hub.connect(now: now))
         case "status":

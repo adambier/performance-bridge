@@ -346,7 +346,7 @@ final class SurfaceHubTests: XCTestCase {
         _ = hub.addSurface(roto, capabilities: small, now: 0)
         let next = hub.page(roto, by: 1, now: 1)
         XCTAssertTrue(next.updates[roto]?.contains(.page(first: 2, count: 4)) ?? false)
-        XCTAssertEqual(hub.strips(of: roto)?[1].info?.name, "Tracks")
+        XCTAssertEqual(hub.strips(of: roto)?[1].info?.name, "PB 1/2", "playbacks are named by number, not after outputs")
         XCTAssertTrue(hub.page(roto, by: 1, now: 2).isEmpty, "already on the last page")
         XCTAssertEqual(hub.mode(of: roto), .strips(view: .sources, first: 2, knob: .level, switch: .mute))
         _ = hub.page(roto, by: -5, now: 4)
@@ -420,6 +420,18 @@ final class SurfaceHubTests: XCTestCase {
         let output = hub.handle(.channel(bus: .input, channel: 2, parameter: "name", value: .text("Lead")), now: 1)
         guard case .strip(1, let info?)? = output.updates[roto]?.first else { return XCTFail("no strip update") }
         XCTAssertEqual(info.name, "Lead")
+    }
+}
+
+final class StripNameTests: XCTestCase {
+    func testPlaybacksAreNamedByNumber() {
+        var stereo = ChannelState()
+        stereo.stereo = true
+        stereo.name = "Main"
+        XCTAssertEqual(SurfaceHub.stripName(ChannelRef(.playback, 0), stereo), "PB 1/2")
+        XCTAssertEqual(SurfaceHub.stripName(ChannelRef(.playback, 4), ChannelState()), "PB 5")
+        XCTAssertEqual(SurfaceHub.stripName(ChannelRef(.input, 0), stereo), "Main", "inputs keep TotalMix's name")
+        XCTAssertEqual(SurfaceHub.stripName(ChannelRef(.output, 3), nil), "output 4")
     }
 }
 

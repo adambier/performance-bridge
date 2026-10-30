@@ -355,7 +355,7 @@ public struct SurfaceHub: Sendable {
         let state = mirror.channels[ref]
         let kind: StripKind = ref.isSource ? .source
             : mirror.monitoringOutputs.contains(ref.channel) ? .monitoring : .send
-        let info = StripInfo(channel: ref, name: state?.name ?? ref.description, color: state?.color,
+        let info = StripInfo(channel: ref, name: Self.stripName(ref, state), color: state?.color,
                              stereo: state?.stereo ?? false, kind: kind, knobLabel: knob.map(label) ?? "",
                              switchLabel: switchTarget.map(label) ?? "")
         var meterChannels: [ChannelRef] = []
@@ -364,6 +364,17 @@ public struct SurfaceHub: Sendable {
             if state?.stereo == true { meterChannels.append(ChannelRef(ref.bus, ref.channel + 1)) }
         }
         return StripBinding(info: info, knobTarget: knob, switchTarget: switchTarget, meterChannels: meterChannels)
+    }
+
+    /// The name a strip shows. Playbacks show "PB 1/2" (or "PB 3" for a mono channel), because
+    /// TotalMix names each playback after the output of the same number (RME: the default routing
+    /// is 1:1), which makes playbacks hard to tell from inputs. Other channels show TotalMix's name.
+    public static func stripName(_ ref: ChannelRef, _ state: ChannelState?) -> String {
+        if ref.bus == .playback {
+            let first = ref.channel + 1
+            return state?.stereo == true ? "PB \(first)/\(first + 1)" : "PB \(first)"
+        }
+        return state?.name ?? ref.description
     }
 
     private func label(_ target: ControlTarget) -> String {

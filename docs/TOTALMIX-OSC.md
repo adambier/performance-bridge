@@ -8,6 +8,7 @@ a copy of RME's documentation.
 
 - **[RME doc]**: RME's Global OSC protocol document for TotalMix FX 2.1 beta 2, revision 2026-07-21. It is not included in this repository.
 - **[RME manual]**: the TotalMix FX chapter of RME's Digiface AES User's Guide (PDF dated 2023-11-20). It predates Global OSC, so it describes TotalMix's settings, not this protocol.
+- **[RME forum]**: a post by RME's staff on RME's user forum, linked where it is cited.
 - **[test N]**: a test against TotalMix, described in section 6 with the TotalMix version, the interface, and the settings used.
 
 A statement with neither marker is an inference, and says so.
@@ -56,6 +57,8 @@ The three rows of the mixer are spelled three ways (`TotalMixBus`). [RME doc]
 | Levels (`/level/…`) | `in` | `pb` | `out` |
 
 **Channel settings** have the form `/<bus>/<channel>/<parameter>`, with sub-paths for the low cut, EQ, dynamics, AutoLevel, and Room EQ. Examples are `mute`, `name` (a string), `faderlin`, `volume`, `balpan`, `color` (sent only), and `eq/band1gain`. [RME doc]
+
+**Playback names.** TotalMix names each playback after the output of the same number, because by default playback n is routed to output n alone. [RME forum](https://forum.rme-audio.de/viewtopic.php?id=36883) SurfaceCore therefore shows playbacks as "PB 1/2", "PB 3/4", and so on, so that they cannot be mistaken for inputs. Whether Global OSC sends a playback's own name or its output's has not been checked.
 
 `color` is 0 for a hidden channel, and otherwise a color index from 1 (1 is the default color). [RME doc] The inference is that "hidden" means hidden from this OSC remote in Options → Channel Layout; SurfaceCore leaves such channels off the strips. Whether TotalMix sends a hidden channel's settings at all is untested.
 
