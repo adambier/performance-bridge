@@ -46,7 +46,7 @@ private func loadedHub(caps: SurfaceCapabilities = rotoCaps, mode: SurfaceMode =
     return hub
 }
 
-private func value(_ message: OSCMessage) -> Float? {
+private func floatArgument(_ message: OSCMessage) -> Float? {
     if case .float(let value)? = message.arguments.first { return value }
     return nil
 }
@@ -135,7 +135,7 @@ final class SurfaceHubTests: XCTestCase {
         var hub = loadedHub()
         let output = hub.controlMoved(roto, strip: 1, to: 0.25, now: 1)
         XCTAssertEqual(output.messages.map(\.address), ["/mix/in/2/0/faderlin"])
-        XCTAssertEqual(output.messages.first.flatMap(value), 0.25)
+        XCTAssertEqual(output.messages.first.flatMap(floatArgument), 0.25)
         XCTAssertEqual(hub.mirror.value(of: .level(ChannelRef(.input, 2), submix: 0)), 0.25)
         XCTAssertTrue(output.updates[roto]?.contains(.valueText(index: 1, text: ValueText.level(position: 0.25))) ?? false)
         XCTAssertFalse(output.updates[roto]?.contains { if case .knob(1, _) = $0 { return true }; return false } ?? true,
@@ -183,14 +183,14 @@ final class SurfaceHubTests: XCTestCase {
         XCTAssertTrue(hub.tick(now: 1.015).messages.isEmpty)
         let flushed = hub.tick(now: 1.021).messages
         XCTAssertEqual(flushed.count, 1)
-        XCTAssertEqual(flushed.first.flatMap(value), 0.32)
+        XCTAssertEqual(flushed.first.flatMap(floatArgument), 0.32)
     }
 
     func testPanKnobScalesToBalPan() {
         var hub = loadedHub(mode: .strips(view: .sources, first: 0, knob: .pan, switch: .mute))
         let output = hub.controlMoved(roto, strip: 1, to: 0.75, now: 1)
         XCTAssertEqual(output.messages.map(\.address), ["/mix/in/2/0/balpan"])
-        XCTAssertEqual(output.messages.first.flatMap(value), 0.5)
+        XCTAssertEqual(output.messages.first.flatMap(floatArgument), 0.5)
         XCTAssertTrue(output.updates[roto]?.contains(.valueText(index: 1, text: "R50")) ?? false)
         XCTAssertTrue(hub.tick(now: 2).updates[roto]?.isEmpty ?? true, "no echo from rounding")
     }
@@ -298,8 +298,8 @@ final class SurfaceHubTests: XCTestCase {
             XCTAssertTrue(hub.touched(roto, strip: strip, true, now: 1).isEmpty)
         }
         XCTAssertTrue(hub.controlMoved(roto, strip: 1, to: .nan, now: 1).isEmpty)
-        XCTAssertEqual(hub.controlMoved(roto, strip: 1, to: -3, now: 2).messages.first.flatMap(value), 0)
-        XCTAssertEqual(hub.controlMoved(roto, strip: 2, to: 7, now: 3).messages.first.flatMap(value), 1)
+        XCTAssertEqual(hub.controlMoved(roto, strip: 1, to: -3, now: 2).messages.first.flatMap(floatArgument), 0)
+        XCTAssertEqual(hub.controlMoved(roto, strip: 2, to: 7, now: 3).messages.first.flatMap(floatArgument), 1)
         _ = hub.page(roto, by: Int.max, now: 4)
         _ = hub.page(roto, by: Int.min, now: 5)
         XCTAssertEqual(hub.mode(of: roto), .standard)
