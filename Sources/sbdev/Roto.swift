@@ -209,6 +209,7 @@ final class RotoSession: @unchecked Sendable {
     private var decoder = RotoInputDecoder()
     private var connection: MIDIConnection?
     private var firstTrack = 0
+    private var selectedTrack = 0
     private var trackCount: Int
     private var knobCommandTimes: [Int: Date] = [:]
     private var sendCount: Int
@@ -314,12 +315,18 @@ final class RotoSession: @unchecked Sendable {
         case .requestTransportStatus:
             send([.transportStatus(RotoTransportStatus())])
         case .allTracksMode(let mode):
+            // Test 2: on returning to all-tracks mode the track screens are blank until the page is sent.
             send([.sendCount(sendCount), sendNames(from: RotoOutgoing.sendNamesStart(forSendIndex: mode.sendIndex))])
+            sendPage(countFirst: true)
+        case .selectTrack(let index):
+            selectedTrack = index
         case .requestSendNames(let index):
             send([sendNames(from: RotoOutgoing.sendNamesStart(forSendIndex: index))])
         case .singleTrackMode(let page):
             // Test 2: the Roto-Control numbers these pages 0, 1, 2.
-            send([.sendCount(sendCount), sendNames(from: RotoOutgoing.sendNamesStart(forControlPage: page, numbering: .pageNumbers))])
+            // Test 2: the send labels are drawn on DAW SELECT TRACK, not on SEND TRACK NAMES alone.
+            send([.sendCount(sendCount), sendNames(from: RotoOutgoing.sendNamesStart(forControlPage: page, numbering: .pageNumbers)),
+                  .selectTrack(trackDetails(selectedTrack))])
         default:
             break
         }
