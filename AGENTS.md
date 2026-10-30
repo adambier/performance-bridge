@@ -47,7 +47,8 @@ small driver of its own.
   - a name, a color, and a meter.
 
   Around the strips:
-  - two views: sources (inputs, then playbacks) and outputs (the assigned monitoring outputs first, then the sends; a monitoring role with nothing assigned shows no strip);
+  - two views: sources (inputs and playbacks) and outputs (the assigned monitoring outputs first, then the sends; a monitoring role with nothing assigned shows no strip);
+  - a performance layout, chosen in the app: the order of each view (which TotalMix can't change) and the channels it hides; channels it doesn't place yet follow in TotalMix's order;
   - monitoring outputs and sends: the outputs the control room assigns to Main Out, Main Out B, Phones 1–4, and cue are monitoring outputs; every other output TotalMix doesn't hide is a send;
   - the home submix (Main Out unless the app chooses another monitoring output), which source levels and pans go into; send knobs reach only the sends;
   - paging, and a focus mode (one source across all submixes);

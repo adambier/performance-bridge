@@ -95,19 +95,43 @@ final class LayoutTests: XCTestCase {
         XCTAssertEqual(sources, [ChannelRef(.input, 0), ChannelRef(.input, 2), ChannelRef(.input, 3), ChannelRef(.playback, 0)])
     }
 
-    func testChosenOrderSkipsHiddenAndWrongRow() {
+    func testChosenOrderThenNewChannels() {
         var mirror = MixerMirror()
         for event in setupEvents() { mirror.apply(event) }
-        let layout = PerformanceLayout(sources: [ChannelRef(.playback, 0), ChannelRef(.input, 2), ChannelRef(.output, 0)],
-                                       outputs: [ChannelRef(.output, 4), ChannelRef(.output, 2)])
-        XCTAssertEqual(layout.channels(.sources, in: mirror), [ChannelRef(.playback, 0), ChannelRef(.input, 2)])
-        XCTAssertEqual(layout.channels(.outputs, in: mirror), [ChannelRef(.output, 2)])
+        let layout = PerformanceLayout(sourceOrder: [ChannelRef(.playback, 0), ChannelRef(.input, 2), ChannelRef(.output, 0),
+                                                     ChannelRef(.input, 9)])
+        XCTAssertEqual(layout.channels(.sources, in: mirror),
+                       [ChannelRef(.playback, 0), ChannelRef(.input, 2), ChannelRef(.input, 0), ChannelRef(.input, 3)],
+                       "the playback first, then Vox; the rest follow in TotalMix's order; outputs and missing channels are ignored")
+        XCTAssertEqual(layout.unplaced(.sources, in: mirror), [ChannelRef(.input, 0), ChannelRef(.input, 3)])
+        XCTAssertEqual(PerformanceLayout().unplaced(.sources, in: mirror), [], "with no chosen order nothing is new")
+    }
+
+    func testHiddenChannelsStayOut() {
+        var mirror = MixerMirror()
+        for event in setupEvents() { mirror.apply(event) }
+        let layout = PerformanceLayout(sourceOrder: [ChannelRef(.input, 3)], hidden: [ChannelRef(.input, 0), ChannelRef(.output, 2)])
+        XCTAssertEqual(layout.channels(.sources, in: mirror), [ChannelRef(.input, 3), ChannelRef(.input, 2), ChannelRef(.playback, 0)])
+        XCTAssertEqual(layout.unplaced(.sources, in: mirror), [ChannelRef(.input, 2), ChannelRef(.playback, 0)])
+        XCTAssertEqual(layout.channels(.outputs, in: mirror), [ChannelRef(.output, 0)])
+    }
+
+    func testOutputOrderKeepsMonitoringFirst() {
+        var mirror = MixerMirror()
+        for event in setupEvents() { mirror.apply(event) }
+        mirror.apply(.channel(bus: .output, channel: 6, parameter: "color", value: .number(1)))
+        mirror.apply(.other(path: "controlroom/phones1", value: .number(6)))
+        let layout = PerformanceLayout(outputOrder: [ChannelRef(.output, 2), ChannelRef(.output, 6), ChannelRef(.output, 0)])
+        XCTAssertEqual(layout.channels(.outputs, in: mirror), [ChannelRef(.output, 6), ChannelRef(.output, 0), ChannelRef(.output, 2)],
+                       "monitoring outputs (Phones 1, Main) first in the chosen order, then the send")
     }
 
     func testLayoutRoundTripsThroughJSON() throws {
-        let layout = PerformanceLayout(sources: [ChannelRef(.input, 3)], outputs: nil)
+        let layout = PerformanceLayout(sourceOrder: [ChannelRef(.input, 3)], hidden: [ChannelRef(.output, 4)])
         let data = try JSONEncoder().encode(layout)
         XCTAssertEqual(try JSONDecoder().decode(PerformanceLayout.self, from: data), layout)
+        XCTAssertEqual(try JSONDecoder().decode(PerformanceLayout.self, from: Data("{}".utf8)), PerformanceLayout(),
+                       "missing fields load as empty")
     }
 }
 
