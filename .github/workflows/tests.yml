@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Test
-        run: SURFACE_BRIDGE_TESTS=1 swift test
+        run: PERFORMANCE_BRIDGE_TESTS=1 swift test
 
   windows:
     runs-on: windows-2022
@@ -40,5 +40,5 @@ jobs:
           swift-build: 6.2-RELEASE
       - name: Test
         env:
-          SURFACE_BRIDGE_TESTS: "1"
+          PERFORMANCE_BRIDGE_TESTS: "1"
         run: swift test

@@ -1,6 +1,6 @@
-# totalmix-surface-tools
+# Performance Bridge
 
-**Surface Bridge** will be a macOS app that connects hardware control surfaces to RME TotalMix FX
+**Performance Bridge** will be a macOS app that connects hardware control surfaces to RME TotalMix FX
 through TotalMix's Global OSC interface. With it, the knobs, faders, buttons, and displays of a
 surface show and control TotalMix's mixer, in both directions.
 

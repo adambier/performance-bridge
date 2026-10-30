@@ -1,7 +1,7 @@
 # Roto-Control: what this project relies on
 
 This is a working reference for the parts of Melbourne Instruments' Roto-Control protocol that
-Surface Bridge uses, with the evidence for each statement. It is written in this project's own
+Performance Bridge uses, with the evidence for each statement. It is written in this project's own
 words; it is not a copy of Melbourne Instruments' documentation. The `RotoControl` library
 implements it.
 
@@ -24,17 +24,17 @@ open.
 
 ## 1. Two interfaces
 
-- **SysEx and CCs over USB MIDI.** The Roto-Control talks to a DAW in both directions over its USB MIDI port: SysEx for track details, modes, and paging, and control change messages (CCs) for knobs, switches, and meters. [SysEx doc] This is the interface Surface Bridge uses.
-- **A serial port.** A separate serial API, over a USB serial port, reads and writes the Roto-Control's stored setups and its mode. [Serial doc] Surface Bridge does not use it so far. A later version might use it to put the Roto-Control into MIX mode at startup.
+- **SysEx and CCs over USB MIDI.** The Roto-Control talks to a DAW in both directions over its USB MIDI port: SysEx for track details, modes, and paging, and control change messages (CCs) for knobs, switches, and meters. [SysEx doc] This is the interface Performance Bridge uses.
+- **A serial port.** A separate serial API, over a USB serial port, reads and writes the Roto-Control's stored setups and its mode. [Serial doc] Performance Bridge does not use it so far. A later version might use it to put the Roto-Control into MIX mode at startup.
 
 ## 2. SysEx framing and values
 
 - **The frame.** Every SysEx message is `F0 00 22 03 02 <group> <command> <data> F7`. `00 22 03` is Melbourne Instruments' manufacturer ID, and `02` the Roto-Control's device ID. [SysEx doc]
-- **Groups.** `0A` holds general commands, `0B` PLUGIN mode, and `0C` MIX mode. [SysEx doc] Surface Bridge uses all three.
+- **Groups.** `0A` holds general commands, `0B` PLUGIN mode, and `0C` MIX mode. [SysEx doc] Performance Bridge uses all three.
 - **Numbers.** Bytes are 7-bit, as in all MIDI data.
   - A number that can exceed 127, such as a track index or a track count, takes two bytes, "two 7-bit values". [SysEx doc] The high seven bits come first. [Ableton, Bitwig]
   - An RGB color component (0–255) takes two bytes the same way: bit 7 first, then the low seven bits. [Logic]
-- **Names.** A name is 13 bytes of ASCII, ending in a 0 byte and padded with 0 bytes. [SysEx doc] That leaves 12 visible characters. Ableton cuts names to 12 characters, and clears the top bit of each byte of a value string. [Ableton] Surface Bridge replaces anything outside printable ASCII with `?`; that choice is this project's.
+- **Names.** A name is 13 bytes of ASCII, ending in a 0 byte and padded with 0 bytes. [SysEx doc] That leaves 12 visible characters. Ableton cuts names to 12 characters, and clears the top bit of each byte of a value string. [Ableton] Performance Bridge replaces anything outside printable ASCII with `?`; that choice is this project's.
 - **Pacing.** Ableton waits 5 ms after each SysEx message it sends. [Ableton] The SysEx doc says nothing about pacing. With no pause at all, the Roto-Control took a full track page and a full plugin page without losing a message. [test 3] `RotoControl` leaves pacing to the transport.
 
 ## 3. The handshake
@@ -47,7 +47,7 @@ open.
 After CONNECTED, Ableton sends its track information and the meter thresholds. [Ableton] Bitwig
 asks for the Roto-Control's firmware version (`0A 0D`). [Bitwig]
 
-**Which type to claim.** Surface Bridge has to claim to be one of the three DAWs. Ableton's
+**Which type to claim.** Performance Bridge has to claim to be one of the three DAWs. Ableton's
 integration answers `01`, Bitwig's `02`, and Logic's `03`. [Ableton, Bitwig, Logic] Some of the
 Roto-Control's behavior depends on the type:
 
@@ -64,7 +64,7 @@ The handshake itself, MIX mode's messages, and the stored PLUGIN-mode mappings w
 with `01` and `02`. [test 3] Neither type's indent is at TotalMix's 0 dB, which is at 0.817 of the
 range: `01`'s, at 0.85, would read about +1.1 dB on a TotalMix fader, and `02`'s about −0.8 dB.
 `RotoDriver` therefore bends the scale of level and send knobs, linearly on each side of the
-indent, so that the indent is TotalMix's 0 dB. The inference is that `02` suits Surface Bridge
+indent, so that the indent is TotalMix's 0 dB. The inference is that `02` suits Performance Bridge
 better: no CC 64 to ignore, and switches that give the same press messages without release
 messages. `RotoHandshake` takes the type as a setting.
 
@@ -130,7 +130,7 @@ table (the SysEx doc's Appendix A, not reproduced here), and `grouped` is `00` o
 
 In PLUGIN mode the host lists "plugins" (Ableton's devices), and the user maps the Roto-Control's
 controls to their parameters. The Roto-Control stores each mapping on the device, under a hash of
-the plugin and a hash of the parameter. [SysEx doc, Ableton] Surface Bridge could present parts
+the plugin and a hash of the parameter. [SysEx doc, Ableton] Performance Bridge could present parts
 of TotalMix as plugins, for example the control room or the selected channel's EQ; that use is
 this project's idea, not Melbourne Instruments'.
 
@@ -227,7 +227,7 @@ bits is from Bitwig's and Logic's code. [Bitwig, Logic] The rest:
 - **Value text lasts about 2 seconds** on the screen before the name comes back, as the user timed it. [test 2] It shows on a knob's screen in MIX and PLUGIN modes. On a switch's screen it showed nothing, in either mode, so a switch's state can be shown only by its light and label. [test 3; seen]
 - **Value text.** Ableton sends SHOW CONTROL VALUE whenever a mapped parameter's value changes, from the knob or from Live, at most 12 times a second with one trailing update, and once when a knob is touched. [Ableton] Bitwig sends value text only in PLUGIN mode, within 100 ms (plugin parameters) or 300 ms (macro parameters) of the knob last moving; in MIX mode it sends none. [Bitwig]
 - **Bitwig's command for value text.** Bitwig sends value text as `0A 0F`, the number the SysEx doc gives REQUEST ROTO SYSEX API VERSION, with the same layout as SHOW CONTROL VALUE. [Bitwig, SysEx doc] The inference is that `0A 0F` is an older form, from before SHOW CONTROL VALUE was documented. `RotoControl` sends `0A 18`, as Ableton and Logic do. [Ableton, Logic]
-- **Hold-off for the motors.** Bitwig holds back a knob position for 100 ms after the knob last moved on its master and return layer, and has the same rule commented out on its track layer. While touch automation is on, it also ignores the knob for 500 ms after release, and it queues knob positions while it switches modes. [Bitwig] Ableton leaves knob feedback to Live's framework, so its rule is not visible in the integration. [Ableton] Surface Bridge will need its own rule, because TotalMix confirms nothing (docs/TOTALMIX-OSC.md, test 5): a position from TotalMix is a change made elsewhere. The planned rule, an inference, was to hold back positions for a knob while it is touched; test 1 shows a knob turning before its touch CC, so the rule will also have to count recent movement. Test 3 adds that touches often failed to register at all (seen; a double tap sent nothing), so movement is the more reliable sign. Melbourne Instruments removed the touch-sensitivity setting in 2.1.0. [release notes]
+- **Hold-off for the motors.** Bitwig holds back a knob position for 100 ms after the knob last moved on its master and return layer, and has the same rule commented out on its track layer. While touch automation is on, it also ignores the knob for 500 ms after release, and it queues knob positions while it switches modes. [Bitwig] Ableton leaves knob feedback to Live's framework, so its rule is not visible in the integration. [Ableton] Performance Bridge will need its own rule, because TotalMix confirms nothing (docs/TOTALMIX-OSC.md, test 5): a position from TotalMix is a change made elsewhere. The planned rule, an inference, was to hold back positions for a knob while it is touched; test 1 shows a knob turning before its touch CC, so the rule will also have to count recent movement. Test 3 adds that touches often failed to register at all (seen; a double tap sent nothing), so movement is the more reliable sign. Melbourne Instruments removed the touch-sensitivity setting in 2.1.0. [release notes]
 
 ## 7. Errata in the SysEx doc
 

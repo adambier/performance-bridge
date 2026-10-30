@@ -1,4 +1,4 @@
-# AGENTS.md: totalmix-surface-tools for AI coding tools
+# AGENTS.md: Performance Bridge for AI coding tools
 
 This is a machine-first orientation for Claude Code, Cursor, Copilot, and similar tools working in
 this repository. Human developers can paste this file into their tool, or point the tool here,
@@ -11,8 +11,8 @@ statement there carries its evidence.
 
 | Item | Value |
 |---|---|
-| Repository | `adambier/totalmix-surface-tools` (GitHub), Swift package `totalmix-surface-tools` |
-| What it is | Surface Bridge, a macOS app (planned) that connects hardware control surfaces to RME TotalMix FX through its Global OSC interface, plus the libraries and developer tool behind it |
+| Repository | `adambier/performance-bridge` (GitHub), Swift package `performance-bridge` |
+| What it is | Performance Bridge, a macOS app (planned) that connects hardware control surfaces to RME TotalMix FX through its Global OSC interface, plus the libraries and developer tool behind it |
 | Surfaces | Melbourne Instruments Roto-Control first; Novation Launch Control XL 3 second; Mackie Control (MCU) surfaces possibly later |
 | License | MIT (`LICENSE`); not affiliated with or endorsed by RME, Melbourne Instruments, or Novation |
 | Language, tooling | Swift, `swift-tools-version:5.9`; CI uses the `swift:6.0-noble` image on Linux, Swift 6.2 on Windows, and the runner's Xcode on macOS; XCTest |
@@ -71,7 +71,7 @@ small driver of its own.
   - `make-app.sh` compiles every source folder into one module with `swiftc`;
   - Sparkle 2.10.1 is pinned with its SHA-256, and the XPC services are removed;
   - the app is signed with a Developer ID, notarized, and updated through `appcast.xml` on `main`;
-  - it has its own Sparkle signing key, under the keychain account `org.biers.surfacebridge`. The public half, for `SUPublicEDKey`, is `KTt3BYFC8qH22G0zlWbtdfe7E9OGSw14LgkrZQCmfC4=`; the private half stays in the release signer's keychain.
+  - it has its own Sparkle signing key, under the keychain account `org.biers.performancebridge`. The public half, for `SUPublicEDKey`, is `KTt3BYFC8qH22G0zlWbtdfe7E9OGSw14LgkrZQCmfC4=`; the private half stays in the release signer's keychain.
 
 ## 4. Rules (do / don't)
 
@@ -94,7 +94,7 @@ Don't:
 ## 5. How to verify
 
 - **Tests on Linux and Windows:** `swift test`.
-- **Tests on a Mac:** `SURFACE_BRIDGE_TESTS=1 swift test`. This needs full Xcode, because XCTest is not part of the Command Line Tools.
+- **Tests on a Mac:** `PERFORMANCE_BRIDGE_TESTS=1 swift test`. This needs full Xcode, because XCTest is not part of the Command Line Tools.
 - **Against TotalMix:**
   - `swift run sbdev monitor --sendall` prints what TotalMix sends.
   - `swift run sbdev send /input/0/mute 1` sends one message.
