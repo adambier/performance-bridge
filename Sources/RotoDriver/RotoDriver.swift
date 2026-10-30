@@ -290,9 +290,20 @@ public struct RotoDriver: Sendable {
         let targets = hub.sendTargets
         let names = (start..<max(start, min(start + 8, targets.count))).map { index -> String in
             let ref = ChannelRef(.output, targets[index])
-            return hub.mirror.channels[ref]?.name ?? ref.description
+            return Self.sendLabel(hub.mirror.channels[ref]?.name ?? ref.description)
         }
         return .sendNames(start: start, names: names)
+    }
+
+    /// The label for a send knob: the output's name marked as a destination, so that it does not
+    /// read as that channel's own level. "to ADI-2" if it fits the Roto-Control's 12 characters,
+    /// else "> ADI-2 +6dB", else ">" and the name, cut to fit.
+    public static func sendLabel(_ name: String) -> String {
+        let limit = RotoSysEx.nameFieldLength - 1
+        for prefix in ["to ", "> "] where prefix.count + name.count <= limit {
+            return prefix + name
+        }
+        return String((">" + name).prefix(limit))
     }
 
     // MARK: - Mapping
