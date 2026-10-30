@@ -283,9 +283,8 @@ final class SurfaceHubTests: XCTestCase {
         let next = hub.page(roto, by: 1, now: 1)
         XCTAssertTrue(next.updates[roto]?.contains(.page(first: 2, count: 4)) ?? false)
         XCTAssertEqual(hub.strips(of: roto)?[1].info?.name, "Tracks")
-        _ = hub.page(roto, by: 1, now: 2)
-        XCTAssertEqual(hub.mode(of: roto), .strips(view: .sources, first: 3, knob: .level, switch: .mute))
-        XCTAssertTrue(hub.page(roto, by: 1, now: 3).isEmpty, "already at the last channel")
+        XCTAssertTrue(hub.page(roto, by: 1, now: 2).isEmpty, "already on the last page")
+        XCTAssertEqual(hub.mode(of: roto), .strips(view: .sources, first: 2, knob: .level, switch: .mute))
         _ = hub.page(roto, by: -5, now: 4)
         XCTAssertEqual(hub.mode(of: roto), .standard)
     }
@@ -313,7 +312,7 @@ final class SurfaceHubTests: XCTestCase {
     }
 
     func testFocusShowsOneSourceAcrossSubmixes() {
-        var hub = loadedHub(mode: .focus(channel: ChannelRef(.input, 2), first: 0))
+        let hub = loadedHub(mode: .focus(channel: ChannelRef(.input, 2), first: 0))
         let strips = hub.strips(of: roto) ?? []
         let vox = ChannelRef(.input, 2)
         XCTAssertEqual(strips[0].knobTarget, .level(vox, submix: 0))

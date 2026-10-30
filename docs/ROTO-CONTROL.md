@@ -217,6 +217,8 @@ bits is from Bitwig's and Logic's code. [Bitwig, Logic] The rest:
   This is an inference from those events; the SysEx doc says nothing about it. Test 1's "bounce" (0 to 16383 and back to 0) fits as two wraps, but its log was not kept, so whether the host had set that knob is unknown.
 
   A driver must therefore send every knob's position after each change of knob mode, and still treat a jump across most of the range as an end event, not as a new level: for a TotalMix fader, 0 to 16383 is off to +6 dB.
+
+  How large a jump is an end event: in the kept logs of tests 2 and 3, a script comparing each knob report with that knob's last found every end event at 12,690 counts or more, and every other report at 2,942 or less, apart from the 8,191- and 8,192-count steps of a stepped knob in PLUGIN mode. `RotoDriver` therefore takes a jump of more than 8,000 counts in MIX mode as an end event, ignores it, and sends the knob back to its last position.
 - **Unchanged values.** Bitwig does not resend a knob position it last sent, except that it resends all eight positions when it switches layers or modes. [Bitwig]
 - **Value text lasts about 2 seconds** on the screen before the name comes back, as the user timed it. [test 2] It shows on a knob's screen in MIX and PLUGIN modes. On a switch's screen it showed nothing, in either mode, so a switch's state can be shown only by its light and label. [test 3; seen]
 - **Value text.** Ableton sends SHOW CONTROL VALUE whenever a mapped parameter's value changes, from the knob or from Live, at most 12 times a second with one trailing update, and once when a knob is touched. [Ableton] Bitwig sends value text only in PLUGIN mode, within 100 ms (plugin parameters) or 300 ms (macro parameters) of the knob last moving; in MIX mode it sends none. [Bitwig]
@@ -249,6 +251,8 @@ and step names.
 3. **The 0 dB indent.** Do send knobs get one with type `01`, as the 3.1.0 release notes say? Do types `02` and `03` get one in any mode?
 4. **The hold rule.** Does a power cycle clear it? Does anything other than a change of knob mode clear it, such as switching to PLUGIN mode and back? Is the release always about 3,300–3,700 counts in?
 5. **The FX label.** With SEL held, screen 3's bottom half shows "FX" under "Send 1" (seen); the SysEx doc names no FX switch mode.
+6. **PLUGIN mode with no plugins.** `RotoDriver` does not drive PLUGIN mode yet, and answers SET PLUGIN MODE with NUM PLUGINS 0, FIRST PLUGIN 0, and PLUGIN DETAILS END. Does that settle the Roto-Control, or does it repeat SET PLUGIN MODE as it did with type `03`?
+7. **The meter thresholds.** `RotoDriver` sets yellow at 126 and red at 127, so that red means full scale. Does a meter turn red at the red threshold, or only above it?
 
 ## 9. Tests
 

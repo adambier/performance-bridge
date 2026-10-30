@@ -403,12 +403,16 @@ public struct SurfaceHub: Sendable {
         guard var state = surfaces[id] else { return mode }
         state.mode = mode
         let count = layoutSlots(state).count
-        let last = max(count - 1, 0)
+        // Past the end, go to the start of the last page, so that pages stay aligned (the
+        // Roto-Control pages in multiples of 8).
+        let pageSize = max(state.capabilities.stripCount, 1)
+        let lastPage = max(count - 1, 0) / pageSize * pageSize
+        func fit(_ first: Int) -> Int { first >= count ? lastPage : max(first, 0) }
         switch mode {
         case .strips(let view, let first, let knob, let switchFunction):
-            return .strips(view: view, first: min(max(first, 0), last), knob: knob, switch: switchFunction)
+            return .strips(view: view, first: fit(first), knob: knob, switch: switchFunction)
         case .focus(let channel, let first):
-            return .focus(channel: channel, first: min(max(first, 0), last))
+            return .focus(channel: channel, first: fit(first))
         }
     }
 
