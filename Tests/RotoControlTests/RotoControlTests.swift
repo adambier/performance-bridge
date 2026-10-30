@@ -450,3 +450,78 @@ final class RotoPluginTests: XCTestCase {
                        head + [0x0B, 0x0F, 0x00, 0x05, 1, 1, 1, 1, 1, 1] + RotoSysEx.encodeName("Dim") + [0xF7])
     }
 }
+
+/// Checks against what the Roto-Control sent and accepted in test 2 (docs/ROTO-CONTROL.md, section 9).
+final class RotoTest2FixtureTests: XCTestCase {
+    private let head: [UInt8] = [0xF0, 0x00, 0x22, 0x03, 0x02]
+
+    private func incoming(_ body: [UInt8]) -> RotoIncoming? {
+        RotoIncoming(sysEx: head + body + [0xF7])
+    }
+
+    func testHashesStayTheOnesTheDeviceStored() {
+        // The Roto-Control stores mappings under these hashes; changing RotoHash.of would orphan them.
+        XCTAssertEqual(RotoHash.of("sbdev plugin Ctrl Room", length: 8).bytes, [0x7A, 0x72, 0x57, 0x4A, 0x0A, 0x70, 0x19, 0x7E])
+        XCTAssertEqual(RotoHash.of("sbdev parameter Ctrl Room / Main Vol", length: 6).bytes, [0x73, 0x78, 0x07, 0x36, 0x4B, 0x0F])
+    }
+
+    func testMessagesAsTheDeviceSentThem() {
+        XCTAssertEqual(incoming([0x0B, 0x0B, 0x00, 0x04, 0x6A, 0x3B, 0x01, 0x35, 0x49, 0x6F, 0x01, 0x01, 0x00]),
+                       .controlMapped(RotoControlMapping(parameterIndex: 4, parameterHash: RotoHash(bytes: [0x6A, 0x3B, 0x01, 0x35, 0x49, 0x6F]),
+                                                         kind: .switch, control: 1, isMacro: false)))
+        XCTAssertEqual(incoming([0x0B, 0x11, 0x01, 0x01]), .controlLearned(.switch, control: 1))
+        XCTAssertEqual(incoming([0x0B, 0x01, 0x00]), .pluginMode)
+        // An 11-byte CONTROL MAPPED with an invalid control type is not decoded.
+        XCTAssertEqual(incoming([0x0B, 0x0B, 0, 0, 1, 2, 3, 4, 5, 6, 0x05, 0x00, 0x00]),
+                       .other(group: 0x0B, command: 0x0B, data: [0, 0, 1, 2, 3, 4, 5, 6, 0x05, 0x00, 0x00]))
+    }
+
+    func testLearnParameterAsTheDeviceAcceptedIt() {
+        let gain = RotoParameterDetails(index: 0, hash: RotoHash(bytes: [0x4A, 0x2D, 0x40, 0x33, 0x44, 0x78]),
+                                        name: "Gain 1", position: 8192, centerIndent: true)
+        XCTAssertEqual(RotoOutgoing.learnParameter(gain).bytes,
+                       head + [0x0B, 0x0A, 0x00, 0x00, 0x4A, 0x2D, 0x40, 0x33, 0x44, 0x78, 0x00, 0x01, 0x00, 0x40, 0x00]
+                       + RotoSysEx.encodeName("Gain 1") + [0xF7])
+    }
+
+    func testSwitchStepsRoundTrip() {
+        // The values the device sent for four steps.
+        XCTAssertEqual([0, 42, 84, 127].map { RotoParameterDetails.step(forSwitchValue: $0, steps: 4) }, [0, 1, 2, 3])
+        XCTAssertEqual([0, 127].map { RotoParameterDetails.step(forSwitchValue: $0, steps: 2) }, [0, 1])
+        // Each step k of n, sent as k × 127 / (n − 1) rounded down, maps back to k, for 2–24 steps.
+        for steps in 2...24 {
+            for k in 0..<steps {
+                XCTAssertEqual(RotoParameterDetails.step(forSwitchValue: UInt8(k * 127 / (steps - 1)), steps: steps), k, "\(k) of \(steps)")
+            }
+        }
+        XCTAssertEqual(RotoParameterDetails.step(forSwitchValue: 99, steps: 0), 0)
+        XCTAssertEqual(RotoParameterDetails.step(forSwitchValue: 255, steps: 40), 23)
+    }
+
+    func testExtremeValuesStayInRange() {
+        let hash = RotoHash(bytes: [1, 2, 3, 4, 5, 6])
+        var details = RotoParameterDetails(index: 0, hash: hash, name: "x", position: 0)
+        details.steps = -1
+        XCTAssertEqual(RotoOutgoing.learnParameter(details).bytes[17], 0, "steps set after init")
+        details.steps = 300
+        XCTAssertEqual(RotoOutgoing.learnParameter(details).bytes[17], 24)
+        // The step-name boundary: 16 steps carry names, 17 don't.
+        details.steps = 16
+        XCTAssertEqual(RotoOutgoing.learnParameter(details).bytes.count, 5 + 2 + 2 + 6 + 3 + 2 + 13 + 16 * 13 + 1)
+        details.steps = 17
+        XCTAssertEqual(RotoOutgoing.learnParameter(details).bytes.count, 5 + 2 + 2 + 6 + 3 + 2 + 13 + 1)
+
+        let plugin = RotoPluginDetails(index: 200, hash: RotoHash(bytes: [1]), name: "p", macroPages: -1)
+        let pluginBytes = RotoOutgoing.pluginDetails(plugin).bytes
+        XCTAssertEqual(pluginBytes[7], 127)
+        XCTAssertEqual(pluginBytes[8...15], [1, 0, 0, 0, 0, 0, 0, 0], "a short hash is padded")
+        XCTAssertEqual(pluginBytes[pluginBytes.count - 2], 0)
+        XCTAssertEqual(RotoOutgoing.dawSelectPlugin(index: -1, macroPage: 300, force: false).bytes[7...9], [0, 127, 0])
+        XCTAssertEqual(RotoOutgoing.unmapControl(.knob, control: 9).bytes[8], 7)
+        XCTAssertEqual(RotoOutgoing.pluginCount(-1).bytes[7], 0)
+        XCTAssertEqual(RotoOutgoing.firstPlugin(13).bytes[7], 8, "rounded down to a multiple of 8")
+        XCTAssertEqual(RotoOutgoing.firstPlugin(500).bytes[7], 120)
+        let detailsBytes = RotoOutgoing.controlDetails(.knob, control: 0, name: "", colorScheme: 99).bytes
+        XCTAssertEqual(detailsBytes[detailsBytes.count - 2], 82)
+    }
+}

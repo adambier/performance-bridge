@@ -34,7 +34,8 @@ public enum RotoControlEvent: Equatable, Sendable {
     case knob(Int, position: Int)
     /// A knob (0–7) touched or released.
     case touch(Int, touched: Bool)
-    /// A switch (0–7) sent a value. In MIX mode a press sends 127 and a release nothing; in PLUGIN
+    /// A switch (0–7) sent a value. In MIX mode with the switches on record arm, a press has been
+    /// observed to send 127 and a release nothing; in PLUGIN
     /// mode the value is the mapped parameter's, for example 0, 42, 84, or 127 for four steps
     /// (docs/ROTO-CONTROL.md, sections 4a and 5).
     case `switch`(Int, value: UInt8)

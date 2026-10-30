@@ -108,12 +108,24 @@ public struct RotoParameterDetails: Equatable, Sendable {
         self.stepNames = stepNames
     }
 
+    /// The step a stepped switch's value stands for (0-based), for a parameter of `steps` steps.
+    /// Test 2 observed 0 and 127 for two steps, and 42, 84, 127, and 0 for four
+    /// (docs/ROTO-CONTROL.md, section 4a): each step an even share of 0–127, rounded down. This
+    /// inverse rounds to the nearest step. Returns 0 for a continuous parameter.
+    public static func step(forSwitchValue value: UInt8, steps: Int) -> Int {
+        guard steps >= 2 else { return 0 }
+        let count = min(steps, maximumSteps)
+        return min((Int(value & 0x7F) * (count - 1) + 63) / 127, count - 1)
+    }
+
     var bytes: [UInt8] {
+        // Clamped here as well as in init, because `steps` is a public var.
+        let stepCount = steps < 2 ? 0 : min(steps, Self.maximumSteps)
         var data = RotoSysEx.encode14(index) + hash.field(6)
-        data += [isMacro ? 1 : 0, centerIndent ? 1 : 0, UInt8(steps)]
+        data += [isMacro ? 1 : 0, centerIndent ? 1 : 0, UInt8(stepCount)]
         data += RotoSysEx.encode14(position) + RotoSysEx.encodeName(name)
-        if steps >= 2 && steps <= Self.maximumNamedSteps {
-            for step in 0..<steps {
+        if stepCount >= 2 && stepCount <= Self.maximumNamedSteps {
+            for step in 0..<stepCount {
                 data += RotoSysEx.encodeName(step < stepNames.count ? stepNames[step] : "")
             }
         }

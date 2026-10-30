@@ -315,7 +315,7 @@ public enum RotoOutgoing: Equatable, Sendable {
     case meterThresholds(yellow: UInt8, red: UInt8)
     /// NUM PLUGINS (`0B 02`): the number of plugins on the current track.
     case pluginCount(Int)
-    /// FIRST PLUGIN (`0B 03`): the current plugin page, a multiple of 8.
+    /// FIRST PLUGIN (`0B 03`): the current plugin page, a multiple of 8 (rounded down, at most 120).
     case firstPlugin(Int)
     /// PLUGIN DETAILS (`0B 05`), once for each plugin on the current page.
     case pluginDetails(RotoPluginDetails)
@@ -324,16 +324,17 @@ public enum RotoOutgoing: Equatable, Sendable {
     /// DAW SELECT PLUGIN (`0B 08`): the host selected a plugin (its index in the whole list, as
     /// Ableton's integration sends it), on a macro page, overriding the lock if `force`.
     case dawSelectPlugin(index: Int, macroPage: Int, force: Bool)
-    /// LEARN PARAM (`0B 0A`): in learn mode, the parameter to map to the next control the user
-    /// picks; otherwise the answer to CONTROL MAPPED.
+    /// LEARN PARAM (`0B 0A`): in learn mode, the parameter to map to the control the user has
+    /// touched (docs/ROTO-CONTROL.md, section 4a); otherwise the answer to CONTROL MAPPED.
     case learnParameter(RotoParameterDetails)
     /// UNMAP CONTROL (`0B 0E`): removes a control's mapping on the current page.
     case unmapControl(RotoControlKind, control: Int)
     /// SET MAPPED CONTROL NAME (`0B 0F`): renames a mapped (macro) parameter.
     case mappedControlName(parameterIndex: Int, hash: RotoHash, name: String)
     /// SET PLUGIN CONTROL DETAILS (`0B 13`): a control's name and color scheme (control 0–63).
-    /// The SysEx doc describes it as used in Logic's SMART mode; whether it works with another DAW
-    /// type is untested.
+    /// The SysEx doc describes it as used in Logic's SMART mode. With type `02` it has been observed
+    /// to show nothing (docs/ROTO-CONTROL.md, test 2); whether it works when the host claims Logic
+    /// is untested.
     case controlDetails(RotoControlKind, control: Int, name: String, colorScheme: UInt8)
     /// RESET PLUGIN CONTROL DETAILS (`0B 14`): clears a control's details (control 0–63).
     case resetControlDetails(RotoControlKind, control: Int)
@@ -390,7 +391,7 @@ public enum RotoOutgoing: Equatable, Sendable {
         case .pluginCount(let count):
             return RotoSysEx.frame(.plugin, 0x02, [UInt8(min(max(count, 0), 127))])
         case .firstPlugin(let first):
-            return RotoSysEx.frame(.plugin, 0x03, [UInt8(min(max(first, 0), 127))])
+            return RotoSysEx.frame(.plugin, 0x03, [UInt8(min(max(first, 0), 120) / 8 * 8)])
         case .pluginDetails(let details):
             return RotoSysEx.frame(.plugin, 0x05, details.bytes)
         case .pluginDetailsEnd:

@@ -43,8 +43,8 @@ let rotoCommandHelp = """
     PLUGIN mode (stand-in plugins and parameters; `plugins` lists them):
       plugins           list the plugins and the selected plugin's parameters
       select P          DAW SELECT PLUGIN P (forced)
-      learn N           LEARN PARAM for parameter N of the selected plugin (for learn mode,
-                        or to try mapping without it)
+      learn N           LEARN PARAM for parameter N of the selected plugin: in learn mode,
+                        after touching the control until it shows LEARNING
       ctl K NAME        SET PLUGIN CONTROL DETAILS: name knob K (1–64)
       ctlsw K NAME      the same for switch K
       unmap K           UNMAP CONTROL knob K;  unmapsw K for switch K
@@ -217,7 +217,8 @@ final class RotoSession: @unchecked Sendable {
     private var plugins = testPlugins
     private var firstPlugin = 0
     private var selectedPlugin = 0
-    private var pendingLearn: Int?
+    /// The plugin and parameter of the last `learn` command, until CONTROL LEARNED.
+    private var pendingLearn: (plugin: Int, parameter: Int)?
     /// The parameter each control of the current plugin page is mapped to, by kind and control.
     private var mappings: [String: Int] = [:]
 
@@ -342,6 +343,7 @@ final class RotoSession: @unchecked Sendable {
         case .pluginMode:
             inPluginMode = true
             mappings.removeAll()
+            pendingLearn = nil
             sendPluginPage(countFirst: true)
             send([.dawSelectPlugin(index: selectedPlugin, macroPage: 0, force: false)])
         case .allTracksMode, .singleTrackMode, .trackSet:
@@ -352,6 +354,7 @@ final class RotoSession: @unchecked Sendable {
         case .selectPlugin(let index) where firstPlugin + index < plugins.count:
             selectedPlugin = firstPlugin + index
             mappings.removeAll()
+            pendingLearn = nil
             log("   selected \"\(plugins[selectedPlugin].name)\"")
         case .controlMapped(let mapping):
             let plugin = plugins[selectedPlugin]
@@ -361,13 +364,14 @@ final class RotoSession: @unchecked Sendable {
             mappings[key(mapping.kind, mapping.control)] = index
             send([.learnParameter(plugin.parameterDetails(index))])
         case .controlLearned(let kind, let control):
-            if let index = pendingLearn {
-                mappings[key(kind, control)] = index
-                log("   \(kind) \(control + 1) now controls \"\(plugins[selectedPlugin].parameters[index].name)\"")
+            if let pending = pendingLearn, pending.plugin == selectedPlugin,
+               plugins[selectedPlugin].parameters.indices.contains(pending.parameter) {
+                mappings[key(kind, control)] = pending.parameter
+                log("   \(kind) \(control + 1) now controls \"\(plugins[selectedPlugin].parameters[pending.parameter].name)\"")
             }
             pendingLearn = nil
         case .learnMode(let on):
-            if on { log("   learn mode: type `learn N`, then turn or press the control to map it to") } else { pendingLearn = nil }
+            if on { log("   learn mode: touch the control until it shows LEARNING, then type `learn N`") } else { pendingLearn = nil }
         default:
             break
         }
@@ -388,16 +392,19 @@ final class RotoSession: @unchecked Sendable {
     private func pluginNote(for event: RotoControlEvent) -> String? {
         switch event {
         case .knob(let control, let position):
-            guard let index = mappings[key(.knob, control)] else { return "not mapped" }
+            guard let index = mappings[key(.knob, control)],
+                  plugins[selectedPlugin].parameters.indices.contains(index) else { return "not mapped" }
             plugins[selectedPlugin].parameters[index].position = position
             return "\(plugins[selectedPlugin].name) › \(plugins[selectedPlugin].parameters[index].name)"
         case .switch(let control, let value):
-            guard let index = mappings[key(.switch, control)] else { return "not mapped" }
+            guard let index = mappings[key(.switch, control)],
+                  plugins[selectedPlugin].parameters.indices.contains(index) else { return "not mapped" }
+            plugins[selectedPlugin].parameters[index].position = Int(value) * RotoSysEx.maximum14Bit / 127
             let parameter = plugins[selectedPlugin].parameters[index]
             var note = "\(plugins[selectedPlugin].name) › \(parameter.name)"
             if parameter.steps >= 2 {
-                // Test 2: each step is an even share of 0–127, rounded down (42, 84, 127 for four steps).
-                let step = (Int(value) * (parameter.steps - 1) + 63) / 127
+                // Test 2 observed 42, 84, 127, and 0 for four steps; showing them as steps is untested on the device.
+                let step = RotoParameterDetails.step(forSwitchValue: value, steps: parameter.steps)
                 let names = parameter.stepNames
                 note += ", step \(step + 1) of \(parameter.steps)" + (step < names.count ? " (\(names[step]))" : "")
             }
@@ -508,13 +515,14 @@ final class RotoSession: @unchecked Sendable {
             guard words.count > 1, let number = Int(words[1]), (1...plugins.count).contains(number) else { log("select P: P from 1 to \(plugins.count)"); break }
             selectedPlugin = number - 1
             mappings.removeAll()
+            pendingLearn = nil
             send([.dawSelectPlugin(index: selectedPlugin, macroPage: 0, force: true)])
         case "learn":
             let parameters = plugins[selectedPlugin].parameters
             guard words.count > 1, let number = Int(words[1]), (1...parameters.count).contains(number) else {
                 log("learn N: N from 1 to \(parameters.count) (`plugins` lists them)"); break
             }
-            pendingLearn = number - 1
+            pendingLearn = (plugin: selectedPlugin, parameter: number - 1)
             send([.learnParameter(plugins[selectedPlugin].parameterDetails(number - 1))])
         case "ctl", "ctlsw":
             guard words.count > 2, let number = Int(words[1]), (1...64).contains(number) else { log("\(command) K NAME: K from 1 to 64"); break }
