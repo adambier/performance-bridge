@@ -55,9 +55,46 @@ public struct RotoDriver: Sendable {
     /// red at or above the red threshold is untested.
     public static let meterThresholds = (yellow: UInt8(MeterScale.warning), red: UInt8(MeterScale.fullScale))
 
+    /// Where the Roto-Control's 0 dB indent sits on a level or send knob (0…1) for each claimed host
+    /// type, or `nil` where it is not known.
+    /// - Bitwig (`02`): about 0.794, felt at "-0.8 dB" on a TotalMix fader (docs/ROTO-CONTROL.md,
+    ///   section 3). The exact value, 0.5 raised to 1/3, is Bitwig's 0 dB on a volume law of twice
+    ///   the cube of the position: an inference, from memory of Bitwig, not from Melbourne
+    ///   Instruments' code or a measurement.
+    /// - Ableton (`01`): 13926 of 16383, where the Roto-Control reported landing in it (test 3).
+    public static func unityIndent(for hostType: RotoHostType) -> Double? {
+        switch hostType {
+        case .bitwig: return pow(0.5, 1.0 / 3.0)
+        case .ableton: return 13926.0 / Double(RotoSysEx.maximum14Bit)
+        case .logic: return nil
+        }
+    }
+
+    /// The knob position (0…1) for a fader position (0…1), bent so that TotalMix's 0 dB
+    /// (`FaderCurve.unityPosition`) lands in the knob's 0 dB indent: linear from 0 to the indent
+    /// and from the indent to 1. With no indent, the position is unchanged.
+    public static func knobPosition(forFader fader: Double, indent: Double?) -> Double {
+        let fader = min(max(fader, 0), 1)
+        guard let indent, indent > 0, indent < 1 else { return fader }
+        let unity = FaderCurve.unityPosition
+        if fader <= unity { return fader / unity * indent }
+        return indent + (fader - unity) / (1 - unity) * (1 - indent)
+    }
+
+    /// The fader position (0…1) for a knob position (0…1): the inverse of
+    /// `knobPosition(forFader:indent:)`.
+    public static func faderPosition(forKnob knob: Double, indent: Double?) -> Double {
+        let knob = min(max(knob, 0), 1)
+        guard let indent, indent > 0, indent < 1 else { return knob }
+        let unity = FaderCurve.unityPosition
+        if knob <= indent { return knob / indent * unity }
+        return unity + (knob - indent) / (1 - indent) * (1 - unity)
+    }
+
     /// The surface's name in the hub.
     public let id: SurfaceID
     private var handshake: RotoHandshake
+    private let indent: Double?
     private var decoder = RotoInputDecoder()
     private var inPluginMode = false
     private var selectedTrack = 0
@@ -69,6 +106,7 @@ public struct RotoDriver: Sendable {
     public init(id: SurfaceID, hostType: RotoHostType = .bitwig) {
         self.id = id
         handshake = RotoHandshake(hostType: hostType)
+        indent = Self.unityIndent(for: hostType)
     }
 
     /// Whether the handshake is complete.
@@ -154,7 +192,9 @@ public struct RotoDriver: Sendable {
         guard handshake.isConnected, !inPluginMode else { return }
         switch event {
         case .knob(let index, let position):
-            take(hub.controlMoved(id, strip: index, to: RotoFeedback.fraction(position), now: now), hub: hub, into: &step)
+            var value = RotoFeedback.fraction(position)
+            if isLevel(index, hub: hub) { value = Self.faderPosition(forKnob: value, indent: indent) }
+            take(hub.controlMoved(id, strip: index, to: value, now: now), hub: hub, into: &step)
         case .touch(let index, let touched):
             take(hub.touched(id, strip: index, touched, now: now), hub: hub, into: &step)
         case .switch(let index, let value):
@@ -193,7 +233,8 @@ public struct RotoDriver: Sendable {
                 infos[index] = info
                 pageChanged = true
             case .knob(let index, let value):
-                guard let value else { continue }
+                guard var value else { continue }
+                if isLevel(index, hub: hub) { value = Self.knobPosition(forFader: value, indent: indent) }
                 controls += RotoFeedback.knob(index, position: RotoFeedback.position(value))
             case .valueText(let index, let text):
                 controls += RotoOutgoing.showValue(.knob, control: index, text: text).bytes
@@ -284,6 +325,14 @@ public struct RotoDriver: Sendable {
     public static func colorScheme(forTotalMixColor color: Int?) -> UInt8 {
         guard let color, color > 1 else { return 0 }
         return UInt8(((color - 1) * 11) % 83)
+    }
+
+    /// Whether a strip's knob is a level or a send (a fader position), whose scale is bent to the
+    /// indent; pans are not.
+    private func isLevel(_ index: Int, hub: SurfaceHub) -> Bool {
+        guard let strips = hub.strips(of: id), strips.indices.contains(index),
+              case .level? = strips[index].knobTarget else { return false }
+        return true
     }
 
     private func channel(at index: Int, hub: SurfaceHub) -> ChannelRef? {

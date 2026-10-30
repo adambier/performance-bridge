@@ -49,6 +49,13 @@ private func knobCCs(_ index: Int, _ position: Int) -> [UInt8] {
     return cc(RotoCC.knobHigh + UInt8(index), bytes[0]) + cc(RotoCC.knobLow + UInt8(index), bytes[1])
 }
 
+private let bitwigIndent = RotoDriver.unityIndent(for: .bitwig)
+
+/// The 14-bit knob position the driver sends for a level's fader position.
+private func levelKnob(_ fader: Double) -> Int {
+    RotoFeedback.position(RotoDriver.knobPosition(forFader: fader, indent: bitwigIndent))
+}
+
 private extension Array where Element == UInt8 {
     func contains(_ part: [UInt8]) -> Bool {
         guard !part.isEmpty, part.count <= count else { return part.isEmpty }
@@ -93,7 +100,7 @@ final class RotoDriverTests: XCTestCase {
         for blank in 4..<8 {
             XCTAssertTrue(midi.contains(RotoOutgoing.resetTrackDetails(blank).bytes), "strip \(blank + 1) is blanked")
         }
-        XCTAssertTrue(midi.contains(RotoFeedback.knob(1, position: RotoFeedback.position(0.5))))
+        XCTAssertTrue(midi.contains(RotoFeedback.knob(1, position: levelKnob(0.5))))
         XCTAssertTrue(midi.contains(RotoFeedback.switchLight(3, on: false)))
     }
 
@@ -111,7 +118,9 @@ final class RotoDriverTests: XCTestCase {
         let step = driver.receive(knobCCs(1, 4096), hub: &hub, now: 1)
         XCTAssertEqual(step.core.messages.map(\.address), ["/mix/in/2/0/faderlin"])
         XCTAssertFalse(step.midi.contains(RotoFeedback.knob(1, position: 4096)), "no echo to the knob turned")
-        let text = ValueText.level(position: RotoFeedback.fraction(4096))
+        let fader = RotoDriver.faderPosition(forKnob: RotoFeedback.fraction(4096), indent: bitwigIndent)
+        XCTAssertEqual(step.core.messages.first?.arguments, [.float(Float(fader))])
+        let text = ValueText.level(position: fader)
         XCTAssertTrue(step.midi.contains(RotoOutgoing.showValue(.knob, control: 1, text: text).bytes))
     }
 
@@ -164,7 +173,7 @@ final class RotoDriverTests: XCTestCase {
         let step = driver.receive(sysEx(.mix, 0x05, [0x01]), hub: &hub, now: 1)
         XCTAssertEqual(hub.mode(of: rotoID), .strips(view: .outputs, first: 0, knob: .level, switch: .mute))
         XCTAssertTrue(step.midi.contains(RotoOutgoing.trackCount(2).bytes))
-        XCTAssertTrue(step.midi.contains(RotoFeedback.knob(1, position: RotoFeedback.position(0.6))))
+        XCTAssertTrue(step.midi.contains(RotoFeedback.knob(1, position: levelKnob(0.6))))
         let turn = driver.receive(knobCCs(0, 9000), hub: &hub, now: 2)
         XCTAssertEqual(turn.core.messages.map(\.address), ["/output/0/faderlin"])
     }
@@ -247,6 +256,45 @@ final class RotoDriverTests: XCTestCase {
         XCTAssertNil(hub.strips(of: rotoID)?[0].knobTarget, "send 128 does not exist")
         XCTAssertTrue(driver.render([.strip(index: 99, info: nil), .meter(index: 7, value: 500)], hub: hub)
                         .contains(RotoFeedback.meter(7, left: 127, right: 127)))
+    }
+
+    func testTheIndentIsTotalMixsZeroDecibels() {
+        let indent = bitwigIndent ?? .nan
+        XCTAssertEqual(indent, 0.7937, accuracy: 1e-4)
+        XCTAssertEqual(RotoDriver.knobPosition(forFader: FaderCurve.unityPosition, indent: indent), indent, accuracy: 1e-12)
+        XCTAssertEqual(RotoDriver.faderPosition(forKnob: indent, indent: indent), FaderCurve.unityPosition, accuracy: 1e-12)
+        for end in [0.0, 1.0] {
+            XCTAssertEqual(RotoDriver.knobPosition(forFader: end, indent: indent), end)
+            XCTAssertEqual(RotoDriver.faderPosition(forKnob: end, indent: indent), end)
+        }
+        for step in 0...100 {
+            let fader = Double(step) / 100
+            XCTAssertEqual(RotoDriver.faderPosition(forKnob: RotoDriver.knobPosition(forFader: fader, indent: indent), indent: indent),
+                           fader, accuracy: 1e-12)
+        }
+        XCTAssertEqual(RotoDriver.knobPosition(forFader: 0.3, indent: nil), 0.3, "no indent, no bend")
+        XCTAssertEqual(RotoDriver.knobPosition(forFader: -1, indent: indent), 0)
+        XCTAssertEqual(RotoDriver.faderPosition(forKnob: 2, indent: indent), 1)
+        XCTAssertNil(RotoDriver.unityIndent(for: .logic))
+        XCTAssertEqual(RotoDriver.unityIndent(for: .ableton) ?? 0, 13926.0 / 16383, accuracy: 1e-12)
+    }
+
+    func testTurningIntoTheIndentSetsZeroDecibels() {
+        var (driver, hub, _) = connected()
+        let indentCount = RotoFeedback.position(bitwigIndent ?? 0)
+        let step = driver.receive(knobCCs(1, indentCount), hub: &hub, now: 1)
+        guard case .float(let sent)? = step.core.messages.first?.arguments.first else { return XCTFail("no message") }
+        XCTAssertEqual(FaderCurve.gainDB(position: Double(sent)) ?? .nan, 0, accuracy: 0.03)
+        XCTAssertTrue(step.midi.contains(RotoOutgoing.showValue(.knob, control: 1, text: "0.0 dB").bytes))
+    }
+
+    func testPanKnobsAreNotBent() {
+        var (driver, hub, _) = connected()
+        let step = driver.receive(sysEx(.mix, 0x01, [0x00, 0x01, 0x00, 0x00]), hub: &hub, now: 1)
+        XCTAssertTrue(step.midi.contains(RotoFeedback.knob(1, position: RotoFeedback.position(0.5))), "center pan is the center")
+        let turn = driver.receive(knobCCs(1, 12288), hub: &hub, now: 2)
+        guard case .float(let sent)? = turn.core.messages.first?.arguments.first else { return XCTFail("no message") }
+        XCTAssertEqual(Double(sent), RotoFeedback.fraction(12288) * 2 - 1, accuracy: 1e-6)
     }
 
     func testColorSchemePlaceholder() {

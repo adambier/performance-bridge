@@ -53,16 +53,18 @@ Roto-Control's behavior depends on the type:
 
 - With Logic, the Roto-Control sends page-left and page-right commands in MIX mode while a single track is in focus, expects transport status as CCs instead of SysEx, and reserves CCs 81–127. [SysEx doc] Ableton's code handles the two page commands anyway. [Ableton]
 - Between Ableton and Bitwig, the SysEx doc names differences only in PLUGIN mode (two fields the Roto-Control ignores for Ableton), and none in MIX mode or in the general commands. [SysEx doc] In use they differ in MIX mode too [test 3]:
-  - With `01`, level knobs have a 0 dB indent at 13926 (0.85 of the range, where Live puts 0 dB), and the Roto-Control sends CC 64 when a knob lands in it (section 5). With `02` there is no indent and no CC 64.
+  - With `01`, level knobs have a 0 dB indent at 13926 (0.85 of the range, where Live puts 0 dB), and the Roto-Control sends CC 64 when a knob lands in it (section 5). With `02` there is no indent at 13926 and no CC 64 [test 3]; there is an indent lower down, felt where a TotalMix fader reads "-0.8 dB", about 0.79 of the range (seen, 2026-10-30, with `sbdev bridge`). The inference is that it is Bitwig's 0 dB, which on a volume law of twice the cube of the position is at 0.5 raised to 1/3, 0.794 (count 13003); that law is from memory of Bitwig, not from Melbourne Instruments' code, and the exact position is not yet measured.
   - With `01`, switches send 0 on release as well as 127 on press; with `02`, nothing on release.
   - The solo color differs: yellow with `02`, blue with `01` (seen).
 - With `03`, PLUGIN mode never settled with the Bitwig-style replies `sbdev` sends: the Roto-Control sent SET PLUGIN MODE again about every 200 ms (section 4a). [test 3]
 
 The handshake itself, MIX mode's messages, and the stored PLUGIN-mode mappings were the same
-with `01` and `02`. [test 3] The inference is that `02` suits Surface Bridge better: its 0 dB
-indent at 0.85 would sit at about +1.1 dB on a TotalMix fader (TotalMix's 0 dB is at 0.817 of
-the range), and its switches give the same press messages without release messages to ignore.
-`RotoHandshake` takes the type as a setting.
+with `01` and `02`. [test 3] Neither type's indent is at TotalMix's 0 dB, which is at 0.817 of the
+range: `01`'s, at 0.85, would read about +1.1 dB on a TotalMix fader, and `02`'s about −0.8 dB.
+`RotoDriver` therefore bends the scale of level and send knobs, linearly on each side of the
+indent, so that the indent is TotalMix's 0 dB. The inference is that `02` suits Surface Bridge
+better: no CC 64 to ignore, and switches that give the same press messages without release
+messages. `RotoHandshake` takes the type as a setting.
 
 **Reconnecting.** The SysEx doc does not say what a host should do if the Roto-Control pings again
 after CONNECTED. The inference is that the Roto-Control was restarted or plugged in again, so
@@ -195,7 +197,7 @@ bits is from Bitwig's and Logic's code. [Bitwig, Logic] The rest:
 - **Switch values.** In MIX mode, with type `02`, a switch sends 127 on each press and nothing on release, and changes no state by itself: the host decides the new state and sets the light (section 6). This holds in record-arm, mute, and solo modes. [test 1, test 2, test 3] With type `01` a switch also sends 0 on release, and still changes nothing by itself. [test 3] In PLUGIN mode a switch sends the mapped parameter's value instead (section 4a). [test 2] `RotoControlDecoder` reports the value as sent, and a driver reads it as a press or a value depending on the mode. Bitwig treats 127 as pressed and 0 as released. [Bitwig]
 - **Transport switches.** Ableton reads them as play, stop, record, session record, loop, punch-in, punch-out, and re-enable automation. [Ableton] That order matches TRANSPORT STATUS. [SysEx doc] With type `02` the Roto-Control sends them in transport mode, 127 on press and 0 on release, and asks for TRANSPORT STATUS when that mode is entered. [test 2]
 - **CCs 36 and 37.** Ableton also listens on these, the two CCs after the transport switches, for rewind and fast-forward. [Ableton, Bitwig] The SysEx doc does not list them. `RotoControl` reports them as other CCs.
-- **CC 64.** The Roto-Control sends it, with a knob's index as the value, and Ableton then sets that knob's parameter to its default. [Ableton] The SysEx doc names it "level at 0 dB" without saying what triggers it. With type `01`, in all-tracks level mode, the Roto-Control sent it each time a knob landed in its 0 dB indent: ten times out of ten passes, always with the knob reporting exactly 13926 in the same millisecond, and the knob then said nothing for 32–601 ms. Seen: the indent was too weak to feel. With type `02` there was no CC 64 in 31 passes of knob 1 through 13926 (12 in level mode, 19 in pan mode). [test 3] Melbourne Instruments' release notes add 0 dB indents for volume (3.0.1, Logic) and for volume and send knobs (3.1.0, all three DAWs). [release notes] Sends, and the other types' indents, are untested. CC 64 is therefore a notice that a knob reached the indent, not a reset gesture; a TotalMix driver that claims `02` will not see it.
+- **CC 64.** The Roto-Control sends it, with a knob's index as the value, and Ableton then sets that knob's parameter to its default. [Ableton] The SysEx doc names it "level at 0 dB" without saying what triggers it. With type `01`, in all-tracks level mode, the Roto-Control sent it each time a knob landed in its 0 dB indent: ten times out of ten passes, always with the knob reporting exactly 13926 in the same millisecond, and the knob then said nothing for 32–601 ms. Seen: the indent was too weak to feel. With type `02` there was no CC 64 in 31 passes of knob 1 through 13926 (12 in level mode, 19 in pan mode). [test 3] Melbourne Instruments' release notes add 0 dB indents for volume (3.0.1, Logic) and for volume and send knobs (3.1.0, all three DAWs). [release notes] Sends, and the exact position of the `02` indent (section 3), are untested. CC 64 is therefore a notice that a knob reached the indent, not a reset gesture; a TotalMix driver that claims `02` will not see it.
 - **Meters hold.** A meter has been observed to stay where it was set until the host sets it again; the host sends the falls as well as the rises. [test 2]
 - **Meter values.** Ableton sends a track's meter as Live's meter reading (0–1) times 127, at most 12 times a second. [Ableton] How Live scales that reading is not in the integration, so the mapping from TotalMix's dB levels to 0–127 is this project's choice, still to be made.
 
@@ -214,7 +216,7 @@ bits is from Bitwig's and Logic's code. [Bitwig, Logic] The rest:
   - changing the knob mode from level to pan cleared it, and changing back did not restore it (test 3);
   - in one run, a knob the host had not set wrapped while one it had set held (test 3).
 
-  This is an inference from those events; the SysEx doc says nothing about it. Test 1's "bounce" (0 to 16383 and back to 0) fits as two wraps, but its log was not kept, so whether the host had set that knob is unknown.
+  This is an inference from those events; the SysEx doc says nothing about it. The releases from 0, at 13004–13078, sit at the `02` indent's inferred position (13003, section 3), so the knob may let go into its indent; another inference, from that match alone. Test 1's "bounce" (0 to 16383 and back to 0) fits as two wraps, but its log was not kept, so whether the host had set that knob is unknown.
 
   A driver must therefore send every knob's position after each change of knob mode, and still treat a jump across most of the range as an end event, not as a new level: for a TotalMix fader, 0 to 16383 is off to +6 dB.
 
@@ -248,7 +250,7 @@ and step names.
 
 1. **SET PLUGIN MODE's data byte.** It has always been `00`. Does it change with more than eight plugins (a page number, perhaps)?
 2. **Type `03`.** What does the Roto-Control wait for in PLUGIN mode when the host claims Logic, and does SET PLUGIN CONTROL DETAILS work then?
-3. **The 0 dB indent.** Do send knobs get one with type `01`, as the 3.1.0 release notes say? Do types `02` and `03` get one in any mode?
+3. **The 0 dB indent.** Where exactly is the `02` indent (inferred 13003)? Do send knobs get one, with `01` and `02`, as the 3.1.0 release notes say? Does `03` get one?
 4. **The hold rule.** Does a power cycle clear it? Does anything other than a change of knob mode clear it, such as switching to PLUGIN mode and back? Is the release always about 3,300–3,700 counts in?
 5. **The FX label.** With SEL held, screen 3's bottom half shows "FX" under "Send 1" (seen); the SysEx doc names no FX switch mode.
 6. **PLUGIN mode with no plugins.** `RotoDriver` does not drive PLUGIN mode yet, and answers SET PLUGIN MODE with NUM PLUGINS 0, FIRST PLUGIN 0, and PLUGIN DETAILS END. Does that settle the Roto-Control, or does it repeat SET PLUGIN MODE as it did with type `03`?
