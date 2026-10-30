@@ -28,6 +28,7 @@ statement there carries its evidence.
 | `Sources/TotalMixOSC/` | Global OSC: `TotalMixBus`, `TotalMixCommand` (messages to send), `TotalMixEvent` (messages received), `TotalMixEndpoint` (host and ports), `TotalMixGroupFlags`, `FaderCurve` |
 | `Sources/RotoControl/` | Roto-Control protocol: `RotoSysEx` (framing, 14-bit numbers, names), `RotoIncoming` and `RotoOutgoing` (SysEx messages), `RotoMIDIParser`, `RotoControlDecoder` and `RotoFeedback` (CCs and 14-bit knobs), `RotoHandshake`, `RotoInputDecoder`; PLUGIN mode in `RotoPlugin.swift` (`RotoHash`, `RotoPluginDetails`, `RotoParameterDetails`, `RotoControlMapping`) |
 | `Sources/MIDITransport/` | `MIDIConnection`: a CoreMIDI connection on macOS, a placeholder that throws elsewhere; `UniversalPackets`: MIDI 1.0 bytes to and from CoreMIDI's UMP words (Foundation only, tested everywhere) |
+| `Sources/SurfaceCore/` | The surface-neutral core: `SurfaceHub` (the engine: strips, paging, the home submix, holds, pickup, thinning, meters), `MixerMirror` (TotalMix's state), `PerformanceLayout` and `ViewKind`, `SurfaceCapabilities` and `SurfaceMode`, `SurfaceUpdate` and `CoreOutput`, `MeterScale` and `ValueText` |
 | `Sources/UDPTransport/` | `UDPSocket`: POSIX UDP on macOS and Linux; a placeholder that throws on Windows |
 | `Sources/sbdev/` | Developer tool: `monitor`, `send`, `roundtrip`, `curve` (main.swift), and `roto` (Roto.swift) |
 | `Tests/` | One test target per library |
@@ -39,12 +40,18 @@ statement there carries its evidence.
 The app keeps TotalMix's state in a surface-neutral core and drives each control surface through a
 small driver of its own.
 
-- **SurfaceCore** (planned). Channel strips, each with:
-  - a level, a pan, and sends;
-  - mute, solo, select, and arm;
-  - a name, a color, a meter, and touch.
+- **SurfaceCore** (`Sources/SurfaceCore/`). The aim is TotalMix FX as a performance mixer, for live use. Channel strips, each with:
+  - a knob or fader: level, pan, or a send;
+  - a switch: mute, PFL, or solo (off by default);
+  - a name, a color, and a meter.
 
-  Around the strips sit paging through TotalMix's channels, the choice of submix, and echo suppression, so that a value TotalMix confirms does not move a control the user is holding.
+  Around the strips:
+  - two views: sources (inputs, then playbacks) and outputs;
+  - the home submix (Main Out unless the app chooses another), which source levels and pans go into; sends are the other outputs' submixes;
+  - paging, and a focus mode (one source across all submixes);
+  - the feedback rules: a control the user holds (touched, or moved in the last 250 ms) is not moved by TotalMix and catches up when let go; controls without motors pick up; continuous messages are thinned to one per address per 20 ms; meters update at most 12 times per second.
+
+  `SurfaceHub` is pure: no I/O and no clock, with time passed in.
 - **Capabilities.** Each surface declares what it has, and nothing in SurfaceCore assumes a particular controller:
   - how many strips, and which controls each strip has;
   - for each control, whether it is motorized, an endless encoder with an LED ring, or a control that needs pickup;
@@ -67,7 +74,7 @@ small driver of its own.
 
 Do:
 
-- Keep `OSCCodec`, `TotalMixOSC`, `RotoControl`, and the planned SurfaceCore and drivers Foundation-only, UI-free, and building on Linux, macOS, and Windows. Platform code (CoreMIDI, sockets, SwiftUI) stays in `UDPTransport`, `MIDITransport`, or the app.
+- Keep `OSCCodec`, `TotalMixOSC`, `RotoControl`, `SurfaceCore`, and the planned drivers Foundation-only, UI-free, and building on Linux, macOS, and Windows. Platform code (CoreMIDI, sockets, SwiftUI) stays in `UDPTransport`, `MIDITransport`, or the app.
 - Write cross-library imports as `#if canImport(OSCCodec)` / `import OSCCodec` / `#endif`. The app build will compile every folder as one module, and there such an import must compile out. No two top-level declarations in the library folders may share a name.
 - Put any new or changed claim about what TotalMix does in `docs/TOTALMIX-OSC.md` with its evidence: RME's document and its revision, or a test naming the TotalMix version and the interface. Mark inferences as inferences, in the code comment as well as the document. Do the same for the surfaces in their own documents.
 - Give every `public` declaration a `///` doc comment.
