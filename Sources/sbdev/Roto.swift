@@ -35,7 +35,7 @@ let rotoCommandHelp = """
       show K TEXT       SHOW CONTROL VALUE on knob K's screen
       showsw K TEXT     SHOW CONTROL VALUE on switch K's screen
       name K TEXT       SET TRACK DETAILS for track K of the page, with a new name
-      tracks N          send NUM TRACKS N and this page's TRACK DETAILS again
+      tracks N          send NUM TRACKS N, then FIRST TRACK 0 and that page's TRACK DETAILS
       thresholds Y R    SET MIX VU METER THRESHOLDS
       refresh           REFRESH MIX MODE
       hex BYTES         send raw bytes, e.g. hex F0 00 22 03 02 0A 0D F7
@@ -182,6 +182,9 @@ final class RotoSession: @unchecked Sendable {
     }
 
     func connect() {
+        // Held until the handshake has started, so that input arriving meanwhile waits.
+        lock.lock()
+        defer { lock.unlock() }
         do {
             connection = try MIDIConnection(clientName: "sbdev", sourceName: options.inName, destinationName: options.outName) { [weak self] bytes in
                 self?.received(bytes)
@@ -190,17 +193,14 @@ final class RotoSession: @unchecked Sendable {
             fail("\(error)")
         }
         log("Listening to \"\(connection!.source.name)\", sending to \"\(connection!.destination.name)\". Claiming \(options.hostType). Type `help` for commands.")
-        lock.lock()
-        let messages = handshake.start()
-        send(messages)
-        lock.unlock()
+        send(handshake.start())
     }
 
     // MARK: Output
 
-    /// Prints a line with the time since starting. Called with the lock held, or before any input.
-    private func log(_ text: String) {
-        print(String(format: "%9.3f  ", Date().timeIntervalSince(start)) + text)
+    /// Prints a line with the time since starting (or since `at`). Called with the lock held.
+    private func log(_ text: String, at time: Date = Date()) {
+        print(String(format: "%9.3f  ", time.timeIntervalSince(start)) + text)
         flushOutput()
     }
 
@@ -213,8 +213,9 @@ final class RotoSession: @unchecked Sendable {
 
     private func sendBytes(_ bytes: [UInt8], label: String) {
         log("→ " + label + (options.raw ? "   [\(hex(bytes))]" : ""))
+        guard let connection else { log("   not sent: no connection"); return }
         do {
-            try connection?.send(bytes)
+            try connection.send(bytes)
         } catch {
             log("   could not send: \(error)")
         }
@@ -226,21 +227,23 @@ final class RotoSession: @unchecked Sendable {
     // MARK: Input
 
     private func received(_ bytes: [UInt8]) {
+        // Taken before waiting for the lock, which a reply's pauses may hold for tens of ms.
+        let arrived = Date()
         lock.lock()
         defer { lock.unlock() }
-        if options.raw { log("   [\(hex(bytes))]") }
+        if options.raw { log("   [\(hex(bytes))]", at: arrived) }
         for input in decoder.feed(bytes) {
             switch input {
             case .message(let message):
-                log("← " + describe(message))
+                log("← " + describe(message), at: arrived)
                 react(to: message)
             case .control(let event):
                 var line = "← " + describe(event)
                 if case .knob(let index, _) = event, let sent = knobCommandTimes[index] {
-                    let elapsed = Date().timeIntervalSince(sent)
+                    let elapsed = arrived.timeIntervalSince(sent)
                     if elapsed < 2 { line += String(format: "   [%.0f ms after a knob command]", elapsed * 1000) }
                 }
-                log(line)
+                log(line, at: arrived)
             }
         }
     }
@@ -273,14 +276,14 @@ final class RotoSession: @unchecked Sendable {
     }
 
     private func sendNames(from start: Int) -> RotoOutgoing {
-        .sendNames(start: start, names: (start..<min(start + 8, sendCount)).map { "Send \($0 + 1)" })
+        .sendNames(start: start, names: (start..<max(start, min(start + 8, sendCount))).map { "Send \($0 + 1)" })
     }
 
     /// NUM TRACKS (optionally), FIRST TRACK, and TRACK DETAILS for the tracks of the current page.
     private func sendPage(countFirst: Bool = true) {
         var messages: [RotoOutgoing] = countFirst ? [.trackCount(trackCount)] : []
         messages.append(.firstTrack(firstTrack))
-        for index in firstTrack..<min(firstTrack + 8, trackCount) {
+        for index in firstTrack..<max(firstTrack, min(firstTrack + 8, trackCount)) {
             messages.append(.trackDetails(trackDetails(index), immediate: false))
         }
         messages.append(.trackDetailsEnd)
@@ -323,9 +326,11 @@ final class RotoSession: @unchecked Sendable {
                 let position = min(step * 512, RotoSysEx.maximum14Bit)
                 knobCommandTimes[knob] = Date()
                 sendBytes(RotoFeedback.knob(knob, position: position), label: "knob \(knob + 1) to \(position)")
-                lock.unlock()
-                Thread.sleep(forTimeInterval: duration / 32)
-                lock.lock()
+                if step < 32 {
+                    lock.unlock()
+                    Thread.sleep(forTimeInterval: duration / 32)
+                    lock.lock()
+                }
             }
         case "led":
             guard let control = index(1), words.count > 2, ["on", "off"].contains(words[2].lowercased()) else {
@@ -356,6 +361,9 @@ final class RotoSession: @unchecked Sendable {
         case "hex":
             let bytes = words.dropFirst().compactMap { UInt8($0, radix: 16) }
             guard bytes.count == words.count - 1, !bytes.isEmpty else { log("hex BYTES: two hex digits each, e.g. hex F0 00 22 03 02 0A 0D F7"); break }
+            guard UniversalPackets.bytes(fromWords: UniversalPackets.words(fromBytes: bytes)) == bytes else {
+                log("hex: not sent. Give complete MIDI 1.0 messages: no running status, and SysEx from F0 to F7 with only data bytes between."); break
+            }
             sendBytes(bytes, label: "raw \(hex(bytes))")
         case "restart":
             send(handshake.start())
@@ -395,10 +403,11 @@ func roto(_ arguments: ArraySlice<String>) -> Never {
     if arguments.first == "ports" { rotoPorts() }
     let session = RotoSession(options: parseRotoOptions(arguments))
     session.connect()
+    var quit = false
     while let line = readLine() {
-        if !session.run(line) { break }
+        if !session.run(line) { quit = true; break }
     }
-    if isatty(fileno(stdin)) == 0 {
+    if !quit, isatty(fileno(stdin)) == 0 {
         // Standard input is not a terminal and has ended: keep listening until Ctrl-C.
         while true { Thread.sleep(forTimeInterval: 60) }
     }

@@ -1,5 +1,6 @@
 import XCTest
 @testable import MIDITransport
+import RotoControl
 
 final class UniversalPacketsTests: XCTestCase {
     func testChannelMessages() {
@@ -64,6 +65,48 @@ final class UniversalPacketsTests: XCTestCase {
         XCTAssertEqual(UniversalPackets.bytes(fromWords: [0x3006_0022]), [], "a SysEx packet missing its second word")
     }
 
+    func testReservedAndMisplacedValuesAreSkipped() {
+        XCTAssertEqual(UniversalPackets.bytes(fromWords: [0x3042_0102, 0]), [], "reserved SysEx status")
+        XCTAssertEqual(UniversalPackets.bytes(fromWords: [0x10F0_0000]), [], "F0 is not a system message word")
+        XCTAssertEqual(UniversalPackets.bytes(fromWords: [0x20F8_0000]), [], "F8 is not a channel message")
+        XCTAssertEqual(UniversalPackets.bytes(fromWords: [0x10F3_0500, 0x10F1_2200]), [0xF3, 5, 0xF1, 0x22])
+        XCTAssertEqual(UniversalPackets.bytes(fromWords: [0x10F2_1020]), [0xF2, 0x10, 0x20])
+    }
+
+    func testPackets() {
+        let words: [UInt32] = [0x20BF_0C68, 0x3016_0001, 0x0203_0405, 0x3032_0607, 0, 0x10F8_0000, 0x3016]
+        XCTAssertEqual(UniversalPackets.packets(words).map(Array.init),
+                       [[0x20BF_0C68], [0x3016_0001, 0x0203_0405], [0x3032_0607, 0], [0x10F8_0000], [0x3016]])
+    }
+
+    func testEveryRotoMessageSurvivesTheRoundTrip() {
+        let details = RotoTrackDetails(index: 130, name: "Analog 1/2", colorScheme: 40, grouped: true)
+        let messages: [RotoOutgoing] = [
+            .dawStarted, .pingResponse(.bitwig), .trackCount(300), .firstTrack(128),
+            .trackDetails(details, immediate: false), .trackDetailsEnd, .selectTrack(details),
+            .showValue(.knob, control: 3, text: "-12.1 dB"), .meterThresholds(yellow: 87, red: 113),
+            .sendNames(start: 8, names: ["Main", "Phones 1", "Phones 2"]),
+            .trackColor(index: 2, RotoColor(red: 255, green: 128, blue: 0)),
+        ]
+        for message in messages {
+            let bytes = message.bytes
+            XCTAssertEqual(UniversalPackets.bytes(fromWords: UniversalPackets.words(fromBytes: bytes)), bytes, "\(message)")
+        }
+    }
+
+    func testSplitSysExWithRealTimeBetweenPacketsDecodes() {
+        // As CoreMIDI may deliver it: a SysEx split over several callbacks, with a clock between.
+        let ping = RotoOutgoing.sendNames(start: 0, names: ["Main"]).bytes
+        let packets = UniversalPackets.packets(UniversalPackets.words(fromBytes: ping))
+        var decoder = RotoInputDecoder()
+        var inputs: [RotoInput] = []
+        for (number, packet) in packets.enumerated() {
+            inputs += decoder.feed(UniversalPackets.bytes(fromWords: Array(packet)))
+            if number == 1 { inputs += decoder.feed(UniversalPackets.bytes(fromWords: [0x10F8_0000])) }
+        }
+        XCTAssertEqual(inputs, [.message(.other(group: 0x0C, command: 0x08, data: Array(ping[7..<(ping.count - 1)])))])
+    }
+
     func testWordCounts() {
         XCTAssertEqual((0...15).map { UniversalPackets.wordCount(forType: $0) },
                        [1, 1, 1, 2, 2, 4, 1, 1, 2, 2, 2, 3, 3, 4, 4, 4])
@@ -83,6 +126,8 @@ final class MIDIEndpointMatchTests: XCTestCase {
         XCTAssertEqual(MIDIEndpointInfo.match("DAW", in: endpoints)?.uniqueID, 2)
         XCTAssertNil(MIDIEndpointInfo.match("Launch Control", in: endpoints), "two partial matches")
         XCTAssertNil(MIDIEndpointInfo.match("Faderport", in: endpoints))
+        let withDuplicates = endpoints + [MIDIEndpointInfo(name: "Roto-Control 2", uniqueID: 4)]
+        XCTAssertEqual(MIDIEndpointInfo.match("Roto-Control", in: withDuplicates)?.uniqueID, 1, "an exact name wins over partial matches")
     }
 
     #if !canImport(CoreMIDI)

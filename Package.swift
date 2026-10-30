@@ -55,7 +55,7 @@ if includeTests {
     targets.append(.testTarget(name: "OSCCodecTests", dependencies: ["OSCCodec"]))
     targets.append(.testTarget(name: "TotalMixOSCTests", dependencies: ["OSCCodec", "TotalMixOSC"]))
     targets.append(.testTarget(name: "RotoControlTests", dependencies: ["RotoControl"]))
-    targets.append(.testTarget(name: "MIDITransportTests", dependencies: ["MIDITransport"]))
+    targets.append(.testTarget(name: "MIDITransportTests", dependencies: ["MIDITransport", "RotoControl"]))
     targets.append(.testTarget(name: "UDPTransportTests", dependencies: ["UDPTransport"]))
 }
 

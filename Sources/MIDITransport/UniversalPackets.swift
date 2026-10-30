@@ -24,7 +24,8 @@ public enum UniversalPackets {
             switch type {
             case 0x1, 0x2:
                 let status = UInt8((word >> 16) & 0xFF)
-                guard status >= 0x80 else { continue }
+                let valid = type == 0x2 ? (0x80...0xEF).contains(status) : status >= 0xF1 && status != 0xF7
+                guard valid else { continue }
                 let data = [UInt8((word >> 8) & 0x7F), UInt8(word & 0x7F)]
                 bytes.append(status)
                 bytes.append(contentsOf: data.prefix(dataLength(forStatus: status)))
@@ -32,6 +33,7 @@ public enum UniversalPackets {
                 guard index + 1 < words.count else { continue }
                 let second = words[index + 1]
                 let form = Int((word >> 20) & 0xF)
+                guard form <= 3 else { continue }
                 let count = min(Int((word >> 16) & 0xF), 6)
                 let payload: [UInt8] = [UInt8((word >> 8) & 0x7F), UInt8(word & 0x7F),
                                         UInt8((second >> 24) & 0x7F), UInt8((second >> 16) & 0x7F),
@@ -70,6 +72,19 @@ public enum UniversalPackets {
             }
         }
         return words
+    }
+
+    /// Words split into whole packets, by each packet's message type. A packet cut short at the end
+    /// is returned as it is.
+    public static func packets(_ words: [UInt32]) -> [ArraySlice<UInt32>] {
+        var result: [ArraySlice<UInt32>] = []
+        var index = 0
+        while index < words.count {
+            let end = min(index + wordCount(forType: Int(words[index] >> 28)), words.count)
+            result.append(words[index..<end])
+            index = end
+        }
+        return result
     }
 
     /// The number of 32-bit words in a packet of a given message type.

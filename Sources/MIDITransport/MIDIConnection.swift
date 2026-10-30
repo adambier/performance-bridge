@@ -50,7 +50,7 @@ public enum MIDIConnectionError: Error, Equatable, CustomStringConvertible {
 /// A two-way MIDI connection to one device through CoreMIDI, using the MIDI 1.0 protocol.
 ///
 /// Received MIDI arrives on CoreMIDI's own thread, as MIDI 1.0 bytes; a SysEx message may arrive
-/// in several pieces. `send` may be called from any thread.
+/// in several pieces. `send` may be called from any thread, but not while `close` runs.
 public final class MIDIConnection: @unchecked Sendable {
     /// The source being listened to.
     public let source: MIDIEndpointInfo
@@ -115,18 +115,16 @@ public final class MIDIConnection: @unchecked Sendable {
     public func send(_ bytes: [UInt8]) throws {
         let words = UniversalPackets.words(fromBytes: bytes)
         guard !words.isEmpty else { return }
-        let size = MemoryLayout<MIDIEventList>.size + words.count * 8 + 256
+        // At most one packet per word, each with a header of 12 bytes or less: a strict bound.
+        let size = MemoryLayout<MIDIEventList>.size + words.count * 16
         let buffer = UnsafeMutableRawPointer.allocate(byteCount: size, alignment: 8)
         defer { buffer.deallocate() }
         let list = buffer.bindMemory(to: MIDIEventList.self, capacity: 1)
         var packet: UnsafeMutablePointer<MIDIEventPacket>? = MIDIEventListInit(list, ._1_0)
-        var index = 0
-        while index < words.count {
-            let length = UniversalPackets.wordCount(forType: Int(words[index] >> 28))
-            let chunk = Array(words[index..<min(index + length, words.count)])
-            packet = chunk.withUnsafeBufferPointer { MIDIEventListAdd(list, size, packet!, 0, chunk.count, $0.baseAddress!) }
+        for chunk in UniversalPackets.packets(words) {
+            let packetWords = Array(chunk)
+            packet = packetWords.withUnsafeBufferPointer { MIDIEventListAdd(list, size, packet!, 0, packetWords.count, $0.baseAddress!) }
             guard packet != nil else { throw MIDIConnectionError.coreMIDI(call: "MIDIEventListAdd", status: -1) }
-            index += length
         }
         try Self.check("MIDISendEventList", MIDISendEventList(outputPort, destinationRef, list))
     }
