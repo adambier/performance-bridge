@@ -140,6 +140,19 @@ final class BridgeSession: @unchecked Sendable {
         if bytes.first == 0xF0, let message = RotoIncoming(sysEx: bytes) {
             log("← Roto \(describe(message))")
         }
+        // Switches, transport switches, and anything else that is not a knob or a touch, for the
+        // tests: a CC on channel 16 outside the knob (12–19, 44–51) and touch (52–59) blocks.
+        var index = 0
+        while index + 2 < bytes.count {
+            if bytes[index] == 0xBF {
+                let controller = bytes[index + 1], value = bytes[index + 2]
+                let knobOrTouch = (12...19).contains(controller) || (44...59).contains(controller)
+                if !knobOrTouch { log("← Roto CC \(controller) = \(value)") }
+                index += 3
+            } else {
+                index += 1
+            }
+        }
         let step = driver.receive(bytes, hub: &hub, now: now)
         sendToRoto(step.midi)
         dispatch(step.core)
