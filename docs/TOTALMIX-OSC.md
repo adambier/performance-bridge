@@ -58,7 +58,7 @@ The three rows of the mixer are spelled three ways (`TotalMixBus`). [RME doc]
 
 **Channel settings** have the form `/<bus>/<channel>/<parameter>`, with sub-paths for the low cut, EQ, dynamics, AutoLevel, and Room EQ. Examples are `mute`, `name` (a string), `faderlin`, `volume`, `balpan`, `color` (sent only), and `eq/band1gain`. [RME doc]
 
-**Record-enable.** `record` is a channel setting that TotalMix sends and accepts. [RME doc] The document does not say what it does; the inference is that it is the channel's record-enable for DURec, TotalMix's recorder on interfaces that have one. The Digiface AES's manual does not mention DURec [RME manual], so on that interface `record` may do nothing; this is untested. The Roto-Control's record-arm switches set it.
+**Record-enable** (under development and untested). `record` is a channel setting that TotalMix sends and accepts. [RME doc] The document does not say what it does; the inference is that it is the channel's record-enable for DURec, TotalMix's recorder on interfaces that have one. The Digiface AES's manual does not mention DURec [RME manual], so on that interface `record` may do nothing. Neither interface this project is tested with (the Digiface AES and the HDSPe MADI FX) is known to have DURec, so this feature cannot be tested here yet. The Roto-Control's record-arm switches set it.
 
 **Playback names.** TotalMix names each playback after the output of the same number, because by default playback n is routed to output n alone. [RME forum](https://forum.rme-audio.de/viewtopic.php?id=36883) SurfaceCore therefore shows playbacks as "PB 1/2", "PB 3/4", and so on, so that they cannot be mistaken for inputs. Whether Global OSC sends a playback's own name or its output's has not been checked.
 

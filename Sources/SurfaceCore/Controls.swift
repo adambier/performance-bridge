@@ -44,9 +44,10 @@ public enum SwitchFunction: Hashable, Codable, Sendable {
     /// (`SurfaceHub.soloEnabled`): what TotalMix's solo does to the rest of the submix is unchecked,
     /// and in live use it could silence the audience's mix.
     case solo
-    /// The channel's record-enable (`/<bus>/<channel>/record`). RME's document lists `record` as a
-    /// channel setting without saying what it does; that it arms the channel for DURec, TotalMix's
-    /// recorder on interfaces that have one, is an inference (docs/TOTALMIX-OSC.md).
+    /// The channel's record-enable (`/<bus>/<channel>/record`). Under development and untested:
+    /// RME's document lists `record` as a channel setting without saying what it does; that it arms
+    /// the channel for DURec, TotalMix's recorder on interfaces that have one, is an inference, and
+    /// no interface this project is tested with has DURec (docs/TOTALMIX-OSC.md).
     case record
     /// Nothing: the switch does nothing and shows off.
     case none

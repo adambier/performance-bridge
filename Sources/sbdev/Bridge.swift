@@ -173,7 +173,8 @@ final class BridgeSession: @unchecked Sendable {
             } catch {
                 log("Could not send \(message.address): \(error)")
             }
-            log("→ TotalMix \(message.address) \(message.arguments.map(describe).joined(separator: " "))")
+            let untested = message.address.hasSuffix("/record") ? "   (record-enable for DURec: under development, untested)" : ""
+            log("→ TotalMix \(message.address) \(message.arguments.map(describe).joined(separator: " "))\(untested)")
         }
         for (id, updates) in output.updates where id == driver.id {
             sendToRoto(driver.render(updates, hub: hub))
