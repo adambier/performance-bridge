@@ -206,6 +206,6 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 
 **Findings:**
 
-- **PFL shows only in Live Mode.** `/input/<n>/pfl` 1 was sent and accepted, but TotalMix's window showed no PFL until "Live Mode, PFL replaces Solo" (PFL Mode, in Settings) was turned on; then the channel's Solo/PFL button lit, and clicking it in TotalMix was sent back as `pfl` (seen). [RME manual: Live Mode replaces Solo with PFL]
+- **PFL shows only in Live Mode.** `/input/<n>/pfl` 1 was sent and accepted, but the user found no sign of it in TotalMix's window until "Live Mode, PFL replaces Solo" (PFL Mode, in Settings) was turned on; then the channel's Solo/PFL button lit, and clicking it in TotalMix was sent back as `pfl` (seen). [RME manual: Live Mode replaces Solo with PFL]
 - **Live Mode cannot be read.** Turning Live Mode off and on sent nothing, and the reply to `/sendsettings` does not mention it. RME's document lists only the device name, the connection, and the DSP load as status. [RME doc]
 - **PFL goes to Main when Cue/PFL to is unassigned.** With `controlroom/cuechan` reported as −1, PFL on a silent input silenced Main, which had been playing another input (seen). [RME manual: the Cue/PFL to setting also routes PFL]
