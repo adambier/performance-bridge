@@ -45,11 +45,13 @@ public struct SurfaceHub: Sendable {
     /// The app's choice, or else the control room's Main Out; `nil` before TotalMix has sent it.
     public var homeSubmix: Int? { homeChoice ?? mirror.mainOut }
 
-    /// The outputs the send knobs reach, in order: the outputs view's channels, minus the home
-    /// submix. `send(0)` is the first.
+    /// The outputs the send knobs reach, in order: the outputs view's channels, minus the
+    /// monitoring outputs (Main Out, Main Out B, Phones 1–4, and cue, as the control room assigns
+    /// them) and the home submix. These are the feeds to other hardware. `send(0)` is the first.
     public var sendTargets: [Int] {
         let home = homeSubmix
-        return layout.channels(.outputs, in: mirror).map(\.channel).filter { $0 != home }
+        let monitoring = mirror.monitoringOutputs
+        return layout.channels(.outputs, in: mirror).map(\.channel).filter { $0 != home && !monitoring.contains($0) }
     }
 
     /// The surfaces, in the order they were added.
@@ -81,7 +83,7 @@ public struct SurfaceHub: Sendable {
             return meterChanged(ref, now: now)
         case .node(let key):
             return refresh(where: { $0.contains(node: key) }, now: now)
-        case .channel, .mainOut:
+        case .channel, .controlRoom:
             return refreshAll(now: now)
         }
     }

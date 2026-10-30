@@ -48,7 +48,8 @@ small driver of its own.
 
   Around the strips:
   - two views: sources (inputs, then playbacks) and outputs;
-  - the home submix (Main Out unless the app chooses another), which source levels and pans go into; sends are the other outputs' submixes;
+  - monitoring outputs and sends: the outputs the control room assigns to Main Out, Main Out B, Phones 1–4, and cue are monitoring outputs; every other output TotalMix doesn't hide is a send;
+  - the home submix (Main Out unless the app chooses another monitoring output), which source levels and pans go into; send knobs reach only the sends;
   - paging, and a focus mode (one source across all submixes);
   - the feedback rules: a control the user holds (touched, or moved in the last 250 ms) is not moved by TotalMix and catches up when let go; controls without motors pick up; continuous messages are thinned to one per address per 20 ms; meters update at most 12 times per second.
 

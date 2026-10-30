@@ -63,8 +63,30 @@ public enum MirrorChange: Hashable, Sendable {
     case node(NodeKey)
     /// A peak level, for one channel number (a stereo pair's halves are separate).
     case meter(ChannelRef)
-    /// The control room's Main Out assignment.
-    case mainOut
+    /// A control-room assignment (Main Out, Phones, and the others in `MonitoringRole`).
+    case controlRoom
+}
+
+/// The control-room assignments that make an output a monitoring output rather than a send:
+/// what the performer and the audience hear, not a feed to other hardware. Each holds the left
+/// channel of the assigned output, as `/controlroom/<name>` (docs/TOTALMIX-OSC.md).
+public enum MonitoringRole: String, CaseIterable, Hashable, Sendable {
+    /// Main Out (`mainout`).
+    case mainOut = "mainout"
+    /// Main Out B (`mainoutb`).
+    case mainOutB = "mainoutb"
+    /// Phones 1 (`phones1`).
+    case phones1
+    /// Phones 2 (`phones2`).
+    case phones2
+    /// Phones 3 (`phones3`).
+    case phones3
+    /// Phones 4 (`phones4`).
+    case phones4
+    /// The output that cue and PFL go to (`cuechan`). That this is what `cuechan` names is an
+    /// inference from its name; only `mainout`, `phones1`, and `phones2` have been seen to match
+    /// TotalMix's window.
+    case cue = "cuechan"
 }
 
 /// The core's copy of TotalMix's state, filled by `/sendall` and kept current by what TotalMix
@@ -77,8 +99,8 @@ public struct MixerMirror: Sendable {
     public private(set) var nodes: [NodeKey: NodeState] = [:]
     /// The last peak level in dB of each channel number (both halves of a pair).
     public private(set) var meters: [ChannelRef: Double] = [:]
-    /// The output channel assigned to Main Out in the control room (`mainout`), if any.
-    public private(set) var mainOut: Int?
+    /// The output channel (its left channel) assigned to each monitoring role in the control room.
+    public private(set) var monitoring: [MonitoringRole: Int] = [:]
     private var visible: [TotalMixBus: [ChannelRef]] = [:]
 
     /// An empty mirror.
@@ -99,11 +121,13 @@ public struct MixerMirror: Sendable {
             meters[ref] = peakDB
             return .meter(ref)
         case .other(let path, let value):
-            guard path == "controlroom/mainout", let number = value.number else { return nil }
+            guard path.hasPrefix("controlroom/"),
+                  let role = MonitoringRole(rawValue: String(path.dropFirst("controlroom/".count))),
+                  let number = value.number else { return nil }
             let assigned = number < 0 ? nil : Int(number.rounded())
-            if mainOut == assigned { return nil }
-            mainOut = assigned
-            return .mainOut
+            if monitoring[role] == assigned { return nil }
+            monitoring[role] = assigned
+            return .controlRoom
         case .snapshot:
             return nil
         }
@@ -217,6 +241,12 @@ public struct MixerMirror: Sendable {
         store(state, for: ref)
         return state == before ? nil : .channel(ref)
     }
+
+    /// The output channel assigned to Main Out in the control room (`mainout`), if any.
+    public var mainOut: Int? { monitoring[.mainOut] }
+
+    /// The outputs assigned to any monitoring role: Main Out, Main Out B, Phones 1–4, and cue.
+    public var monitoringOutputs: Set<Int> { Set(monitoring.values) }
 
     /// Stores a channel's state, and redoes the row's list of visible channels when the channel is
     /// new or its color or stereo setting changed.
