@@ -18,7 +18,7 @@ statement there carries its evidence.
 | Language, tooling | Swift, `swift-tools-version:5.9`; CI uses the `swift:6.0-noble` image on Linux, Swift 6.2 on Windows, and the runner's Xcode on macOS; XCTest |
 | App platform | macOS 13 or later (`platforms: [.macOS(.v13)]`); SwiftUI plus AppKit; no Xcode project; Sparkle 2 for updates |
 | Library platforms | macOS, Linux, and Windows (CI tests all three on every push and pull request) |
-| TotalMix checked | TotalMix FX "2.10 (1)" with a Digiface AES (tests 1–4 in `docs/TOTALMIX-OSC.md`); the second target is an HDSPe MADI FX |
+| TotalMix checked | TotalMix FX "2.10 (1)" with a Digiface AES (tests 1–5 in `docs/TOTALMIX-OSC.md`); the second target is an HDSPe MADI FX |
 
 ## 2. Repository map
 
@@ -26,10 +26,12 @@ statement there carries its evidence.
 |---|---|
 | `Sources/OSCCodec/` | OSC 1.0 packets: `OSCArgument`, `OSCMessage`, `OSCBundle`, `OSCPacket`, encoding and decoding |
 | `Sources/TotalMixOSC/` | Global OSC: `TotalMixBus`, `TotalMixCommand` (messages to send), `TotalMixEvent` (messages received), `TotalMixEndpoint` (host and ports), `TotalMixGroupFlags`, `FaderCurve` |
+| `Sources/RotoControl/` | Roto-Control protocol: `RotoSysEx` (framing, 14-bit numbers, names), `RotoIncoming` and `RotoOutgoing` (SysEx messages), `RotoMIDIParser`, `RotoControlDecoder` and `RotoFeedback` (CCs and 14-bit knobs), `RotoHandshake`, `RotoInputDecoder` |
 | `Sources/UDPTransport/` | `UDPSocket`: POSIX UDP on macOS and Linux; a placeholder that throws on Windows |
 | `Sources/sbdev/` | Developer tool: `monitor`, `send`, `roundtrip`, `curve` |
 | `Tests/` | One test target per library |
 | `docs/TOTALMIX-OSC.md` | What this project relies on in Global OSC, with evidence, and the open questions |
+| `docs/ROTO-CONTROL.md` | What this project relies on in the Roto-Control's protocol, with evidence, and the open questions |
 
 ## 3. Architecture and what comes next
 
@@ -48,7 +50,7 @@ small driver of its own.
   - its resolution;
   - its displays.
 - **Drivers** (planned), one per surface:
-  - **RotoControl**: the Roto-Control's SysEx API in MIX mode, with 14-bit motorized knobs.
+  - **RotoControl**: the Roto-Control's SysEx API in MIX mode, with 14-bit motorized knobs. The protocol layer (`Sources/RotoControl/`) exists; the driver, which maps it onto SurfaceCore, and a CoreMIDI transport do not yet.
   - **LaunchControlXL3**: the Launch Control XL 3's DAW mode, with 7-bit faders that are not motorized and endless encoders.
   - **MackieControl**: later.
 - **Protocol sources.** Each driver's protocol facts go in a `docs/` file of their own, with evidence, as `TOTALMIX-OSC.md` does for TotalMix. The vendors' documents are linked, not committed:
@@ -64,7 +66,7 @@ small driver of its own.
 
 Do:
 
-- Keep `OSCCodec`, `TotalMixOSC`, and the planned SurfaceCore and drivers Foundation-only, UI-free, and building on Linux, macOS, and Windows. Platform code (CoreMIDI, sockets, SwiftUI) stays in `UDPTransport`, the app, or future transport targets.
+- Keep `OSCCodec`, `TotalMixOSC`, `RotoControl`, and the planned SurfaceCore and drivers Foundation-only, UI-free, and building on Linux, macOS, and Windows. Platform code (CoreMIDI, sockets, SwiftUI) stays in `UDPTransport`, the app, or future transport targets.
 - Write cross-library imports as `#if canImport(OSCCodec)` / `import OSCCodec` / `#endif`. The app build will compile every folder as one module, and there such an import must compile out. No two top-level declarations in the library folders may share a name.
 - Put any new or changed claim about what TotalMix does in `docs/TOTALMIX-OSC.md` with its evidence: RME's document and its revision, or a test naming the TotalMix version and the interface. Mark inferences as inferences, in the code comment as well as the document. Do the same for the surfaces in their own documents.
 - Give every `public` declaration a `///` doc comment.
