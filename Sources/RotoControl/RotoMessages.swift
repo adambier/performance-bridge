@@ -68,8 +68,28 @@ public enum RotoIncoming: Equatable, Sendable {
     case pageLeft
     /// ROTO PAGE RIGHT (`0A 15`); sent only to a host that claims to be Logic.
     case pageRight
-    /// SET PLUGIN MODE (`0B 01`): the user left MIX mode for PLUGIN mode.
+    /// SET PLUGIN MODE (`0B 01`): the Roto-Control is in PLUGIN mode. It has been observed to carry
+    /// one data byte, which the SysEx doc does not list (docs/ROTO-CONTROL.md, test 1).
     case pluginMode
+    /// SET FIRST PLUGIN (`0B 04`): the user paged the plugins; a multiple of 8.
+    case setFirstPlugin(Int)
+    /// ROTO SELECT PLUGIN (`0B 07`): the user selected a plugin on the current page (0–7).
+    case selectPlugin(Int)
+    /// SET DEVICE LEARN (`0B 09`): learn mode turned on or off.
+    case learnMode(Bool)
+    /// CONTROL MAPPED (`0B 0B`): a control on the current page is mapped to a parameter; the host
+    /// answers with LEARN PARAM for that parameter.
+    case controlMapped(RotoControlMapping)
+    /// SET PLUGIN ENABLED (`0B 0C`): the user enabled or disabled a plugin on the current page.
+    case pluginEnabled(Int, Bool)
+    /// SET PLUGINS LOCK (`0B 0D`): the user locked or unlocked the plugin selection.
+    case pluginsLocked(Bool)
+    /// MACRO PLUGIN PAGE INDEX (`0B 10`): the user paged a macro plugin's controls.
+    case macroPage(Int)
+    /// CONTROL LEARNED (`0B 11`): a control was mapped to the parameter last sent in learn mode.
+    case controlLearned(RotoControlKind, control: Int)
+    /// TOGGLE REMOTE PAGE (`0B 12`).
+    case toggleRemotePage
     /// SET MIX ALL TRACKS MODE (`0C 01`).
     case allTracksMode(RotoAllTracksMode)
     /// SET MIX TRACK MODE (`0C 02`): single-track mode, with the page of track controls as sent.
@@ -113,6 +133,33 @@ public enum RotoIncoming: Equatable, Sendable {
         case (0x0A, 0x14): return .pageLeft
         case (0x0A, 0x15): return .pageRight
         case (0x0B, 0x01): return .pluginMode
+        case (0x0B, 0x04):
+            guard let first = data.first else { return nil }
+            return .setFirstPlugin(Int(first))
+        case (0x0B, 0x07):
+            guard let index = data.first else { return nil }
+            return .selectPlugin(Int(index))
+        case (0x0B, 0x09):
+            guard let on = data.first else { return nil }
+            return .learnMode(on != 0)
+        case (0x0B, 0x0B):
+            guard data.count >= 11, let kind = RotoControlKind(rawValue: data[8]) else { return nil }
+            return .controlMapped(RotoControlMapping(parameterIndex: RotoSysEx.decode14(data[0], data[1]),
+                                                     parameterHash: RotoHash(bytes: Array(data[2..<8])),
+                                                     kind: kind, control: Int(data[9]), isMacro: data[10] != 0))
+        case (0x0B, 0x0C):
+            guard data.count >= 2 else { return nil }
+            return .pluginEnabled(Int(data[0]), data[1] != 0)
+        case (0x0B, 0x0D):
+            guard let locked = data.first else { return nil }
+            return .pluginsLocked(locked != 0)
+        case (0x0B, 0x10):
+            guard let page = data.first else { return nil }
+            return .macroPage(Int(page))
+        case (0x0B, 0x11):
+            guard data.count >= 2, let kind = RotoControlKind(rawValue: data[0]) else { return nil }
+            return .controlLearned(kind, control: Int(data[1]))
+        case (0x0B, 0x12): return .toggleRemotePage
         case (0x0C, 0x01):
             guard data.count >= 4,
                   let set = RotoTrackSet(rawValue: data[0]),
@@ -266,6 +313,30 @@ public enum RotoOutgoing: Equatable, Sendable {
     /// SET MIX VU METER THRESHOLDS (`0C 0B`), each clamped to 0–127. The SysEx doc requires red
     /// above yellow; the caller must ensure it.
     case meterThresholds(yellow: UInt8, red: UInt8)
+    /// NUM PLUGINS (`0B 02`): the number of plugins on the current track.
+    case pluginCount(Int)
+    /// FIRST PLUGIN (`0B 03`): the current plugin page, a multiple of 8.
+    case firstPlugin(Int)
+    /// PLUGIN DETAILS (`0B 05`), once for each plugin on the current page.
+    case pluginDetails(RotoPluginDetails)
+    /// PLUGIN DETAILS END (`0B 06`).
+    case pluginDetailsEnd
+    /// DAW SELECT PLUGIN (`0B 08`): the host selected a plugin (its index in the whole list, as
+    /// Ableton's integration sends it), on a macro page, overriding the lock if `force`.
+    case dawSelectPlugin(index: Int, macroPage: Int, force: Bool)
+    /// LEARN PARAM (`0B 0A`): in learn mode, the parameter to map to the next control the user
+    /// picks; otherwise the answer to CONTROL MAPPED.
+    case learnParameter(RotoParameterDetails)
+    /// UNMAP CONTROL (`0B 0E`): removes a control's mapping on the current page.
+    case unmapControl(RotoControlKind, control: Int)
+    /// SET MAPPED CONTROL NAME (`0B 0F`): renames a mapped (macro) parameter.
+    case mappedControlName(parameterIndex: Int, hash: RotoHash, name: String)
+    /// SET PLUGIN CONTROL DETAILS (`0B 13`): a control's name and color scheme (control 0–63).
+    /// The SysEx doc describes it as used in Logic's SMART mode; whether it works with another DAW
+    /// type is untested.
+    case controlDetails(RotoControlKind, control: Int, name: String, colorScheme: UInt8)
+    /// RESET PLUGIN CONTROL DETAILS (`0B 14`): clears a control's details (control 0–63).
+    case resetControlDetails(RotoControlKind, control: Int)
     /// `0C 0C`, eight flags, one per track of the page. Not in the SysEx doc: Ableton's integration
     /// sends it, and the inference is that `false` dims a track's meter (docs/ROTO-CONTROL.md,
     /// section 4).
@@ -316,6 +387,27 @@ public enum RotoOutgoing: Equatable, Sendable {
             return RotoSysEx.frame(.mix, 0x0A, RotoSysEx.encode14(index) + color.bytes)
         case .meterThresholds(let yellow, let red):
             return RotoSysEx.frame(.mix, 0x0B, [min(yellow, 127), min(red, 127)])
+        case .pluginCount(let count):
+            return RotoSysEx.frame(.plugin, 0x02, [UInt8(min(max(count, 0), 127))])
+        case .firstPlugin(let first):
+            return RotoSysEx.frame(.plugin, 0x03, [UInt8(min(max(first, 0), 127))])
+        case .pluginDetails(let details):
+            return RotoSysEx.frame(.plugin, 0x05, details.bytes)
+        case .pluginDetailsEnd:
+            return RotoSysEx.frame(.plugin, 0x06)
+        case .dawSelectPlugin(let index, let macroPage, let force):
+            return RotoSysEx.frame(.plugin, 0x08, [UInt8(min(max(index, 0), 127)), UInt8(min(max(macroPage, 0), 127)), force ? 1 : 0])
+        case .learnParameter(let details):
+            return RotoSysEx.frame(.plugin, 0x0A, details.bytes)
+        case .unmapControl(let kind, let control):
+            return RotoSysEx.frame(.plugin, 0x0E, [kind.rawValue, UInt8(min(max(control, 0), 7))])
+        case .mappedControlName(let index, let hash, let name):
+            return RotoSysEx.frame(.plugin, 0x0F, RotoSysEx.encode14(index) + hash.field(6) + RotoSysEx.encodeName(name))
+        case .controlDetails(let kind, let control, let name, let scheme):
+            return RotoSysEx.frame(.plugin, 0x13, [kind.rawValue, UInt8(min(max(control, 0), 63))]
+                                   + RotoSysEx.encodeName(name) + [min(scheme, 82)])
+        case .resetControlDetails(let kind, let control):
+            return RotoSysEx.frame(.plugin, 0x14, [kind.rawValue, UInt8(min(max(control, 0), 63))])
         case .meterStates(let states):
             let flags = (0..<8).map { $0 < states.count && states[$0] ? UInt8(1) : 0 }
             return RotoSysEx.frame(.mix, 0x0C, flags)

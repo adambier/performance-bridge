@@ -38,6 +38,14 @@ let rotoCommandHelp = """
       tracks N          send NUM TRACKS N, then FIRST TRACK 0 and that page's TRACK DETAILS
       thresholds Y R    SET MIX VU METER THRESHOLDS
       refresh           REFRESH MIX MODE
+    PLUGIN mode (stand-in plugins and parameters; `plugins` lists them):
+      plugins           list the plugins and the selected plugin's parameters
+      select P          DAW SELECT PLUGIN P (forced)
+      learn N           LEARN PARAM for parameter N of the selected plugin (for learn mode,
+                        or to try mapping without it)
+      ctl K NAME        SET PLUGIN CONTROL DETAILS: name knob K (1–64)
+      ctlsw K NAME      the same for switch K
+      unmap K           UNMAP CONTROL knob K;  unmapsw K for switch K
       hex BYTES         send raw bytes, e.g. hex F0 00 22 03 02 0A 0D F7
       restart           start the handshake again (DAW STARTED)
       quit
@@ -108,6 +116,16 @@ func describe(_ message: RotoIncoming) -> String {
     case .pageLeft: return "ROTO PAGE LEFT"
     case .pageRight: return "ROTO PAGE RIGHT"
     case .pluginMode: return "SET PLUGIN MODE"
+    case .setFirstPlugin(let first): return "SET FIRST PLUGIN \(first)"
+    case .selectPlugin(let index): return "ROTO SELECT PLUGIN \(index + 1) of the page"
+    case .learnMode(let on): return "SET DEVICE LEARN \(on ? "on" : "off")"
+    case .controlMapped(let mapping):
+        return "CONTROL MAPPED \(mapping.kind) \(mapping.control + 1) → parameter \(mapping.parameterIndex) [hash \(hex(mapping.parameterHash.bytes))]\(mapping.isMacro ? " (macro)" : "")"
+    case .pluginEnabled(let index, let enabled): return "SET PLUGIN ENABLED \(index + 1) \(enabled ? "on" : "off")"
+    case .pluginsLocked(let locked): return "SET PLUGINS LOCK \(locked ? "on" : "off")"
+    case .macroPage(let page): return "MACRO PLUGIN PAGE INDEX \(page)"
+    case .controlLearned(let kind, let control): return "CONTROL LEARNED \(kind) \(control + 1)"
+    case .toggleRemotePage: return "TOGGLE REMOTE PAGE"
     case .allTracksMode(let mode):
         return "SET MIX ALL TRACKS MODE: \(mode.trackSet) tracks, knobs \(mode.knobMode), switches \(mode.switchMode), send index \(mode.sendIndex)"
     case .singleTrackMode(let page):
@@ -158,6 +176,20 @@ func describe(_ message: RotoOutgoing) -> String {
     case .refreshMixMode: return "REFRESH MIX MODE"
     case .selectFocusTrack(let index, _): return "DAW SELECT FOCUS TRACK \(index)"
     case .meterThresholds(let yellow, let red): return "SET MIX VU METER THRESHOLDS \(yellow) \(red)"
+    case .pluginCount(let count): return "NUM PLUGINS \(count)"
+    case .firstPlugin(let first): return "FIRST PLUGIN \(first)"
+    case .pluginDetails(let details): return "PLUGIN DETAILS \(details.index) \"\(details.name)\""
+    case .pluginDetailsEnd: return "PLUGIN DETAILS END"
+    case .dawSelectPlugin(let index, _, let force): return "DAW SELECT PLUGIN \(index)\(force ? " (forced)" : "")"
+    case .learnParameter(let details):
+        var text = "LEARN PARAM \(details.index) \"\(details.name)\" at \(details.position)"
+        if details.centerIndent { text += ", center detent" }
+        if details.steps > 0 { text += ", \(details.steps) steps" }
+        return text
+    case .unmapControl(let kind, let control): return "UNMAP CONTROL \(kind) \(control + 1)"
+    case .mappedControlName(let index, _, let name): return "SET MAPPED CONTROL NAME \(index) \"\(name)\""
+    case .controlDetails(let kind, let control, let name, _): return "SET PLUGIN CONTROL DETAILS \(kind) \(control + 1) \"\(name)\""
+    case .resetControlDetails(let kind, let control): return "RESET PLUGIN CONTROL DETAILS \(kind) \(control + 1)"
     case .meterStates(let states): return "meter states \(states.map { $0 ? "1" : "0" }.joined())"
     }
 }
@@ -174,6 +206,13 @@ final class RotoSession: @unchecked Sendable {
     private var trackCount: Int
     private var knobCommandTimes: [Int: Date] = [:]
     private let sendCount = 4
+    private var inPluginMode = false
+    private var plugins = testPlugins
+    private var firstPlugin = 0
+    private var selectedPlugin = 0
+    private var pendingLearn: Int?
+    /// The parameter each control of the current plugin page is mapped to, by kind and control.
+    private var mappings: [String: Int] = [:]
 
     init(options: RotoOptions) {
         self.options = options
@@ -239,6 +278,7 @@ final class RotoSession: @unchecked Sendable {
                 react(to: message)
             case .control(let event):
                 var line = "← " + describe(event)
+                if inPluginMode, let note = pluginNote(for: event) { line += "   [\(note)]" }
                 if case .knob(let index, _) = event, let sent = knobCommandTimes[index] {
                     let elapsed = arrived.timeIntervalSince(sent)
                     if elapsed < 2 { line += String(format: "   [%.0f ms after a knob command]", elapsed * 1000) }
@@ -272,6 +312,73 @@ final class RotoSession: @unchecked Sendable {
             send([sendNames(from: RotoOutgoing.sendNamesStart(forSendIndex: index))])
         default:
             break
+        }
+        reactInPluginMode(to: message)
+    }
+
+    // MARK: PLUGIN mode
+
+    private func key(_ kind: RotoControlKind, _ control: Int) -> String { "\(kind) \(control)" }
+
+    private func reactInPluginMode(to message: RotoIncoming) {
+        switch message {
+        case .pluginMode:
+            inPluginMode = true
+            mappings.removeAll()
+            sendPluginPage(countFirst: true)
+            send([.dawSelectPlugin(index: selectedPlugin, macroPage: 0, force: false)])
+        case .allTracksMode, .singleTrackMode, .trackSet:
+            inPluginMode = false
+        case .setFirstPlugin(let first) where first < plugins.count:
+            firstPlugin = first
+            sendPluginPage(countFirst: false)
+        case .selectPlugin(let index) where firstPlugin + index < plugins.count:
+            selectedPlugin = firstPlugin + index
+            mappings.removeAll()
+            log("   selected \"\(plugins[selectedPlugin].name)\"")
+        case .controlMapped(let mapping):
+            let plugin = plugins[selectedPlugin]
+            guard let index = plugin.parameters.indices.first(where: { plugin.parameterHash($0) == mapping.parameterHash }) else {
+                log("   no parameter of \"\(plugin.name)\" has that hash"); return
+            }
+            mappings[key(mapping.kind, mapping.control)] = index
+            send([.learnParameter(plugin.parameterDetails(index))])
+        case .controlLearned(let kind, let control):
+            if let index = pendingLearn {
+                mappings[key(kind, control)] = index
+                log("   \(kind) \(control + 1) now controls \"\(plugins[selectedPlugin].parameters[index].name)\"")
+            }
+            pendingLearn = nil
+        case .learnMode(let on):
+            if on { log("   learn mode: type `learn N`, then turn or press the control to map it to") } else { pendingLearn = nil }
+        default:
+            break
+        }
+    }
+
+    /// NUM PLUGINS (optionally), FIRST PLUGIN, and PLUGIN DETAILS for the plugins of the current page.
+    private func sendPluginPage(countFirst: Bool) {
+        var messages: [RotoOutgoing] = countFirst ? [.pluginCount(plugins.count)] : []
+        messages.append(.firstPlugin(firstPlugin))
+        for index in firstPlugin..<max(firstPlugin, min(firstPlugin + 8, plugins.count)) {
+            messages.append(.pluginDetails(plugins[index].details(index: index)))
+        }
+        messages.append(.pluginDetailsEnd)
+        send(messages)
+    }
+
+    /// The parameter a knob or switch event changed, updating its position. Called with the lock held.
+    private func pluginNote(for event: RotoControlEvent) -> String? {
+        switch event {
+        case .knob(let control, let position):
+            guard let index = mappings[key(.knob, control)] else { return "not mapped" }
+            plugins[selectedPlugin].parameters[index].position = position
+            return "\(plugins[selectedPlugin].name) › \(plugins[selectedPlugin].parameters[index].name)"
+        case .switch(let control, _):
+            guard let index = mappings[key(.switch, control)] else { return "not mapped" }
+            return "\(plugins[selectedPlugin].name) › \(plugins[selectedPlugin].parameters[index].name)"
+        default:
+            return nil
         }
     }
 
@@ -358,6 +465,36 @@ final class RotoSession: @unchecked Sendable {
             send([.meterThresholds(yellow: yellow, red: red)])
         case "refresh":
             send([.refreshMixMode])
+        case "plugins":
+            for (number, plugin) in plugins.enumerated() {
+                print("  \(number + 1). \(plugin.name)\(number == selectedPlugin ? "   (selected)" : "")")
+            }
+            for (number, parameter) in plugins[selectedPlugin].parameters.enumerated() {
+                var text = "       \(number + 1). \(parameter.name) at \(parameter.position)"
+                if parameter.centerIndent { text += ", center detent" }
+                if parameter.steps > 0 { text += ", \(parameter.steps) steps" }
+                print(text)
+            }
+        case "select":
+            guard words.count > 1, let number = Int(words[1]), (1...plugins.count).contains(number) else { log("select P: P from 1 to \(plugins.count)"); break }
+            selectedPlugin = number - 1
+            mappings.removeAll()
+            send([.dawSelectPlugin(index: selectedPlugin, macroPage: 0, force: true)])
+        case "learn":
+            let parameters = plugins[selectedPlugin].parameters
+            guard words.count > 1, let number = Int(words[1]), (1...parameters.count).contains(number) else {
+                log("learn N: N from 1 to \(parameters.count) (`plugins` lists them)"); break
+            }
+            pendingLearn = number - 1
+            send([.learnParameter(plugins[selectedPlugin].parameterDetails(number - 1))])
+        case "ctl", "ctlsw":
+            guard words.count > 2, let number = Int(words[1]), (1...64).contains(number) else { log("\(command) K NAME: K from 1 to 64"); break }
+            send([.controlDetails(command == "ctl" ? .knob : .switch, control: number - 1, name: rest(from: 2), colorScheme: 21)])
+        case "unmap", "unmapsw":
+            guard let control = index(1) else { log("\(command) K: K from 1 to 8"); break }
+            let kind: RotoControlKind = command == "unmap" ? .knob : .switch
+            mappings[key(kind, control)] = nil
+            send([.unmapControl(kind, control: control)])
         case "hex":
             let bytes = words.dropFirst().compactMap { UInt8($0, radix: 16) }
             guard bytes.count == words.count - 1, !bytes.isEmpty else { log("hex BYTES: two hex digits each, e.g. hex F0 00 22 03 02 0A 0D F7"); break }

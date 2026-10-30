@@ -99,7 +99,7 @@ final class RotoMessageTests: XCTestCase {
         XCTAssertEqual(incoming([0x0C, 0x01, 0x05, 0x00, 0x00, 0x00]),
                        .other(group: 0x0C, command: 0x01, data: [0x05, 0x00, 0x00, 0x00]))
         XCTAssertEqual(incoming([0x0A, 0x06, 0x01]), .other(group: 0x0A, command: 0x06, data: [0x01]))
-        XCTAssertEqual(incoming([0x0B, 0x11, 0x00, 0x02]), .other(group: 0x0B, command: 0x11, data: [0x00, 0x02]))
+        XCTAssertEqual(incoming([0x0B, 0x1E, 0x00, 0x02]), .other(group: 0x0B, command: 0x1E, data: [0x00, 0x02]))
         XCTAssertNil(RotoIncoming(sysEx: [0xF0, 0x7E, 0x7F, 0x06, 0x01, 0xF7]))
     }
 
@@ -354,5 +354,99 @@ final class RotoHandshakeTests: XCTestCase {
                               0xF0, 0x7E, 0x00, 0xF7,
                               0x90, 0x3C, 0x40]
         XCTAssertEqual(decoder.feed(bytes), [.message(.pingDAW), .control(.knob(1, position: 128))])
+    }
+}
+
+final class RotoPluginTests: XCTestCase {
+    private let head: [UInt8] = [0xF0, 0x00, 0x22, 0x03, 0x02]
+
+    private func incoming(_ body: [UInt8]) -> RotoIncoming? {
+        RotoIncoming(sysEx: head + body + [0xF7])
+    }
+
+    func testHashes() {
+        let a = RotoHash.of("Ch EQ", length: 8)
+        XCTAssertEqual(a.bytes.count, 8)
+        XCTAssertEqual(a, RotoHash.of("Ch EQ", length: 8), "stable")
+        XCTAssertNotEqual(a, RotoHash.of("Ch Dynamics", length: 8))
+        XCTAssertTrue(a.bytes.allSatisfy { $0 < 0x80 })
+        XCTAssertEqual(RotoHash.of("x", length: 6).bytes.count, 6)
+        XCTAssertEqual(RotoHash.of("x", length: 20).bytes.count, 9, "64 bits give at most nine 7-bit bytes")
+        XCTAssertEqual(RotoHash(bytes: [0xFF, 0x80]).bytes, [0x7F, 0x00])
+        XCTAssertEqual(RotoHash(bytes: [1, 2]).field(4), [1, 2, 0, 0])
+        XCTAssertEqual(RotoHash(bytes: [1, 2, 3]).field(2), [1, 2])
+    }
+
+    func testIncomingPluginMessages() {
+        // Observed in test 1: SET PLUGIN MODE with a data byte the SysEx doc does not list.
+        XCTAssertEqual(incoming([0x0B, 0x01, 0x00]), .pluginMode)
+        XCTAssertEqual(incoming([0x0B, 0x01]), .pluginMode)
+        XCTAssertEqual(incoming([0x0B, 0x04, 0x08]), .setFirstPlugin(8))
+        XCTAssertEqual(incoming([0x0B, 0x07, 0x02]), .selectPlugin(2))
+        XCTAssertEqual(incoming([0x0B, 0x09, 0x01]), .learnMode(true))
+        XCTAssertEqual(incoming([0x0B, 0x09, 0x00]), .learnMode(false))
+        XCTAssertEqual(incoming([0x0B, 0x0B, 0x01, 0x02, 1, 2, 3, 4, 5, 6, 0x01, 0x05, 0x00]),
+                       .controlMapped(RotoControlMapping(parameterIndex: 130, parameterHash: RotoHash(bytes: [1, 2, 3, 4, 5, 6]),
+                                                         kind: .switch, control: 5, isMacro: false)))
+        XCTAssertEqual(incoming([0x0B, 0x0C, 0x03, 0x00]), .pluginEnabled(3, false))
+        XCTAssertEqual(incoming([0x0B, 0x0D, 0x01]), .pluginsLocked(true))
+        XCTAssertEqual(incoming([0x0B, 0x10, 0x02]), .macroPage(2))
+        XCTAssertEqual(incoming([0x0B, 0x11, 0x00, 0x07]), .controlLearned(.knob, control: 7))
+        XCTAssertEqual(incoming([0x0B, 0x12]), .toggleRemotePage)
+        // Short or invalid data falls back to .other.
+        XCTAssertEqual(incoming([0x0B, 0x0B, 0x00, 0x01]), .other(group: 0x0B, command: 0x0B, data: [0x00, 0x01]))
+        XCTAssertEqual(incoming([0x0B, 0x11, 0x05, 0x01]), .other(group: 0x0B, command: 0x11, data: [0x05, 0x01]))
+        // Logic-only commands are not decoded.
+        XCTAssertEqual(incoming([0x0B, 0x15]), .other(group: 0x0B, command: 0x15, data: []))
+    }
+
+    func testPluginPageMessages() {
+        XCTAssertEqual(RotoOutgoing.pluginCount(4).bytes, head + [0x0B, 0x02, 0x04, 0xF7])
+        XCTAssertEqual(RotoOutgoing.firstPlugin(8).bytes, head + [0x0B, 0x03, 0x08, 0xF7])
+        XCTAssertEqual(RotoOutgoing.pluginDetailsEnd.bytes, head + [0x0B, 0x06, 0xF7])
+        XCTAssertEqual(RotoOutgoing.dawSelectPlugin(index: 2, macroPage: 0, force: true).bytes,
+                       head + [0x0B, 0x08, 0x02, 0x00, 0x01, 0xF7])
+        let hash = RotoHash(bytes: [1, 2, 3, 4, 5, 6, 7, 8])
+        let details = RotoPluginDetails(index: 3, hash: hash, enabled: false, name: "Ch EQ", type: .macro, macroPages: 2)
+        XCTAssertEqual(RotoOutgoing.pluginDetails(details).bytes,
+                       head + [0x0B, 0x05, 3, 1, 2, 3, 4, 5, 6, 7, 8, 0] + RotoSysEx.encodeName("Ch EQ") + [1, 2, 0xF7])
+    }
+
+    func testLearnParameter() {
+        let hash = RotoHash(bytes: [9, 8, 7, 6, 5, 4])
+        let plain = RotoParameterDetails(index: 200, hash: hash, name: "Main Vol", position: 13388)
+        XCTAssertEqual(RotoOutgoing.learnParameter(plain).bytes,
+                       head + [0x0B, 0x0A, 0x01, 0x48, 9, 8, 7, 6, 5, 4, 0, 0, 0, 0x68, 0x4C]
+                       + RotoSysEx.encodeName("Main Vol") + [0xF7])
+
+        let detent = RotoParameterDetails(index: 0, hash: hash, name: "Pan", position: 8192, centerIndent: true)
+        XCTAssertEqual(RotoOutgoing.learnParameter(detent).bytes[15...16], [0, 1], "macro 0, center detent 1")
+
+        let named = RotoParameterDetails(index: 1, hash: hash, name: "Dim", position: 0, steps: 2, stepNames: ["Off", "On"])
+        let bytes = RotoOutgoing.learnParameter(named).bytes
+        XCTAssertEqual(bytes[17], 2, "steps")
+        XCTAssertEqual(bytes.count, 5 + 2 + 2 + 6 + 3 + 2 + 13 + 2 * 13 + 1)
+        XCTAssertEqual(RotoSysEx.decodeName(bytes[33..<46]), "Off")
+        XCTAssertEqual(RotoSysEx.decodeName(bytes[46..<59]), "On")
+
+        // Missing step names are sent empty; more than 16 steps carry no names.
+        let short = RotoParameterDetails(index: 1, hash: hash, name: "Out", position: 0, steps: 4, stepNames: ["A"])
+        XCTAssertEqual(RotoOutgoing.learnParameter(short).bytes.count, 5 + 2 + 2 + 6 + 3 + 2 + 13 + 4 * 13 + 1)
+        let many = RotoParameterDetails(index: 1, hash: hash, name: "Ratio", position: 0, steps: 20, stepNames: ["x"])
+        XCTAssertEqual(RotoOutgoing.learnParameter(many).bytes.count, 5 + 2 + 2 + 6 + 3 + 2 + 13 + 1)
+        // Steps outside 2–24 are corrected.
+        XCTAssertEqual(RotoParameterDetails(index: 0, hash: hash, name: "", position: 0, steps: 1).steps, 0)
+        XCTAssertEqual(RotoParameterDetails(index: 0, hash: hash, name: "", position: 0, steps: 40).steps, 24)
+    }
+
+    func testControlMessages() {
+        XCTAssertEqual(RotoOutgoing.unmapControl(.switch, control: 3).bytes, head + [0x0B, 0x0E, 0x01, 0x03, 0xF7])
+        XCTAssertEqual(RotoOutgoing.controlDetails(.knob, control: 40, name: "Gain 1", colorScheme: 21).bytes,
+                       head + [0x0B, 0x13, 0x00, 40] + RotoSysEx.encodeName("Gain 1") + [21, 0xF7])
+        XCTAssertEqual(RotoOutgoing.controlDetails(.knob, control: 99, name: "", colorScheme: 99).bytes[8], 63)
+        XCTAssertEqual(RotoOutgoing.resetControlDetails(.switch, control: 0).bytes, head + [0x0B, 0x14, 0x01, 0x00, 0xF7])
+        let hash = RotoHash(bytes: [1, 1, 1, 1, 1, 1])
+        XCTAssertEqual(RotoOutgoing.mappedControlName(parameterIndex: 5, hash: hash, name: "Dim").bytes,
+                       head + [0x0B, 0x0F, 0x00, 0x05, 1, 1, 1, 1, 1, 1] + RotoSysEx.encodeName("Dim") + [0xF7])
     }
 }

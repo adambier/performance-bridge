@@ -26,7 +26,7 @@ statement there carries its evidence.
 |---|---|
 | `Sources/OSCCodec/` | OSC 1.0 packets: `OSCArgument`, `OSCMessage`, `OSCBundle`, `OSCPacket`, encoding and decoding |
 | `Sources/TotalMixOSC/` | Global OSC: `TotalMixBus`, `TotalMixCommand` (messages to send), `TotalMixEvent` (messages received), `TotalMixEndpoint` (host and ports), `TotalMixGroupFlags`, `FaderCurve` |
-| `Sources/RotoControl/` | Roto-Control protocol: `RotoSysEx` (framing, 14-bit numbers, names), `RotoIncoming` and `RotoOutgoing` (SysEx messages), `RotoMIDIParser`, `RotoControlDecoder` and `RotoFeedback` (CCs and 14-bit knobs), `RotoHandshake`, `RotoInputDecoder` |
+| `Sources/RotoControl/` | Roto-Control protocol: `RotoSysEx` (framing, 14-bit numbers, names), `RotoIncoming` and `RotoOutgoing` (SysEx messages), `RotoMIDIParser`, `RotoControlDecoder` and `RotoFeedback` (CCs and 14-bit knobs), `RotoHandshake`, `RotoInputDecoder`; PLUGIN mode in `RotoPlugin.swift` (`RotoHash`, `RotoPluginDetails`, `RotoParameterDetails`, `RotoControlMapping`) |
 | `Sources/MIDITransport/` | `MIDIConnection`: a CoreMIDI connection on macOS, a placeholder that throws elsewhere; `UniversalPackets`: MIDI 1.0 bytes to and from CoreMIDI's UMP words (Foundation only, tested everywhere) |
 | `Sources/UDPTransport/` | `UDPSocket`: POSIX UDP on macOS and Linux; a placeholder that throws on Windows |
 | `Sources/sbdev/` | Developer tool: `monitor`, `send`, `roundtrip`, `curve` (main.swift), and `roto` (Roto.swift) |
@@ -51,7 +51,7 @@ small driver of its own.
   - its resolution;
   - its displays.
 - **Drivers** (planned), one per surface:
-  - **RotoControl**: the Roto-Control's SysEx API in MIX mode, with 14-bit motorized knobs. The protocol layer (`Sources/RotoControl/`) and the CoreMIDI transport (`Sources/MIDITransport/`) exist; the driver, which maps them onto SurfaceCore, does not yet.
+  - **RotoControl**: the Roto-Control's SysEx API, with 14-bit motorized knobs: MIX mode for channel strips, and PLUGIN mode (being tested) for the parts of TotalMix that MIX mode can't reach. The protocol layer (`Sources/RotoControl/`) and the CoreMIDI transport (`Sources/MIDITransport/`) exist; the driver, which maps them onto SurfaceCore, does not yet.
   - **LaunchControlXL3**: the Launch Control XL 3's DAW mode, with 7-bit faders that are not motorized and endless encoders.
   - **MackieControl**: later.
 - **Protocol sources.** Each driver's protocol facts go in a `docs/` file of their own, with evidence, as `TOTALMIX-OSC.md` does for TotalMix. The vendors' documents are linked, not committed:

@@ -109,6 +109,40 @@ table (the SysEx doc's Appendix A, not reproduced here), and `grouped` is `00` o
 - **Meter thresholds.** Ableton uses 87 and 113; Logic 106 and 120. [Ableton, Logic]
 - **Meter dimming.** Ableton also sends `0C 0C` with eight bytes, one per track of the page, which the SysEx doc does not list. Ableton sends 1 for an unmuted track and 0 for a muted one, or, while any track is soloed, 1 for soloed tracks and 0 for the rest. [Ableton] The inference is that 0 dims a track's meter. `RotoControl` can send it, marked as undocumented.
 
+## 4a. PLUGIN mode
+
+In PLUGIN mode the host lists "plugins" (Ableton's devices), and the user maps the Roto-Control's
+controls to their parameters. The Roto-Control stores each mapping on the device, under a hash of
+the plugin and a hash of the parameter. [SysEx doc, Ableton] Surface Bridge could present parts
+of TotalMix as plugins, for example the control room or the selected channel's EQ; that use is
+this project's idea, not Melbourne Instruments'.
+
+**The flow, as Ableton's integration runs it** [Ableton]:
+
+1. The Roto-Control sends SET PLUGIN MODE (`0B 01`). The host answers with NUM PLUGINS (`0B 02`), FIRST PLUGIN (`0B 03`), a PLUGIN DETAILS (`0B 05`) for each plugin on the page, PLUGIN DETAILS END (`0B 06`), and DAW SELECT PLUGIN (`0B 08`).
+2. When the user selects a plugin, the Roto-Control sends ROTO SELECT PLUGIN (`0B 07`, the index on the page).
+3. For each control it has a mapping for on that plugin, the Roto-Control sends CONTROL MAPPED (`0B 0B`) with the parameter's index and hash. The host finds the parameter (by hash; by index when two share a hash) and answers with LEARN PARAM (`0B 0A`), which carries the parameter's name and position. From then on the control's CCs (section 5) change that parameter.
+4. To make a mapping, the user turns on learn mode; the Roto-Control sends SET DEVICE LEARN (`0B 09`) on. When a parameter is chosen in the DAW, the host sends LEARN PARAM; the user then picks a control, and the Roto-Control sends CONTROL LEARNED (`0B 11`).
+
+**What a parameter can carry** (LEARN PARAM) [SysEx doc]:
+
+- a name, and a position (14 bits);
+- a center detent, for knobs;
+- or a number of steps: the SysEx doc gives 0 (continuous) or `02`–`18` hex, so 2–24, and names for each step when there are no more than `10` hex (16) steps. Ableton's integration caps steps at 24 and step names at 16 [Ableton], which agrees.
+
+**Hashes.** A plugin's hash is 8 bytes and a parameter's 6, each byte 7-bit. [SysEx doc] Ableton
+takes them from SHA-1 digests of the device's and parameter's names. [Ableton] The inference is
+that the Roto-Control uses them only as names for stored mappings, so any stable hash will do;
+`RotoHash.of` uses FNV-1a.
+
+**Host-set control names.** SET PLUGIN CONTROL DETAILS (`0B 13`) names a control (0–63) and sets
+its color, without learning. The SysEx doc says it is normally used in Logic's SMART mode. Whether
+it works with another DAW type, and whether an unmapped control sends CCs at all, are open
+(section 8).
+
+**What PLUGIN mode lacks.** The meter CCs are listed for MIX mode only, and the per-track screens
+and track paging are MIX-mode features. [SysEx doc]
+
 ## 5. CCs
 
 All on MIDI channel 16. [SysEx doc] "Knob 1–8" means CC numbers in that order.
@@ -139,7 +173,7 @@ bits is from Bitwig's and Logic's code. [Bitwig, Logic] The rest:
 - **Unchanged values.** Bitwig does not resend a knob position it last sent, except that it resends all eight positions when it switches layers or modes. [Bitwig]
 - **Value text.** Ableton sends SHOW CONTROL VALUE whenever a mapped parameter's value changes, from the knob or from Live, at most 12 times a second with one trailing update, and once when a knob is touched. [Ableton] Bitwig sends value text only in PLUGIN mode, within 100 ms (plugin parameters) or 300 ms (macro parameters) of the knob last moving; in MIX mode it sends none. [Bitwig]
 - **Bitwig's command for value text.** Bitwig sends value text as `0A 0F`, the number the SysEx doc gives REQUEST ROTO SYSEX API VERSION, with the same layout as SHOW CONTROL VALUE. [Bitwig, SysEx doc] The inference is that `0A 0F` is an older form, from before SHOW CONTROL VALUE was documented. `RotoControl` sends `0A 18`, as Ableton and Logic do. [Ableton, Logic]
-- **Hold-off for the motors.** Bitwig holds back a knob position for 100 ms after the knob last moved on its master and return layer, and has the same rule commented out on its track layer. While touch automation is on, it also ignores the knob for 500 ms after release, and it queues knob positions while it switches modes. [Bitwig] Ableton leaves knob feedback to Live's framework, so its rule is not visible in the integration. [Ableton] Surface Bridge will need its own rule, because TotalMix confirms nothing (docs/TOTALMIX-OSC.md, test 5): a position from TotalMix is a change made elsewhere. The planned rule, an inference, is to hold back positions for a knob while it is touched.
+- **Hold-off for the motors.** Bitwig holds back a knob position for 100 ms after the knob last moved on its master and return layer, and has the same rule commented out on its track layer. While touch automation is on, it also ignores the knob for 500 ms after release, and it queues knob positions while it switches modes. [Bitwig] Ableton leaves knob feedback to Live's framework, so its rule is not visible in the integration. [Ableton] Surface Bridge will need its own rule, because TotalMix confirms nothing (docs/TOTALMIX-OSC.md, test 5): a position from TotalMix is a change made elsewhere. The planned rule, an inference, was to hold back positions for a knob while it is touched; test 1 shows a knob turning before its touch CC, so the rule will also have to count recent movement.
 
 ## 7. Errata in the SysEx doc
 
@@ -153,19 +187,47 @@ Noted so that nobody builds on them:
 - Appendix B's Logic formula for a mapped parameter's CC number divides where Logic's code takes the remainder. [SysEx doc, Logic] PLUGIN mode only.
 - In PLUGIN mode, the overview also gives the wrong direction for SET PLUGIN LEARN (`0B 09`) and FIRST PLUGIN (`0B 03`), and 3.26 calls both halves of the sweep value "LSB". Logic's code uses a PLUGIN command, `0B 1E`, that the SysEx doc does not list. [SysEx doc, Logic]
 
-## 8. Open questions for the first tests
+## 8. Open questions
 
-1. **The handshake.** Does the Roto-Control complete it with type `01` and `02`, and does MIX mode behave the same with both?
-2. **What MIX mode needs from the host.** After CONNECTED, which of NUM TRACKS, FIRST TRACK, and TRACK DETAILS does the Roto-Control need before it shows strips?
-3. **Knob messages.** Does a turned knob always send both CCs, high then low? Does it skip the high CC when only the low bits change? `RotoControl` emits a knob value when the low CC arrives, using the last high value. Bitwig divides incoming values by 16382, not 16383 [Bitwig]; what is the top value?
-4. **Motor echoes.** When the host moves a knob, does the Roto-Control send the new position back?
-5. **Pacing.** Does the Roto-Control drop SysEx sent without Ableton's 5 ms gaps?
-6. **CC 64.** What gesture sends it?
-7. **Transport switches** in MIX mode with a non-Logic type.
-8. **Single-track pages.** Does SET MIX TRACK MODE carry 8 or 1 for the second page?
+Settled by test 1 (section 9): the handshake with type `02`; that a knob sends both CCs, high then
+low, every time; the top value (16383); and that the Roto-Control does not send a knob's CCs back
+when the host moves it.
+
+1. **The handshake with type `01`.** Does MIX mode behave the same as with `02`?
+2. **What MIX mode needs from the host.** Which of NUM TRACKS, FIRST TRACK, and TRACK DETAILS does the Roto-Control need before it shows strips? (`--setup none`.)
+3. **Motor moves.** Did the knob move for the host's commands? (Test 1 shows no CCs back; what the knob did was not recorded.)
+4. **Pacing.** Does the Roto-Control drop SysEx sent without Ableton's 5 ms gaps? (`--gap 0`.)
+5. **CC 64.** What gesture sends it?
+6. **Transport switches** in MIX mode with a non-Logic type.
+7. **Single-track pages.** Does SET MIX TRACK MODE carry 8 or 1 for the second page?
+8. **Switch releases.** In test 1 the switches sent 127 on each press and nothing on release, in record-arm mode. Is that so in mute and solo modes, and for the transport switches?
+9. **The jump to 16383.** In test 1, each knob turned down to 0 reported 16383 once, then 0 again (section 9). What gesture was that?
+10. **PLUGIN mode, host-set names.** With type `02`, does SET PLUGIN CONTROL DETAILS show a name, and does an unmapped control send CCs?
+11. **PLUGIN mode, mapping without learning.** Does LEARN PARAM outside learn mode map anything?
+12. **PLUGIN mode, detents and steps.** How do a center detent and stepped parameters behave, and are step names shown?
+13. **PLUGIN mode, stored mappings.** After a reconnect, does selecting a plugin bring back its mappings with CONTROL MAPPED?
 
 ## 9. Tests
 
-None yet. They are run with `sbdev roto` (macOS), which prints every message in both directions
-with the time since starting, and takes commands for knobs, lights, meters, and screens. Each test
-will be recorded here with the Roto-Control's firmware version, which `sbdev roto` asks for.
+Run with `sbdev roto` (macOS), which prints every message in both directions with the time since
+starting and takes commands for knobs, lights, meters, screens, and PLUGIN mode.
+
+### Test 1 (2026-10-29): handshake, MIX mode, knobs, and feedback
+
+**Setup.** Roto-Control firmware 3.3.0 (commit `eaa37b0`), SysEx API 1.6, as the Roto-Control
+reported them. macOS, one MIDI source and one destination named "Roto-Control". `sbdev roto --raw`
+claiming Bitwig (`02`), with the default setup (16 tracks, 4 sends, 5 ms after each SysEx).
+
+**Findings:**
+
+- **The handshake.** DAW STARTED was answered by PING DAW within 1 ms; DAW PING RESPONSE by ROTO-DAW CONNECTED 5 ms later. The firmware and API versions came back within 5 ms of being asked for.
+- **SET PLUGIN MODE with data.** The Roto-Control sent SET PLUGIN MODE straight after CONNECTED (the inference is that it was in PLUGIN mode), with one data byte (`00`) that the SysEx doc does not list. Bitwig's integration reads one byte there. [Bitwig] Its meaning is unknown.
+- **MIX mode.** Switching to MIX mode sent SET MIX ALL TRACKS MODE (audio tracks, level, record arm, send 0). The host's NUM SEND TRACKS and SEND TRACK NAMES drew no error.
+- **Touch and select.** Touching a knob sent ROTO SELECT TRACK for its track and then the touch CC, in the same millisecond. Release sent the touch CC with 0.
+- **Knob CCs.** Every update carried both CCs, high then low, even when the high value had not changed. Updates came about every 11 ms while a knob turned. The values covered 0 to 16383.
+- **Touch can trail turning.** Once, knob 1 sent six position updates (27.540 s to 27.735 s) before its touch CC (27.747 s). A rule that holds back positions only while a knob is touched would miss that.
+- **The jump to 16383.** Turned down to 0, knob 1 then reported 16383 once, 111 ms later, and 0 again 302 ms after that; knob 2 did the same. What the user did at that moment was not recorded (section 8, question 9).
+- **Switches.** Switches 1 and 2 sent 127 on each press, twice each, and nothing on release, with the switches in record-arm mode.
+- **No echo of host moves.** After `knob 1 0dB` and a sweep of knob 1 from 0 to 16383, the Roto-Control sent no CCs back.
+- **Not recorded.** Whether the knob moved, the light lit, the meters showed, or "hello" appeared on knob 1's screen.
+
