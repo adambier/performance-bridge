@@ -241,10 +241,10 @@ final class RotoControlDecoderTests: XCTestCase {
 
     func testSwitchesTouchAndTransport() {
         var decoder = RotoControlDecoder()
-        XCTAssertEqual(decoder.decode(channel: 15, controller: 20, value: 127), .switch(0, pressed: true))
-        XCTAssertEqual(decoder.decode(channel: 15, controller: 21, value: 64), .switch(1, pressed: true))
-        XCTAssertEqual(decoder.decode(channel: 15, controller: 21, value: 63), .switch(1, pressed: false))
-        XCTAssertEqual(decoder.decode(channel: 15, controller: 27, value: 0), .switch(7, pressed: false))
+        XCTAssertEqual(decoder.decode(channel: 15, controller: 20, value: 127), .switch(0, value: 127))
+        XCTAssertEqual(decoder.decode(channel: 15, controller: 21, value: 64), .switch(1, value: 64))
+        XCTAssertEqual(decoder.decode(channel: 15, controller: 21, value: 42), .switch(1, value: 42), "a four-step value in PLUGIN mode")
+        XCTAssertEqual(decoder.decode(channel: 15, controller: 27, value: 0), .switch(7, value: 0))
         XCTAssertEqual(decoder.decode(channel: 15, controller: 28, value: 127), .transport(0, pressed: true))
         XCTAssertEqual(decoder.decode(channel: 15, controller: 35, value: 0), .transport(7, pressed: false))
         XCTAssertEqual(decoder.decode(channel: 15, controller: 52, value: 127), .touch(0, touched: true))

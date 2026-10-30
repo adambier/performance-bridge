@@ -34,8 +34,10 @@ public enum RotoControlEvent: Equatable, Sendable {
     case knob(Int, position: Int)
     /// A knob (0–7) touched or released.
     case touch(Int, touched: Bool)
-    /// A switch (0–7) pressed or released.
-    case `switch`(Int, pressed: Bool)
+    /// A switch (0–7) sent a value. In MIX mode a press sends 127 and a release nothing; in PLUGIN
+    /// mode the value is the mapped parameter's, for example 0, 42, 84, or 127 for four steps
+    /// (docs/ROTO-CONTROL.md, sections 4a and 5).
+    case `switch`(Int, value: UInt8)
     /// A transport switch (0–7) pressed or released.
     case transport(Int, pressed: Bool)
     /// CC 64: set a knob's (0–7) level to 0 dB.
@@ -75,7 +77,7 @@ public struct RotoControlDecoder: Sendable {
             guard let highBits = high[knob] else { return nil }
             return .knob(knob, position: RotoSysEx.decode14(highBits, value))
         }
-        if let control = index(RotoCC.switchFirst) { return .switch(control, pressed: pressed) }
+        if let control = index(RotoCC.switchFirst) { return .switch(control, value: value & 0x7F) }
         if let control = index(RotoCC.transportFirst) { return .transport(control, pressed: pressed) }
         if let knob = index(RotoCC.touchFirst) { return .touch(knob, touched: pressed) }
         if controller == RotoCC.levelToZeroDB, Int(value) < RotoCC.controlCount {

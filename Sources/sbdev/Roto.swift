@@ -152,7 +152,7 @@ func describe(_ event: RotoControlEvent) -> String {
         let gain = gainText(FaderCurve.gainDB(position: RotoFeedback.fraction(position)))
         return "knob \(index + 1) = \(position)  (\(String(format: "%.4f", RotoFeedback.fraction(position))); as a TotalMix fader \(gain))"
     case .touch(let index, let touched): return "knob \(index + 1) \(touched ? "touched" : "released")"
-    case .switch(let index, let pressed): return "switch \(index + 1) \(pressed ? "pressed" : "released")"
+    case .switch(let index, let value): return "switch \(index + 1) = \(value)"
     case .transport(let index, let pressed): return "transport switch \(index + 1) \(pressed ? "pressed" : "released")"
     case .levelToZeroDB(let index): return "level to 0 dB (CC 64), knob \(index + 1)"
     case .otherCC(let channel, let controller, let value): return "CC \(controller) = \(value) on channel \(channel + 1)"
@@ -391,9 +391,17 @@ final class RotoSession: @unchecked Sendable {
             guard let index = mappings[key(.knob, control)] else { return "not mapped" }
             plugins[selectedPlugin].parameters[index].position = position
             return "\(plugins[selectedPlugin].name) › \(plugins[selectedPlugin].parameters[index].name)"
-        case .switch(let control, _):
+        case .switch(let control, let value):
             guard let index = mappings[key(.switch, control)] else { return "not mapped" }
-            return "\(plugins[selectedPlugin].name) › \(plugins[selectedPlugin].parameters[index].name)"
+            let parameter = plugins[selectedPlugin].parameters[index]
+            var note = "\(plugins[selectedPlugin].name) › \(parameter.name)"
+            if parameter.steps >= 2 {
+                // Test 2: each step is an even share of 0–127, rounded down (42, 84, 127 for four steps).
+                let step = (Int(value) * (parameter.steps - 1) + 63) / 127
+                let names = parameter.stepNames
+                note += ", step \(step + 1) of \(parameter.steps)" + (step < names.count ? " (\(names[step]))" : "")
+            }
+            return note
         default:
             return nil
         }

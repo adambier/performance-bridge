@@ -12,12 +12,12 @@ implements it.
 - **[SysEx doc]**: the "ROTO-CONTROL SYSEX API", version 1.6 (dated 24 July 2026), listed there as matching ROTO-SETUP 3.0.1 to 3.2.0. It is not included in this repository.
 - **[Serial doc]**: the "ROTO-CONTROL SERIAL API", version 1.3 (dated 26 November 2025). It is not included in this repository either.
 - **[Ableton]**, **[Bitwig]**, **[Logic]**: Melbourne Instruments' integration code for each DAW, in the same repository (`src/ableton/ROTO_CONTROL.py`, `src/bitwig/…`, and `src/logic/config.lua`). Nothing from it is copied here.
-- **[test N]**: a test against a Roto-Control, described in section 9 with the firmware version. There are none yet.
+- **[test N]**: a test against a Roto-Control, described in section 9 with the firmware version.
 
 A statement with no marker is an inference, and says so.
 
-**Status.** Nothing here has been checked against a Roto-Control yet. Section 8 lists what the
-first tests have to settle.
+**Status.** Two tests so far (section 9), with firmware 3.3.0. Section 8 lists what the
+next tests have to settle.
 
 ## 1. Two interfaces
 
@@ -68,7 +68,7 @@ The Roto-Control drives MIX mode, and the host answers.
 | Command | Bytes | What it means |
 |---|---|---|
 | SET MIX ALL TRACKS MODE | `0C 01 <set> <knobs> <switches> <send>` | All-tracks mode: eight tracks, one per knob. `set` is audio tracks (`00`) or master and return tracks (`01`). `knobs` is level (`00`), pan (`01`), or a send (`02`). `switches` is mute (`00`), solo (`01`), or record arm (`02`). `send` is the 0-based send the knobs control in send mode. |
-| SET MIX TRACK MODE | `0C 02 <page>` | Single-track mode: the controls of one track, in pages of eight. The SysEx doc gives `page` as a multiple of 8, but see "Single-track pages" below. |
+| SET MIX TRACK MODE | `0C 02 <page>` | Single-track mode: the controls of one track, in pages of eight. `page` is a page number (0, 1, 2), not the multiple of 8 the SysEx doc gives [test 2]; see "Single-track pages" below. |
 | SET ALL TRACKS MODE | `0C 05 <set>` | The user switched between audio and master/return tracks. |
 | SET FIRST TRACK | `0A 06 <first:2>` | The user paged the tracks; `first` is a multiple of 8. |
 | ROTO SELECT TRACK | `0A 09 <index:2>` | The user selected a track. |
@@ -104,8 +104,10 @@ table (the SysEx doc's Appendix A, not reproduced here), and `grouped` is `00` o
   - The SysEx doc says `page` is a multiple of 8 (0, 8, 16, …). [SysEx doc]
   - Ableton and Bitwig both treat it as a page number (0, 1, 2, …). With a multiple of 8, Ableton's arithmetic would point far past the sends. [Ableton, Bitwig]
 
-  Which the Roto-Control sends is open (section 8). `RotoOutgoing.sendNamesStart(forControlPage:numbering:)` handles both.
-- **Which send names to send.** After SET MIX ALL TRACKS MODE or REQUEST SEND TRACK NAMES, the block starts at the multiple of 8 at or below the send index. [SysEx doc] After SET MIX TRACK MODE, the SysEx doc's examples (pages 0, 8, and 16 start at sends 0, 6, and 14) fit a block that starts at the page index minus 2, and at 0 for page 0. [SysEx doc] Read as page numbers, the same layout starts at 0 for page 0 and at 6 + (page − 1) × 8 after that, as in Ableton's code. [Ableton]
+  The Roto-Control sends page numbers. [test 2] `RotoOutgoing.sendNamesStart(forControlPage:numbering:)` handles both readings; drivers use `.pageNumbers`.
+- **Which send names to send.** After SET MIX ALL TRACKS MODE or REQUEST SEND TRACK NAMES, the block starts at the multiple of 8 at or below the send index. [SysEx doc] After SET MIX TRACK MODE, the SysEx doc's examples (pages 0, 8, and 16 start at sends 0, 6, and 14) fit a block that starts at the page index minus 2, and at 0 for page 0. [SysEx doc] Read as page numbers, the same layout starts at 0 for page 0 and at 6 + (page − 1) × 8 after that, as in Ableton's code [Ableton], and that reading is the one the Roto-Control uses. [test 2]
+- **When the screens are drawn.** The Roto-Control draws a single track's send labels when it gets DAW SELECT TRACK, not when it gets SEND TRACK NAMES; so after every SET MIX TRACK MODE the host sends the names, then DAW SELECT TRACK. On returning to all-tracks mode, the track screens are blank until the host sends the page again (NUM TRACKS, FIRST TRACK, and TRACK DETAILS). [test 2] Bitwig's code sends DAW SELECT TRACK on a single-track page change. [Bitwig]
+- **Track colors.** The color scheme in TRACK DETAILS sets each strip's color, and the SysEx doc's table gives the colors seen. [test 2]
 - **Meter thresholds.** Ableton uses 87 and 113; Logic 106 and 120. [Ableton, Logic]
 - **Meter dimming.** Ableton also sends `0C 0C` with eight bytes, one per track of the page, which the SysEx doc does not list. Ableton sends 1 for an unmuted track and 0 for a muted one, or, while any track is soloed, 1 for soloed tracks and 0 for the rest. [Ableton] The inference is that 0 dims a track's meter. `RotoControl` can send it, marked as undocumented.
 
@@ -140,6 +142,16 @@ its color, without learning. The SysEx doc says it is normally used in Logic's S
 it works with another DAW type, and whether an unmapped control sends CCs at all, are open
 (section 8).
 
+**What test 2 found** (type `02`) [test 2]:
+
+- PLUGIN DETAILS and this project's hashes are accepted: holding SEL shows the plugin names, and selecting one sends ROTO SELECT PLUGIN.
+- An unmapped control sends its touch CC and nothing else, and SET PLUGIN CONTROL DETAILS does not name it. Every control has to be learned before it does anything.
+- Learning works in the order Melbourne Instruments' guide gives: LEARN, then touch the control (its screen shows LEARNING; it sometimes took more than one touch), then LEARN PARAM from the host. CONTROL LEARNED came back 44–161 ms after LEARN PARAM. While learn mode is on, touching a knob sent no touch CC.
+- On leaving learn mode, and when a plugin with mappings is selected (including after a restart of the host), the Roto-Control sends CONTROL MAPPED for every mapped control on the page. The mappings are stored on the Roto-Control.
+- A center detent holds the knob at 8191, the middle of the range.
+- A switch mapped to a stepped parameter steps through the values itself, wrapping round, and sends each step as a share of 0–127: 0 and 127 for two steps; 42, 84, 127, and 0 for four. The step names were not shown; the inference is that the host is expected to show them with SHOW CONTROL VALUE, as Ableton's integration does with its value text. [Ableton]
+- Once knob 1 had been learned under one plugin, it would not show LEARNING under another; knob 2 could still be learned there. The inference is that a control mapped under one plugin can't be learned under another without UNMAP CONTROL first; untested.
+
 **What PLUGIN mode lacks.** The meter CCs are listed for MIX mode only, and the per-track screens
 and track paging are MIX-mode features. [SysEx doc]
 
@@ -160,17 +172,21 @@ The CC numbers, that knobs are 14-bit and switches 7-bit, and the touch values a
 doc, which only pairs the knob CCs. That CCs 12–19 carry the high 7 bits and CCs 44–51 the low 7
 bits is from Bitwig's and Logic's code. [Bitwig, Logic] The rest:
 
-- **Switch values.** Bitwig treats 127 as pressed and 0 as released. [Bitwig] `RotoControl` treats 64 and above as pressed.
-- **Transport switches.** Ableton reads them as play, stop, record, session record, loop, punch-in, punch-out, and re-enable automation. [Ableton] That order matches TRANSPORT STATUS. [SysEx doc] Whether the Roto-Control sends them in MIX mode with a non-Logic type is untested.
+- **Switch values.** In MIX mode a switch sends 127 on each press and nothing on release, and changes no state by itself: the host decides the new state and sets the light (section 6). [test 1, test 2] In PLUGIN mode a switch sends the mapped parameter's value instead (section 4a). [test 2] `RotoControlDecoder` reports the value as sent, and a driver reads it as a press or a value depending on the mode. Bitwig treats 127 as pressed and 0 as released. [Bitwig]
+- **Transport switches.** Ableton reads them as play, stop, record, session record, loop, punch-in, punch-out, and re-enable automation. [Ableton] That order matches TRANSPORT STATUS. [SysEx doc] With type `02` the Roto-Control sends them in transport mode, 127 on press and 0 on release, and asks for TRANSPORT STATUS when that mode is entered. [test 2]
 - **CCs 36 and 37.** Ableton also listens on these, the two CCs after the transport switches, for rewind and fast-forward. [Ableton, Bitwig] The SysEx doc does not list them. `RotoControl` reports them as other CCs.
 - **CC 64.** The Roto-Control sends it, with a knob's index as the value, and Ableton then sets that knob's parameter to its default. [Ableton] The SysEx doc names it "level at 0 dB" without saying what triggers it. For TotalMix the inference is: set that strip's fader to 0 dB, which is position 836/1023 (`FaderCurve.unityPosition`).
+- **Meters hold.** A meter stays where it was set until the host sets it again; the host sends the falls as well as the rises. [test 2]
 - **Meter values.** Ableton sends a track's meter as Live's meter reading (0–1) times 127, at most 12 times a second. [Ableton] How Live scales that reading is not in the integration, so the mapping from TotalMix's dB levels to 0–127 is this project's choice, still to be made.
 
 ## 6. Feedback to the Roto-Control
 
 - **Moving a knob.** The host sends the same CC pair the knob sends: the high 7 bits on CC 12–19, then the low 7 bits on CC 44–51. [Bitwig, Logic] Bitwig computes the 14-bit value as the parameter (0–1) times 16383, rounded. [Bitwig]
-- **Lighting a switch.** The host sends 127 (on) or 0 (off) on the switch's CC. [Ableton]
+- **Lighting a switch.** The host sends 127 (on) or 0 (off) on the switch's CC. [Ableton] In MIX mode this sets both the light and the label on the screen: with 127 the light is red and "ARM REC" shows as on; with 0 the light is off and the label gray. [test 2]
+- **Moving a knob.** The motor follows the host's position: 0 dB (13388) put knob 1 at about 3 o'clock, and the range runs from about 7 o'clock (0) to about 5 o'clock (16383), 300° of travel. [test 2]
+- **The end stops are simulated.** The knob turns freely all the way round. Past either end it holds against the user and sends nothing; forced far enough round, it lets go and reports where it is. Once, knob 1 held at 0 for 9.4 s, then reported 13026 and carried on from there. [test 2] The single 16383 in test 1 is taken to be the same thing near the top end, an inference.
 - **Unchanged values.** Bitwig does not resend a knob position it last sent, except that it resends all eight positions when it switches layers or modes. [Bitwig]
+- **Value text lasts about 2 seconds** on the screen before the name comes back, as the user timed it. [test 2]
 - **Value text.** Ableton sends SHOW CONTROL VALUE whenever a mapped parameter's value changes, from the knob or from Live, at most 12 times a second with one trailing update, and once when a knob is touched. [Ableton] Bitwig sends value text only in PLUGIN mode, within 100 ms (plugin parameters) or 300 ms (macro parameters) of the knob last moving; in MIX mode it sends none. [Bitwig]
 - **Bitwig's command for value text.** Bitwig sends value text as `0A 0F`, the number the SysEx doc gives REQUEST ROTO SYSEX API VERSION, with the same layout as SHOW CONTROL VALUE. [Bitwig, SysEx doc] The inference is that `0A 0F` is an older form, from before SHOW CONTROL VALUE was documented. `RotoControl` sends `0A 18`, as Ableton and Logic do. [Ableton, Logic]
 - **Hold-off for the motors.** Bitwig holds back a knob position for 100 ms after the knob last moved on its master and return layer, and has the same rule commented out on its track layer. While touch automation is on, it also ignores the knob for 500 ms after release, and it queues knob positions while it switches modes. [Bitwig] Ableton leaves knob feedback to Live's framework, so its rule is not visible in the integration. [Ableton] Surface Bridge will need its own rule, because TotalMix confirms nothing (docs/TOTALMIX-OSC.md, test 5): a position from TotalMix is a change made elsewhere. The planned rule, an inference, was to hold back positions for a knob while it is touched; test 1 shows a knob turning before its touch CC, so the rule will also have to count recent movement.
@@ -189,23 +205,20 @@ Noted so that nobody builds on them:
 
 ## 8. Open questions
 
-Settled by test 1 (section 9): the handshake with type `02`; that a knob sends both CCs, high then
-low, every time; the top value (16383); and that the Roto-Control does not send a knob's CCs back
-when the host moves it.
+Settled by tests 1 and 2 (section 9): the handshake with type `02`; the knob CCs (both, high then
+low, every time; 0–16383); that host moves are not echoed; motor moves; the single-track page
+numbering; transport switches; switch and light behavior in MIX mode; the knob's end stops; and,
+in PLUGIN mode, host-set names, unmapped controls, learning, stored mappings, detents, and steps.
 
 1. **The handshake with type `01`.** Does MIX mode behave the same as with `02`?
 2. **What MIX mode needs from the host.** Which of NUM TRACKS, FIRST TRACK, and TRACK DETAILS does the Roto-Control need before it shows strips? (`--setup none`.)
-3. **Motor moves.** Did the knob move for the host's commands? (Test 1 shows no CCs back; what the knob did was not recorded.)
-4. **Pacing.** Does the Roto-Control drop SysEx sent without Ableton's 5 ms gaps? (`--gap 0`.)
-5. **CC 64.** What gesture sends it?
-6. **Transport switches** in MIX mode with a non-Logic type.
-7. **Single-track pages.** Does SET MIX TRACK MODE carry 8 or 1 for the second page?
-8. **Switch releases.** In test 1 the switches sent 127 on each press and nothing on release, in record-arm mode. Is that so in mute and solo modes, and for the transport switches?
-9. **The jump to 16383.** In test 1, each knob turned down to 0 reported 16383 once, then 0 again (section 9). What gesture was that?
-10. **PLUGIN mode, host-set names.** With type `02`, does SET PLUGIN CONTROL DETAILS show a name, and does an unmapped control send CCs?
-11. **PLUGIN mode, mapping without learning.** Does LEARN PARAM outside learn mode map anything?
-12. **PLUGIN mode, detents and steps.** How do a center detent and stepped parameters behave, and are step names shown?
-13. **PLUGIN mode, stored mappings.** After a reconnect, does selecting a plugin bring back its mappings with CONTROL MAPPED?
+3. **Pacing.** Does the Roto-Control drop SysEx sent without Ableton's 5 ms gaps? (`--gap 0`.)
+4. **CC 64.** What gesture sends it?
+5. **Switches in mute and solo modes.** Do they behave as in record-arm mode?
+6. **SET PLUGIN MODE's data byte.** What does it mean?
+7. **Relearning a control.** Does UNMAP CONTROL let a control mapped under one plugin be learned under another?
+8. **Step names.** Does SHOW CONTROL VALUE show a stepped switch's value, and does LEARN PARAM's step names list show anywhere?
+9. **Host-set names with type `03`.** Does SET PLUGIN CONTROL DETAILS work when the host claims Logic?
 
 ## 9. Tests
 
@@ -226,8 +239,36 @@ claiming Bitwig (`02`), with the default setup (16 tracks, 4 sends, 5 ms after e
 - **Touch and select.** Touching a knob sent ROTO SELECT TRACK for its track and then the touch CC, in the same millisecond. Release sent the touch CC with 0.
 - **Knob CCs.** Every update carried both CCs, high then low, even when the high value had not changed. Updates came about every 11 ms while a knob turned. The values covered 0 to 16383.
 - **Touch can trail turning.** Once, knob 1 sent six position updates (27.540 s to 27.735 s) before its touch CC (27.747 s). A rule that holds back positions only while a knob is touched would miss that.
-- **The jump to 16383.** Turned down to 0, knob 1 then reported 16383 once, 111 ms later, and 0 again 302 ms after that; knob 2 did the same. What the user did at that moment was not recorded (section 8, question 9).
+- **The jump to 16383.** Turned down to 0, knob 1 then reported 16383 once, 111 ms later, and 0 again 302 ms after that; knob 2 did the same. Test 2 suggests the knob was turned past its end stop (section 6).
 - **Switches.** Switches 1 and 2 sent 127 on each press, twice each, and nothing on release, with the switches in record-arm mode.
 - **No echo of host moves.** After `knob 1 0dB` and a sweep of knob 1 from 0 to 16383, the Roto-Control sent no CCs back.
-- **Not recorded.** Whether the knob moved, the light lit, the meters showed, or "hello" appeared on knob 1's screen.
+- **Not recorded.** Whether the knob moved, the light lit, the meters showed, or "hello" appeared on knob 1's screen. Test 2 repeated these with notes.
 
+
+### Test 2 (2026-10-29): feedback, single-track mode, transport, and PLUGIN mode
+
+**Setup.** As in test 1 (firmware 3.3.0, `eaa37b0`; type `02`), in four runs of `sbdev roto --raw`
+on branch `roto-midi`, the later runs with the changes made during the test (16 sends; send names
+and DAW SELECT TRACK on single-track pages; the track page on returning to all-tracks mode). The
+user noted what the Roto-Control showed and did; those notes are marked "seen" below. Clock
+positions are approximate.
+
+**MIX mode:**
+
+- **Track colors** (seen). Schemes 0, 11, 22, 33, 44, 55, 66, and 77 showed as pink, purple, blue, green, brownish gray, gray, royal blue, and red-brown, matching the SysEx doc's table.
+- **Knob range** (seen). No physical end stop. `sweep 1` took the knob from about 7 o'clock to about 5 o'clock, and `knob 1 0dB` to about 3 o'clock.
+- **End stops.** Turned down past 0, the knob held (seen: resistance) and sent nothing; turned on round, it let go near the top of its range and reported 13026, then went on down from there. In the log, knob 1 sat at 0 from 195.236 s and next reported 13026 at 207.057 s.
+- **Switches.** In record-arm mode, presses sent 127 and nothing on release. Seen: the screen showed "ARM REC" and a press made the light brighter; a press did not switch arm on or off. `led 1 on` lit the light red and showed "ARM REC" as on; `led 1 off` turned the light off and grayed the label.
+- **Meters** (seen). `meter 1 100` filled the yellow part of the meter (thresholds 87 and 113) and the meter stayed there.
+- **Value text** (seen). `show 1 hello` showed for about 2 seconds. `name 1 Analog 1` renamed track 1's screen.
+- **Single-track mode.** With 4 sends claimed, > did not page. With 16, SET MIX TRACK MODE carried 0, 1, and 2 for the three pages (seen: level, pan, and six sends; eight sends; two sends). Send labels showed only after DAW SELECT TRACK; once `sbdev` sent it after the names on every page, they showed on every page (seen). On returning to all-tracks mode the track screens were blank until the page was sent again (seen); once `sbdev` sent it on SET MIX ALL TRACKS MODE, they showed at once (seen).
+- **Transport.** Entering transport mode sent REQUEST TRANSPORT STATUS. The eight transport switches sent CCs 28–35, 127 on press and 0 on release, 70–90 ms apart.
+
+**PLUGIN mode:**
+
+- NUM PLUGINS, FIRST PLUGIN, four PLUGIN DETAILS, PLUGIN DETAILS END, and DAW SELECT PLUGIN were sent on SET PLUGIN MODE. Seen: no names on the screens until SEL was held, then the four plugin names.
+- `ctl 1 Main Vol` (SET PLUGIN CONTROL DETAILS) showed nothing (seen); turning unmapped knob 1 sent only its touch CC.
+- Learning knob 1 to "Main Vol": LEARN, then touches until LEARNING showed (seen), then `learn 1`; CONTROL LEARNED came 110 ms after LEARN PARAM, and the screen showed LEARNED and "Main Vol" (seen). On leaving learn mode the Roto-Control sent CONTROL MAPPED for knob 1 with this project's parameter hash; after `sbdev`'s LEARN PARAM answer (position 13388), the knob's first reported position was 13522.
+- After quitting and restarting `sbdev`, the Roto-Control sent CONTROL MAPPED for knob 1 by itself, 52 ms after DAW SELECT PLUGIN.
+- Switch 1 learned to "Dim" (two steps) sent 127, then 0, on successive presses; switch 2 learned to "Main Out" (four steps) sent 42, 84, 127, and 0. Seen: the screen showed the names ("Main Vol | Dim") but no step names, and did not change on a press.
+- Under "Ch EQ", knob 1 would not show LEARNING in learn mode, whether touched before or after LEARN PARAM, or after turning learn mode off and on; knob 2 would. Knob 2 learned to "Gain 1" (center detent) held at 8191 (seen: a detent at 12 o'clock).
