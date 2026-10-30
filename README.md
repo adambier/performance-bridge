@@ -4,6 +4,9 @@
 through TotalMix's Global OSC interface. With it, the knobs, faders, buttons, and displays of a
 surface show and control TotalMix's mixer, in both directions.
 
+Its aim is TotalMix FX as a performance mixer: for mixing live, in practice or on stage, with the
+hands on the surface rather than the mouse.
+
 The repository also holds the Swift libraries behind the app, and a developer tool for checking
 them against TotalMix. The libraries depend only on Foundation, and they build on macOS, Linux, and
 Windows.
@@ -17,6 +20,7 @@ This project is in early development, and there is no app yet. What exists:
 - **`OSCCodec`**: OSC 1.0 messages and bundles, encoded and decoded.
 - **`TotalMixOSC`**: TotalMix's Global OSC addresses, the values TotalMix sends and accepts, and the curve between a fader's position and its gain.
 - **`RotoControl`**: the Roto-Control's MIDI protocol: its SysEx messages, its knobs, switches, and meters, and the handshake that connects it to a host. Tested against a Roto-Control (`docs/ROTO-CONTROL.md`, section 9).
+- **`SurfaceCore`**: the surface-neutral core. It keeps a copy of TotalMix's state and maps it onto any surface's strips: sources (inputs and playbacks) or outputs, levels into a chosen home submix, pans, sends, mute, PFL, and meters, with paging and a single-channel focus mode. It keeps TotalMix from moving a control in the user's hand, and makes faders without motors pick up. Tested on its own; no surface driver uses it yet.
 - **`MIDITransport`**: a MIDI connection through CoreMIDI, on macOS.
 - **`UDPTransport`**: a small UDP socket, on macOS and Linux.
 - **`sbdev`**: a developer tool that prints what TotalMix sends and sends single messages to it, and that talks to a Roto-Control.

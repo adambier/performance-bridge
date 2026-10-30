@@ -57,6 +57,8 @@ The three rows of the mixer are spelled three ways (`TotalMixBus`). [RME doc]
 
 **Channel settings** have the form `/<bus>/<channel>/<parameter>`, with sub-paths for the low cut, EQ, dynamics, AutoLevel, and Room EQ. Examples are `mute`, `name` (a string), `faderlin`, `volume`, `balpan`, `color` (sent only), and `eq/band1gain`. [RME doc]
 
+`color` is 0 for a hidden channel, and otherwise a color index from 1 (1 is the default color). [RME doc] The inference is that "hidden" means hidden from this OSC remote in Options → Channel Layout; SurfaceCore leaves such channels off the strips. Whether TotalMix sends a hidden channel's settings at all is untested.
+
 **Mixer nodes** have the form `/mix/<in|pb>/<channel>/<output>/<parameter>`. A node is the send from an input or playback to an output, that is, its level in that output's submix. [RME doc] The parameters are:
 
 - `fader`, in dB, going down to −300 dB for off (in fader groups);

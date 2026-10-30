@@ -16,11 +16,12 @@ import Foundation
 //                  throws), and the conversion between MIDI 1.0 bytes and CoreMIDI's packets
 //   UDPTransport   a small UDP socket for talking to TotalMix (POSIX on macOS and Linux; not yet
 //                  implemented on Windows, where it throws)
+//   SurfaceCore    the surface-neutral core: TotalMix's state, channel strips, paging, the home
+//                  submix, and the rules between surfaces and TotalMix; Foundation only
 //   sbdev          developer tool for checking the libraries against TotalMix and the surfaces
 //
-// Planned: SurfaceCore (surface-neutral channel strips and paging), one driver per surface (the
-// Roto-Control's on top of RotoControl; then the Launch Control XL 3's), and the SurfaceBridge app
-// (SwiftUI, macOS only, built by make-app.sh).
+// Planned: one driver per surface (the Roto-Control's on top of RotoControl; then the Launch
+// Control XL 3's), and the SurfaceBridge app (SwiftUI, macOS only, built by make-app.sh).
 //
 // On a Mac the test targets are opt-in (SURFACE_BRIDGE_TESTS=1), as in 3rd-wave-tools: with only
 // the Command Line Tools, SwiftPM fails while looking for XCTest even for a plain `swift build`.
@@ -40,6 +41,7 @@ var targets: [Target] = [
     .target(name: "RotoControl"),
     .target(name: "MIDITransport"),
     .target(name: "UDPTransport"),
+    .target(name: "SurfaceCore", dependencies: ["OSCCodec", "TotalMixOSC"]),
     .executableTarget(name: "sbdev", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "MIDITransport", "UDPTransport"]),
 ]
 let products: [Product] = [
@@ -48,6 +50,7 @@ let products: [Product] = [
     .library(name: "RotoControl", targets: ["RotoControl"]),
     .library(name: "MIDITransport", targets: ["MIDITransport"]),
     .library(name: "UDPTransport", targets: ["UDPTransport"]),
+    .library(name: "SurfaceCore", targets: ["SurfaceCore"]),
     .executable(name: "sbdev", targets: ["sbdev"]),
 ]
 
@@ -57,6 +60,7 @@ if includeTests {
     targets.append(.testTarget(name: "RotoControlTests", dependencies: ["RotoControl"]))
     targets.append(.testTarget(name: "MIDITransportTests", dependencies: ["MIDITransport", "RotoControl"]))
     targets.append(.testTarget(name: "UDPTransportTests", dependencies: ["UDPTransport"]))
+    targets.append(.testTarget(name: "SurfaceCoreTests", dependencies: ["SurfaceCore", "TotalMixOSC", "OSCCodec"]))
 }
 
 let package = Package(
