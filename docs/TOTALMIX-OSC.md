@@ -197,3 +197,15 @@ are changes made elsewhere, in TotalMix's window or from another client.
 **The check.** `roundtrip` does receive on the outgoing port. `/sendchan/output/8`, a request that
 must be answered, came back with output 9's settings: the first bundle after 21 ms and the last
 after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last command had set.
+
+
+### Test 6 (2026-10-30): PFL and Live Mode
+
+**Setup.** TotalMix FX "2.10 (1)" with a Digiface AES, through `sbdev bridge` and `sbdev monitor
+--sendsettings`. The user's notes are marked "seen".
+
+**Findings:**
+
+- **PFL shows only in Live Mode.** `/input/<n>/pfl` 1 was sent and accepted, but TotalMix's window showed no PFL until "Live Mode, PFL replaces Solo" (PFL Mode, in Settings) was turned on; then the channel's Solo/PFL button lit, and clicking it in TotalMix was sent back as `pfl` (seen). [RME manual: Live Mode replaces Solo with PFL]
+- **Live Mode cannot be read.** Turning Live Mode off and on sent nothing, and the reply to `/sendsettings` does not mention it. RME's document lists only the device name, the connection, and the DSP load as status. [RME doc]
+- **PFL goes to Main when Cue/PFL to is unassigned.** With `controlroom/cuechan` reported as −1, PFL on a silent input silenced Main, which had been playing another input (seen). [RME manual: the Cue/PFL to setting also routes PFL]

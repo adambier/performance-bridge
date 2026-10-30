@@ -342,3 +342,25 @@ buttons is the MENU window. [manual; seen]
 - **The ends of the knob's range:** section 6. Run 1 had ten wraps; run 2 four; run 5 two wraps on knob 1 before `knob 1 -20dB` and three holds after it, a wrap on knob 2, which the host had not set, and wraps on knob 1 after the knob mode changed to pan and back to level.
 - **PLUGIN mode** (run 1): per-plugin mappings, UNMAP CONTROL, learning by turning, and the stepped knob, all in section 4a.
 - **Touch** (seen): touches often did not register, and a double tap sent nothing.
+
+### Test 4 (2026-10-30): `RotoDriver` with TotalMix, through `sbdev bridge`
+
+**Setup.** Firmware 3.3.0, type `02`, with `sbdev bridge` on branch `roto-driver` (commits
+`ab1eb2f` to `fde305a`), in five runs with TotalMix FX "2.10 (1)" and a Digiface AES. The logs are
+kept outside this repository; `sbdev bridge` logs SysEx from the Roto-Control and every message to
+TotalMix, and from `fde305a` also every CC other than knobs and touches. The user's notes are
+marked "seen".
+
+**Findings:**
+
+- **Strips, lights, and meters** (seen): the eight sources drew with their names; mute and PFL (on
+  the record-arm switches) lit and followed TotalMix both ways; a meter moved with an input's level.
+- **The 0 dB indent:** section 3 (felt at "-0.8 dB" before the scale was bent, and at 0.0 dB after).
+- **The second track set** (seen): monitoring outputs in green, then sends in blue; a knob moved
+  an output's fader, and the knob followed the fader moved in TotalMix.
+- **Choosing a knob mode** (seen): with SEL held, a knob mode is chosen with the switch below it;
+  the switch below Send 1 is labeled "FX". Choosing it sent SET MIX ALL TRACKS MODE with knobs on
+  send. While SEL is held the Roto-Control showed a send name from an earlier run, so the host must
+  send the names in every knob mode.
+- **Single-track mode:** knob 3 set the focused input's level into the first send's submix. Switches
+  1 and 2 sent no CC at all in single-track mode (run 5), so a host cannot use them there.
