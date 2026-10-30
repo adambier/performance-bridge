@@ -29,6 +29,7 @@ let bridgeCommandHelp = """
     Commands:
       home N | home main   the home submix: output N (from 1), or TotalMix's Main Out
       solo on | solo off   allow or forbid solo on the switches (off at the start)
+      menu TEXT            test: send SET CURRENT TRACK NAME with TEXT, to see where it shows
       sendall              ask TotalMix for its state again
       status               the mode, the home submix, the send targets, and the strips
       quit
@@ -209,6 +210,11 @@ final class BridgeSession: @unchecked Sendable {
                 return true
             }
             dispatch(hub.setSoloEnabled(words[1] == "on", now: now))
+        case "menu":
+            // A test: where does SET CURRENT TRACK NAME show? (docs/ROTO-CONTROL.md, section 8)
+            let text = words.dropFirst().joined(separator: " ")
+            sendToRoto(RotoOutgoing.currentTrackName(text).bytes)
+            log("→ Roto SET CURRENT TRACK NAME \"\(text)\"")
         case "sendall":
             dispatch(hub.connect(now: now))
         case "status":

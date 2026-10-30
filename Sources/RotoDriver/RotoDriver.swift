@@ -263,10 +263,12 @@ public struct RotoDriver: Sendable {
                                            colorScheme: info.map(Self.colorScheme(for:)) ?? 0)
             return [.sendCount(sendCount), sendNames(start: start, hub: hub), .selectTrack(details)]
         case .strips(_, _, let knob, _)?:
-            var messages: [RotoOutgoing] = [.sendCount(sendCount)]
-            if case .send(let sendIndex) = knob {
-                messages.append(sendNames(start: RotoOutgoing.sendNamesStart(forSendIndex: sendIndex), hub: hub))
-            }
+            // The send names go out in every knob mode: the Roto-Control shows them while SEL is
+            // held, and has been observed to keep names from an earlier session (2026-10-30).
+            var sendIndex = 0
+            if case .send(let index) = knob { sendIndex = index }
+            var messages: [RotoOutgoing] = [.sendCount(sendCount),
+                                            sendNames(start: RotoOutgoing.sendNamesStart(forSendIndex: sendIndex), hub: hub)]
             messages += [.trackCount(page.count), .firstTrack(page.first)]
             for (offset, info) in infos.enumerated() {
                 guard let info else { continue }

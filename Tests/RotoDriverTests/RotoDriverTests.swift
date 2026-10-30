@@ -162,6 +162,12 @@ final class RotoDriverTests: XCTestCase {
         XCTAssertEqual(turn.core.messages.map(\.address), ["/mix/in/0/2/faderlin"])
     }
 
+    func testSendNamesGoOutInEveryKnobMode() {
+        let (_, _, midi) = connected()
+        XCTAssertTrue(midi.contains(RotoOutgoing.sendNames(start: 0, names: ["Phones"]).bytes),
+                      "level mode too, so the names shown while SEL is held are current")
+    }
+
     func testRequestedSendNames() {
         var (driver, hub, _) = connected()
         let step = driver.receive(sysEx(.mix, 0x07, [0x00]), hub: &hub, now: 1)
