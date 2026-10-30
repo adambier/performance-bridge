@@ -1,5 +1,5 @@
-// sbdev: developer tool for checking the libraries against TotalMix FX (and, later, the surfaces)
-// without the app.
+// sbdev: developer tool for checking the libraries against TotalMix FX and the surfaces without
+// the app.
 //
 //   sbdev monitor [options]           print what TotalMix's Global OSC sends
 //   sbdev send [options] <address> [value…]
@@ -8,6 +8,8 @@
 //                                     send one message and print what TotalMix sends back
 //   sbdev curve <position | gain dB>  convert between fader position and gain
 //   sbdev curve --table               print the curve in steps of 1 dB
+//   sbdev roto ports | sbdev roto [options]
+//                                     list MIDI ports; talk to a Roto-Control (Roto.swift)
 
 import Foundation
 import OSCCodec
@@ -33,6 +35,8 @@ let usage = """
           the outgoing port.
       sbdev curve <position 0…1 | gain, e.g. -6dB>
       sbdev curve --table
+      sbdev roto ports
+      sbdev roto [options]      (sbdev roto --help for the options)
 
     Defaults: --host localhost --in-port 7001 --out-port 9001 (TotalMix's own defaults).
     In-port is the port TotalMix receives on; out-port the port TotalMix sends to.
@@ -287,6 +291,7 @@ case "monitor": monitor(parseOptions(arguments.dropFirst()))
 case "send": send(parseOptions(arguments.dropFirst()))
 case "roundtrip": roundtrip(parseOptions(arguments.dropFirst()))
 case "curve": curve(Array(arguments.dropFirst()))
+case "roto": roto(arguments.dropFirst())
 case "-h", "--help", "help": print(usage); exit(0)
 default: fail("Unknown command \(command).\n\n\(usage)")
 }

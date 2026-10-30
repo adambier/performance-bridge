@@ -17,8 +17,9 @@ This project is in early development, and there is no app yet. What exists:
 - **`OSCCodec`**: OSC 1.0 messages and bundles, encoded and decoded.
 - **`TotalMixOSC`**: TotalMix's Global OSC addresses, the values TotalMix sends and accepts, and the curve between a fader's position and its gain.
 - **`RotoControl`**: the Roto-Control's MIDI protocol: its SysEx messages, its knobs, switches, and meters, and the handshake that connects it to a host. Not yet tested against the hardware.
+- **`MIDITransport`**: a MIDI connection through CoreMIDI, on macOS.
 - **`UDPTransport`**: a small UDP socket, on macOS and Linux.
-- **`sbdev`**: a developer tool that prints what TotalMix sends and sends single messages to it.
+- **`sbdev`**: a developer tool that prints what TotalMix sends and sends single messages to it, and that talks to a Roto-Control.
 
 ## Planned
 

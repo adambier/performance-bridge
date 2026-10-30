@@ -27,8 +27,9 @@ statement there carries its evidence.
 | `Sources/OSCCodec/` | OSC 1.0 packets: `OSCArgument`, `OSCMessage`, `OSCBundle`, `OSCPacket`, encoding and decoding |
 | `Sources/TotalMixOSC/` | Global OSC: `TotalMixBus`, `TotalMixCommand` (messages to send), `TotalMixEvent` (messages received), `TotalMixEndpoint` (host and ports), `TotalMixGroupFlags`, `FaderCurve` |
 | `Sources/RotoControl/` | Roto-Control protocol: `RotoSysEx` (framing, 14-bit numbers, names), `RotoIncoming` and `RotoOutgoing` (SysEx messages), `RotoMIDIParser`, `RotoControlDecoder` and `RotoFeedback` (CCs and 14-bit knobs), `RotoHandshake`, `RotoInputDecoder` |
+| `Sources/MIDITransport/` | `MIDIConnection`: a CoreMIDI connection on macOS, a placeholder that throws elsewhere; `UniversalPackets`: MIDI 1.0 bytes to and from CoreMIDI's UMP words (Foundation only, tested everywhere) |
 | `Sources/UDPTransport/` | `UDPSocket`: POSIX UDP on macOS and Linux; a placeholder that throws on Windows |
-| `Sources/sbdev/` | Developer tool: `monitor`, `send`, `roundtrip`, `curve` |
+| `Sources/sbdev/` | Developer tool: `monitor`, `send`, `roundtrip`, `curve` (main.swift), and `roto` (Roto.swift) |
 | `Tests/` | One test target per library |
 | `docs/TOTALMIX-OSC.md` | What this project relies on in Global OSC, with evidence, and the open questions |
 | `docs/ROTO-CONTROL.md` | What this project relies on in the Roto-Control's protocol, with evidence, and the open questions |
@@ -50,7 +51,7 @@ small driver of its own.
   - its resolution;
   - its displays.
 - **Drivers** (planned), one per surface:
-  - **RotoControl**: the Roto-Control's SysEx API in MIX mode, with 14-bit motorized knobs. The protocol layer (`Sources/RotoControl/`) exists; the driver, which maps it onto SurfaceCore, and a CoreMIDI transport do not yet.
+  - **RotoControl**: the Roto-Control's SysEx API in MIX mode, with 14-bit motorized knobs. The protocol layer (`Sources/RotoControl/`) and the CoreMIDI transport (`Sources/MIDITransport/`) exist; the driver, which maps them onto SurfaceCore, does not yet.
   - **LaunchControlXL3**: the Launch Control XL 3's DAW mode, with 7-bit faders that are not motorized and endless encoders.
   - **MackieControl**: later.
 - **Protocol sources.** Each driver's protocol facts go in a `docs/` file of their own, with evidence, as `TOTALMIX-OSC.md` does for TotalMix. The vendors' documents are linked, not committed:
@@ -66,7 +67,7 @@ small driver of its own.
 
 Do:
 
-- Keep `OSCCodec`, `TotalMixOSC`, `RotoControl`, and the planned SurfaceCore and drivers Foundation-only, UI-free, and building on Linux, macOS, and Windows. Platform code (CoreMIDI, sockets, SwiftUI) stays in `UDPTransport`, the app, or future transport targets.
+- Keep `OSCCodec`, `TotalMixOSC`, `RotoControl`, and the planned SurfaceCore and drivers Foundation-only, UI-free, and building on Linux, macOS, and Windows. Platform code (CoreMIDI, sockets, SwiftUI) stays in `UDPTransport`, `MIDITransport`, or the app.
 - Write cross-library imports as `#if canImport(OSCCodec)` / `import OSCCodec` / `#endif`. The app build will compile every folder as one module, and there such an import must compile out. No two top-level declarations in the library folders may share a name.
 - Put any new or changed claim about what TotalMix does in `docs/TOTALMIX-OSC.md` with its evidence: RME's document and its revision, or a test naming the TotalMix version and the interface. Mark inferences as inferences, in the code comment as well as the document. Do the same for the surfaces in their own documents.
 - Give every `public` declaration a `///` doc comment.
@@ -90,6 +91,9 @@ Don't:
   - `swift run sbdev roundtrip /output/8/faderlin 0.5` sends one message and prints what TotalMix sends back in the next second. Stop `monitor` first; both need the outgoing port.
   - For TotalMix's development ports, add `--in-port 7004 --out-port 9004`.
   - `swift run sbdev curve -6dB` and `swift run sbdev curve --table` check the fader curve offline.
+- **Against a Roto-Control** (macOS):
+  - `swift run sbdev roto ports` lists the MIDI ports.
+  - `swift run sbdev roto` connects, runs the handshake, prints everything the Roto-Control sends, and takes commands (`help` lists them). `--type`, `--setup none`, and `--raw` are for the tests in `docs/ROTO-CONTROL.md` section 8.
 
 ## 6. House style for text (README, docs, DocC, app strings)
 

@@ -166,4 +166,6 @@ Noted so that nobody builds on them:
 
 ## 9. Tests
 
-None yet.
+None yet. They are run with `sbdev roto` (macOS), which prints every message in both directions
+with the time since starting, and takes commands for knobs, lights, meters, and screens. Each test
+will be recorded here with the Roto-Control's firmware version, which `sbdev roto` asks for.
