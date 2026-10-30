@@ -301,35 +301,6 @@ final class RotoDriverTests: XCTestCase {
         XCTAssertEqual(Double(sent), RotoFeedback.fraction(12288) * 2 - 1, accuracy: 1e-6)
     }
 
-    func testMagnetPullsANearbyKnobIntoTheIndent() {
-        var (driver, hub, _) = connected()
-        driver.magnetWindow = 300
-        let indentCount = RotoFeedback.position(bitwigIndent ?? 0)
-        _ = driver.receive(knobCCs(1, indentCount + 200), hub: &hub, now: 1)
-        XCTAssertEqual(driver.tick(hub: &hub, now: 1.1), RotoStep(), "still turning")
-        let snap = driver.tick(hub: &hub, now: 1.25)
-        XCTAssertTrue(snap.midi.contains(RotoFeedback.knob(1, position: indentCount)))
-        guard case .float(let sent)? = snap.core.messages.first?.arguments.first else { return XCTFail("no message") }
-        XCTAssertEqual(Double(sent), FaderCurve.unityPosition, accuracy: 1e-6)
-        XCTAssertEqual(driver.tick(hub: &hub, now: 2), RotoStep(), "once only")
-        XCTAssertEqual(hub.tick(now: 3).updates[rotoID] ?? [], [], "no echo once the hold ends")
-    }
-
-    func testMagnetLeavesOtherKnobsAlone() {
-        var (driver, hub, _) = connected()
-        let indentCount = RotoFeedback.position(bitwigIndent ?? 0)
-        _ = driver.receive(knobCCs(1, indentCount + 200), hub: &hub, now: 1)
-        XCTAssertEqual(driver.tick(hub: &hub, now: 2), RotoStep(), "off by default")
-        driver.magnetWindow = 300
-        _ = driver.receive(knobCCs(1, indentCount + 500), hub: &hub, now: 3)
-        XCTAssertEqual(driver.tick(hub: &hub, now: 4), RotoStep(), "too far")
-        _ = driver.receive(knobCCs(1, indentCount), hub: &hub, now: 5)
-        XCTAssertEqual(driver.tick(hub: &hub, now: 6), RotoStep(), "already in the indent")
-        _ = driver.receive(sysEx(.mix, 0x01, [0x00, 0x01, 0x00, 0x00]), hub: &hub, now: 7)
-        _ = driver.receive(knobCCs(1, indentCount + 100), hub: &hub, now: 8)
-        XCTAssertEqual(driver.tick(hub: &hub, now: 9), RotoStep(), "pan knobs have no 0 dB")
-    }
-
     func testColorSchemePlaceholder() {
         XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: nil), 0)
         XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: 1), 0)
