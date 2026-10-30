@@ -10,7 +10,7 @@ let rotoUsage = """
       sbdev roto ports
           Lists the MIDI sources and destinations.
       sbdev roto [--port NAME | --in NAME --out NAME] [--type ableton|bitwig|logic]
-                 [--setup full|none] [--tracks N] [--gap MS] [--raw]
+                 [--setup full|none] [--tracks N] [--sends N] [--gap MS] [--raw]
           Connects to the Roto-Control, runs the handshake, and prints everything the
           Roto-Control sends, with the time since starting. Then reads commands from the
           keyboard (type `help`).
@@ -20,7 +20,8 @@ let rotoUsage = """
           --setup full (default) answers CONNECTED with the versions requests, the meter
           thresholds, NUM TRACKS, FIRST TRACK, and a page of TRACK DETAILS, and answers the
           Roto-Control's requests; --setup none sends only the handshake.
-          --tracks is the number of tracks claimed (default 16). --gap is the pause after each
+          --tracks is the number of tracks claimed (default 16); --sends the number of sends
+          (default 16). --gap is the pause after each
           SysEx message sent (default 5 ms, as Ableton's integration waits). --raw also prints
           the bytes of every message in both directions.
     """
@@ -36,6 +37,7 @@ let rotoCommandHelp = """
       showsw K TEXT     SHOW CONTROL VALUE on switch K's screen
       name K TEXT       SET TRACK DETAILS for track K of the page, with a new name
       tracks N          send NUM TRACKS N, then FIRST TRACK 0 and that page's TRACK DETAILS
+      sends N           send NUM SEND TRACKS N
       thresholds Y R    SET MIX VU METER THRESHOLDS
       refresh           REFRESH MIX MODE
     PLUGIN mode (stand-in plugins and parameters; `plugins` lists them):
@@ -57,6 +59,7 @@ struct RotoOptions {
     var hostType = RotoHostType.bitwig
     var fullSetup = true
     var trackCount = 16
+    var sendCount = 16
     var gapMilliseconds = 5
     var raw = false
 }
@@ -89,6 +92,9 @@ func parseRotoOptions(_ arguments: ArraySlice<String>) -> RotoOptions {
         case "--tracks":
             guard let count = Int(value(argument)), (0...16383).contains(count) else { fail("--tracks needs a number from 0 to 16383.") }
             options.trackCount = count
+        case "--sends":
+            guard let count = Int(value(argument)), (0...127).contains(count) else { fail("--sends needs a number from 0 to 127.") }
+            options.sendCount = count
         case "--gap":
             guard let gap = Int(value(argument)), gap >= 0 else { fail("--gap needs a number of milliseconds.") }
             options.gapMilliseconds = gap
@@ -205,7 +211,7 @@ final class RotoSession: @unchecked Sendable {
     private var firstTrack = 0
     private var trackCount: Int
     private var knobCommandTimes: [Int: Date] = [:]
-    private let sendCount = 4
+    private var sendCount: Int
     private var inPluginMode = false
     private var plugins = testPlugins
     private var firstPlugin = 0
@@ -218,6 +224,7 @@ final class RotoSession: @unchecked Sendable {
         self.options = options
         handshake = RotoHandshake(hostType: options.hostType)
         trackCount = options.trackCount
+        sendCount = options.sendCount
     }
 
     func connect() {
@@ -310,6 +317,9 @@ final class RotoSession: @unchecked Sendable {
             send([.sendCount(sendCount), sendNames(from: RotoOutgoing.sendNamesStart(forSendIndex: mode.sendIndex))])
         case .requestSendNames(let index):
             send([sendNames(from: RotoOutgoing.sendNamesStart(forSendIndex: index))])
+        case .singleTrackMode(let page):
+            // Test 2: the Roto-Control numbers these pages 0, 1, 2.
+            send([.sendCount(sendCount), sendNames(from: RotoOutgoing.sendNamesStart(forControlPage: page, numbering: .pageNumbers))])
         default:
             break
         }
@@ -460,6 +470,10 @@ final class RotoSession: @unchecked Sendable {
             trackCount = count
             firstTrack = 0
             sendPage()
+        case "sends":
+            guard words.count > 1, let count = Int(words[1]), (0...127).contains(count) else { log("sends N: 0 to 127"); break }
+            sendCount = count
+            send([.sendCount(count)])
         case "thresholds":
             guard words.count > 2, let yellow = UInt8(words[1]), let red = UInt8(words[2]) else { log("thresholds Y R"); break }
             send([.meterThresholds(yellow: yellow, red: red)])
