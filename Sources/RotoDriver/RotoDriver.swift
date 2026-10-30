@@ -260,7 +260,7 @@ public struct RotoDriver: Sendable {
             let start = RotoOutgoing.sendNamesStart(forControlPage: controlPage, numbering: .pageNumbers)
             let info = infos.compactMap { $0 }.first
             let details = RotoTrackDetails(index: max(selectedTrack, 0), name: info?.name ?? channel.description,
-                                           colorScheme: Self.colorScheme(forTotalMixColor: info?.color))
+                                           colorScheme: info.map(Self.colorScheme(for:)) ?? 0)
             return [.sendCount(sendCount), sendNames(start: start, hub: hub), .selectTrack(details)]
         case .strips(_, _, let knob, _)?:
             var messages: [RotoOutgoing] = [.sendCount(sendCount)]
@@ -271,7 +271,7 @@ public struct RotoDriver: Sendable {
             for (offset, info) in infos.enumerated() {
                 guard let info else { continue }
                 messages.append(.trackDetails(RotoTrackDetails(index: page.first + offset, name: info.name,
-                                                               colorScheme: Self.colorScheme(forTotalMixColor: info.color)),
+                                                               colorScheme: Self.colorScheme(for: info)),
                                               immediate: false))
             }
             messages.append(.trackDetailsEnd)
@@ -315,6 +315,23 @@ public struct RotoDriver: Sendable {
         case .mute: return .mute
         case .solo: return .solo
         case .arm: return .pfl
+        }
+    }
+
+    /// The color scheme for monitoring outputs until TotalMix's colors are matched: 33, seen as
+    /// green (docs/ROTO-CONTROL.md, test 2).
+    public static let monitoringScheme: UInt8 = 33
+    /// The color scheme for sends until TotalMix's colors are matched: 22, seen as blue.
+    public static let sendScheme: UInt8 = 22
+
+    /// The Roto-Control color scheme for a strip. TotalMix's colors have not been matched to the
+    /// Roto-Control's table yet, so outputs are colored by kind (monitoring outputs green, sends
+    /// blue), and sources by `colorScheme(forTotalMixColor:)`.
+    public static func colorScheme(for info: StripInfo) -> UInt8 {
+        switch info.kind {
+        case .monitoring: return monitoringScheme
+        case .send: return sendScheme
+        case .source: return colorScheme(forTotalMixColor: info.color)
         }
     }
 

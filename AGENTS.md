@@ -47,7 +47,7 @@ small driver of its own.
   - a name, a color, and a meter.
 
   Around the strips:
-  - two views: sources (inputs, then playbacks) and outputs;
+  - two views: sources (inputs, then playbacks) and outputs (the assigned monitoring outputs first, then the sends; a monitoring role with nothing assigned shows no strip);
   - monitoring outputs and sends: the outputs the control room assigns to Main Out, Main Out B, Phones 1–4, and cue are monitoring outputs; every other output TotalMix doesn't hide is a send;
   - the home submix (Main Out unless the app chooses another monitoring output), which source levels and pans go into; send knobs reach only the sends;
   - paging, and a focus mode (one source across all submixes);
@@ -60,7 +60,7 @@ small driver of its own.
   - its resolution;
   - its displays.
 - **Drivers**, one per surface:
-  - **RotoDriver** (`Sources/RotoDriver/`): the Roto-Control's SysEx API, with 14-bit motorized knobs. MIX mode drives the channel strips: the audio track set is the sources view and the master and return set the outputs view; record arm is PFL. PLUGIN mode, for the parts of TotalMix that MIX mode can't reach, is not driven yet. The driver is pure, like `SurfaceHub`; the app (or `sbdev bridge`) connects it to `MIDITransport`.
+  - **RotoDriver** (`Sources/RotoDriver/`): the Roto-Control's SysEx API, with 14-bit motorized knobs. MIX mode drives the channel strips: the audio track set is the sources view and the master and return set the outputs view; record arm is PFL. Until TotalMix's colors are matched to the Roto-Control's, monitoring outputs show green and sends blue. PLUGIN mode, for the parts of TotalMix that MIX mode can't reach, is not driven yet. The driver is pure, like `SurfaceHub`; the app (or `sbdev bridge`) connects it to `MIDITransport`.
   - **LaunchControlXL3**: the Launch Control XL 3's DAW mode, with 7-bit faders that are not motorized and endless encoders.
   - **MackieControl**: later.
 - **Protocol sources.** Each driver's protocol facts go in a `docs/` file of their own, with evidence, as `TOTALMIX-OSC.md` does for TotalMix. The vendors' documents are linked, not committed:

@@ -7,7 +7,7 @@ import TotalMixOSC
 public enum ViewKind: Hashable, Codable, Sendable {
     /// Inputs, then playbacks: the channels whose levels go into submixes.
     case sources
-    /// Outputs: the submixes' own faders.
+    /// Outputs: their own faders, monitoring outputs first, then sends.
     case outputs
 }
 
@@ -27,7 +27,9 @@ public struct PerformanceLayout: Hashable, Codable, Sendable {
 
     /// The channels of a view, as the strips show them. A chosen list keeps its order, minus
     /// channels TotalMix hides from this OSC remote and outputs listed under sources (or the
-    /// reverse).
+    /// reverse). With no list, the outputs view puts the monitoring outputs first, in the order of
+    /// `MonitoringRole` (Main Out, Main Out B, Phones 1–4, cue), and then the sends in TotalMix's
+    /// order.
     public func channels(_ view: ViewKind, in mirror: MixerMirror) -> [ChannelRef] {
         switch view {
         case .sources:
@@ -39,7 +41,14 @@ public struct PerformanceLayout: Hashable, Codable, Sendable {
             if let outputs {
                 return outputs.filter { !$0.isSource && mirror.channels[$0]?.isHidden != true }
             }
-            return mirror.visibleChannels(.output)
+            let visible = mirror.visibleChannels(.output)
+            var monitoring: [ChannelRef] = []
+            for role in MonitoringRole.allCases {
+                guard let output = mirror.monitoring[role] else { continue }
+                let ref = ChannelRef(.output, output)
+                if visible.contains(ref) && !monitoring.contains(ref) { monitoring.append(ref) }
+            }
+            return monitoring + visible.filter { !monitoring.contains($0) }
         }
     }
 }

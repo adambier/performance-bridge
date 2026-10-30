@@ -250,6 +250,27 @@ final class SurfaceHubTests: XCTestCase {
         XCTAssertEqual(hub.sendTargets, [], "output 3/4 is now the home submix and 7/8 the cue output")
     }
 
+    func testOutputsViewPutsMonitoringFirst() {
+        var hub = loadedHub(mode: .strips(view: .outputs, first: 0, knob: .level, switch: .mute))
+        let events: [TotalMixEvent] = [
+            .channel(bus: .output, channel: 6, parameter: "stereo", value: .number(1)),
+            .channel(bus: .output, channel: 6, parameter: "name", value: .text("Phones")),
+            .channel(bus: .output, channel: 6, parameter: "color", value: .number(1)),
+            .other(path: "controlroom/phones1", value: .number(6)),
+            .other(path: "controlroom/cuechan", value: .number(4)),
+        ]
+        for event in events { _ = hub.handle(event, now: 1) }
+        let strips = hub.strips(of: roto) ?? []
+        XCTAssertEqual(strips.prefix(3).map { $0.info?.channel }, [ChannelRef(.output, 0), ChannelRef(.output, 6), ChannelRef(.output, 2)],
+                       "Main, then Phones 1, then the send; the hidden cue output stays hidden")
+        XCTAssertEqual(strips.prefix(3).map { $0.info?.kind }, [.monitoring, .monitoring, .send])
+        XCTAssertNil(strips[3].info)
+        _ = hub.handle(.other(path: "controlroom/phones1", value: .number(-1)), now: 2)
+        XCTAssertEqual(hub.strips(of: roto)?.compactMap { $0.info?.channel }, [ChannelRef(.output, 0), ChannelRef(.output, 2), ChannelRef(.output, 6)],
+                       "an unassigned role shows no strip; its output becomes a send again")
+        XCTAssertEqual(hub.strips(of: roto)?[2].info?.kind, .send)
+    }
+
     func testNoHomeSubmixMeansNoSourceLevels() {
         var hub = SurfaceHub()
         for event in setupEvents() where event != .other(path: "controlroom/mainout", value: .number(0)) {

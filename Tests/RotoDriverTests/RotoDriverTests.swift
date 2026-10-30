@@ -173,6 +173,10 @@ final class RotoDriverTests: XCTestCase {
         let step = driver.receive(sysEx(.mix, 0x05, [0x01]), hub: &hub, now: 1)
         XCTAssertEqual(hub.mode(of: rotoID), .strips(view: .outputs, first: 0, knob: .level, switch: .mute))
         XCTAssertTrue(step.midi.contains(RotoOutgoing.trackCount(2).bytes))
+        XCTAssertTrue(step.midi.contains(RotoOutgoing.trackDetails(RotoTrackDetails(index: 0, name: "Main", colorScheme: RotoDriver.monitoringScheme),
+                                                                   immediate: false).bytes), "Main is green")
+        XCTAssertTrue(step.midi.contains(RotoOutgoing.trackDetails(RotoTrackDetails(index: 1, name: "Phones", colorScheme: RotoDriver.sendScheme),
+                                                                   immediate: false).bytes), "unassigned in the control room: a send, blue")
         XCTAssertTrue(step.midi.contains(RotoFeedback.knob(1, position: levelKnob(0.6))))
         let turn = driver.receive(knobCCs(0, 9000), hub: &hub, now: 2)
         XCTAssertEqual(turn.core.messages.map(\.address), ["/output/0/faderlin"])

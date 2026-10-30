@@ -353,8 +353,10 @@ public struct SurfaceHub: Sendable {
 
     private func binding(_ ref: ChannelRef, knob: ControlTarget?, switch switchTarget: ControlTarget?, meter: Bool) -> StripBinding {
         let state = mirror.channels[ref]
+        let kind: StripKind = ref.isSource ? .source
+            : mirror.monitoringOutputs.contains(ref.channel) ? .monitoring : .send
         let info = StripInfo(channel: ref, name: state?.name ?? ref.description, color: state?.color,
-                             stereo: state?.stereo ?? false, knobLabel: knob.map(label) ?? "",
+                             stereo: state?.stereo ?? false, kind: kind, knobLabel: knob.map(label) ?? "",
                              switchLabel: switchTarget.map(label) ?? "")
         var meterChannels: [ChannelRef] = []
         if meter {
