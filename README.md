@@ -70,9 +70,12 @@ swift run PerformanceBridge
 The app appears in the menu bar. Set TotalMix's host and ports in Settings, or give the ports on
 the command line with `--in-port` and `--out-port`. The connection log goes to the Terminal.
 
+The setup guide, [`docs/SETUP.md`](docs/SETUP.md), goes through each step and what the menu says.
+
 ## Documentation
 
 - **[`docs/TOTALMIX-OSC.md`](docs/TOTALMIX-OSC.md)**: what this project relies on in TotalMix's Global OSC, the evidence for each statement, and the questions still to settle by testing.
+- **[`docs/SETUP.md`](docs/SETUP.md)**: setting up Performance Bridge with TotalMix FX and a Roto-Control, step by step, with what has and has not been checked on screen.
 - **[`docs/ROTO-CONTROL.md`](docs/ROTO-CONTROL.md)**: what this project relies on in the Roto-Control's protocol, the evidence for each statement, and the questions still to settle by testing.
 - **[`AGENTS.md`](AGENTS.md)**: an orientation for AI coding tools and for anyone working on the code.
 
