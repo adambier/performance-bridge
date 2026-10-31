@@ -92,6 +92,18 @@ The exception (Adam, 2026-10-31): a separate app setting for something TotalMix 
 acceptable when there is a strong case for the surface behaving differently from TotalMix at the
 same time. The case is made, and recorded, before the setting is added.
 
+Hidden channels (Adam, 2026-10-31). A channel can be hidden in the app's layout, so it leaves the
+surface but stays a home submix choice and a send target. A channel hidden from this OSC remote in
+TotalMix is not shown on any surface, and the app does not show it greyed out or offer to change it:
+greyed-out items take up room and cannot be acted on. The layout shows a note that channels hidden
+from OSC in TotalMix are not shown. A warning is shown only if the app can detect such channels,
+which is untested (`docs/TOTALMIX-OSC.md`); until then the note is shown without a warning.
+
+Documentation rule for TotalMix (Adam, 2026-10-31): TotalMix's menus and configuration screens are
+complex, so any text that tells the user where a TotalMix setting is (docs, app help, notes) gives
+the full path: each menu and submenu, the setting's label as TotalMix shows it, and the source for
+that location. Where the location has not been checked on a screen, say so.
+
 Do:
 
 - Keep `OSCCodec`, `TotalMixOSC`, `RotoControl`, `SurfaceCore`, `RotoDriver`, and the planned drivers Foundation-only, UI-free, and building on Linux, macOS, and Windows. Platform code (CoreMIDI, sockets, SwiftUI) stays in `UDPTransport`, `MIDITransport`, or the app.
