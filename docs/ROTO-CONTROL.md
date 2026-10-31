@@ -440,3 +440,10 @@ marked "seen".
   and 20: indexes 8–15). With run 15's color staying on its screen across pages, this reads as:
   the index is the screen (0–7), not the track, and an index past 7 freezes the firmware.
   `RotoDriver` now sends the screen number.
+- **Screen numbers on a later page** (run 21, seen): on the page of tracks 8–14, SET TRACK COLOUR
+  with indexes 0–6 froze nothing but changed nothing on the screens, during `color tune` and
+  `color 7 F0A030`. So the screen reading above does not hold either. A reading that fits every
+  run (an inference): the firmware draws an exact color only for a track on the current page,
+  but keeps it in an eight-entry table indexed by the track number, so indexes 0–7 work only on
+  the first page (and stay with that screen afterward), and 8 or more overrun the table. If so,
+  exact colors are usable only for the first eight tracks.
