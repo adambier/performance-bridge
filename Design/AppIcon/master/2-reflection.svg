@@ -182,6 +182,5 @@
 <g fill="none" stroke="#ffb13d" stroke-width="24.0" stroke-linecap="round"><path d="M 650 230 Q 410.0 605 170 605"></path><path d="M 650 230 Q 755.0 605 860 605"></path></g>
 <polygon points="638.0,205 662.0,205 674.0,612 626.0,612" fill="#ffb13d"></polygon>
 <g fill="#f3eee4"><rect x="339.0" y="565" width="52" height="36" rx="9"></rect><rect x="399.0" y="547" width="52" height="36" rx="9"></rect><rect x="459.0" y="512" width="52" height="36" rx="9"></rect><rect x="519.0" y="416" width="52" height="36" rx="9"></rect><rect x="579.0" y="377" width="52" height="36" rx="9"></rect><rect x="674.0" y="439" width="52" height="36" rx="9"></rect><rect x="724.0" y="550" width="52" height="36" rx="9"></rect></g></g></g>
-<g stroke="#0a1426" stroke-width="5" stroke-opacity="0.7" stroke-linecap="round"><line x1="230" y1="690" x2="794" y2="690"></line><line x1="250" y1="748" x2="774" y2="748"></line><line x1="280" y1="806" x2="744" y2="806"></line></g>
 </g></g>
 </svg>

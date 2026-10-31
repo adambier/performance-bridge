@@ -6,6 +6,4 @@
 <rect x="3" y="10" width="10" height="1" fill="#8597bb"></rect>
 <g fill="none" stroke="#ffb13d" stroke-width="1.0" stroke-linecap="round"><path d="M 9.5 4.5 Q 6.2 10 3 10"></path><path d="M 9.5 4.5 Q 11.2 10 13 10"></path></g>
 <rect x="9" y="4" width="1" height="6" fill="#ffb13d"></rect>
-<rect x="6" y="8" width="2" height="1" fill="#f3eee4"></rect>
-<rect x="11" y="8" width="2" height="1" fill="#f3eee4"></rect>
 </svg>
