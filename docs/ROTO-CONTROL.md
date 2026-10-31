@@ -416,3 +416,8 @@ marked "seen".
   exact` sent SET TRACK COLOUR for tracks 8–14 and black for track 15, past the track count, twice
   in 7 seconds; the Roto-Control then hung. That the color past the track count caused the hang
   is an inference; the driver no longer sends colors for blank screens.
+- **A hang after exact colors, again** (run 18, seen): with no color past the track count, `color
+  exact` sent SET TRACK COLOUR for the seven strips (tracks 8–14) at once, and the Roto-Control
+  froze. So the color past the track count was not the cause (or not the only one). Run 14, with
+  one SET TRACK COLOUR per page, did not hang. That a burst of them causes the hang is an
+  inference; `sbdev bridge` now sends them 150 ms apart, to test it.

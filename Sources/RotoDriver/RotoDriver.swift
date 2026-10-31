@@ -145,6 +145,17 @@ public struct RotoDriver: Sendable {
         }
     }
 
+    /// Color schemes chosen in place of `schemeForTotalMixColor`, by TotalMix color index, for
+    /// sources: for trying schemes on the screens. Empty by default.
+    public var schemeOverrides: [Int: UInt8] = [:]
+
+    /// The color scheme this driver draws a strip with: an override for a source's TotalMix
+    /// color if there is one, else `colorScheme(for:)`.
+    public func scheme(for info: StripInfo) -> UInt8 {
+        if info.kind == .source, let color = info.color, let scheme = schemeOverrides[color] { return scheme }
+        return Self.colorScheme(for: info)
+    }
+
     /// The bytes that set the exact colors of the current page again, without drawing the strips:
     /// for changing a color while watching the screens. Nothing before the handshake is complete,
     /// in PLUGIN mode or single-track mode, or when `exactColors` is off.
@@ -332,7 +343,7 @@ public struct RotoDriver: Sendable {
             let start = RotoOutgoing.sendNamesStart(forControlPage: controlPage, numbering: .pageNumbers)
             let info = infos.compactMap { $0 }.first
             let details = RotoTrackDetails(index: max(selectedTrack, 0), name: info?.name ?? channel.description,
-                                           colorScheme: info.map(Self.colorScheme(for:)) ?? 0)
+                                           colorScheme: info.map(scheme(for:)) ?? 0)
             return [.sendCount(sendCount), sendNames(start: start, hub: hub), .selectTrack(details)]
         case .strips(_, _, let knob, _)?:
             // The send names go out in every knob mode: the Roto-Control shows them while SEL is
@@ -345,7 +356,7 @@ public struct RotoDriver: Sendable {
             for (offset, info) in infos.enumerated() {
                 guard let info else { continue }
                 messages.append(.trackDetails(RotoTrackDetails(index: page.first + offset, name: info.name,
-                                                               colorScheme: Self.colorScheme(for: info)),
+                                                               colorScheme: scheme(for: info)),
                                               immediate: false))
             }
             messages.append(.trackDetailsEnd)

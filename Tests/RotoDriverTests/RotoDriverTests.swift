@@ -153,6 +153,21 @@ final class RotoDriverTests: XCTestCase {
         XCTAssertFalse(driver.redraw(hub: hub).contains(header))
     }
 
+    func testSchemeOverridesChangeSourcesOnly() {
+        let (start, hub, _) = connected()
+        var driver = start
+        func info(_ kind: StripKind, _ color: Int?) -> StripInfo {
+            StripInfo(channel: ChannelRef(.input, 0), name: "x", color: color, stereo: false, kind: kind,
+                      knobLabel: "", switchLabel: "")
+        }
+        driver.schemeOverrides[1] = 5
+        XCTAssertEqual(driver.scheme(for: info(.source, 1)), 5)
+        XCTAssertEqual(driver.scheme(for: info(.source, 7)), 73)
+        XCTAssertEqual(driver.scheme(for: info(.send, 1)), RotoDriver.sendScheme)
+        XCTAssertTrue(driver.redraw(hub: hub).contains(RotoOutgoing.trackDetails(
+            RotoTrackDetails(index: 2, name: "Gtr", colorScheme: 5), immediate: false).bytes))
+    }
+
     func testExactColorForEachKind() {
         let palette = RotoDriver.totalMixColors
         func info(_ kind: StripKind, _ color: Int?) -> StripInfo {

@@ -38,6 +38,11 @@ let bridgeCommandHelp = """
                            brightness), watching the screens; the knobs leave the mixer alone
       color done           stop tuning: the knobs go back to the mixer
       color                list the exact colors
+      scheme tune N        test: choose the color scheme (0-82) for TotalMix color N with knob 1,
+                           watching the screens; the knobs leave the mixer alone
+      scheme done          stop: the knobs go back to the mixer
+      scheme N S           use scheme S for TotalMix color N
+      scheme               list the schemes for TotalMix's colors
       sendall              ask TotalMix for its state again
       status               the mode, the home submix, the send targets, and the strips
       quit
@@ -91,6 +96,14 @@ final class BridgeSession: @unchecked Sendable {
     /// The TotalMix color being tuned with knobs 1–3, and its hue (0–360), saturation, and
     /// brightness (0–1).
     private var tuning: (index: Int, hsv: HSV)?
+    /// The TotalMix color whose color scheme is being chosen with knob 1, and the scheme.
+    private var schemeTuning: (index: Int, scheme: UInt8)?
+    /// SET TRACK COLOUR messages waiting to go to the Roto-Control, one per `colorGap`: sent all at
+    /// once, seven of them have been followed by a hang (run 18; that the burst caused it is an
+    /// inference).
+    private var pendingColors: [[UInt8]] = []
+    private var lastColorSend = 0.0
+    private let colorGap = 0.15
     private var tuneDecoder = RotoControlDecoder()
     private var tuneChanged = false
     private var lastTuneSend = 0.0
@@ -174,7 +187,8 @@ final class BridgeSession: @unchecked Sendable {
                 index += 1
             }
         }
-        let step = driver.receive(tuning == nil ? bytes : takeTuningKnobs(bytes), hub: &hub, now: now)
+        let tuningActive = tuning != nil || schemeTuning != nil
+        let step = driver.receive(tuningActive ? takeTuningKnobs(bytes) : bytes, hub: &hub, now: now)
         sendToRoto(step.midi)
         dispatch(step.core)
     }
@@ -182,14 +196,21 @@ final class BridgeSession: @unchecked Sendable {
     /// While tuning: takes the knob and touch CCs out of the bytes, uses knobs 1–3 for the color,
     /// and returns the rest for the driver.
     private func takeTuningKnobs(_ bytes: [UInt8]) -> [UInt8] {
-        guard let (index, start) = tuning else { return bytes }
-        var hsv = start
+        var hsv = tuning?.hsv ?? HSV(RotoColor(red: 0, green: 0, blue: 0))
         var rest: [UInt8] = []
         var at = 0
         while at < bytes.count {
             if bytes[at] == 0xBF, at + 2 < bytes.count, (12...19).contains(bytes[at + 1]) || (44...59).contains(bytes[at + 1]) {
                 if case .knob(let knob, let position)? = tuneDecoder.decode(channel: RotoCC.channel, controller: bytes[at + 1], value: bytes[at + 2]) {
                     let fraction = RotoFeedback.fraction(position)
+                    if let (index, scheme) = schemeTuning {
+                        if knob == 0 {
+                            let chosen = UInt8((fraction * 82).rounded())
+                            if chosen != scheme { schemeTuning = (index, chosen); tuneChanged = true }
+                        }
+                        at += 3
+                        continue
+                    }
                     switch knob {
                     case 0: hsv.hue = fraction * 360
                     case 1: hsv.saturation = fraction
@@ -204,7 +225,7 @@ final class BridgeSession: @unchecked Sendable {
                 at += 1
             }
         }
-        tuning = (index, hsv)
+        if let index = tuning?.index { tuning = (index, hsv) }
         return rest
     }
 
@@ -216,6 +237,18 @@ final class BridgeSession: @unchecked Sendable {
         if !restart.isEmpty {
             log("No answer from the Roto-Control yet; sending DAW STARTED again")
             sendToRoto(restart)
+        }
+        if !pendingColors.isEmpty, now - lastColorSend >= colorGap {
+            lastColorSend = now
+            sendToRoto(pendingColors.removeFirst(), paced: false)
+        }
+        if let (index, scheme) = schemeTuning, tuneChanged, now - lastTuneSend >= 0.1 {
+            tuneChanged = false
+            lastTuneSend = now
+            driver.schemeOverrides[index] = scheme
+            sendToRoto(driver.redraw(hub: hub), quiet: true)
+            sendToRoto(RotoOutgoing.showValue(.knob, control: 0, text: "scheme \(scheme)").bytes, quiet: true)
+            log("Scheme for \(index) \(colorNames[index - 1]): \(scheme)")
         }
         if let (index, hsv) = tuning, tuneChanged, now - lastTuneSend >= 0.05 {
             tuneChanged = false
@@ -231,7 +264,17 @@ final class BridgeSession: @unchecked Sendable {
         }
     }
 
+    private func startSchemeTuning(_ index: Int) {
+        tuning = nil
+        let scheme = driver.schemeOverrides[index] ?? RotoDriver.schemeForTotalMixColor[index] ?? 0
+        schemeTuning = (index, scheme)
+        tuneDecoder = RotoControlDecoder()
+        sendToRoto(RotoFeedback.knob(0, position: RotoFeedback.position(Double(scheme) / 82)))
+        log("Choosing the scheme for \(index) \(colorNames[index - 1]) from \(scheme): turn knob 1. `scheme done` to stop.")
+    }
+
     private func startTuning(_ index: Int) {
+        schemeTuning = nil
         var palette = driver.exactColors ?? RotoDriver.totalMixColors
         let color = palette[index] ?? RotoColor(red: 0x80, green: 0x80, blue: 0x80)
         palette[index] = color
@@ -262,7 +305,29 @@ final class BridgeSession: @unchecked Sendable {
         }
     }
 
-    private func sendToRoto(_ bytes: [UInt8], quiet: Bool = false) {
+    private func sendToRoto(_ bytes: [UInt8], quiet: Bool = false, paced: Bool = true) {
+        var bytes = bytes
+        if paced {
+            // SET TRACK COLOUR waits in `pendingColors`, to go one per `colorGap`.
+            var rest: [UInt8] = []
+            var at = 0
+            while at < bytes.count {
+                if bytes[at] == 0xF0, let end = bytes[at...].firstIndex(of: 0xF7) {
+                    let message = Array(bytes[at...end])
+                    if message.count > 6, message[5] == 0x0A, message[6] == 0x13 {
+                        pendingColors.removeAll { $0.count > 8 && $0[7] == message[7] && $0[8] == message[8] }
+                        pendingColors.append(message)
+                    } else {
+                        rest += message
+                    }
+                    at = end + 1
+                } else {
+                    rest.append(bytes[at])
+                    at += 1
+                }
+            }
+            bytes = rest
+        }
         guard !bytes.isEmpty else { return }
         do {
             try midi?.send(bytes)
@@ -340,6 +405,7 @@ final class BridgeSession: @unchecked Sendable {
                 driver.exactColors = driver.exactColors ?? RotoDriver.totalMixColors
             } else if words.count == 2, words[1] == "table" {
                 tuning = nil
+                pendingColors.removeAll()
                 driver.exactColors = nil
             } else if words.count == 3, let index = Int(words[1]), (1...8).contains(index),
                       let color = parseRGB(words[2]) {
@@ -357,6 +423,26 @@ final class BridgeSession: @unchecked Sendable {
             } else {
                 log("Color schemes only (no exact colors)")
             }
+        case "scheme":
+            if words.count == 3, words[1] == "tune", let index = Int(words[2]), (1...8).contains(index) {
+                startSchemeTuning(index)
+                return true
+            } else if words.count == 2, words[1] == "done" {
+                schemeTuning = nil
+                dispatch(hub.resend(driver.id, now: now))
+            } else if words.count == 3, let index = Int(words[1]), (1...8).contains(index),
+                      let scheme = UInt8(words[2]), scheme <= 82 {
+                driver.schemeOverrides[index] = scheme
+                sendToRoto(driver.redraw(hub: hub))
+            } else if words.count != 1 {
+                print("scheme tune N, scheme done, scheme N S (N from 1 to 8, S from 0 to 82), or scheme")
+                return true
+            }
+            let list = (1...8).map { index -> String in
+                let scheme = driver.schemeOverrides[index] ?? RotoDriver.schemeForTotalMixColor[index] ?? 0
+                return "\(index) \(colorNames[index - 1]) \(scheme)"
+            }
+            log("Schemes: " + list.joined(separator: ", "))
         case "sendall":
             dispatch(hub.connect(now: now))
         case "status":
