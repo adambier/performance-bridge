@@ -90,8 +90,7 @@ reading a setting from TotalMix instead of asking for it), that cost is accepted
 
 The exception (Adam, 2026-10-31): a separate app setting for something TotalMix also configures is
 acceptable when there is a strong case for the surface behaving differently from TotalMix at the
-same time (e.g., a channel the user wants in TotalMix's window but not on the surface, if hiding
-it from the OSC remote would not do). The case is made, and recorded, before the setting is added.
+same time. The case is made, and recorded, before the setting is added.
 
 Do:
 
