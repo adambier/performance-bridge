@@ -126,20 +126,22 @@ public struct RotoDriver: Sendable {
     public var isConnected: Bool { handshake.isConnected }
 
     /// A test of exact colors (SET TRACK COLOUR), off (`nil`) by default: RGB colors by TotalMix
-    /// color index, sent for all eight screens each time a page is drawn in all-tracks mode, after
-    /// the color schemes. The Roto-Control draws the names in white over an exact color, and has
-    /// been observed to keep an exact color on its screen when the page changes
-    /// (docs/ROTO-CONTROL.md, test 4), so every screen gets one, blank screens black.
+    /// color index, sent for every strip of the page each time a page is drawn in all-tracks mode,
+    /// after the color schemes. The Roto-Control draws the names in white over an exact color, and
+    /// has been observed to keep an exact color on its screen when the page changes
+    /// (docs/ROTO-CONTROL.md, test 4), so every strip gets one.
     public var exactColors: [Int: RotoColor]?
 
-    /// The exact colors for the eight screens of the current page in all-tracks mode, blank ones
-    /// black, or nothing when `exactColors` is off. Every screen gets one because an exact color has
-    /// been observed to stay on its screen when the page changes (docs/ROTO-CONTROL.md, test 4).
+    /// The exact colors for the strips of the current page in all-tracks mode, or nothing when
+    /// `exactColors` is off. Every strip gets one because an exact color has been observed to stay
+    /// on its screen when the page changes (docs/ROTO-CONTROL.md, test 4). Blank screens get none:
+    /// they are past the last track, and the Roto-Control has been observed to hang after a color
+    /// was sent for a track past the track count (run 17; that this caused it is an inference).
     private func exactColorMessages() -> [RotoOutgoing] {
         guard let palette = exactColors else { return [] }
-        return infos.enumerated().map { offset, info in
-            .trackColor(index: page.first + offset,
-                        info.map { Self.exactColor(for: $0, palette: palette) } ?? Self.blankColor)
+        return infos.enumerated().compactMap { offset, info in
+            guard let info, page.first + offset < page.count else { return nil }
+            return .trackColor(index: page.first + offset, Self.exactColor(for: info, palette: palette))
         }
     }
 
@@ -433,9 +435,6 @@ public struct RotoDriver: Sendable {
         8: RotoColor(red: 0x6F, green: 0x41, blue: 0xCD),  // pink, drawn purple
     ]
 
-    /// The exact color for a blank screen in the exact-color test: black.
-    public static let blankColor = RotoColor(red: 0, green: 0, blue: 0)
-
     /// The exact color for a strip in the exact-color test: sources by their TotalMix color,
     /// monitoring outputs as TotalMix's green and sends as its blue (as the schemes show them), and
     /// white for no color or an index the palette lacks.
@@ -446,7 +445,7 @@ public struct RotoDriver: Sendable {
         case .send: index = 5
         case .source: index = info.color
         }
-        return index.flatMap { palette[$0] } ?? palette[1] ?? blankColor
+        return index.flatMap { palette[$0] } ?? palette[1] ?? RotoColor(red: 0, green: 0, blue: 0)
     }
 
     /// The Roto-Control color scheme (0–82) for a TotalMix color index, or white (TotalMix's

@@ -31,7 +31,7 @@ let bridgeCommandHelp = """
       home N | home main   the home submix: output N (from 1), or TotalMix's Main Out
       solo on | solo off   allow or forbid solo on the switches (off at the start)
       menu TEXT            test: send SET CURRENT TRACK NAME with TEXT, to see where it shows
-      color exact          test: exact colors (SET TRACK COLOUR) on all eight screens
+      color exact          test: exact colors (SET TRACK COLOUR) on every strip
       color table          back to the color schemes alone
       color N RRGGBB       test: set TotalMix color N (1-8) to an RGB color, and show exact colors
       color tune N         test: tune TotalMix color N with knobs 1-3 (hue, saturation,
@@ -228,7 +228,7 @@ final class BridgeSession: @unchecked Sendable {
 
     private func startTuning(_ index: Int) {
         var palette = driver.exactColors ?? RotoDriver.totalMixColors
-        let color = palette[index] ?? RotoDriver.blankColor
+        let color = palette[index] ?? RotoColor(red: 0x80, green: 0x80, blue: 0x80)
         palette[index] = color
         driver.exactColors = palette
         let hsv = HSV(color)

@@ -410,5 +410,9 @@ marked "seen".
   the knobs moved the first send's submix rather than the main one. No message sets these modes
   from the host.
 - **Scheme 73** (run 16, seen): TotalMix's yellow drawn as scheme 73 looked "banana" against
-  TotalMix's "mango". `sbdev bridge` has `color` commands to try exact colors again, sent to all
-  eight screens on every page (blank ones black), and to tune a color with knobs 1–3.
+  TotalMix's "mango". `sbdev bridge` has `color` commands to try exact colors again, sent to every
+  strip on every page, and to tune a color with knobs 1–3.
+- **A hang after exact colors** (run 17, seen): on a page of 7 strips (tracks 8–14 of 15), `color
+  exact` sent SET TRACK COLOUR for tracks 8–14 and black for track 15, past the track count, twice
+  in 7 seconds; the Roto-Control then hung. That the color past the track count caused the hang
+  is an inference; the driver no longer sends colors for blank screens.
