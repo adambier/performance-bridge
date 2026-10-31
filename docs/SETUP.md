@@ -66,7 +66,7 @@ from an OSC Controller is not shown on any surface that uses that controller, an
    for a hidden channel has not been checked.
 
 Reordering is done in the app (Step 5). It does not change what TotalMix sends. Whether TotalMix's hidden
-channels change the channel numbers the app receives has not been tested.
+channels change the channel numbers the app receives: the test run showed no renumbering, but that is one run. The app cannot detect hidden channels; a hidden channel simply does not appear.
 
 ## Step 3: Connect the Roto-Control
 

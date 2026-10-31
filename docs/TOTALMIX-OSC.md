@@ -40,7 +40,7 @@ linear scale" off and on, and the fader messages it accepts.
 
 - Channels count from 0 in addresses: `/input/2/…` is input 3 in TotalMix's window. Snapshots, layouts, and groups count from 1. [RME doc]
 - **Stereo channels.** A stereo channel is addressed by its left channel. A few parameters differ between left and right, and their right side is addressed as the left channel + 1. [RME doc] Those parameters are `phase`, `gain`, `delay`, and the Room EQ bands and types.
-- **Hidden channels.** Channel Layout can hide channels from each OSC remote. [Adam, screenshot 2026-10-31] Its window is opened by right-clicking a channel strip and choosing "Change Channel Layout", or by Options → Channel Layout…. The group "Hide Channel in" lists "OSC Controller 1" to "OSC Controller 4" (on screen, and a checked box hides the channel from that controller [Adam, confirmed 2026-10-31]); the manual's label "Hide Channel in OSC Remote 1-4" is not the label in the running TotalMix. Channels hidden in the mixer are also unavailable to OSC. [RME manual] With classic OSC, hidden channels are skipped within a block of faders. [RME manual] With Global OSC, the document says hidden channels "may be received by option" (TotalMix's "Receive to hidden channels"). [RME doc] Whether hiding renumbers the channels Global OSC sends is untested. In test 1 nothing was hidden, and the channel numbers matched the Digiface AES's 14 inputs, 16 playbacks, and 16 outputs. [RME manual, test 1]
+- **Hidden channels.** Channel Layout can hide channels from each OSC remote. [Adam, screenshot 2026-10-31] Its window is opened by right-clicking a channel strip and choosing "Change Channel Layout", or by Options → Channel Layout…. The group "Hide Channel in" lists "OSC Controller 1" to "OSC Controller 4" (on screen, and a checked box hides the channel from that controller [Adam, confirmed 2026-10-31]); the manual's label "Hide Channel in OSC Remote 1-4" is not the label in the running TotalMix. Channels hidden in the mixer are also unavailable to OSC. [RME manual] With classic OSC, hidden channels are skipped within a block of faders. [RME manual] With Global OSC, the document says hidden channels "may be received by option" (TotalMix's "Receive to hidden channels"). [RME doc] Hiding does not renumber the channels Global OSC sends (inference from one run; the same run's input 3 keeps its number, and the hidden input sends nothing). [Adam, hide-test.log, 2026-10-31; test 8] A hidden channel sends no messages, so the app cannot tell it apart from a channel the interface does not have: it cannot detect hidden channels from OSC (test 8). In test 1 nothing was hidden, and the channel numbers matched the Digiface AES's 14 inputs, 16 playbacks, and 16 outputs. [RME manual, test 1]
 - **Index values.** List-box settings, such as `reflevel` and the EQ band types, are index values from 0. Their meaning depends on the device. [RME doc]
 - **Value types.** TotalMix accepts true/false and integers wherever it expects a float. [RME doc] `OSCArgument.numericValue` reads all of these forms.
 - **`groupflags`.** The bits count from 0. Outputs 3/4 and 7/8, members of mute group 1, report 4098 = 2¹² + 2¹. So bit 1 is mute group 1 [test 1]; had the bits counted from 1, mute group 1 would have been the value 1. The document's ranges, read from 0, then give:
@@ -226,3 +226,22 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 **Setup.** TotalMix FX "2.10 (1)" with a Digiface AES. In Channel Layout, the first eight playback pairs were given the eight colors in menu order (white, grey, orange, red, blue, green, yellow, pink), and `sbdev monitor --sendall` recorded what TotalMix sent.
 
 **Findings.** Playbacks 1, 3, 5, 7, 9, 11, 13, and 15 (each the left channel of a pair) sent `color` 1 to 8 in that order, so the index is the color's position in the menu, counting from 1. The pairs' names were the outputs' default names (AES, SPDIF, Analog 1/2, Phones, ADAT 1/2 to ADAT 7/8), as section 3 describes.
+
+### Test 8 (2026-10-31): a channel hidden from OSC Controller 4
+
+**Setup.** TotalMix FX "2.10 (1)" with a Digiface AES, and controller 4 (incoming 7004, outgoing 9004, host 127.0.0.1). In Channel Layout, the ADI-2 input was hidden from OSC Controller 4 ("Hide Channel in", checked; Adam's report, 2026-10-31). `sbdev monitor --sendall --in-port 7004 --out-port 9004` ran, with its output in `logs/hide-test.log` in the project folder, and it was stopped after the `/sendall` reply.
+
+**Findings** (seen in the log):
+
+- The `/sendall` reply came at 14:38:43, with messages for every playback and every output, and for inputs 3 to 13 (names such as "Sonos", "Mic 1/2", "Tonverk", and "ADAT 3/4").
+- No message came for input 1 or input 2. Input 0 and the other even-numbered inputs were absent in the same way, and the reply sent them only as right-hand halves of stereo pairs, if at all.
+- The outputs were all present, including "ADI-2 3/4" (output 3) and "ADI-2 +6dB" (output 5), as expected, because only an input was hidden.
+- Input 3 kept its number (Sonos).
+
+**Inferences:**
+
+- Input 1 is the ADI-2 input. The inference rests on the strip order and on Sonos being input 3. An unhidden baseline run would confirm it.
+- A channel hidden from an OSC Controller sends no messages on that controller. From OSC alone, the app cannot tell a hidden channel from one the interface does not have. So the app cannot detect hidden channels.
+- Hiding does not renumber the channels that remain. This is one run.
+
+**Not tested:** an unhidden baseline; whether "Receive to hidden channels" (Options → Mixer Settings… → OSC → Details) changes what is sent for a hidden channel; and the other controllers.

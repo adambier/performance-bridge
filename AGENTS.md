@@ -97,9 +97,9 @@ Channel Layout can hide a channel from each OSC controller separately, and from 
 the other controllers. The app has no hide setting of its own, so there is nothing to keep in step.
 A channel that TotalMix hides from an OSC Controller (Channel Layout, "Hide Channel in") is not shown on any surface that uses that controller, and the app does not
 show it greyed out or offer to change it: greyed-out items take up room and cannot be acted on. The
-layout shows a note that channels hidden in TotalMix are not shown. A warning is shown only if the app
-can detect such channels, which is untested (`docs/TOTALMIX-OSC.md`); until then the note is shown
-without a warning.
+layout shows a note that channels hidden in TotalMix are not shown. The app cannot detect hidden
+channels from OSC: a hidden channel sends nothing, as a missing one does (`docs/TOTALMIX-OSC.md`,
+test 8). So there is no warning, and the note stands alone.
 
 Documentation rule for TotalMix (Adam, 2026-10-31): TotalMix's menus and configuration screens are
 complex, so any text that tells the user where a TotalMix setting is (docs, app help, notes) gives
