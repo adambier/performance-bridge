@@ -385,6 +385,8 @@ marked "seen".
   at 127 full with a red last pixel. So a meter shows red at the red threshold itself. A yellow
   threshold of 126 leaves no visible yellow, so `RotoDriver` now borrows the levels of RME's own
   hardware meters (docs/TOTALMIX-OSC.md):
-  yellow from −5 dBFS (117 on a −65…0 dBFS scale) and red from −1 dBFS (125).
+  yellow from −5 dBFS (117 on a −65…0 dBFS scale) and red from −1 dBFS (125). With those
+  thresholds, meter values 112, 120, and 126 showed green, a yellow end, and a red end, as expected
+  (seen).
 - **SOLO and ARM** (run 7, seen): with the switches on solo, a press set PFL in TotalMix and lit
   the switch; on record arm, a press did nothing.
