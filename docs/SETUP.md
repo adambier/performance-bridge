@@ -52,7 +52,7 @@ title is not in the screenshot, so the top-level menu is not checked.
 ## Step 2: Choose which channels the remote sees
 
 Channels are hidden only in TotalMix FX, and the app has no setting for hiding. A channel hidden from an OSC
-controller in TotalMix is not shown on any surface, and the app does not show it greyed out. Checked on screen
+controller in TotalMix is not shown on any surface configured for that controller slot, and the app does not show it greyed out. Checked on screen
 (Adam, 2026-10-31) unless marked otherwise:
 
 1. Open the Channel Layout window. Right-click a channel's strip in TotalMix's main window and choose
