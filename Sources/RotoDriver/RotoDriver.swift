@@ -295,6 +295,10 @@ public struct RotoDriver: Sendable {
                                               immediate: false))
             }
             messages.append(.trackDetailsEnd)
+            for (offset, info) in infos.enumerated() {
+                guard let info, let color = Self.exactColor(for: info) else { continue }
+                messages.append(.trackColor(index: page.first + offset, color))
+            }
             for (offset, info) in infos.enumerated() where info == nil {
                 messages.append(.resetTrackDetails(page.first + offset))
             }
@@ -355,6 +359,16 @@ public struct RotoDriver: Sendable {
     public static let monitoringScheme: UInt8 = 33
     /// The color scheme for sends until TotalMix's colors are matched: 22, seen as blue.
     public static let sendScheme: UInt8 = 22
+
+    /// An exact color for a strip, sent with SET TRACK COLOUR after its color scheme, where no
+    /// scheme in the table matches TotalMix closely enough: so far only yellow (TotalMix's index 7),
+    /// which on the Roto-Control's screens falls between scheme 73 (a little too green) and scheme 1
+    /// (orange). An experiment: whether the Roto-Control shows SET TRACK COLOUR in MIX mode is
+    /// untested (docs/ROTO-CONTROL.md, test 4).
+    public static func exactColor(for info: StripInfo) -> RotoColor? {
+        guard info.kind == .source, info.color == 7 else { return nil }
+        return RotoColor(red: 0xFF, green: 0xC8, blue: 0x00)
+    }
 
     /// The Roto-Control color scheme for a strip: sources in their TotalMix color, outputs by kind
     /// (monitoring outputs green, sends blue).

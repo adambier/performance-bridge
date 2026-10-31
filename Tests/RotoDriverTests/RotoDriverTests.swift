@@ -344,6 +344,15 @@ final class RotoDriverTests: XCTestCase {
         XCTAssertEqual(Double(sent), RotoFeedback.fraction(12288) * 2 - 1, accuracy: 1e-6)
     }
 
+    func testYellowGetsAnExactColor() {
+        let yellow = StripInfo(channel: ChannelRef(.playback, 12), name: "PB 13/14", color: 7, stereo: true,
+                               kind: .source, knobLabel: "", switchLabel: "")
+        XCTAssertEqual(RotoDriver.exactColor(for: yellow), RotoColor(red: 0xFF, green: 0xC8, blue: 0x00))
+        var other = yellow
+        other.color = 6
+        XCTAssertNil(RotoDriver.exactColor(for: other))
+    }
+
     func testTotalMixColors() {
         XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: nil), 13, "no color is TotalMix's default, white")
         XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: 1), 13)
