@@ -114,8 +114,8 @@ Choose **Layout…** from the menu.
 - To take a channel off the surfaces, hide it in TotalMix (Step 2). The layout has no hide setting of its own.
 - Channel colors are set in TotalMix FX, in Channel Layout (the Color column, and the Color (Name) menu for the selected channel). Checked on screen (Adam, 2026-10-31).
 - The note at the bottom repeats the rule for channels hidden in TotalMix.
-- **Playbacks start on a new page**, in the app's menu, puts the first playback at the start of a new page of
-  strips, after blank strips that fill the inputs' last page.
+- **Playbacks start on a new page**, under the Sources list, puts the first playback at the start of a new
+  page of strips, after blank strips that fill the inputs' last page.
 
 ## Step 6: Choose the home submix
 

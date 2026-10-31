@@ -195,7 +195,6 @@ struct MenuContent: View {
     /// Whether the home submix menu offers every output, not only the monitoring outputs.
     @AppStorage("showAllOutputs") private var showAllOutputs = false
     /// Whether the first playback starts a new page on the surfaces.
-    @AppStorage("playbacksOnNewPage") private var playbacksOnNewPage = false
 
     private var totalMixState: String {
         let status = model.status
@@ -239,12 +238,6 @@ struct MenuContent: View {
             // mistaken for a bug.
             Text("Main Out follows TotalMix's assignment")
         }
-        Toggle("Playbacks start on a new page", isOn: Binding(
-            get: { playbacksOnNewPage },
-            set: { on in
-                playbacksOnNewPage = on
-                model.engine.setPlaybacksOnNewPage(on)
-            }))
         Button("Ask TotalMix FX for its state") { model.engine.refresh() }
         Divider()
         Button("Layout…") {

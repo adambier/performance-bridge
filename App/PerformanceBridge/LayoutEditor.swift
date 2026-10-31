@@ -15,6 +15,7 @@ struct LayoutView: View {
     @ObservedObject var model: BridgeModel
     @State private var view: ViewKind = .sources
     @State private var items: [LayoutItem] = []
+    @AppStorage("playbacksOnNewPage") private var playbacksOnNewPage = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -37,6 +38,15 @@ struct LayoutView: View {
             }
             .frame(minHeight: 260)
 
+            if view == .sources {
+                Toggle("Playbacks start on a new page", isOn: Binding(
+                    get: { playbacksOnNewPage },
+                    set: { on in
+                        playbacksOnNewPage = on
+                        model.engine.setPlaybacksOnNewPage(on)
+                    }))
+            }
+
             VStack(alignment: .leading, spacing: 6) {
                 Text(view == .outputs
                      ? "Monitoring outputs (Main Out, Phones, and so on) always come first. Drag to order the sends."
@@ -48,7 +58,7 @@ struct LayoutView: View {
             .fixedSize(horizontal: false, vertical: true)
         }
         .padding(20)
-        .frame(width: 380, height: 460)
+        .frame(width: 380, height: 490)
         .onAppear { reload() }
         .onChange(of: model.status) { _ in reload() }
     }
