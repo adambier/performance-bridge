@@ -47,7 +47,10 @@ title is not in the screenshot, so the top-level menu is not checked.
    "Receive to hidden channels" off, "Send faders in linear scale" on, "Re-send received" off, and bandwidth
    limitation 500kByte/s. Test 1 had "Send faders in linear scale" off, and test 2 had it on. Whether the app
    needs any of these set a certain way is not tested.
-8. Options → Submix linked to OSC Controller is a submenu. Its choices have not been checked on screen.
+8. Options → Submix linked to OSC Controller is a submenu with one item per controller, 1 to 4. Checked on screen
+   (Adam, 2026-10-31): all four checked. RME's Global OSC document says "Follow Submix" should be off with Global
+   OSC; this submenu is inferred to be that setting, since TotalMix has no item by that name. The tests ran with it
+   checked, and it made no difference to what Global OSC sends (`docs/TOTALMIX-OSC.md`, section 1). So far there is no reason to change it.
 
 ## Step 2: Choose which channels the remote sees
 
