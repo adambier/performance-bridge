@@ -67,11 +67,7 @@ final class BridgeModel: ObservableObject {
         engine.onStatus = { [weak self] status in
             Task { @MainActor in self?.status = status }
         }
-        do {
-            try engine.start()
-        } catch {
-            status.error = "\(error)"
-        }
+        engine.start()
     }
 }
 
@@ -86,7 +82,10 @@ struct MenuContent: View {
         Text(model.status.totalMixAnswering ? "TotalMix FX: connected" : "TotalMix FX: no answer")
         Text(model.status.rotoConnected ? "Roto-Control: connected" : "Roto-Control: not connected")
         if let error = model.status.error {
-            Text("Error: \(error)")
+            // One line per side that isn't open yet; the engine keeps trying.
+            ForEach(error.components(separatedBy: "\n"), id: \.self) { line in
+                Text(line)
+            }
         }
         Divider()
         Menu("Home submix") {

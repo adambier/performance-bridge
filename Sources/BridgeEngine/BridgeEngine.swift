@@ -31,15 +31,19 @@ public struct BridgeSettings: Equatable, Sendable {
     public var homeSubmix: Int?
     /// Whether the first playback starts a new page (`PerformanceLayout.playbacksOnNewPage`).
     public var playbacksOnNewPage = false
+    /// How often the engine tries again to open TotalMix's port or the Roto-Control's MIDI ports
+    /// while either is not open, in seconds.
+    public var retryInterval: Double = 3
 
-    /// Settings with TotalMix's default ports, the Roto-Control's usual port name, and Main Out as
-    /// the home submix.
+    /// Settings with TotalMix's default ports, the Roto-Control's usual port name, Main Out as the
+    /// home submix, and a retry every 3 seconds.
     public init(endpoint: TotalMixEndpoint = .standard, rotoPortName: String = "Roto", homeSubmix: Int? = nil,
-                playbacksOnNewPage: Bool = false) {
+                playbacksOnNewPage: Bool = false, retryInterval: Double = 3) {
         self.endpoint = endpoint
         self.rotoPortName = rotoPortName
         self.homeSubmix = homeSubmix
         self.playbacksOnNewPage = playbacksOnNewPage
+        self.retryInterval = retryInterval
     }
 }
 
@@ -70,7 +74,8 @@ public struct BridgeStatus: Equatable, Sendable {
     /// The other outputs TotalMix shows over OSC, in the layout's order, for choosing any output as
     /// the home submix.
     public var otherOutputs: [HomeChoice] = []
-    /// Why the engine could not start, if it could not.
+    /// What the engine can't open yet (TotalMix's port, the Roto-Control's MIDI ports, or both),
+    /// one line each; `nil` when both are open. The engine keeps trying.
     public var error: String?
 
     /// Nothing running yet.
@@ -81,8 +86,14 @@ public struct BridgeStatus: Equatable, Sendable {
 /// MIDI ports, and a clock. This is what the app runs; `sbdev bridge` does the same with test
 /// commands of its own.
 ///
+/// TotalMix and the Roto-Control connect independently: while either can't be opened, the engine
+/// tries again every `BridgeSettings.retryInterval` seconds, and it notices a Roto-Control that is
+/// unplugged and opens it again when it comes back. When TotalMix falls silent, the engine asks it
+/// for its state until it answers, so a restarted TotalMix is mirrored again.
+///
 /// Every change happens with a lock held. Callbacks (`onLog`, `onStatus`) are called with the lock
-/// released, on whatever thread caused them.
+/// released, on whatever thread caused them. MIDI ports are opened and closed with the lock
+/// released, since CoreMIDI may wait for a delivery in progress, and a delivery waits for the lock.
 public final class BridgeEngine: @unchecked Sendable {
     /// How long TotalMix may stay silent before `BridgeStatus.totalMixAnswering` turns false, in
     /// seconds. TotalMix sends its status about once a second when "Send status" is on
@@ -105,7 +116,17 @@ public final class BridgeEngine: @unchecked Sendable {
     private var ticker: Thread?
     private var running = false
     private var lastFromTotalMix: Double?
+    private var totalMixWasAnswering = false
     private var lastStatus = BridgeStatus()
+    private var socketError: String?
+    private var midiError: String?
+    private var lastSocketTry: Double?
+    private var lastMIDITry: Double?
+    private var lastMIDICheck: Double?
+    private var openingMIDI = false
+
+    /// How often the engine checks that the Roto-Control's ports are still there, in seconds.
+    static let unplugCheckInterval: Double = 1
 
     /// An engine for these settings; nothing starts until `start()`.
     public init(settings: BridgeSettings = BridgeSettings()) {
@@ -114,36 +135,15 @@ public final class BridgeEngine: @unchecked Sendable {
 
     private var now: Double { Date().timeIntervalSince(startDate) }
 
-    /// Opens the UDP socket and the MIDI ports, asks TotalMix for its state, and starts the
-    /// Roto-Control's handshake and the clock. Throws if the UDP socket can't be opened (for
-    /// example, because another program, such as `sbdev bridge`, has TotalMix's outgoing port). A
-    /// Roto-Control that can't be found is not fatal: TotalMix still connects, and `status.error`
-    /// says why the Roto-Control didn't.
-    public func start() throws {
+    /// Starts the engine: opens TotalMix's port and the Roto-Control's MIDI ports, asks TotalMix
+    /// for its state, and starts the Roto-Control's handshake and the clock. Neither side has to be
+    /// there: what can't be opened (for example, TotalMix's port while another program, such as
+    /// `sbdev bridge`, has it, or a Roto-Control that isn't plugged in) is named in `status.error`
+    /// and tried again every `BridgeSettings.retryInterval` seconds.
+    public func start() {
         lock.lock()
         guard !running else { lock.unlock(); return }
-        do {
-            socket = try UDPSocket(listeningOn: settings.endpoint.outgoingPort)
-        } catch {
-            lastStatus.error = "Can't listen on port \(settings.endpoint.outgoingPort): \(error)"
-            let message = lastStatus.error ?? ""
-            lock.unlock()
-            log(message)
-            onStatus?(lastStatus)
-            throw error
-        }
-        var midiError: String?
-        do {
-            midi = try MIDIConnection(clientName: "Performance Bridge", sourceName: settings.rotoPortName,
-                                      destinationName: settings.rotoPortName) { [weak self] bytes in
-                self?.fromRoto(bytes)
-            }
-        } catch {
-            midiError = "Roto-Control not found (\(error))"
-            lastStatus.error = midiError
-        }
         running = true
-        socket?.startReceiving { [weak self] bytes, _ in self?.fromTotalMix(bytes) }
         dispatch(hub.addSurface(driver.id, capabilities: RotoDriver.capabilities, now: now))
         if let home = settings.homeSubmix { dispatch(hub.setHomeSubmix(home, now: now)) }
         if settings.playbacksOnNewPage {
@@ -151,8 +151,10 @@ public final class BridgeEngine: @unchecked Sendable {
             layout.playbacksOnNewPage = true
             dispatch(hub.setLayout(layout, now: now))
         }
-        dispatch(hub.connect(now: now))
-        sendToRoto(driver.start(now: now))
+        lock.unlock()
+        log("Started: TotalMix at \(settings.endpoint.host), sending to port \(settings.endpoint.incomingPort), listening on \(settings.endpoint.outgoingPort)")
+        openSocketIfDue(force: true)
+        openMIDIIfDue(force: true)
         let thread = Thread { [weak self] in
             while let engine = self, engine.isRunning {
                 engine.tick()
@@ -160,11 +162,10 @@ public final class BridgeEngine: @unchecked Sendable {
             }
         }
         thread.name = "Performance Bridge clock"
+        lock.lock()
         ticker = thread
-        thread.start()
         lock.unlock()
-        log("Started: TotalMix at \(settings.endpoint.host), sending to port \(settings.endpoint.incomingPort), listening on \(settings.endpoint.outgoingPort)")
-        if let midiError { log(midiError) }
+        thread.start()
         publishStatus()
     }
 
@@ -174,11 +175,99 @@ public final class BridgeEngine: @unchecked Sendable {
         running = false
         socket?.stop()
         socket = nil
-        midi?.close()
+        let closing = midi
         midi = nil
+        driver = RotoDriver(id: driver.id)
         ticker = nil
         lock.unlock()
+        closing?.close()
         publishStatus()
+    }
+
+    // MARK: Connections
+
+    /// Opens TotalMix's port if it isn't open and a try is due, then asks TotalMix for its state.
+    private func openSocketIfDue(force: Bool = false) {
+        lock.lock()
+        defer { lock.unlock() }
+        guard running, socket == nil else { return }
+        if !force, let last = lastSocketTry, now - last < settings.retryInterval { return }
+        lastSocketTry = now
+        let port = settings.endpoint.outgoingPort
+        do {
+            let opened = try UDPSocket(listeningOn: port)
+            socket = opened
+            opened.startReceiving { [weak self] bytes, _ in self?.fromTotalMix(bytes) }
+            dispatch(hub.connect(now: now))
+            if socketError != nil { pendingLogs.append("Listening on port \(port)") }
+            socketError = nil
+        } catch {
+            let message = "Can't listen on port \(port): \(error)"
+            if message != socketError { pendingLogs.append(message + "; trying again every \(Self.seconds(settings.retryInterval))") }
+            socketError = message
+        }
+    }
+
+    /// Opens the Roto-Control's MIDI ports if they aren't open and a try is due, and starts the
+    /// handshake.
+    private func openMIDIIfDue(force: Bool = false) {
+        lock.lock()
+        guard running, midi == nil, !openingMIDI else { lock.unlock(); return }
+        if !force, let last = lastMIDITry, now - last < settings.retryInterval { lock.unlock(); return }
+        lastMIDITry = now
+        openingMIDI = true
+        lock.unlock()
+
+        let name = settings.rotoPortName
+        let result = Result {
+            try MIDIConnection(clientName: "Performance Bridge", sourceName: name, destinationName: name) { [weak self] bytes in
+                self?.fromRoto(bytes)
+            }
+        }
+
+        lock.lock()
+        openingMIDI = false
+        var unused: MIDIConnection?
+        switch result {
+        case .success(let connection) where running:
+            midi = connection
+            driver = RotoDriver(id: driver.id)
+            sendToRoto(driver.start(now: now))
+            pendingLogs.append("Found the Roto-Control (\(connection.source.name)); starting the handshake")
+            midiError = nil
+        case .success(let connection):
+            unused = connection
+        case .failure(let error):
+            let message = "Roto-Control not found (\(error))"
+            if message != midiError { pendingLogs.append(message + "; trying again every \(Self.seconds(settings.retryInterval))") }
+            midiError = message
+        }
+        lock.unlock()
+        unused?.close()
+    }
+
+    /// Closes the Roto-Control's ports if it has been unplugged, so that `openMIDIIfDue` opens them
+    /// again when it comes back.
+    private func checkMIDIIfDue() {
+        lock.lock()
+        guard let connection = midi else { lock.unlock(); return }
+        if let last = lastMIDICheck, now - last < Self.unplugCheckInterval { lock.unlock(); return }
+        lastMIDICheck = now
+        lock.unlock()
+        guard !connection.isAvailable else { return }
+        lock.lock()
+        guard midi === connection else { lock.unlock(); return }
+        midi = nil
+        driver = RotoDriver(id: driver.id)
+        lastMIDITry = now
+        midiError = "Roto-Control unplugged"
+        pendingLogs.append("The Roto-Control's ports are gone (unplugged?); trying again every \(Self.seconds(settings.retryInterval))")
+        lock.unlock()
+        connection.close()
+    }
+
+    private static func seconds(_ interval: Double) -> String {
+        interval == interval.rounded() ? "\(Int(interval)) s" : "\(interval) s"
     }
 
     private var isRunning: Bool {
@@ -243,7 +332,15 @@ public final class BridgeEngine: @unchecked Sendable {
     }
 
     private func tick() {
+        openSocketIfDue()
+        checkMIDIIfDue()
+        openMIDIIfDue()
         lock.lock()
+        // TotalMix has gone quiet (quit, restarted, or OSC turned off): ask for its state until it
+        // answers, so the mirror is whole again when it comes back.
+        let answering = lastFromTotalMix.map { now - $0 < Self.totalMixTimeout } ?? false
+        if totalMixWasAnswering, !answering { dispatch(hub.connect(now: now)) }
+        totalMixWasAnswering = answering
         dispatch(hub.tick(now: now))
         sendToRoto(driver.tick(now: now))
         lock.unlock()
@@ -277,7 +374,8 @@ public final class BridgeEngine: @unchecked Sendable {
         status.playbacksOnNewPage = hub.layout.playbacksOnNewPage
         status.monitoringOutputs = Self.monitoringChoices(hub.mirror)
         status.otherOutputs = Self.otherChoices(hub.mirror, layout: hub.layout)
-        status.error = lastStatus.error
+        let errors = [socketError, midiError].compactMap { $0 }
+        status.error = errors.isEmpty ? nil : errors.joined(separator: "\n")
         return status
     }
 
@@ -307,7 +405,9 @@ public final class BridgeEngine: @unchecked Sendable {
         lock.lock()
         let status = makeStatus()
         lastStatus = status
+        let logs = takeLogs()
         lock.unlock()
+        logs.forEach(log)
         onStatus?(status)
     }
 
@@ -317,7 +417,9 @@ public final class BridgeEngine: @unchecked Sendable {
         let previous = lastStatus
         let changed = status != previous
         if changed { lastStatus = status }
+        let logs = takeLogs()
         lock.unlock()
+        logs.forEach(log)
         guard changed else { return }
         if status.totalMixAnswering != previous.totalMixAnswering {
             log(status.totalMixAnswering ? "TotalMix is answering" : "No answer from TotalMix for \(Int(Self.totalMixTimeout)) s")
@@ -326,6 +428,14 @@ public final class BridgeEngine: @unchecked Sendable {
             log(status.rotoConnected ? "Roto-Control connected" : "Roto-Control disconnected")
         }
         onStatus?(status)
+    }
+
+    /// Lines to log once the lock is released.
+    private var pendingLogs: [String] = []
+
+    private func takeLogs() -> [String] {
+        defer { pendingLogs = [] }
+        return pendingLogs
     }
 
     private func log(_ text: String) {

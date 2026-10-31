@@ -129,6 +129,21 @@ public final class MIDIConnection: @unchecked Sendable {
         try Self.check("MIDISendEventList", MIDISendEventList(outputPort, destinationRef, list))
     }
 
+    /// Whether the source and destination are still in the system's lists and online. When a device
+    /// is unplugged, CoreMIDI may mark its endpoints offline or leave them out of the lists (an
+    /// inference, not yet tested with the Roto-Control), so both are checked.
+    public var isAvailable: Bool {
+        Self.isOnline(sourceRef, among: (0..<MIDIGetNumberOfSources()).map { MIDIGetSource($0) })
+            && Self.isOnline(destinationRef, among: (0..<MIDIGetNumberOfDestinations()).map { MIDIGetDestination($0) })
+    }
+
+    private static func isOnline(_ endpoint: MIDIEndpointRef, among endpoints: [MIDIEndpointRef]) -> Bool {
+        guard endpoints.contains(endpoint) else { return false }
+        var offline: Int32 = 0
+        let status = MIDIObjectGetIntegerProperty(endpoint, kMIDIPropertyOffline, &offline)
+        return status != noErr || offline == 0
+    }
+
     /// Stops listening and closes the connection.
     public func close() {
         if inputPort != 0 { MIDIPortDisconnectSource(inputPort, sourceRef); MIDIPortDispose(inputPort); inputPort = 0 }
@@ -171,6 +186,8 @@ public final class MIDIConnection: @unchecked Sendable {
 
     /// Throws `MIDIConnectionError.unsupportedPlatform`.
     public func send(_ bytes: [UInt8]) throws { throw MIDIConnectionError.unsupportedPlatform }
+    /// Always false: there is no connection on this platform.
+    public var isAvailable: Bool { false }
 
     /// Does nothing on this platform.
     public func close() {}

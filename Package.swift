@@ -76,7 +76,7 @@ if includeTests {
     targets.append(.testTarget(name: "MIDITransportTests", dependencies: ["MIDITransport", "RotoControl"]))
     targets.append(.testTarget(name: "UDPTransportTests", dependencies: ["UDPTransport"]))
     targets.append(.testTarget(name: "SurfaceCoreTests", dependencies: ["SurfaceCore", "TotalMixOSC", "OSCCodec"]))
-    targets.append(.testTarget(name: "BridgeEngineTests", dependencies: ["BridgeEngine", "SurfaceCore", "TotalMixOSC", "OSCCodec"]))
+    targets.append(.testTarget(name: "BridgeEngineTests", dependencies: ["BridgeEngine", "SurfaceCore", "TotalMixOSC", "OSCCodec", "UDPTransport"]))
     targets.append(.testTarget(name: "RotoDriverTests", dependencies: ["RotoDriver", "RotoControl", "SurfaceCore", "TotalMixOSC", "OSCCodec"]))
 }
 

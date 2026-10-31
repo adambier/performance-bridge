@@ -2,6 +2,7 @@ import XCTest
 import OSCCodec
 import TotalMixOSC
 import SurfaceCore
+import UDPTransport
 @testable import BridgeEngine
 
 final class BridgeEngineTests: XCTestCase {
@@ -46,5 +47,38 @@ final class BridgeEngineTests: XCTestCase {
     func testSettingsCarryThePlaybackPageOption() {
         let engine = BridgeEngine(settings: BridgeSettings(playbacksOnNewPage: true))
         XCTAssertTrue(engine.settings.playbacksOnNewPage)
+    }
+
+    func testSettingsRetryEveryThreeSecondsByDefault() {
+        XCTAssertEqual(BridgeSettings().retryInterval, 3)
+    }
+
+    /// TotalMix's port is taken, then freed: the engine runs anyway, says why, and opens the port
+    /// on a later try. The Roto-Control is missing throughout (no MIDI here, or no device).
+    func testTheEngineKeepsTryingTotalMixsPortAndRunsWithoutTheRotoControl() throws {
+        #if os(Windows)
+        throw XCTSkip("No UDP sockets on Windows yet")
+        #else
+        var blocker: UDPSocket? = try UDPSocket(listeningOn: 0, localOnly: true)
+        let port = try XCTUnwrap(blocker?.localPort)
+        let endpoint = TotalMixEndpoint(host: "127.0.0.1", incomingPort: 9, outgoingPort: port)
+        let engine = BridgeEngine(settings: BridgeSettings(endpoint: endpoint, rotoPortName: "No such port here",
+                                                           retryInterval: 0.2))
+        engine.start()
+        defer { engine.stop() }
+        XCTAssertTrue(engine.status.running)
+        let error = try XCTUnwrap(engine.status.error)
+        XCTAssertTrue(error.contains("Can't listen on port \(port)"), error)
+        XCTAssertTrue(error.contains("Roto-Control not found"), error)
+
+        blocker = nil
+        let deadline = Date().addingTimeInterval(3)
+        while Date() < deadline, engine.status.error?.contains("Can't listen") == true {
+            Thread.sleep(forTimeInterval: 0.05)
+        }
+        let after = try XCTUnwrap(engine.status.error)
+        XCTAssertFalse(after.contains("Can't listen"), after)
+        XCTAssertTrue(after.contains("Roto-Control not found"), after)
+        #endif
     }
 }
