@@ -119,6 +119,7 @@ Don't:
 - Don't add dependencies to the libraries.
 - Don't use "TotalMix", "RME", "Roto-Control", or "Launch Control" in the app's name. Use them only to describe what it works with.
 - Don't touch signing, notarization, `appcast.xml`, or the Sparkle keys. The release flow is the owner's.
+- Never write to another app's preferences or files (Adam, 2026-10-31). Reading TotalMix's settings, if it can be done, is a separate decision that waits for a test on the Mac.
 
 ## 5. How to verify
 
