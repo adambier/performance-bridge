@@ -240,8 +240,8 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 
 **Inferences:**
 
-- Input 1 is the ADI-2 input. The inference rests on the strip order and on Sonos being input 3. An unhidden baseline run would confirm it.
+- Input 1 is the ADI-2 input. Confirmed by an unhidden baseline run (`logs/test8a-unhidden.log`, 2026-10-31, Adam): with the ADI-2 input unhidden, input 1 sends "name = ADI-2" and inputs 1 to 14 all appear.
 - A channel hidden from an OSC Controller sends no messages on that controller. From OSC alone, the app cannot tell a hidden channel from one the interface does not have. So the app cannot detect hidden channels.
-- Hiding does not renumber the channels that remain. This is one run.
+- Hiding does not renumber the channels that remain. This is one run; the baseline run shows the same numbers for the remaining inputs.
 
 **Not tested:** an unhidden baseline; whether "Receive to hidden channels" (Options → Mixer Settings… → OSC → Details) changes what is sent for a hidden channel; and the other controllers.
