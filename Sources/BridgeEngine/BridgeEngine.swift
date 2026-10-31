@@ -57,6 +57,23 @@ public struct HomeChoice: Equatable, Hashable, Sendable {
     public var roles: [MonitoringRole]
 }
 
+/// A channel as the layout editor lists it.
+public struct LayoutItem: Equatable, Sendable {
+    /// The channel.
+    public var channel: ChannelRef
+    /// The name a strip shows (see `SurfaceHub.stripName`).
+    public var name: String
+    /// Whether the app hides it from the strips (`PerformanceLayout.hidden`).
+    public var hidden: Bool
+
+    /// An item for the layout editor.
+    public init(channel: ChannelRef, name: String, hidden: Bool) {
+        self.channel = channel
+        self.name = name
+        self.hidden = hidden
+    }
+}
+
 /// What the engine is doing, for the app's menu.
 public struct BridgeStatus: Equatable, Sendable {
     /// Whether the engine is running.
@@ -305,6 +322,33 @@ public final class BridgeEngine: @unchecked Sendable {
         dispatch(hub.setLayout(layout, now: now))
         lock.unlock()
         publishStatus()
+    }
+
+    /// The layout the surfaces use now.
+    public var layout: PerformanceLayout {
+        lock.lock()
+        defer { lock.unlock() }
+        return hub.layout
+    }
+
+    /// Replaces the layout: the order, the channels the app hides, and the new-page option.
+    public func setLayout(_ layout: PerformanceLayout) {
+        lock.lock()
+        dispatch(hub.setLayout(layout, now: now))
+        lock.unlock()
+        publishStatus()
+    }
+
+    /// The channels of a view for the layout editor, in the order the surfaces show them, with
+    /// the channels the app hides. Channels hidden from this OSC remote in TotalMix are not here.
+    public func layoutItems(_ view: ViewKind) -> [LayoutItem] {
+        lock.lock()
+        defer { lock.unlock() }
+        return hub.layout.channels(view, in: hub.mirror, includingHidden: true).map { ref in
+            LayoutItem(channel: ref,
+                       name: SurfaceHub.stripName(ref, hub.mirror.channels[ref]),
+                       hidden: hub.layout.hidden.contains(ref))
+        }
     }
 
     /// Asks TotalMix for its whole state again.
