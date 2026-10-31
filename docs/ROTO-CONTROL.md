@@ -395,6 +395,10 @@ marked "seen".
   values suggest, and the driver's colors are chosen by eye. A second round (run 10) found 61
   forest or olive green against TotalMix's lime, and 17 lemon against TotalMix's yellow-orange;
   in a third (run 11), 18 looked fluorescent and 1 plain orange, a better match for TotalMix's
-  orange than 15. Run 12: 47 looked olive, and 59 brownish ("peanut butter").
+  orange than 15. Run 12: 47 looked olive, and 59 brownish ("peanut butter"). Run 13: 19 matched
+  TotalMix's green, and 73 was a little too green for its yellow.
+- **SET TRACK COLOUR** (run 14, seen): sent after TRACK DETAILS END, it changed the strip's color
+  in MIX mode (FFC800, a yellow-orange), with the strip's name in white, where scheme 73 alone had
+  black text. The host cannot choose the text color.
 - **SOLO and ARM** (run 7, seen): with the switches on solo, a press set PFL in TotalMix and lit
   the switch; on record arm, a press did nothing.

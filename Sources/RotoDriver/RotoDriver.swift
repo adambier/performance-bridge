@@ -363,11 +363,11 @@ public struct RotoDriver: Sendable {
     /// An exact color for a strip, sent with SET TRACK COLOUR after its color scheme, where no
     /// scheme in the table matches TotalMix closely enough: so far only yellow (TotalMix's index 7),
     /// which on the Roto-Control's screens falls between scheme 73 (a little too green) and scheme 1
-    /// (orange). An experiment: whether the Roto-Control shows SET TRACK COLOUR in MIX mode is
-    /// untested (docs/ROTO-CONTROL.md, test 4).
+    /// (orange). The Roto-Control shows SET TRACK COLOUR in MIX mode, with the strip's name in
+    /// white (docs/ROTO-CONTROL.md, test 4).
     public static func exactColor(for info: StripInfo) -> RotoColor? {
         guard info.kind == .source, info.color == 7 else { return nil }
-        return RotoColor(red: 0xFF, green: 0xC8, blue: 0x00)
+        return RotoColor(red: 0xFF, green: 0xD4, blue: 0x00)
     }
 
     /// The Roto-Control color scheme for a strip: sources in their TotalMix color, outputs by kind

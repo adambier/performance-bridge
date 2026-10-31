@@ -347,7 +347,7 @@ final class RotoDriverTests: XCTestCase {
     func testYellowGetsAnExactColor() {
         let yellow = StripInfo(channel: ChannelRef(.playback, 12), name: "PB 13/14", color: 7, stereo: true,
                                kind: .source, knobLabel: "", switchLabel: "")
-        XCTAssertEqual(RotoDriver.exactColor(for: yellow), RotoColor(red: 0xFF, green: 0xC8, blue: 0x00))
+        XCTAssertEqual(RotoDriver.exactColor(for: yellow), RotoColor(red: 0xFF, green: 0xD4, blue: 0x00))
         var other = yellow
         other.color = 6
         XCTAssertNil(RotoDriver.exactColor(for: other))
