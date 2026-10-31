@@ -9,8 +9,7 @@ times taller than the real one so the bridge reads at small sizes.
 
 Writes, next to this script:
   master/        full-bleed 1024 x 1024 layers for the macOS 26 icon format (Icon Composer):
-                 1-sky.svg, 2-reflection.svg, 3-waves.svg, 4-bridge.svg, 5-faders.svg, and
-                 composite.svg
+                 1-sky.svg, 2-reflection.svg, 3-bridge.svg, 4-faders.svg, and composite.svg
   legacy/        shaped icons with a drop shadow, for an .icns: large.svg (128 px and up, with
                  the reflection), medium.svg (64 px), px32.svg and px16.svg (drawn on the pixel
                  grid)
@@ -32,7 +31,6 @@ DECK_LARGE = "#33466a"
 DECK_SMALL = "#8597bb"                    # lighter, so the deck reads at 64 px and below
 HANGER = "#3d5276"
 CAP = "#f3eee4"
-WATER_LINE = "#0a1426"
 
 # Geometry on the legacy 1024 grid, where the icon's body is the 824 x 824 square at (100, 100).
 TOWER_X, TOWER_TOP = 650, 205
@@ -115,9 +113,8 @@ SKY_GRADIENT = ('<linearGradient id="%s" x1="0" y1="0" x2="0" y2="1"><stop offse
 
 def water(prefix):
     """The reflection as plain vector shapes (no filter): the bridge mirrored at the deck line, cut
-    into horizontal strips that are shifted sideways and fade with depth. Returns the clip paths,
-    the strips, and the dark wave lines, which are kept apart so the Clear and Tinted styles can
-    leave them out (Adam, 2026-10-30: they look odd there)."""
+    into horizontal strips that are shifted sideways and fade with depth. Returns the clip paths and
+    the strips. (Dark wave lines across the water were tried and dropped: Adam, 2026-10-30.)"""
     mirrored = bridge(1, DECK_LARGE, 22, CAPS_LARGE, with_deck=False) + "\n" + flat_caps(CAPS_LARGE, CAP_LARGE)
     defs, strips = [], []
     strip_h, top = 8, DECK_LINE
@@ -131,10 +128,7 @@ def water(prefix):
         defs.append('<clipPath id="%s"><rect x="0" y="%d" width="1024" height="%d"></rect></clipPath>' % (cid, y0, strip_h))
         strips.append('<g clip-path="url(#%s)" opacity="%.3f"><g transform="translate(%.1f %d) scale(1 -1)">%s</g></g>'
                       % (cid, opacity, dx, 2 * DECK_LINE, mirrored))
-    waves = ('<g stroke="%s" stroke-width="5" stroke-opacity="0.7" stroke-linecap="round">' % WATER_LINE +
-             '<line x1="230" y1="690" x2="794" y2="690"></line><line x1="250" y1="748" x2="774" y2="748"></line>'
-             '<line x1="280" y1="806" x2="744" y2="806"></line></g>')
-    return "\n".join(defs), "\n".join(strips), waves
+    return "\n".join(defs), "\n".join(strips)
 
 
 def superellipse(cx, cy, half, n=5.0, steps=256):
@@ -170,16 +164,15 @@ SHIFT = 'transform="translate(0 %d)"' % LARGE_SHIFT
 
 def master_layers():
     sky = svg(1024, '<rect width="1024" height="1024" fill="url(#sky)"></rect>', SKY_GRADIENT % "sky")
-    wdefs, wbody, waves = water("m")
+    wdefs, wbody = water("m")
     water_layer = svg(1024, '<g %s><g %s>\n%s\n</g></g>' % (MASTER, SHIFT, wbody), wdefs)
-    waves_layer = svg(1024, '<g %s><g %s>\n%s\n</g></g>' % (MASTER, SHIFT, waves))
     bridge_layer = svg(1024, '<g %s><g %s>\n%s\n</g></g>' % (MASTER, SHIFT, bridge(1, DECK_LARGE, 22, CAPS_LARGE)))
     faders = svg(1024, '<g %s><g %s>\n%s\n</g></g>' % (MASTER, SHIFT, shaded_caps(CAPS_LARGE, CAP_LARGE, "face")), CAP_FACE % "face")
-    composite = svg(1024, '<rect width="1024" height="1024" fill="url(#sky)"></rect>\n<g %s><g %s>\n%s\n%s\n%s\n%s\n</g></g>' % (
-        MASTER, SHIFT, wbody, waves, bridge(1, DECK_LARGE, 22, CAPS_LARGE), shaded_caps(CAPS_LARGE, CAP_LARGE, "face")),
+    composite = svg(1024, '<rect width="1024" height="1024" fill="url(#sky)"></rect>\n<g %s><g %s>\n%s\n%s\n%s\n</g></g>' % (
+        MASTER, SHIFT, wbody, bridge(1, DECK_LARGE, 22, CAPS_LARGE), shaded_caps(CAPS_LARGE, CAP_LARGE, "face")),
         SKY_GRADIENT % "sky" + "\n" + CAP_FACE % "face" + "\n" + wdefs)
-    return {"1-sky.svg": sky, "2-reflection.svg": water_layer, "3-waves.svg": waves_layer, "4-bridge.svg": bridge_layer,
-            "5-faders.svg": faders, "composite.svg": composite}
+    return {"1-sky.svg": sky, "2-reflection.svg": water_layer, "3-bridge.svg": bridge_layer, "4-faders.svg": faders,
+            "composite.svg": composite}
 
 
 SHADOW = ('<filter id="shadow" x="-10%" y="-10%" width="120%" height="125%">'
@@ -187,8 +180,7 @@ SHADOW = ('<filter id="shadow" x="-10%" y="-10%" width="120%" height="125%">'
 
 
 def legacy_large():
-    wdefs, wbody, waves = water("l")
-    wbody += "\n" + waves
+    wdefs, wbody = water("l")
     defs = "\n".join([SKY_GRADIENT % "sky", CAP_FACE % "face", wdefs, SHADOW,
                       '<clipPath id="body"><path d="%s"></path></clipPath>' % BODY])
     body = ('<path d="%s" fill="url(#sky)" filter="url(#shadow)"></path>\n<g clip-path="url(#body)"><g %s>\n%s\n%s\n%s\n</g></g>'
