@@ -63,6 +63,12 @@ let products: [Product] = [
     .executable(name: "sbdev", targets: ["sbdev"]),
 ]
 
+// A first look at the menu-bar app, run with `swift run PerformanceBridge` (macOS only).
+if onMac {
+    targets.append(.executableTarget(name: "PerformanceBridge", dependencies: ["BridgeEngine", "TotalMixOSC", "SurfaceCore"],
+                                     path: "App/PerformanceBridge"))
+}
+
 if includeTests {
     targets.append(.testTarget(name: "OSCCodecTests", dependencies: ["OSCCodec"]))
     targets.append(.testTarget(name: "TotalMixOSCTests", dependencies: ["OSCCodec", "TotalMixOSC"]))
