@@ -88,6 +88,10 @@ surface. The aim is less for the user to think about: one place to set each thin
 keep in step between TotalMix and the app. Where this makes the app's code more complex (e.g.,
 reading a setting from TotalMix instead of asking for it), that cost is accepted.
 
+The exception (Adam, 2026-10-31): a separate app setting for something TotalMix also configures is
+acceptable when there is a strong case for the surface behaving differently from TotalMix at the
+same time. The case is made, and recorded, before the setting is added.
+
 Do:
 
 - Keep `OSCCodec`, `TotalMixOSC`, `RotoControl`, `SurfaceCore`, `RotoDriver`, and the planned drivers Foundation-only, UI-free, and building on Linux, macOS, and Windows. Platform code (CoreMIDI, sockets, SwiftUI) stays in `UDPTransport`, `MIDITransport`, or the app.
