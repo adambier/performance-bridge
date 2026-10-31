@@ -248,4 +248,4 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 
 **Test 8a (baseline, `logs/test8a-unhidden.log`):** the same run with the ADI-2 input unhidden. Input 1 sent its settings, starting with `name = "ADI-2"`.
 
-**Not tested:** the other controllers; and whether "Receive to hidden channels" changes what TotalMix sends in another connection or with another interface.
+**Not tested:** the other controllers; and what "Receive to hidden channels" does in the other direction. Its name, and the RME document's wording that hidden channels "may be received by option", suggest it governs messages that the remote sends to a hidden channel, not messages TotalMix sends from it. The inference is that test 8b did not test that direction. A test would send a fader or mute message to the hidden ADI-2 input from `sbdev send` with the option on and off, and check the input in TotalMix's window. The records above hold only for what TotalMix sends.
