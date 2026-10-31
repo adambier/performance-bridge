@@ -351,14 +351,13 @@ public struct RotoDriver: Sendable {
     }
 
     /// The color scheme for monitoring outputs until TotalMix's colors are matched: 33, seen as
-    /// green (docs/ROTO-CONTROL.md, test 2).
+    /// green (docs/ROTO-CONTROL.md, test 2). Used for outputs.
     public static let monitoringScheme: UInt8 = 33
     /// The color scheme for sends until TotalMix's colors are matched: 22, seen as blue.
     public static let sendScheme: UInt8 = 22
 
-    /// The Roto-Control color scheme for a strip. TotalMix's colors have not been matched to the
-    /// Roto-Control's table yet, so outputs are colored by kind (monitoring outputs green, sends
-    /// blue), and sources by `colorScheme(forTotalMixColor:)`.
+    /// The Roto-Control color scheme for a strip: sources in their TotalMix color, outputs by kind
+    /// (monitoring outputs green, sends blue).
     public static func colorScheme(for info: StripInfo) -> UInt8 {
         switch info.kind {
         case .monitoring: return monitoringScheme
@@ -367,13 +366,27 @@ public struct RotoDriver: Sendable {
         }
     }
 
-    /// The Roto-Control color scheme (0–82) for a TotalMix color index. A placeholder: TotalMix's
-    /// colors have not been matched to the Roto-Control's table yet, so each TotalMix index gets a
-    /// different scheme, spread across the table, and no color (or index 1, the default) gets
-    /// scheme 0.
+    /// The Roto-Control color scheme for each of TotalMix's eight colors, by TotalMix's color
+    /// index: 1 white, 2 grey, 3 orange, 4 red, 5 blue, 6 green, 7 yellow, 8 pink (the order of
+    /// TotalMix's Color menu, and the indexes TotalMix sends; docs/TOTALMIX-OSC.md, test 7). Each
+    /// scheme was chosen from the SysEx doc's color table as the nearest to the color's name; a
+    /// first pass, still to be compared on the hardware.
+    public static let schemeForTotalMixColor: [Int: UInt8] = [
+        1: 13,  // white
+        2: 41,  // grey
+        3: 15,  // orange
+        4: 14,  // red
+        5: 22,  // blue
+        6: 5,   // green
+        7: 17,  // yellow
+        8: 0,   // pink
+    ]
+
+    /// The Roto-Control color scheme (0–82) for a TotalMix color index, or white (TotalMix's
+    /// default) for no color or an unknown index.
     public static func colorScheme(forTotalMixColor color: Int?) -> UInt8 {
-        guard let color, color > 1 else { return 0 }
-        return UInt8(((color - 1) * 11) % 83)
+        guard let color, let scheme = schemeForTotalMixColor[color] else { return schemeForTotalMixColor[1] ?? 0 }
+        return scheme
     }
 
     /// Whether a knob report is the motor settling after the driver moved the knob, rather than

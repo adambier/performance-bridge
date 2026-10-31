@@ -94,7 +94,7 @@ final class RotoDriverTests: XCTestCase {
         XCTAssertTrue(driver.isConnected)
         XCTAssertTrue(midi.contains(RotoOutgoing.meterThresholds(yellow: 117, red: 125).bytes))
         XCTAssertTrue(midi.contains(RotoOutgoing.trackCount(4).bytes))
-        XCTAssertTrue(midi.contains(RotoOutgoing.trackDetails(RotoTrackDetails(index: 2, name: "Gtr", colorScheme: 0),
+        XCTAssertTrue(midi.contains(RotoOutgoing.trackDetails(RotoTrackDetails(index: 2, name: "Gtr", colorScheme: 13),
                                                               immediate: false).bytes))
         XCTAssertTrue(midi.contains(RotoOutgoing.trackDetailsEnd.bytes))
         for blank in 4..<8 {
@@ -232,12 +232,12 @@ final class RotoDriverTests: XCTestCase {
         let vox = ChannelRef(.input, 2)
         XCTAssertEqual(hub.mode(of: rotoID), .focus(channel: vox, first: 0))
         XCTAssertTrue(step.midi.contains(RotoOutgoing.sendNames(start: 0, names: ["to Phones"]).bytes))
-        XCTAssertTrue(step.midi.contains(RotoOutgoing.selectTrack(RotoTrackDetails(index: 1, name: "Vox", colorScheme: 0)).bytes))
+        XCTAssertTrue(step.midi.contains(RotoOutgoing.selectTrack(RotoTrackDetails(index: 1, name: "Vox", colorScheme: 13)).bytes))
         let send = driver.receive(knobCCs(2, 3000), hub: &hub, now: 3)
         XCTAssertEqual(send.core.messages.map(\.address), ["/mix/in/2/2/faderlin"], "knob 3 is the first send")
         let page1 = driver.receive(sysEx(.mix, 0x02, [0x01]), hub: &hub, now: 4)
         XCTAssertEqual(hub.mode(of: rotoID), .focus(channel: vox, first: 0), "only one send: no second page")
-        XCTAssertTrue(page1.midi.contains(RotoOutgoing.selectTrack(RotoTrackDetails(index: 1, name: "Vox", colorScheme: 0)).bytes))
+        XCTAssertTrue(page1.midi.contains(RotoOutgoing.selectTrack(RotoTrackDetails(index: 1, name: "Vox", colorScheme: 13)).bytes))
     }
 
     func testPagingFromTheRotoControl() {
@@ -344,10 +344,13 @@ final class RotoDriverTests: XCTestCase {
         XCTAssertEqual(Double(sent), RotoFeedback.fraction(12288) * 2 - 1, accuracy: 1e-6)
     }
 
-    func testColorSchemePlaceholder() {
-        XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: nil), 0)
-        XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: 1), 0)
-        XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: 2), 11)
-        XCTAssertLessThanOrEqual(RotoDriver.colorScheme(forTotalMixColor: Int.max / 20), 82)
+    func testTotalMixColors() {
+        XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: nil), 13, "no color is TotalMix's default, white")
+        XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: 1), 13)
+        XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: 4), 14, "red")
+        XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: 8), 0, "pink")
+        XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: 99), 13, "unknown is white")
+        XCTAssertEqual(Set(RotoDriver.schemeForTotalMixColor.keys), Set(1...8))
+        XCTAssertTrue(RotoDriver.schemeForTotalMixColor.values.allSatisfy { $0 <= 82 })
     }
 }

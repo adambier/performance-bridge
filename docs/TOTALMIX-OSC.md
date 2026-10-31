@@ -65,7 +65,7 @@ The three rows of the mixer are spelled three ways (`TotalMixBus`). [RME doc]
 
 **Playback names.** TotalMix names each playback after the output of the same number, because by default playback n is routed to output n alone. [RME forum](https://forum.rme-audio.de/viewtopic.php?id=36883) SurfaceCore therefore shows playbacks as "PB 1/2", "PB 3/4", and so on, so that they cannot be mistaken for inputs. Whether Global OSC sends a playback's own name or its output's has not been checked.
 
-`color` is 0 for a hidden channel, and otherwise a color index from 1 (1 is the default color). [RME doc] The inference is that "hidden" means hidden from this OSC remote in Options → Channel Layout; SurfaceCore leaves such channels off the strips. Whether TotalMix sends a hidden channel's settings at all is untested.
+`color` is 0 for a hidden channel, and otherwise a color index from 1 (1 is the default color). [RME doc] TotalMix offers eight colors (Channel Layout, Color (Name)), and the index follows their order in that menu: 1 white, 2 grey, 3 orange, 4 red, 5 blue, 6 green, 7 yellow, 8 pink. [test 7] The inference is that "hidden" means hidden from this OSC remote in Options → Channel Layout; SurfaceCore leaves such channels off the strips. Whether TotalMix sends a hidden channel's settings at all is untested.
 
 **Mixer nodes** have the form `/mix/<in|pb>/<channel>/<output>/<parameter>`. A node is the send from an input or playback to an output, that is, its level in that output's submix. [RME doc] The parameters are:
 
@@ -214,3 +214,10 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 - **PFL shows only in Live Mode.** `/input/<n>/pfl` 1 was sent and accepted, but the user found no sign of it in TotalMix's window until "Live Mode, PFL replaces Solo" (PFL Mode, in Settings) was turned on; then the channel's Solo/PFL button lit, and clicking it in TotalMix was sent back as `pfl` (seen). [RME manual: Live Mode replaces Solo with PFL]
 - **Live Mode cannot be read.** Turning Live Mode off and on sent nothing, and the reply to `/sendsettings` does not mention it. RME's document lists only the device name, the connection, and the DSP load as status. [RME doc]
 - **PFL goes to Main when Cue/PFL to is unassigned.** With `controlroom/cuechan` reported as −1, PFL on a silent input silenced Main, which had been playing another input (seen). [RME manual: the Cue/PFL to setting also routes PFL]
+
+
+### Test 7 (2026-10-30): color indexes
+
+**Setup.** TotalMix FX "2.10 (1)" with a Digiface AES. In Channel Layout, the first eight playback pairs were given the eight colors in menu order (white, grey, orange, red, blue, green, yellow, pink), and `sbdev monitor --sendall` recorded what TotalMix sent.
+
+**Findings.** Playbacks 1, 3, 5, 7, 9, 11, 13, and 15 (each the left channel of a pair) sent `color` 1 to 8 in that order, so the index is the color's position in the menu, counting from 1. The pairs' names were the outputs' default names (AES, SPDIF, Analog 1/2, Phones, ADAT 1/2 to ADAT 7/8), as section 3 describes.
