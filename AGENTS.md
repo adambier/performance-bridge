@@ -80,6 +80,12 @@ small driver of its own.
 
 ## 4. Rules (do / don't)
 
+Design rule (Adam, 2026-10-31): **whatever can be configured in TotalMix is configured only
+there.** Performance Bridge reads it over OSC and offers no setting of its own for it (e.g.,
+channel names, colors, which channels a remote sees, the control room's monitoring assignments).
+The app has settings only for what TotalMix can't express, such as the order of channels on a
+surface. This keeps the app simple and leaves one place to change each thing.
+
 Do:
 
 - Keep `OSCCodec`, `TotalMixOSC`, `RotoControl`, `SurfaceCore`, `RotoDriver`, and the planned drivers Foundation-only, UI-free, and building on Linux, macOS, and Windows. Platform code (CoreMIDI, sockets, SwiftUI) stays in `UDPTransport`, `MIDITransport`, or the app.
