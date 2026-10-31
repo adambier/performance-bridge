@@ -347,8 +347,8 @@ final class RotoDriverTests: XCTestCase {
     func testTotalMixColors() {
         XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: nil), 13, "no color is TotalMix's default, white")
         XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: 1), 13)
-        XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: 4), 14, "red")
-        XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: 8), 0, "pink")
+        XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: 4), 56, "red")
+        XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: 8), 24, "pink, drawn purple")
         XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: 99), 13, "unknown is white")
         XCTAssertEqual(Set(RotoDriver.schemeForTotalMixColor.keys), Set(1...8))
         XCTAssertTrue(RotoDriver.schemeForTotalMixColor.values.allSatisfy { $0 <= 82 })
