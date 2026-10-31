@@ -42,21 +42,27 @@ title is not in the screenshot, so the top-level menu is not checked.
 6. Under "Options", the screenshot shows "Send Level Data" on, "Peak Hold" off, and "Lock Remote to Submix" off.
    The tests had "Send Level Data" off. Whether the app needs it on is not tested. "Number of faders per bank"
    reads 8 on controller 4 and 48 on controller 1; its effect on the app is not tested.
-7. The "Details" button beside "Compatibility (Mode)" should hold "Send changes" and "Send status". It has not
-   been opened or checked on screen.
+7. The "Details" button opens a window titled "Gobal OSC - Detailed Settings". TotalMix's title has this spelling.
+   Checked on screen (Adam, 2026-10-31): "Send changes" on, "Send status" on, "Send all data on start (enable)" off,
+   "Receive to hidden channels" off, "Send faders in linear scale" on, "Re-send received" off, and bandwidth
+   limitation 500kByte/s. Test 1 had "Send faders in linear scale" off, and test 2 had it on. Whether the app
+   needs any of these set a certain way is not tested.
 8. Options → Submix linked to OSC Controller is a submenu. Its choices have not been checked on screen.
 
 ## Step 2: Choose which channels the remote sees
 
 Channels that TotalMix hides from the OSC remote are not shown on any surface, and the app does not show
-them greyed out. To hide or show a channel for the remote:
+them greyed out. Checked on screen (Adam, 2026-10-31) unless marked otherwise:
 
-1. Choose Options → Channel Layout… The menu item is checked on screen. The window it opens has not been
-   checked.
-2. Set "Hide Channel in OSC Remote 1-4" for the remote the app uses. RME's online manual states this label
-   (docs.rme-audio.com/aoxd/813-1c_control/), and says hidden channels are removed from the list of
-   remote-controllable channels. The label has not been seen in the running TotalMix, and which of the
-   1–4 remotes the app uses has not been checked.
+1. Open the Channel Layout window. Right-click a channel's strip in TotalMix's main window and choose
+   "Change Channel Layout", or choose Options → Channel Layout…. The window has tabs for Inputs, Playbacks,
+   and Outputs.
+2. Select the channel's row in the table. Under "Hide Channel in", the group lists "Mixer/Matrix",
+   "MIDI Controller 1–4", and "OSC Controller 1–4". Check the box for the OSC controller the app uses to hide the
+   channel from it. The screenshot shows every box clear for the selected channel. What a checked box does has
+   not been seen on screen.
+3. The table's "Remote Controller" column lists M1–M4 and O1–O4 for each channel. What that column shows
+   for a hidden channel has not been checked.
 
 To hide a channel only in the app, use the layout editor instead (Step 5). That does not change TotalMix.
 Whether TotalMix's hidden channels change the channel numbers the app receives has not been tested.

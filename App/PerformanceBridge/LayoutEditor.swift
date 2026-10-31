@@ -45,7 +45,7 @@ struct LayoutView: View {
                 Text(view == .outputs
                      ? "Monitoring outputs (Main Out, Phones, and so on) always come first. Drag to order the sends."
                      : "Drag to change the order. TotalMix can't reorder its channels; this can.")
-                Text("Channels hidden from OSC in TotalMix are not shown here or on any surface. To show one, go to Options → Channel Layout in TotalMix FX and set \u{201C}Hide Channel in OSC Remote\u{201D} to off for the remote Performance Bridge uses.")
+                Text("Channels hidden from OSC in TotalMix are not shown here or on any surface. To show one, right-click the channel in TotalMix FX, choose Change Channel Layout, and clear the OSC Controller box that Performance Bridge uses under \u{201C}Hide Channel in.\u{201D}")
             }
             .font(.caption)
             .foregroundStyle(.secondary)

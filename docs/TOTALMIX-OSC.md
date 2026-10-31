@@ -26,7 +26,7 @@ linear scale" off and on, and the fader messages it accepts.
   - The OSC codec accepts both bundles and single messages.
 - The document does not say how many clients TotalMix serves.
 - The document says "Follow Submix" should be off when Global OSC is used. [RME doc]
-  - TotalMix's Options menu has no item by that name. The closest is "Submix linked to MIDI / OSC controller (1-4)": "The 8-channel group follows the currently selected submix", whether the submix is chosen on the remote or in TotalMix, and it "can be useful to deactivate this feature for specific windows". [RME manual]
+  - TotalMix's Options menu has no item by that name. The closest is "Submix linked to MIDI / OSC controller (1-4)" (the manual's label; the running TotalMix shows "Submix linked to OSC Controller", a submenu of its Options menu, [Adam, screenshot 2026-10-31]): "The 8-channel group follows the currently selected submix", whether the submix is chosen on the remote or in TotalMix, and it "can be useful to deactivate this feature for specific windows". [RME manual]
   - The inference is that this is the setting the document means. Test 1, with it on, showed no effect on what Global OSC sends.
 - "Lock Remote to submix", on the OSC page of TotalMix's preferences, lets a remote "only modify the submix selected from the drop-down list". [RME manual] It is left off: Performance Bridge chooses submixes itself.
 - The document says status is sent at about one parameter per second. [RME doc] It does not define "status"; the inference here is that it means the `/status/…` messages.
@@ -35,7 +35,7 @@ linear scale" off and on, and the fader messages it accepts.
 
 - Channels count from 0 in addresses: `/input/2/…` is input 3 in TotalMix's window. Snapshots, layouts, and groups count from 1. [RME doc]
 - **Stereo channels.** A stereo channel is addressed by its left channel. A few parameters differ between left and right, and their right side is addressed as the left channel + 1. [RME doc] Those parameters are `phase`, `gain`, `delay`, and the Room EQ bands and types.
-- **Hidden channels.** Options → Channel Layout can hide channels from each OSC remote ("Hide Channel in OSC Remote 1-4"). Channels hidden in the mixer are also unavailable to OSC. [RME manual] With classic OSC, hidden channels are skipped within a block of faders. [RME manual] With Global OSC, the document says hidden channels "may be received by option" (TotalMix's "Receive to hidden channels"). [RME doc] Whether hiding renumbers the channels Global OSC sends is untested. In test 1 nothing was hidden, and the channel numbers matched the Digiface AES's 14 inputs, 16 playbacks, and 16 outputs. [RME manual, test 1]
+- **Hidden channels.** Channel Layout can hide channels from each OSC remote. [Adam, screenshot 2026-10-31] Its window is opened by right-clicking a channel strip and choosing "Change Channel Layout", or by Options → Channel Layout…. The group "Hide Channel in" lists "OSC Controller 1" to "OSC Controller 4"; the manual's label "Hide Channel in OSC Remote 1-4" is not the label in the running TotalMix. Channels hidden in the mixer are also unavailable to OSC. [RME manual] With classic OSC, hidden channels are skipped within a block of faders. [RME manual] With Global OSC, the document says hidden channels "may be received by option" (TotalMix's "Receive to hidden channels"). [RME doc] Whether hiding renumbers the channels Global OSC sends is untested. In test 1 nothing was hidden, and the channel numbers matched the Digiface AES's 14 inputs, 16 playbacks, and 16 outputs. [RME manual, test 1]
 - **Index values.** List-box settings, such as `reflevel` and the EQ band types, are index values from 0. Their meaning depends on the device. [RME doc]
 - **Value types.** TotalMix accepts true/false and integers wherever it expects a float. [RME doc] `OSCArgument.numericValue` reads all of these forms.
 - **`groupflags`.** The bits count from 0. Outputs 3/4 and 7/8, members of mute group 1, report 4098 = 2¹² + 2¹. So bit 1 is mute group 1 [test 1]; had the bits counted from 1, mute group 1 would have been the value 1. The document's ranges, read from 0, then give:
@@ -122,7 +122,7 @@ known.
 
 - **TotalMix's OSC preferences.** Controller 4, Global OSC mode, incoming port 7004, outgoing port 9004, remote host localhost.
 - **Details options.** "Send changes" and "Send status" on. "Send all data on start", "Send faders in linear scale", "Re-send received", and "Send Level Data" off.
-- **Options menu.** "Submix linked to MIDI / OSC controller (1-4)" on.
+- **Options menu.** "Submix linked to MIDI / OSC controller (1-4)" (the manual's label; the running TotalMix shows "Submix linked to OSC Controller", a submenu of its Options menu, [Adam, screenshot 2026-10-31]) on.
 - **Moves.** Faders were moved with the mouse in TotalMix's window; no surface was connected.
 
 **Findings:**
