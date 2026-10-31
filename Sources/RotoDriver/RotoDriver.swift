@@ -51,10 +51,10 @@ public struct RotoDriver: Sendable {
                                                          hasSwitches: true, hasMeters: true,
                                                          jumpGuard: 8000.0 / Double(RotoSysEx.maximum14Bit))
 
-    /// The meter thresholds sent on connecting: yellow from `MeterScale.warning`, red at
-    /// `MeterScale.fullScale`, so that red shows only at full scale. Whether the Roto-Control turns
-    /// red at or above the red threshold is untested.
-    public static let meterThresholds = (yellow: UInt8(MeterScale.warning), red: UInt8(MeterScale.fullScale))
+    /// The meter thresholds sent on connecting: yellow from `MeterScale.warning` (−5 dBFS) and red
+    /// from `MeterScale.red` (−1 dBFS). The Roto-Control has been observed to show red at the red
+    /// threshold itself, not only above it (docs/ROTO-CONTROL.md, test 4).
+    public static let meterThresholds = (yellow: UInt8(MeterScale.warning), red: UInt8(MeterScale.red))
 
     /// Where the Roto-Control's 0 dB indent sits on a level or send knob (0…1) for each claimed host
     /// type, or `nil` where it is not known.

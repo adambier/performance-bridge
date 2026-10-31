@@ -5,19 +5,24 @@ import TotalMixOSC
 
 /// The scale from TotalMix's peak levels to a surface's meters (0…127).
 ///
-/// TotalMix sends peak levels in dB (`/level/…`, docs/TOTALMIX-OSC.md). The scale follows
-/// TotalMix's own meters as closely as a short meter can: linear in dB over −60…0 dBFS, with the
-/// top value reserved for full scale, where TotalMix shows an over. The −60 dB floor is this
-/// project's choice, still to be compared with TotalMix's meters on the hardware.
+/// TotalMix sends peak levels in dB (`/level/…`, docs/TOTALMIX-OSC.md). The scale is linear in dB
+/// over −60…0 dBFS, with the top value reserved for full scale; the −60 dB floor is this project's
+/// choice. The color thresholds follow TotalMix's meter colors as Adam gave them (yellow from
+/// −5 dBFS, orange from −4, red from −1, flashing at 0; docs/TOTALMIX-OSC.md) as closely as a
+/// surface with two thresholds can: yellow from −5 dBFS and red from −1 dBFS.
 public enum MeterScale {
     /// The bottom of the scale, in dBFS; anything lower shows 0.
     public static let floorDB: Double = -60
     /// The highest meter value, reached only at full scale (0 dBFS or above).
     public static let fullScale = 127
-    /// The value from which a surface should color its meter as a warning: the top step below full
-    /// scale (about −0.5 dBFS and up). With `fullScale` as the over threshold, the meter turns red
-    /// only at full scale, as TotalMix's does.
-    public static let warning = 126
+    /// The level from which a meter shows yellow, in dBFS, as TotalMix's does.
+    public static let warningDB: Double = -5
+    /// The level from which a meter shows red, in dBFS, as TotalMix's does.
+    public static let redDB: Double = -1
+    /// The meter value from which a surface should color its meter yellow (−5 dBFS: 116).
+    public static var warning: Int { value(peakDB: warningDB) }
+    /// The meter value from which a surface should color its meter red (−1 dBFS: 124).
+    public static var red: Int { value(peakDB: redDB) }
 
     /// The meter value for a peak level in dB.
     public static func value(peakDB: Double) -> Int {

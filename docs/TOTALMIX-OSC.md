@@ -9,6 +9,7 @@ a copy of RME's documentation.
 - **[RME doc]**: RME's Global OSC protocol document for TotalMix FX 2.1 beta 2, revision 2026-07-21. It is not included in this repository.
 - **[RME manual]**: the TotalMix FX chapter of RME's Digiface AES User's Guide (PDF dated 2023-11-20). It predates Global OSC, so it describes TotalMix's settings, not this protocol.
 - **[RME forum]**: a post by RME's staff on RME's user forum, linked where it is cited.
+- **[Adam]**: information from the project's owner, without a published source cited here.
 - **[test N]**: a test against TotalMix, described in section 6 with the TotalMix version, the interface, and the settings used.
 
 A statement with neither marker is an inference, and says so.
@@ -59,6 +60,8 @@ The three rows of the mixer are spelled three ways (`TotalMixBus`). [RME doc]
 **Channel settings** have the form `/<bus>/<channel>/<parameter>`, with sub-paths for the low cut, EQ, dynamics, AutoLevel, and Room EQ. Examples are `mute`, `name` (a string), `faderlin`, `volume`, `balpan`, `color` (sent only), and `eq/band1gain`. [RME doc]
 
 **Record-enable.** `record` is a channel setting that TotalMix sends and accepts. [RME doc] The document does not say what it does; the inference is that it is the channel's record-enable for DURec, TotalMix's recorder on interfaces that have one. The Digiface AES's manual does not mention DURec. [RME manual] This project does not use `record`.
+
+**Meter colors.** TotalMix's meters show green up to about −20 dBFS (from −54), yellow from −5 dBFS, orange from −4, red from −1, and red flashing fast at 0 dBFS (overload). [Adam] Levels sent over OSC are peak levels in dB (above); SurfaceCore's `MeterScale` maps them to a surface's meter and uses −5 and −1 dBFS as its yellow and red thresholds.
 
 **Playback names.** TotalMix names each playback after the output of the same number, because by default playback n is routed to output n alone. [RME forum](https://forum.rme-audio.de/viewtopic.php?id=36883) SurfaceCore therefore shows playbacks as "PB 1/2", "PB 3/4", and so on, so that they cannot be mistaken for inputs. Whether Global OSC sends a playback's own name or its output's has not been checked.
 

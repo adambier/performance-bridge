@@ -255,7 +255,6 @@ and step names.
 3. **The 0 dB indent.** Where exactly is the `02` indent (inferred 13003)? Do send knobs get one, with `01` and `02`, as the 3.1.0 release notes say? Does `03` get one?
 4. **The hold rule.** Does a power cycle clear it? Does anything other than a change of knob mode clear it, such as switching to PLUGIN mode and back? Is the release always about 3,300–3,700 counts in?
 5. **The FX label.** With SEL held, screen 3's bottom half shows "FX" under "Send 1" (seen); pressing that switch chooses the send knob mode (test 4). Is "FX" anything more than the label for that button? The SysEx doc names no FX switch mode.
-6. **The meter thresholds.** `RotoDriver` sets yellow at 126 and red at 127, so that red means full scale. Does a meter turn red at the red threshold, or only above it?
 
 ## 9. Tests
 
@@ -381,5 +380,10 @@ marked "seen".
   DETAILS END, the Roto-Control sent SET PLUGIN MODE once each time the user chose PLUGIN mode
   and nothing more. Seen: the knob screens black, the MENU window blue with "---" on top and the
   selected track's name below, and no flicker or cycling.
+- **Meter colors** (`sbdev roto`, after run 7, seen): with thresholds 126 and 127, meter 1 at 125
+  was green almost to its end, at 126 much the same (any yellow was at most a pixel or two), and
+  at 127 full with a red last pixel. So a meter shows red at the red threshold itself. A yellow
+  threshold of 126 leaves no visible yellow, so `RotoDriver` now uses TotalMix's levels instead:
+  yellow from −5 dBFS (116) and red from −1 dBFS (124).
 - **SOLO and ARM** (run 7, seen): with the switches on solo, a press set PFL in TotalMix and lit
   the switch; on record arm, a press did nothing.

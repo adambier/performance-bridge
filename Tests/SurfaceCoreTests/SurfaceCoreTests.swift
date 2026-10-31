@@ -440,7 +440,9 @@ final class ScaleAndTextTests: XCTestCase {
         XCTAssertEqual(MeterScale.value(peakDB: -90), 0)
         XCTAssertEqual(MeterScale.value(peakDB: -60), 0)
         XCTAssertEqual(MeterScale.value(peakDB: -30), 63)
-        XCTAssertEqual(MeterScale.value(peakDB: -0.1), MeterScale.warning)
+        XCTAssertEqual(MeterScale.value(peakDB: -0.1), 126)
+        XCTAssertEqual(MeterScale.warning, 116, "yellow from -5 dBFS")
+        XCTAssertEqual(MeterScale.red, 124, "red from -1 dBFS")
         XCTAssertEqual(MeterScale.value(peakDB: 0), MeterScale.fullScale)
         XCTAssertEqual(MeterScale.value(peakDB: -.infinity), 0)
     }
