@@ -51,7 +51,7 @@ small driver of its own.
 
   Around the strips:
   - two views: sources (inputs and playbacks) and outputs (the assigned monitoring outputs first, then the sends; a monitoring role with nothing assigned shows no strip);
-  - a performance layout, chosen in the app: the order of each view (which TotalMix can't change), the channels it hides, and whether the first playback starts a new page (blank strips after the inputs); channels it doesn't place yet follow in TotalMix's order;
+  - a performance layout, chosen in the app: the order of each view (which TotalMix can't change) and whether the first playback starts a new page (blank strips after the inputs); channels it doesn't place yet follow in TotalMix's order. Which channels appear is set only in TotalMix (Channel Layout, hidden from this OSC remote), under the rule in section 4;
   - monitoring outputs and sends: the outputs the control room assigns to Main Out, Main Out B, Phones 1–4, and cue are monitoring outputs; every other output TotalMix doesn't hide is a send;
   - the home submix (Main Out unless the app chooses another monitoring output, or, with "Show all outputs", any output), which source levels and pans go into; send knobs reach only the sends. Main Out is followed, not fixed: when Main Out is reassigned in TotalMix's control room, the home moves with it (the app's menu says so); any other choice stays on its output;
   - paging, and a focus mode (one source across all submixes);
@@ -79,6 +79,14 @@ small driver of its own.
   - it has its own Sparkle signing key, under the keychain account `org.biers.performancebridge`. The public half, for `SUPublicEDKey`, is `KTt3BYFC8qH22G0zlWbtdfe7E9OGSw14LgkrZQCmfC4=`; the private half stays in the release signer's keychain.
 
 ## 4. Rules (do / don't)
+
+Design rule (Adam, 2026-10-31): **whatever can be configured in TotalMix is configured only
+there.** Performance Bridge reads it over OSC and offers no setting of its own for it (e.g.,
+channel names, colors, which channels a remote sees, the control room's monitoring assignments).
+The app has settings only for what TotalMix can't express, such as the order of channels on a
+surface. The aim is less for the user to think about: one place to set each thing, and nothing to
+keep in step between TotalMix and the app. Where this makes the app's code more complex (e.g.,
+reading a setting from TotalMix instead of asking for it), that cost is accepted.
 
 Do:
 

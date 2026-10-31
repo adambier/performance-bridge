@@ -107,13 +107,13 @@ final class LayoutTests: XCTestCase {
         XCTAssertEqual(PerformanceLayout().unplaced(.sources, in: mirror), [], "with no chosen order nothing is new")
     }
 
-    func testHiddenChannelsStayOut() {
+    func testChannelsHiddenInTotalMixStayOutEvenWhenOrdered() {
         var mirror = MixerMirror()
         for event in setupEvents() { mirror.apply(event) }
-        let layout = PerformanceLayout(sourceOrder: [ChannelRef(.input, 3)], hidden: [ChannelRef(.input, 0), ChannelRef(.output, 2)])
-        XCTAssertEqual(layout.channels(.sources, in: mirror), [ChannelRef(.input, 3), ChannelRef(.input, 2), ChannelRef(.playback, 0)])
-        XCTAssertEqual(layout.unplaced(.sources, in: mirror), [ChannelRef(.input, 2), ChannelRef(.playback, 0)])
-        XCTAssertEqual(layout.channels(.outputs, in: mirror), [ChannelRef(.output, 0)])
+        // Output 5/6 (channel 4) is hidden from this remote in TotalMix (setupEvents).
+        let layout = PerformanceLayout(outputOrder: [ChannelRef(.output, 4), ChannelRef(.output, 2)])
+        XCTAssertFalse(layout.channels(.outputs, in: mirror).contains(ChannelRef(.output, 4)))
+        XCTAssertFalse(layout.unplaced(.outputs, in: mirror).contains(ChannelRef(.output, 4)))
     }
 
     func testOutputOrderKeepsMonitoringFirst() {
@@ -127,9 +127,12 @@ final class LayoutTests: XCTestCase {
     }
 
     func testLayoutRoundTripsThroughJSON() throws {
-        let layout = PerformanceLayout(sourceOrder: [ChannelRef(.input, 3)], hidden: [ChannelRef(.output, 4)])
+        let layout = PerformanceLayout(sourceOrder: [ChannelRef(.input, 3)], outputOrder: [ChannelRef(.output, 2)])
         let data = try JSONEncoder().encode(layout)
         XCTAssertEqual(try JSONDecoder().decode(PerformanceLayout.self, from: data), layout)
+        let old = Data("{\"sourceOrder\":[],\"hidden\":[]}".utf8)
+        XCTAssertEqual(try JSONDecoder().decode(PerformanceLayout.self, from: old), PerformanceLayout(),
+                       "an older layout's hidden list is ignored")
         XCTAssertEqual(try JSONDecoder().decode(PerformanceLayout.self, from: Data("{}".utf8)), PerformanceLayout(),
                        "missing fields load as empty")
     }

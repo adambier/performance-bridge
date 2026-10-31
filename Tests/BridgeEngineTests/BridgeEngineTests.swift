@@ -38,8 +38,8 @@ final class BridgeEngineTests: XCTestCase {
             _ = mirror.apply(.channel(bus: .output, channel: number, parameter: "name", value: .text(name)))
         }
         _ = mirror.apply(.other(path: "controlroom/mainout", value: .number(0)))
-        let layout = PerformanceLayout(hidden: [ChannelRef(.output, 6)])
-        let others = BridgeEngine.otherChoices(mirror, layout: layout)
+        _ = mirror.apply(.channel(bus: .output, channel: 6, parameter: "color", value: .number(0)))
+        let others = BridgeEngine.otherChoices(mirror, layout: PerformanceLayout())
         XCTAssertEqual(others.map(\.name), ["ADI-2", "ADAT 1/2"])
         XCTAssertTrue(others.allSatisfy { $0.roles.isEmpty })
     }
