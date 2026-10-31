@@ -247,6 +247,7 @@ final class BridgeSession: @unchecked Sendable {
             lastTuneSend = now
             driver.schemeOverrides[index] = scheme
             sendToRoto(driver.redraw(hub: hub), quiet: true)
+            sendToRoto(switchLights(), quiet: true)
             sendToRoto(RotoOutgoing.showValue(.knob, control: 0, text: "scheme \(scheme)").bytes, quiet: true)
             log("Scheme for \(index) \(colorNames[index - 1]): \(scheme)")
         }
@@ -262,6 +263,16 @@ final class BridgeSession: @unchecked Sendable {
                 log("Tuning \(index) \(colorNames[index - 1]): \(rgb(hsv.color)) \(hsv)")
             }
         }
+    }
+
+    /// The switch lights for the page, which also draw the switch labels on the lower halves of
+    /// the screens: drawing the strips again blanks them (run 19), and a redraw sends no lights.
+    private func switchLights() -> [UInt8] {
+        let lights = (hub.resend(driver.id, now: now).updates[driver.id] ?? []).filter {
+            if case .switchState = $0 { return true }
+            return false
+        }
+        return driver.render(lights, hub: hub, now: now)
     }
 
     private func startSchemeTuning(_ index: Int) {
@@ -416,7 +427,7 @@ final class BridgeSession: @unchecked Sendable {
                 print("color exact, color table, color N RRGGBB, color tune N (N from 1 to 8), color done, or color")
                 return true
             }
-            if words.count > 1, words[1] != "done" { sendToRoto(driver.redraw(hub: hub)) }
+            if words.count > 1, words[1] != "done" { sendToRoto(driver.redraw(hub: hub) + switchLights()) }
             if let palette = driver.exactColors {
                 let list = (1...8).map { "\($0) \(colorNames[$0 - 1]) \(palette[$0].map(rgb) ?? "-")" }
                 log("Exact colors: " + list.joined(separator: ", "))
@@ -433,7 +444,7 @@ final class BridgeSession: @unchecked Sendable {
             } else if words.count == 3, let index = Int(words[1]), (1...8).contains(index),
                       let scheme = UInt8(words[2]), scheme <= 82 {
                 driver.schemeOverrides[index] = scheme
-                sendToRoto(driver.redraw(hub: hub))
+                sendToRoto(driver.redraw(hub: hub) + switchLights())
             } else if words.count != 1 {
                 print("scheme tune N, scheme done, scheme N S (N from 1 to 8, S from 0 to 82), or scheme")
                 return true

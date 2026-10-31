@@ -421,3 +421,7 @@ marked "seen".
   froze. So the color past the track count was not the cause (or not the only one). Run 14, with
   one SET TRACK COLOUR per page, did not hang. That a burst of them causes the hang is an
   inference; `sbdev bridge` now sends them 150 ms apart, to test it.
+- **Switch labels after a redraw** (run 19, seen): while `scheme tune` drew the page again and
+  again (TRACK DETAILS … END, with no switch lights), the lower halves of several screens went
+  dark. The labels are drawn with the switch lights, so `sbdev bridge` now sends the lights after
+  each redraw (that this restores them is still to be seen).
