@@ -53,14 +53,10 @@ struct AboutView: View {
                 .padding(.top, 4)
             Link("github.com/adambier/performance-bridge",
                  destination: URL(string: "https://github.com/adambier/performance-bridge")!)
-            VStack(spacing: 2) {
-                Text("© 2026 Adam Arthur Bier. MIT License.")
-                Text("Not affiliated with or endorsed by RME, Melbourne Instruments, or Novation.")
-            }
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .multilineTextAlignment(.center)
-            .padding(.top, 4)
+            Text("© 2026 Adam Arthur Bier. MIT License.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(.top, 4)
         }
         .padding(24)
         .frame(width: 360)
