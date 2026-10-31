@@ -368,21 +368,20 @@ public struct RotoDriver: Sendable {
 
     /// The Roto-Control color scheme for each of TotalMix's eight colors, by TotalMix's color
     /// index: 1 white, 2 grey, 3 orange, 4 red, 5 blue, 6 green, 7 yellow, 8 pink (the order of
-    /// TotalMix's Color menu, and the indexes TotalMix sends; docs/TOTALMIX-OSC.md, test 7). Each
-    /// scheme is the nearest in hue in the SysEx doc's color table to the color TotalMix draws for
-    /// that index (sampled from a screenshot of TotalMix on macOS; "pink" is drawn purple), with
-    /// scheme 66 avoided because it has been observed to look royal blue (docs/ROTO-CONTROL.md,
-    /// test 2). White is TotalMix's default and is drawn without a color; it gets the table's white.
-    /// To compare on the hardware.
+    /// TotalMix's Color menu, and the indexes TotalMix sends; docs/TOTALMIX-OSC.md, test 7). The
+    /// schemes are matched by eye on the Roto-Control's screens to the colors TotalMix draws ("pink"
+    /// is drawn purple), because the screens show some of the SysEx doc's table colors differently:
+    /// darker reds and oranges look brown, and purples look royal blue (docs/ROTO-CONTROL.md,
+    /// test 4). White is TotalMix's default and is drawn without a color.
     public static let schemeForTotalMixColor: [Int: UInt8] = [
         1: 13,  // white (default)
-        2: 50,  // grey, drawn bluish
-        3: 57,  // orange
-        4: 56,  // red
-        5: 9,   // blue
-        6: 61,  // green
-        7: 2,   // yellow, drawn amber
-        8: 24,  // pink, drawn purple
+        2: 49,  // grey
+        3: 15,  // orange
+        4: 14,  // red
+        5: 9,   // blue (seen to match)
+        6: 61,  // green (seen to match)
+        7: 17,  // yellow
+        8: 67,  // pink, drawn purple
     ]
 
     /// The Roto-Control color scheme (0–82) for a TotalMix color index, or white (TotalMix's
