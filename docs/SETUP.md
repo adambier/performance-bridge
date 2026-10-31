@@ -20,29 +20,37 @@ notes and has not been seen in TotalMix, the step says so.
 
 ## Step 1: Turn on Global OSC in TotalMix FX
 
-1. Open the Options menu, and turn on "Enable MIDI / OSC Control" (Options → Enable MIDI / OSC Control).
-   RME's online manual states this item and its place in the menu (docs.rme-audio.com/aoxd/818-1c_menu_options/).
-   The manual does not say it switches on Global OSC; that is not yet checked on screen.
-2. Open the OSC settings for Global OSC, and choose the controller slot the remote will use. The tests used
-   controller 4. The menu path to these settings is not in RME's online manual and has not been checked on screen.
-3. Note the two ports. TotalMix receives on its **incoming** port and sends on its **outgoing** port.
-   The defaults are 7001 and 9001. The tests used 7004 and 9004.
-4. Turn on "Send changes" and "Send status". The tests had both on. The inference is that the app needs
-   both to follow TotalMix; whether it needs each one has not been tested.
+Steps 1 and 2 were checked on screen against two screenshots of TotalMix (Mac, 2026-10-31). The menu's
+title is not in the screenshot, so the top-level menu is not checked.
 
-The app's Settings window asks for the same two ports, in the same sense: its "Incoming port" is where
-the app sends to TotalMix, and its "Outgoing port" is where TotalMix's messages arrive.
+1. Open the Options menu, and check "Enable OSC Control" (Options → Enable OSC Control). The menu also lists
+   "Enable MIDI Control" as a separate item, which is unchecked. RME's online manual names the item "Enable
+   MIDI / OSC Control" (docs.rme-audio.com/aoxd/818-1c_menu_options/); the label in the running TotalMix
+   differs from the manual.
+2. Choose Options → Mixer Settings… (shortcut F3), and open the OSC tab.
+3. Under "Select Controller", choose the slot the remote will use (1–4), and check "In Use" for it. The tests
+   used controller 4; the screenshot shows controller 1 selected.
+4. Under "Compatibility (Mode)", choose "Global OSC".
+5. Check the ports. Under "TotalMix FX OSC Service", "Port (incoming)" is where the app sends to TotalMix (7001 by
+   default). Under "Remote Controller Address", "Host" is the computer the app runs on (localhost), and
+   "Port (outgoing)" is where TotalMix sends to the app (9001 by default). The tests used 7004 and 9004.
+6. Under "Options", the screenshot shows "Send Level Data" on and "Lock Remote to Submix" off. The tests had
+   "Send Level Data" off. Whether the app needs it on is not tested.
+7. The "Details" button beside "Compatibility (Mode)" should hold "Send changes" and "Send status". It has not
+   been opened or checked on screen.
+8. Options → Submix linked to OSC Controller is a submenu. Its choices have not been checked on screen.
 
 ## Step 2: Choose which channels the remote sees
 
 Channels that TotalMix hides from the OSC remote are not shown on any surface, and the app does not show
 them greyed out. To hide or show a channel for the remote:
 
-1. Open Options → Channel Layout. RME's online manual states this path
-   (docs.rme-audio.com/aoxd/813-1c_control/).
-2. Set "Hide Channel in OSC Remote 1-4" for the remote the app uses. RME's online manual states this label and
-   says hidden channels are removed from the list of remote-controllable channels. Which of the 1–4 remotes
-   the app uses has not been checked on screen.
+1. Choose Options → Channel Layout… The menu item is checked on screen. The window it opens has not been
+   checked.
+2. Set "Hide Channel in OSC Remote 1-4" for the remote the app uses. RME's online manual states this label
+   (docs.rme-audio.com/aoxd/813-1c_control/), and says hidden channels are removed from the list of
+   remote-controllable channels. The label has not been seen in the running TotalMix, and which of the
+   1–4 remotes the app uses has not been checked.
 
 To hide a channel only in the app, use the layout editor instead (Step 5). That does not change TotalMix.
 Whether TotalMix's hidden channels change the channel numbers the app receives has not been tested.
