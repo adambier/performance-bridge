@@ -28,14 +28,20 @@ title is not in the screenshot, so the top-level menu is not checked.
    MIDI / OSC Control" (docs.rme-audio.com/aoxd/818-1c_menu_options/); the label in the running TotalMix
    differs from the manual.
 2. Choose Options → Mixer Settings… (shortcut F3), and open the OSC tab.
-3. Under "Select Controller", choose the slot the remote will use (1–4), and check "In Use" for it. The tests
-   used controller 4; the screenshot shows controller 1 selected.
+3. Under "Select Controller", choose the slot the remote will use (1–4), and check "In Use" for it. The
+   Mixer Settings window opens on controller 1, which other programs may use. Checked on screen (Adam, 2026-10-31):
+   controller 4 selected, "In Use" checked. The tests also used controller 4.
 4. Under "Compatibility (Mode)", choose "Global OSC".
-5. Check the ports. Under "TotalMix FX OSC Service", "Port (incoming)" is where the app sends to TotalMix (7001 by
-   default). Under "Remote Controller Address", "Host" is the computer the app runs on (localhost), and
-   "Port (outgoing)" is where TotalMix sends to the app (9001 by default). The tests used 7004 and 9004.
-6. Under "Options", the screenshot shows "Send Level Data" on and "Lock Remote to Submix" off. The tests had
-   "Send Level Data" off. Whether the app needs it on is not tested.
+5. Check the ports. Under "TotalMix FX OSC Service", "Port (incoming)" is where the app sends to TotalMix. Under
+   "Remote Controller Address", "Host" is the computer the app runs on, and "Port (outgoing)" is where TotalMix
+   sends to the app. These are per controller slot. On controller 4 the screenshot shows incoming 7004, host
+   127.0.0.1, and outgoing 9004. On controller 1 the screenshot shows 7001 and 9001, and host localhost.
+   The app's defaults are 7001 and 9001, so for controller 4 set the app's ports to 7004 and 9004 in Settings
+   (or start it with `--in-port 7004 --out-port 9004`). The app sends to 127.0.0.1 or localhost; both reach
+   the same Mac, and the app's Settings take the host name.
+6. Under "Options", the screenshot shows "Send Level Data" on, "Peak Hold" off, and "Lock Remote to Submix" off.
+   The tests had "Send Level Data" off. Whether the app needs it on is not tested. "Number of faders per bank"
+   reads 8 on controller 4 and 48 on controller 1; its effect on the app is not tested.
 7. The "Details" button beside "Compatibility (Mode)" should hold "Send changes" and "Send status". It has not
    been opened or checked on screen.
 8. Options → Submix linked to OSC Controller is a submenu. Its choices have not been checked on screen.
