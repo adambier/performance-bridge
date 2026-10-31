@@ -20,9 +20,11 @@ notes and has not been seen in TotalMix, the step says so.
 
 ## Step 1: Turn on Global OSC in TotalMix FX
 
-1. Open TotalMix FX's preferences. The menu path is not yet checked on screen; the project's notes
-   call it "TotalMix's preferences, on the OSC page."
-2. Turn on Global OSC, and choose the controller slot the remote will use. The tests used controller 4.
+1. Open the Options menu, and turn on "Enable MIDI / OSC Control" (Options → Enable MIDI / OSC Control).
+   RME's online manual states this item and its place in the menu (docs.rme-audio.com/aoxd/818-1c_menu_options/).
+   The manual does not say it switches on Global OSC; that is not yet checked on screen.
+2. Open the OSC settings for Global OSC, and choose the controller slot the remote will use. The tests used
+   controller 4. The menu path to these settings is not in RME's online manual and has not been checked on screen.
 3. Note the two ports. TotalMix receives on its **incoming** port and sends on its **outgoing** port.
    The defaults are 7001 and 9001. The tests used 7004 and 9004.
 4. Turn on "Send changes" and "Send status". The tests had both on. The inference is that the app needs
@@ -36,10 +38,11 @@ the app sends to TotalMix, and its "Outgoing port" is where TotalMix's messages 
 Channels that TotalMix hides from the OSC remote are not shown on any surface, and the app does not show
 them greyed out. To hide or show a channel for the remote:
 
-1. Open the Channel Layout settings. The full menu path is Options → Channel Layout (from RME's manual;
-   not yet checked on screen).
-2. Set "Hide Channel in OSC Remote" for the remote the app uses. The project's notes give this label from
-   RME's manual; it has not been checked on screen.
+1. Open Options → Channel Layout. RME's online manual states this path
+   (docs.rme-audio.com/aoxd/813-1c_control/).
+2. Set "Hide Channel in OSC Remote 1-4" for the remote the app uses. RME's online manual states this label and
+   says hidden channels are removed from the list of remote-controllable channels. Which of the 1–4 remotes
+   the app uses has not been checked on screen.
 
 To hide a channel only in the app, use the layout editor instead (Step 5). That does not change TotalMix.
 Whether TotalMix's hidden channels change the channel numbers the app receives has not been tested.
