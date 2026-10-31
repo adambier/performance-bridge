@@ -376,11 +376,11 @@ public struct RotoDriver: Sendable {
     public static let schemeForTotalMixColor: [Int: UInt8] = [
         1: 13,  // white (default)
         2: 49,  // grey
-        3: 15,  // orange
+        3: 1,   // orange
         4: 14,  // red
         5: 9,   // blue
-        6: 18,  // green, drawn lime
-        7: 1,   // yellow, drawn yellow-orange
+        6: 47,  // green, drawn lime
+        7: 59,  // yellow, drawn yellow-orange
         8: 67,  // pink, drawn purple
     ]
 
