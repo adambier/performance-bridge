@@ -138,10 +138,11 @@ public struct RotoDriver: Sendable {
     /// and stayed there when the page changed (runs 14 and 15), and every color sent with an index
     /// of 8 or more was followed by the Roto-Control freezing (runs 15, 17, and 18). Every strip
     /// gets a color, because a color stays on its screen; blank screens get none.
-    private func exactColorMessages() -> [RotoOutgoing] {
+    private func exactColorMessages(onlyTotalMixColor color: Int? = nil) -> [RotoOutgoing] {
         guard let palette = exactColors else { return [] }
         return infos.enumerated().compactMap { offset, info in
             guard let info, page.first + offset < page.count else { return nil }
+            if let color, !(info.kind == .source && info.color == color) { return nil }
             return .trackColor(index: offset, Self.exactColor(for: info, palette: palette))
         }
     }
@@ -185,9 +186,10 @@ public struct RotoDriver: Sendable {
     /// The bytes that set the exact colors of the current page again, without drawing the strips:
     /// for changing a color while watching the screens. Nothing before the handshake is complete,
     /// in PLUGIN mode or single-track mode, or when `exactColors` is off.
-    public func exactColorBytes(hub: SurfaceHub) -> [UInt8] {
+    /// With `color`, only for the sources in that TotalMix color.
+    public func exactColorBytes(hub: SurfaceHub, onlyTotalMixColor color: Int? = nil) -> [UInt8] {
         guard handshake.isConnected, !inPluginMode, case .strips? = hub.mode(of: id) else { return [] }
-        return exactColorMessages().flatMap(\.bytes)
+        return exactColorMessages(onlyTotalMixColor: color).flatMap(\.bytes)
     }
 
     /// The bytes that draw the current page again, or nothing before the handshake is complete or

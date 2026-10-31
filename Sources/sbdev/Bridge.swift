@@ -100,12 +100,12 @@ final class BridgeSession: @unchecked Sendable {
     private var tuning: (index: Int, hsv: HSV)?
     /// The TotalMix color whose color scheme is being chosen with knob 1, and the scheme.
     private var schemeTuning: (index: Int, scheme: UInt8)?
-    /// SET TRACK COLOUR messages waiting to go to the Roto-Control, one per `colorGap`: sent all at
-    /// once, seven of them have been followed by a hang (run 18; that the burst caused it is an
-    /// inference).
+    /// SET TRACK COLOUR messages waiting to go to the Roto-Control, one per `colorGap`. Paced since
+    /// run 18, when the freezes were thought to come from bursts; they are now thought to have
+    /// come from indexes past 7 (run 20), so the pacing is only a precaution.
     private var pendingColors: [[UInt8]] = []
     private var lastColorSend = 0.0
-    private let colorGap = 0.15
+    private let colorGap = 0.05
     private var tuneDecoder = RotoControlDecoder()
     private var tuneChanged = false
     private var lastTuneSend = 0.0
@@ -259,7 +259,7 @@ final class BridgeSession: @unchecked Sendable {
             var palette = driver.exactColors ?? RotoDriver.totalMixColors
             palette[index] = hsv.color
             driver.exactColors = palette
-            sendToRoto(driver.exactColorBytes(hub: hub), quiet: true)
+            sendToRoto(driver.exactColorBytes(hub: hub, onlyTotalMixColor: index), quiet: true)
             if now - lastTuneLog >= 0.5 {
                 lastTuneLog = now
                 log("Tuning \(index) \(colorNames[index - 1]): \(rgb(hsv.color)) \(hsv)")
