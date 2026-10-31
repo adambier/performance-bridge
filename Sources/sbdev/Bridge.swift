@@ -119,7 +119,7 @@ final class BridgeSession: @unchecked Sendable {
         dispatch(hub.addSurface(driver.id, capabilities: RotoDriver.capabilities, now: now))
         if let home = options.home { dispatch(hub.setHomeSubmix(home, now: now)) }
         dispatch(hub.connect(now: now))
-        sendToRoto(driver.start())
+        sendToRoto(driver.start(now: now))
 
         let ticker = Thread { [weak self] in
             while let session = self {
@@ -212,6 +212,11 @@ final class BridgeSession: @unchecked Sendable {
         lock.lock()
         defer { lock.unlock() }
         dispatch(hub.tick(now: now))
+        let restart = driver.tick(now: now)
+        if !restart.isEmpty {
+            log("No answer from the Roto-Control yet; sending DAW STARTED again")
+            sendToRoto(restart)
+        }
         if let (index, hsv) = tuning, tuneChanged, now - lastTuneSend >= 0.05 {
             tuneChanged = false
             lastTuneSend = now
@@ -355,7 +360,7 @@ final class BridgeSession: @unchecked Sendable {
         case "sendall":
             dispatch(hub.connect(now: now))
         case "status":
-            log("Mode: \(hub.mode(of: driver.id).map { "\($0)" } ?? "none"); connected: \(driver.isConnected)")
+            log("Mode: \(hub.mode(of: driver.id).map(describe) ?? "none"); connected: \(driver.isConnected)")
             log("Home submix: \(hub.homeSubmix.map { "output \($0 + 1)" } ?? "none yet"); send targets: \(hub.sendTargets.map { "output \($0 + 1)" })")
             for (index, strip) in (hub.strips(of: driver.id) ?? []).enumerated() {
                 let name = strip.info.map { "\($0.name) (\($0.channel))" } ?? "blank"
@@ -373,6 +378,29 @@ final class BridgeSession: @unchecked Sendable {
         defer { lock.unlock() }
         socket?.stop()
         midi?.close()
+    }
+}
+
+/// A surface mode in words, e.g., "sources from 9, knobs level, switches mute".
+func describe(_ mode: SurfaceMode) -> String {
+    switch mode {
+    case .strips(let view, let first, let knob, let switchFunction):
+        let knobText: String
+        switch knob {
+        case .level: knobText = "level"
+        case .pan: knobText = "pan"
+        case .send(let index): knobText = "send \(index + 1)"
+        }
+        let switchText: String
+        switch switchFunction {
+        case .mute: switchText = "mute"
+        case .pfl: switchText = "PFL"
+        case .solo: switchText = "solo"
+        case .none: switchText = "nothing"
+        }
+        return "\(view == .sources ? "sources" : "outputs") from \(first + 1), knobs \(knobText), switches \(switchText)"
+    case .focus(let channel, let first):
+        return "single track \(channel), from slot \(first + 1)"
     }
 }
 

@@ -160,9 +160,26 @@ public struct RotoDriver: Sendable {
         return pageMessages(hub: hub).flatMap(\.bytes)
     }
 
-    /// Starts, or restarts, the handshake: the bytes to send now.
-    public mutating func start() -> [UInt8] {
-        handshake.start().flatMap(\.bytes)
+    /// How often DAW STARTED is sent again while the handshake is not complete, in seconds. The
+    /// Roto-Control has been observed once not to answer DAW STARTED until it was plugged in again
+    /// (docs/ROTO-CONTROL.md, test 4, run 15); whether a later DAW STARTED would have been answered
+    /// is not known.
+    public static let restartInterval: Double = 3
+
+    private var lastStart: Double?
+
+    /// Starts, or restarts, the handshake: the bytes to send now. `tick(now:)` sends DAW STARTED
+    /// again every `restartInterval` until the Roto-Control connects.
+    public mutating func start(now: Double = 0) -> [UInt8] {
+        lastStart = now
+        return handshake.start().flatMap(\.bytes)
+    }
+
+    /// The bytes to send as time passes: DAW STARTED again, if the handshake was started and has
+    /// not completed within `restartInterval`. The app calls this regularly, with the current time.
+    public mutating func tick(now: Double) -> [UInt8] {
+        guard !handshake.isConnected, let lastStart, now - lastStart >= Self.restartInterval else { return [] }
+        return start(now: now)
     }
 
     // MARK: - From the Roto-Control
@@ -183,6 +200,8 @@ public struct RotoDriver: Sendable {
     private mutating func handle(_ message: RotoIncoming, hub: inout SurfaceHub, now: Double, into step: inout RotoStep) {
         let (reply, justConnected) = handshake.handle(message)
         step.midi += reply.flatMap(\.bytes)
+        // A ping means the handshake is moving: the retry waits a full interval from here.
+        if case .pingDAW = message, lastStart != nil { lastStart = now }
         if justConnected {
             inPluginMode = false
             let thresholds = Self.meterThresholds

@@ -89,6 +89,33 @@ final class RotoDriverTests: XCTestCase {
         XCTAssertFalse(driver.isConnected)
     }
 
+    func testDAWStartedIsSentAgainUntilConnected() {
+        var hub = loadedHub()
+        _ = hub.addSurface(rotoID, capabilities: RotoDriver.capabilities, now: 0)
+        var driver = RotoDriver(id: rotoID)
+        XCTAssertTrue(driver.tick(now: 10).isEmpty, "nothing before start")
+        _ = driver.start(now: 0)
+        XCTAssertTrue(driver.tick(now: 2.9).isEmpty)
+        XCTAssertEqual(driver.tick(now: 3), RotoOutgoing.dawStarted.bytes)
+        XCTAssertTrue(driver.tick(now: 4).isEmpty)
+        XCTAssertEqual(driver.tick(now: 6), RotoOutgoing.dawStarted.bytes)
+        _ = driver.receive(sysEx(.general, 0x02), hub: &hub, now: 7)
+        _ = driver.receive(sysEx(.general, 0x0C), hub: &hub, now: 7)
+        XCTAssertTrue(driver.isConnected)
+        XCTAssertTrue(driver.tick(now: 20).isEmpty, "nothing once connected")
+    }
+
+    func testAPingPutsTheRetryOff() {
+        var hub = loadedHub()
+        _ = hub.addSurface(rotoID, capabilities: RotoDriver.capabilities, now: 0)
+        var driver = RotoDriver(id: rotoID)
+        _ = driver.start(now: 0)
+        _ = driver.receive(sysEx(.general, 0x02), hub: &hub, now: 2.9)
+        XCTAssertTrue(driver.tick(now: 3).isEmpty, "no restart just after a ping")
+        _ = driver.receive(sysEx(.general, 0x0C), hub: &hub, now: 3.1)
+        XCTAssertTrue(driver.isConnected)
+    }
+
     func testConnectingDrawsEveryStrip() {
         let (driver, _, midi) = connected()
         XCTAssertTrue(driver.isConnected)
