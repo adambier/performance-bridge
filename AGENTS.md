@@ -34,6 +34,7 @@ statement there carries its evidence.
 | `Sources/UDPTransport/` | `UDPSocket`: POSIX UDP on macOS and Linux; a placeholder that throws on Windows |
 | `Sources/sbdev/` | Developer tool: `monitor`, `send`, `roundtrip`, `curve` (main.swift), `roto` (Roto.swift), `bridge` (Bridge.swift), and `midi` (MIDIMonitor.swift) |
 | `App/PerformanceBridge/` | A first look at the menu-bar app (macOS only): `swift run PerformanceBridge` |
+| `Design/AppIcon/` | The app icon and menu-bar glyph: `make_icon.py` (geometry, writes the SVGs), the layered master, the legacy icon set, and its README |
 | `Tests/` | One test target per library |
 | `docs/TOTALMIX-OSC.md` | What this project relies on in Global OSC, with evidence, and the open questions |
 | `docs/ROTO-CONTROL.md` | What this project relies on in the Roto-Control's protocol, with evidence, and the open questions |
@@ -74,6 +75,7 @@ small driver of its own.
   - `make-app.sh` compiles every source folder into one module with `swiftc`;
   - Sparkle 2.10.1 is pinned with its SHA-256, and the XPC services are removed;
   - the app is signed with a Developer ID, notarized, and updated through `appcast.xml` on `main`;
+  - its icon and menu-bar glyph come from `Design/AppIcon/` (the About window shows the icon at 128 points); the icon's amber, #FFB13D, is the app's accent color;
   - it has its own Sparkle signing key, under the keychain account `org.biers.performancebridge`. The public half, for `SUPublicEDKey`, is `KTt3BYFC8qH22G0zlWbtdfe7E9OGSw14LgkrZQCmfC4=`; the private half stays in the release signer's keychain.
 
 ## 4. Rules (do / don't)

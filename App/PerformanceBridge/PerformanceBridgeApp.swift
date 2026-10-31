@@ -18,10 +18,28 @@ struct PerformanceBridgeApp: App {
     }
 
     var body: some Scene {
-        MenuBarExtra("Performance Bridge", systemImage: "slider.horizontal.3") {
+        MenuBarExtra {
             MenuContent(model: model)
+                .tint(Brand.amber)
+        } label: {
+            Image(nsImage: Brand.menuBarImage)
+                .accessibilityLabel("Performance Bridge")
         }
     }
+}
+
+/// The app's look: the icon's amber as its accent color, and the menu-bar glyph (a one-color
+/// template image from Design/AppIcon, which macOS colors to suit the menu bar).
+enum Brand {
+    static let amber = Color(red: 1, green: 0xB1 / 255.0, blue: 0x3D / 255.0)
+
+    static let menuBarImage: NSImage = {
+        let image = Bundle.module.image(forResource: "MenuBarIcon")
+            ?? NSImage(systemSymbolName: "slider.horizontal.3", accessibilityDescription: "Performance Bridge")
+            ?? NSImage()
+        image.isTemplate = true
+        return image
+    }()
 }
 
 /// The engine and its latest status, for the menu.
