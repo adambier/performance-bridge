@@ -378,9 +378,9 @@ public struct RotoDriver: Sendable {
         2: 49,  // grey
         3: 15,  // orange
         4: 14,  // red
-        5: 9,   // blue (seen to match)
-        6: 61,  // green (seen to match)
-        7: 17,  // yellow
+        5: 9,   // blue
+        6: 18,  // green, drawn lime
+        7: 1,   // yellow, drawn yellow-orange
         8: 67,  // pink, drawn purple
     ]
 

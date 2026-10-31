@@ -392,6 +392,7 @@ marked "seen".
   colors and each mapped to the table color nearest in hue, schemes 9 (blue) and 61 (green)
   matched TotalMix; 50 looked slate blue, 57 brown, 56 burgundy, 2 ochre, and 24 royal blue
   (like 66 in test 2). So the screens show some table colors darker or bluer than their RGB
-  values suggest, and the driver's colors are chosen by eye.
+  values suggest, and the driver's colors are chosen by eye. A second round (run 10) found 61
+  forest or olive green against TotalMix's lime, and 17 lemon against TotalMix's yellow-orange.
 - **SOLO and ARM** (run 7, seen): with the switches on solo, a press set PFL in TotalMix and lit
   the switch; on record arm, a press did nothing.
