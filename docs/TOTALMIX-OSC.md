@@ -38,7 +38,7 @@ linear scale" off and on, and the fader messages it accepts.
 
 ## 2. Numbering and values
 
-- Channels count from 0 in addresses: `/input/2/…` is input 3 in TotalMix's window. Snapshots, layouts, and groups count from 1. [RME doc]
+- Channels count from 0 in addresses: `/input/2/…` is input 3 in TotalMix's window. Snapshots, layouts, and groups count from 1. [RME doc] `sbdev monitor` prints channel numbers as TotalMix's window does, from 1 (its source adds 1 to each address). In this document, "input 1" or "monitor input 1" means that display number, and "address 0" means the number used in an OSC address. [Project code, `Sources/sbdev/main.swift`]
 - **Stereo channels.** A stereo channel is addressed by its left channel. A few parameters differ between left and right, and their right side is addressed as the left channel + 1. [RME doc] Those parameters are `phase`, `gain`, `delay`, and the Room EQ bands and types.
 - **Hidden channels.** Channel Layout can hide channels from each OSC remote. [Adam, screenshot 2026-10-31] Its window is opened by right-clicking a channel strip and choosing "Change Channel Layout", or by Options → Channel Layout…. The group "Hide Channel in" lists "OSC Controller 1" to "OSC Controller 4" (on screen, and a checked box hides the channel from that controller [Adam, confirmed 2026-10-31]); the manual's label "Hide Channel in OSC Remote 1-4" is not the label in the running TotalMix. Channels hidden in the mixer are also unavailable to OSC. [RME manual] With classic OSC, hidden channels are skipped within a block of faders. [RME manual] With Global OSC, the document says hidden channels "may be received by option" (TotalMix's "Receive to hidden channels"). [RME doc] Hiding does not renumber the channels Global OSC sends (inference from one run; the same run's input 3 keeps its number, and the hidden input sends nothing). [Adam, hide-test.log, 2026-10-31; test 8] A hidden channel sends no messages, so the app cannot tell it apart from a channel the interface does not have: it cannot detect hidden channels from OSC (test 8). In test 1 nothing was hidden, and the channel numbers matched the Digiface AES's 14 inputs, 16 playbacks, and 16 outputs. [RME manual, test 1]
 - **Index values.** List-box settings, such as `reflevel` and the EQ band types, are index values from 0. Their meaning depends on the device. [RME doc]
@@ -234,31 +234,31 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 **Findings** (seen in the log):
 
 - The `/sendall` reply came at 14:38:43, with messages for every playback and every output, and for inputs 3 to 13 (names such as "Sonos", "Mic 1/2", "Tonverk", and "ADAT 3/4").
-- No message came for input 1 or input 2. Input 0 and the other even-numbered inputs were absent in the same way, and the reply sent them only as right-hand halves of stereo pairs, if at all.
+- No message came for monitor input 1 (address 0) or monitor input 2 (address 1, the right half of the same stereo pair). The other even-numbered addresses were absent in the same way, and the reply sent them only as right-hand halves of stereo pairs, if at all.
 - The outputs were all present, including "ADI-2 3/4" (output 3) and "ADI-2 +6dB" (output 5), as expected, because only an input was hidden.
 - Input 3 kept its number (Sonos).
 
 **Inferences:**
 
-- Input 1 is the ADI-2 input. Confirmed by an unhidden baseline run (`logs/test8a-unhidden.log`, 2026-10-31, Adam): with the ADI-2 input unhidden, input 1 sends "name = ADI-2" and inputs 1 to 14 all appear.
+- Monitor input 1 (address 0) is the ADI-2 input. Confirmed by an unhidden baseline run (`logs/test8a-unhidden.log`, 2026-10-31, Adam): with the ADI-2 input unhidden, monitor input 1 sends "name = ADI-2" and monitor inputs 1 to 14 all appear.
 - A channel hidden from an OSC Controller sends no messages on that controller. From OSC alone, the app cannot tell a hidden channel from one the interface does not have. So the app cannot detect hidden channels.
 - Hiding does not renumber the channels that remain. This is one run; the baseline run shows the same numbers for the remaining inputs.
 
-**Test 8b (same day, `logs/test8b-receive-hidden.log`):** the same run with the ADI-2 input hidden from OSC Controller 4 and "Receive to hidden channels" on (Options → Mixer Settings… → OSC → Details). Input 1 sent nothing, as in the first run. Inputs 3 to 14, all 16 playbacks, and all 16 outputs were present. So on this connection, turning on "Receive to hidden channels" did not make TotalMix send a hidden channel's messages.
+**Test 8b (same day, `logs/test8b-receive-hidden.log`):** the same run with the ADI-2 input hidden from OSC Controller 4 and "Receive to hidden channels" on (Options → Mixer Settings… → OSC → Details). Monitor input 1 sent nothing, as in the first run. Monitor inputs 3 to 14, all 16 playbacks, and all 16 outputs were present. So on this connection, turning on "Receive to hidden channels" did not make TotalMix send a hidden channel's messages.
 
-**Test 8a (baseline, `logs/test8a-unhidden.log`):** the same run with the ADI-2 input unhidden. Input 1 sent its settings, starting with `name = "ADI-2"`.
+**Test 8a (baseline, `logs/test8a-unhidden.log`):** the same run with the ADI-2 input unhidden. Monitor input 1 sent its settings, starting with `name = "ADI-2"`.
 
-**Test 8e (same day):** with ADI-2 hidden from OSC Controller 4 and "Receive to hidden channels" off, `sbdev send /mix/in/1/8/faderlin 0.5` did not move the ADI-2 fader in TotalMix's window. With the option on, the same message moved it. So the option lets TotalMix accept messages addressed to a hidden channel. It does not make TotalMix send that channel's state back to the remote (test 8b).
+**Test 8e (same day), not confirmed:** with ADI-2 hidden from OSC Controller 4 and "Receive to hidden channels" off, `sbdev send /mix/in/1/8/faderlin 0.5` did not move the ADI-2 fader in TotalMix's window. With the option on, the same message moved it. But `/mix/in/1/8` addresses address 1, the right half of the ADI-2 pair, not address 0, the left channel that was hidden. The test therefore does not show that the option lets TotalMix accept messages for the hidden channel. It needs a rerun with `/mix/in/0/8/faderlin`. It does not make TotalMix send that channel's state back to the remote (test 8b).
 
 **Test 9 (same day): which sends TotalMix applies.** Each message went to controller 4's incoming port (7004) with `sbdev send`, and the result was read in TotalMix's window or in `sbdev monitor --sendall`:
-- `/output/8/faderlin 0.5` moved the ADAT 1/2 output fader (applied).
+- `/output/8/faderlin 0.5` moved the ADAT 1/2 output fader (applied). Address 8 is monitor output 9 (ADAT 1/2).
 - `/output/8/mute 1` lit the ADAT 1/2 output's M button (applied).
 - `sbdev roundtrip` received no reply to a command, which matches test 5: TotalMix does not send a command's result back to the client that sent it.
 
-**Channel numbers (corrected the same day).** The addresses count channels from 0, as the RME spec says, and a stereo pair's settings are addressed by its left channel. Earlier sends in this test used the 1-based numbers that `sbdev monitor` prints, so they missed the intended channels:
-- `/input/1/mute 1` and `/input/3/mute 1` did not change the mute state (`input 1 mute = 0` and `input 3 mute = 0` in the monitor). They addressed other channels, not the ADI-2 and Sonos inputs.
-- `/playback/1/mute 1` did not change the state (`playback 1 mute = 0`).
-- `/mix/in/1/8/faderlin 0.5` was recorded as moving the ADI-2 fader. Its address is not the ADI-2 input under 0-based numbering, so that result is not confirmed. See the next item.
+**Channel numbers (corrected the same day).** The addresses count channels from 0, as the RME spec says, and a stereo pair's settings are addressed by its left channel. Earlier sends in this test used the monitor's display numbers as addresses, so they missed the intended channels:
+- `/input/1/mute 1` addressed address 1 (monitor input 2, the right half of ADI-2), and `/input/3/mute 1` addressed address 3 (monitor input 4). Neither is the Sonos input (address 2). The monitor showed `input 1 mute = 0` (address 0, ADI-2) and `input 3 mute = 0` (address 2, Sonos) unchanged, as expected.
+- `/playback/1/mute 1` addressed address 1 (monitor playback 2). The monitor showed `playback 1 mute = 0` (address 0, AES), unchanged, as expected.
+- `/mix/in/1/8/faderlin 0.5` addressed address 1 (the right half of ADI-2), not the left channel. That is the message used in test 8e; see that test.
 
 **Rechecked with 0-based numbers (same day):**
 - `/playback/0/mute 1` lit the AES playback's M button (applied). `/playback/0/mute 0` turned it off.
@@ -267,4 +267,4 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 
 **Global mute.** The monitor reported `globalmute = 1` in the dumps before this recheck, and `globalmute = 0` after Adam turned it off. The 0-based input mute applied with global mute at 0. The AES M button showed a partial light after `/playback/0/mute 1`; the cause was not checked.
 
-**Not tested:** the other controllers, other interfaces, and whether the 1-based sends had any effect on channels other than the ones they addressed.
+**Not tested:** the other controllers, other interfaces, and the effect of the earlier sends on the channels at addresses 1 and 3.
