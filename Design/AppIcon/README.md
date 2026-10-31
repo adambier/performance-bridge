@@ -24,7 +24,7 @@ Rules the design keeps:
 - The About window shows the icon at 128 points (the 256 px art), large enough for the details.
 - The dark appearance uses the same colors as the default (Adam, 2026-10-30): set it so in Icon
   Composer rather than letting it darken the sky.
-- The Clear style leaves out the wave lines (`3-waves`), which look odd on glass (Adam).
+- The Clear and Tinted styles leave out the wave lines (`3-waves`), which look odd there (Adam).
 - No fader caps at 16 px or in the menu-bar glyph: at those sizes they read as dots (Adam).
 
 Open points, to check on a Mac:

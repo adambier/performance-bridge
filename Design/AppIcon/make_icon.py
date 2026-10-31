@@ -116,8 +116,8 @@ SKY_GRADIENT = ('<linearGradient id="%s" x1="0" y1="0" x2="0" y2="1"><stop offse
 def water(prefix):
     """The reflection as plain vector shapes (no filter): the bridge mirrored at the deck line, cut
     into horizontal strips that are shifted sideways and fade with depth. Returns the clip paths,
-    the strips, and the dark wave lines, which are kept apart so the Clear style can leave them
-    out (Adam, 2026-10-30: they look odd there)."""
+    the strips, and the dark wave lines, which are kept apart so the Clear and Tinted styles can
+    leave them out (Adam, 2026-10-30: they look odd there)."""
     mirrored = bridge(1, DECK_LARGE, 22, CAPS_LARGE, with_deck=False) + "\n" + flat_caps(CAPS_LARGE, CAP_LARGE)
     defs, strips = [], []
     strip_h, top = 8, DECK_LINE
