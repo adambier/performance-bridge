@@ -226,6 +226,11 @@ struct MenuContent: View {
             }
             Divider()
             Toggle("Show all outputs", isOn: $showAllOutputs)
+            Divider()
+            // Choosing Main Out's output saves "follow Main Out" (BridgeModel.setHomeSubmix), so
+            // the home moves when Main Out is reassigned in TotalMix. Said here so it isn't
+            // mistaken for a bug.
+            Text("Main Out follows TotalMix's assignment")
         }
         Toggle("Playbacks start on a new page", isOn: Binding(
             get: { playbacksOnNewPage },

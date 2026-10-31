@@ -53,7 +53,7 @@ small driver of its own.
   - two views: sources (inputs and playbacks) and outputs (the assigned monitoring outputs first, then the sends; a monitoring role with nothing assigned shows no strip);
   - a performance layout, chosen in the app: the order of each view (which TotalMix can't change), the channels it hides, and whether the first playback starts a new page (blank strips after the inputs); channels it doesn't place yet follow in TotalMix's order;
   - monitoring outputs and sends: the outputs the control room assigns to Main Out, Main Out B, Phones 1–4, and cue are monitoring outputs; every other output TotalMix doesn't hide is a send;
-  - the home submix (Main Out unless the app chooses another monitoring output, or, with "Show all outputs", any output), which source levels and pans go into; send knobs reach only the sends;
+  - the home submix (Main Out unless the app chooses another monitoring output, or, with "Show all outputs", any output), which source levels and pans go into; send knobs reach only the sends. Main Out is followed, not fixed: when Main Out is reassigned in TotalMix's control room, the home moves with it (the app's menu says so); any other choice stays on its output;
   - paging, and a focus mode (one source across all submixes);
   - the feedback rules: a control the user holds (touched, or moved in the last 250 ms) is not moved by TotalMix and catches up when let go; controls without motors pick up; continuous messages are thinned to one per address per 20 ms; meters update at most 12 times per second.
 
