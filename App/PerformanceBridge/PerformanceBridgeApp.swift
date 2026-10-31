@@ -78,15 +78,24 @@ struct MenuContent: View {
     /// Whether the first playback starts a new page on the surfaces.
     @AppStorage("playbacksOnNewPage") private var playbacksOnNewPage = false
 
+    private var totalMixState: String {
+        let status = model.status
+        if status.totalMixAnswering { return "connected" }
+        if !status.listening { return "port \(model.engine.settings.endpoint.outgoingPort) in use, retrying" }
+        return "no answer"
+    }
+
+    private var rotoState: String {
+        let status = model.status
+        if status.rotoConnected { return "connected" }
+        if status.rotoFound { return "connecting" }
+        return "not found, retrying"
+    }
+
     var body: some View {
-        Text(model.status.totalMixAnswering ? "TotalMix FX: connected" : "TotalMix FX: no answer")
-        Text(model.status.rotoConnected ? "Roto-Control: connected" : "Roto-Control: not connected")
-        if let error = model.status.error {
-            // One line per side that isn't open yet; the engine keeps trying.
-            ForEach(error.components(separatedBy: "\n"), id: \.self) { line in
-                Text(line)
-            }
-        }
+        // Short lines: a menu cuts long ones in the middle. The full reasons go to the log.
+        Text("TotalMix FX: " + totalMixState)
+        Text("Roto-Control: " + rotoState)
         Divider()
         Menu("Home submix") {
             ForEach(model.status.monitoringOutputs, id: \.output) { choice in

@@ -65,6 +65,11 @@ public struct BridgeStatus: Equatable, Sendable {
     public var totalMixAnswering = false
     /// Whether the Roto-Control has completed the handshake.
     public var rotoConnected = false
+    /// Whether TotalMix's outgoing port is open (another program, such as `sbdev bridge`, may have
+    /// it).
+    public var listening = false
+    /// Whether the Roto-Control's MIDI ports are open (it is plugged in), handshake or not.
+    public var rotoFound = false
     /// The home submix's output channel (0-based), if known.
     public var homeSubmix: Int?
     /// Whether the first playback starts a new page.
@@ -75,7 +80,8 @@ public struct BridgeStatus: Equatable, Sendable {
     /// the home submix.
     public var otherOutputs: [HomeChoice] = []
     /// What the engine can't open yet (TotalMix's port, the Roto-Control's MIDI ports, or both),
-    /// one line each; `nil` when both are open. The engine keeps trying.
+    /// in full, one line each, for a log or a tooltip; `nil` when both are open. The engine keeps
+    /// trying. `listening` and `rotoFound` say the same in short.
     public var error: String?
 
     /// Nothing running yet.
@@ -370,6 +376,8 @@ public final class BridgeEngine: @unchecked Sendable {
         status.running = running
         status.totalMixAnswering = lastFromTotalMix.map { now - $0 < Self.totalMixTimeout } ?? false
         status.rotoConnected = driver.isConnected
+        status.listening = socket != nil
+        status.rotoFound = midi != nil
         status.homeSubmix = hub.homeSubmix
         status.playbacksOnNewPage = hub.layout.playbacksOnNewPage
         status.monitoringOutputs = Self.monitoringChoices(hub.mirror)

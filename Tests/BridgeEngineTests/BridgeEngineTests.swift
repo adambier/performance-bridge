@@ -67,6 +67,8 @@ final class BridgeEngineTests: XCTestCase {
         engine.start()
         defer { engine.stop() }
         XCTAssertTrue(engine.status.running)
+        XCTAssertFalse(engine.status.listening)
+        XCTAssertFalse(engine.status.rotoFound)
         let error = try XCTUnwrap(engine.status.error)
         XCTAssertTrue(error.contains("Can't listen on port \(port)"), error)
         XCTAssertTrue(error.contains("Roto-Control not found"), error)
@@ -79,6 +81,7 @@ final class BridgeEngineTests: XCTestCase {
         let after = try XCTUnwrap(engine.status.error)
         XCTAssertFalse(after.contains("Can't listen"), after)
         XCTAssertTrue(after.contains("Roto-Control not found"), after)
+        XCTAssertTrue(engine.status.listening)
         #endif
     }
 }
