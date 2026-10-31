@@ -30,9 +30,10 @@ statement there carries its evidence.
 | `Sources/MIDITransport/` | `MIDIConnection`: a CoreMIDI connection on macOS, a placeholder that throws elsewhere; `UniversalPackets`: MIDI 1.0 bytes to and from CoreMIDI's UMP words (Foundation only, tested everywhere) |
 | `Sources/SurfaceCore/` | The surface-neutral core: `SurfaceHub` (the engine: strips, paging, the home submix, holds, pickup, thinning, meters), `MixerMirror` (TotalMix's state), `PerformanceLayout` and `ViewKind`, `SurfaceCapabilities` and `SurfaceMode`, `SurfaceUpdate` and `CoreOutput`, `MeterScale` and `ValueText` |
 | `Sources/RotoDriver/` | `RotoDriver`: the Roto-Control's MIX mode on top of SurfaceCore (handshake, track sets, knob and switch modes, single-track pages, strips, knobs, lights, meters, value text); `RotoStep` |
-| `Sources/BridgeEngine/` | `BridgeEngine`: TotalMix and a Roto-Control connected through SurfaceCore and RotoDriver, with the UDP socket, the MIDI ports, and a clock; `BridgeSettings`, `BridgeStatus`, `MonitoringChoice` (for the app's menu). Platform code, like the transports it uses |
+| `Sources/BridgeEngine/` | `BridgeEngine`: TotalMix and a Roto-Control connected through SurfaceCore and RotoDriver, with the UDP socket, the MIDI ports, and a clock; `BridgeSettings`, `BridgeStatus`, `HomeChoice` (for the app's menu). Platform code, like the transports it uses |
 | `Sources/UDPTransport/` | `UDPSocket`: POSIX UDP on macOS and Linux; a placeholder that throws on Windows |
-| `Sources/sbdev/` | Developer tool: `monitor`, `send`, `roundtrip`, `curve` (main.swift), `roto` (Roto.swift), and `bridge` (Bridge.swift) |
+| `Sources/sbdev/` | Developer tool: `monitor`, `send`, `roundtrip`, `curve` (main.swift), `roto` (Roto.swift), `bridge` (Bridge.swift), and `midi` (MIDIMonitor.swift) |
+| `App/PerformanceBridge/` | A first look at the menu-bar app (macOS only): `swift run PerformanceBridge` |
 | `Tests/` | One test target per library |
 | `docs/TOTALMIX-OSC.md` | What this project relies on in Global OSC, with evidence, and the open questions |
 | `docs/ROTO-CONTROL.md` | What this project relies on in the Roto-Control's protocol, with evidence, and the open questions |
@@ -49,9 +50,9 @@ small driver of its own.
 
   Around the strips:
   - two views: sources (inputs and playbacks) and outputs (the assigned monitoring outputs first, then the sends; a monitoring role with nothing assigned shows no strip);
-  - a performance layout, chosen in the app: the order of each view (which TotalMix can't change) and the channels it hides; channels it doesn't place yet follow in TotalMix's order;
+  - a performance layout, chosen in the app: the order of each view (which TotalMix can't change), the channels it hides, and whether the first playback starts a new page (blank strips after the inputs); channels it doesn't place yet follow in TotalMix's order;
   - monitoring outputs and sends: the outputs the control room assigns to Main Out, Main Out B, Phones 1–4, and cue are monitoring outputs; every other output TotalMix doesn't hide is a send;
-  - the home submix (Main Out unless the app chooses another monitoring output), which source levels and pans go into; send knobs reach only the sends;
+  - the home submix (Main Out unless the app chooses another monitoring output, or, with "Show all outputs", any output), which source levels and pans go into; send knobs reach only the sends;
   - paging, and a focus mode (one source across all submixes);
   - the feedback rules: a control the user holds (touched, or moved in the last 250 ms) is not moved by TotalMix and catches up when let go; controls without motors pick up; continuous messages are thinned to one per address per 20 ms; meters update at most 12 times per second.
 

@@ -29,23 +29,27 @@ public struct BridgeSettings: Equatable, Sendable {
     public var rotoPortName: String
     /// The home submix's output channel (0-based), or `nil` for TotalMix's Main Out.
     public var homeSubmix: Int?
+    /// Whether the first playback starts a new page (`PerformanceLayout.playbacksOnNewPage`).
+    public var playbacksOnNewPage = false
 
     /// Settings with TotalMix's default ports, the Roto-Control's usual port name, and Main Out as
     /// the home submix.
-    public init(endpoint: TotalMixEndpoint = .standard, rotoPortName: String = "Roto", homeSubmix: Int? = nil) {
+    public init(endpoint: TotalMixEndpoint = .standard, rotoPortName: String = "Roto", homeSubmix: Int? = nil,
+                playbacksOnNewPage: Bool = false) {
         self.endpoint = endpoint
         self.rotoPortName = rotoPortName
         self.homeSubmix = homeSubmix
+        self.playbacksOnNewPage = playbacksOnNewPage
     }
 }
 
-/// A monitoring output that can be the home submix, for a menu.
-public struct MonitoringChoice: Equatable, Hashable, Sendable {
-    /// The output channel, 0-based.
+/// An output that can be the home submix, for a menu.
+public struct HomeChoice: Equatable, Hashable, Sendable {
+    /// The output channel, 0-based (the left channel of a stereo pair).
     public var output: Int
     /// The output's name in TotalMix, or "Output n" until TotalMix has sent it.
     public var name: String
-    /// The monitoring roles assigned to it (e.g., Main Out, Phones 1).
+    /// The monitoring roles assigned to it (e.g., Main Out, Phones 1); empty for other outputs.
     public var roles: [MonitoringRole]
 }
 
@@ -59,8 +63,13 @@ public struct BridgeStatus: Equatable, Sendable {
     public var rotoConnected = false
     /// The home submix's output channel (0-based), if known.
     public var homeSubmix: Int?
+    /// Whether the first playback starts a new page.
+    public var playbacksOnNewPage = false
     /// The monitoring outputs, in output order, for choosing the home submix.
-    public var monitoringOutputs: [MonitoringChoice] = []
+    public var monitoringOutputs: [HomeChoice] = []
+    /// The other outputs TotalMix shows over OSC, in the layout's order, for choosing any output as
+    /// the home submix.
+    public var otherOutputs: [HomeChoice] = []
     /// Why the engine could not start, if it could not.
     public var error: String?
 
@@ -128,6 +137,11 @@ public final class BridgeEngine: @unchecked Sendable {
         socket?.startReceiving { [weak self] bytes, _ in self?.fromTotalMix(bytes) }
         dispatch(hub.addSurface(driver.id, capabilities: RotoDriver.capabilities, now: now))
         if let home = settings.homeSubmix { dispatch(hub.setHomeSubmix(home, now: now)) }
+        if settings.playbacksOnNewPage {
+            var layout = hub.layout
+            layout.playbacksOnNewPage = true
+            dispatch(hub.setLayout(layout, now: now))
+        }
         dispatch(hub.connect(now: now))
         sendToRoto(driver.start(now: now))
         let thread = Thread { [weak self] in
@@ -174,6 +188,16 @@ public final class BridgeEngine: @unchecked Sendable {
     public func setHomeSubmix(_ output: Int?) {
         lock.lock()
         dispatch(hub.setHomeSubmix(output, now: now))
+        lock.unlock()
+        publishStatus()
+    }
+
+    /// Starts the first playback on a new page, or not.
+    public func setPlaybacksOnNewPage(_ on: Bool) {
+        lock.lock()
+        var layout = hub.layout
+        layout.playbacksOnNewPage = on
+        dispatch(hub.setLayout(layout, now: now))
         lock.unlock()
         publishStatus()
     }
@@ -240,20 +264,32 @@ public final class BridgeEngine: @unchecked Sendable {
         status.totalMixAnswering = lastFromTotalMix.map { now - $0 < Self.totalMixTimeout } ?? false
         status.rotoConnected = driver.isConnected
         status.homeSubmix = hub.homeSubmix
+        status.playbacksOnNewPage = hub.layout.playbacksOnNewPage
         status.monitoringOutputs = Self.monitoringChoices(hub.mirror)
+        status.otherOutputs = Self.otherChoices(hub.mirror, layout: hub.layout)
         status.error = lastStatus.error
         return status
     }
 
     /// The monitoring outputs of a mirror, in output order, with their names and roles.
-    public static func monitoringChoices(_ mirror: MixerMirror) -> [MonitoringChoice] {
+    public static func monitoringChoices(_ mirror: MixerMirror) -> [HomeChoice] {
         var roles: [Int: [MonitoringRole]] = [:]
         for role in MonitoringRole.allCases {
             if let output = mirror.monitoring[role] { roles[output, default: []].append(role) }
         }
         return roles.keys.sorted().map { output in
             let name = mirror.channels[ChannelRef(.output, output)]?.name ?? "Output \(output + 1)"
-            return MonitoringChoice(output: output, name: name, roles: roles[output] ?? [])
+            return HomeChoice(output: output, name: name, roles: roles[output] ?? [])
+        }
+    }
+
+    /// The outputs of a mirror that are not monitoring outputs, in the layout's order, leaving out
+    /// those hidden from OSC or by the layout.
+    public static func otherChoices(_ mirror: MixerMirror, layout: PerformanceLayout) -> [HomeChoice] {
+        let monitoring = mirror.monitoringOutputs
+        return layout.channels(.outputs, in: mirror).map(\.channel).filter { !monitoring.contains($0) }.map { output in
+            let name = mirror.channels[ChannelRef(.output, output)]?.name ?? "Output \(output + 1)"
+            return HomeChoice(output: output, name: name, roles: [])
         }
     }
 

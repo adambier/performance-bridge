@@ -39,6 +39,7 @@ final class BridgeModel: ObservableObject {
         }
         if let port = port("--in-port") { settings.endpoint.incomingPort = port }
         if let port = port("--out-port") { settings.endpoint.outgoingPort = port }
+        settings.playbacksOnNewPage = UserDefaults.standard.bool(forKey: "playbacksOnNewPage")
         engine = BridgeEngine(settings: settings)
         engine.onStatus = { [weak self] status in
             Task { @MainActor in self?.status = status }
@@ -53,6 +54,10 @@ final class BridgeModel: ObservableObject {
 
 struct MenuContent: View {
     @ObservedObject var model: BridgeModel
+    /// Whether the home submix menu offers every output, not only the monitoring outputs.
+    @AppStorage("showAllOutputs") private var showAllOutputs = false
+    /// Whether the first playback starts a new page on the surfaces.
+    @AppStorage("playbacksOnNewPage") private var playbacksOnNewPage = false
 
     var body: some View {
         Text(model.status.totalMixAnswering ? "TotalMix FX: connected" : "TotalMix FX: no answer")
@@ -68,7 +73,23 @@ struct MenuContent: View {
             if model.status.monitoringOutputs.isEmpty {
                 Text("No monitoring outputs yet")
             }
+            if showAllOutputs && !model.status.otherOutputs.isEmpty {
+                Divider()
+                Menu("Other outputs") {
+                    ForEach(model.status.otherOutputs, id: \.output) { choice in
+                        Button(label(for: choice)) { model.engine.setHomeSubmix(choice.output) }
+                    }
+                }
+            }
+            Divider()
+            Toggle("Show all outputs", isOn: $showAllOutputs)
         }
+        Toggle("Playbacks start on a new page", isOn: Binding(
+            get: { playbacksOnNewPage },
+            set: { on in
+                playbacksOnNewPage = on
+                model.engine.setPlaybacksOnNewPage(on)
+            }))
         Button("Ask TotalMix FX for its state") { model.engine.refresh() }
         Divider()
         Button("Quit Performance Bridge") {
@@ -78,10 +99,10 @@ struct MenuContent: View {
         .keyboardShortcut("q")
     }
 
-    private func label(for choice: MonitoringChoice) -> String {
+    private func label(for choice: HomeChoice) -> String {
         let mark = choice.output == model.status.homeSubmix ? "✓ " : "    "
         let roles = choice.roles.map(roleName).joined(separator: ", ")
-        return "\(mark)\(choice.name) (\(roles))"
+        return roles.isEmpty ? "\(mark)\(choice.name)" : "\(mark)\(choice.name) (\(roles))"
     }
 
     private func roleName(_ role: MonitoringRole) -> String {

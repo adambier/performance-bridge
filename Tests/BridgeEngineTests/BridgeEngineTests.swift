@@ -29,4 +29,22 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertFalse(engine.status.rotoConnected)
         XCTAssertEqual(engine.settings.endpoint, .standard)
     }
+
+    func testOtherOutputsLeaveOutMonitoringAndHiddenOnes() {
+        var mirror = MixerMirror()
+        for (number, name) in [(0, "Monitors"), (2, "ADI-2"), (4, "ADAT 1/2"), (6, "ADAT 3/4")] {
+            _ = mirror.apply(.channel(bus: .output, channel: number, parameter: "stereo", value: .number(1)))
+            _ = mirror.apply(.channel(bus: .output, channel: number, parameter: "name", value: .text(name)))
+        }
+        _ = mirror.apply(.other(path: "controlroom/mainout", value: .number(0)))
+        let layout = PerformanceLayout(hidden: [ChannelRef(.output, 6)])
+        let others = BridgeEngine.otherChoices(mirror, layout: layout)
+        XCTAssertEqual(others.map(\.name), ["ADI-2", "ADAT 1/2"])
+        XCTAssertTrue(others.allSatisfy { $0.roles.isEmpty })
+    }
+
+    func testSettingsCarryThePlaybackPageOption() {
+        let engine = BridgeEngine(settings: BridgeSettings(playbacksOnNewPage: true))
+        XCTAssertTrue(engine.settings.playbacksOnNewPage)
+    }
 }
