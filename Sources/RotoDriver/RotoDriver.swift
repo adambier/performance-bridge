@@ -148,13 +148,15 @@ public struct RotoDriver: Sendable {
     }
 
     /// Color schemes chosen in place of `schemeForTotalMixColor`, by TotalMix color index, for
-    /// sources: for trying schemes on the screens. Empty by default.
+    /// strips drawn in their TotalMix color: for trying schemes on the screens. Empty by default.
     public var schemeOverrides: [Int: UInt8] = [:]
 
     /// The color scheme this driver draws a strip with: an override for a source's TotalMix
     /// color if there is one, else `colorScheme(for:)`.
     public func scheme(for info: StripInfo) -> UInt8 {
-        if info.kind == .source, let color = info.color, let scheme = schemeOverrides[color] { return scheme }
+        if info.kind == .source || Self.hasColor(info), let color = info.color, let scheme = schemeOverrides[color] {
+            return scheme
+        }
         return Self.colorScheme(for: info)
     }
 
@@ -452,19 +454,26 @@ public struct RotoDriver: Sendable {
         }
     }
 
-    /// The color scheme for monitoring outputs until TotalMix's colors are matched: 33, seen as
-    /// green (docs/ROTO-CONTROL.md, test 2). Used for outputs.
+    /// The color scheme for monitoring outputs left white (TotalMix's default): 33, seen as green
+    /// (docs/ROTO-CONTROL.md, test 2).
     public static let monitoringScheme: UInt8 = 33
-    /// The color scheme for sends until TotalMix's colors are matched: 22, seen as blue.
+    /// The color scheme for sends left white (TotalMix's default): 22, seen as blue.
     public static let sendScheme: UInt8 = 22
 
-    /// The Roto-Control color scheme for a strip: sources in their TotalMix color, outputs by kind
-    /// (monitoring outputs green, sends blue).
+    /// Whether a strip has a TotalMix color other than the default white.
+    private static func hasColor(_ info: StripInfo) -> Bool {
+        guard let color = info.color else { return false }
+        return color != 1 && schemeForTotalMixColor[color] != nil
+    }
+
+    /// The Roto-Control color scheme for a strip: its TotalMix color; for an output left white
+    /// (TotalMix's default), its kind instead: monitoring outputs green, sends blue (Adam,
+    /// 2026-10-30).
     public static func colorScheme(for info: StripInfo) -> UInt8 {
         switch info.kind {
-        case .monitoring: return monitoringScheme
-        case .send: return sendScheme
-        case .source: return colorScheme(forTotalMixColor: info.color)
+        case .monitoring where !hasColor(info): return monitoringScheme
+        case .send where !hasColor(info): return sendScheme
+        default: return colorScheme(forTotalMixColor: info.color)
         }
     }
 

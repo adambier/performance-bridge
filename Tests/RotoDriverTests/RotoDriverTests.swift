@@ -197,6 +197,18 @@ final class RotoDriverTests: XCTestCase {
         XCTAssertTrue(bytes.contains(RotoOutgoing.trackDetailsEnd.bytes))
     }
 
+    func testOutputsInTheirTotalMixColorUnlessWhite() {
+        func info(_ kind: StripKind, _ color: Int?) -> StripInfo {
+            StripInfo(channel: ChannelRef(.output, 0), name: "x", color: color, stereo: false, kind: kind,
+                      knobLabel: "", switchLabel: "")
+        }
+        XCTAssertEqual(RotoDriver.colorScheme(for: info(.monitoring, 5)), RotoDriver.schemeForTotalMixColor[5])
+        XCTAssertEqual(RotoDriver.colorScheme(for: info(.send, 7)), 73)
+        XCTAssertEqual(RotoDriver.colorScheme(for: info(.monitoring, 1)), RotoDriver.monitoringScheme)
+        XCTAssertEqual(RotoDriver.colorScheme(for: info(.send, nil)), RotoDriver.sendScheme)
+        XCTAssertEqual(RotoDriver.colorScheme(for: info(.source, 1)), 13)
+    }
+
     func testExactColorForEachKind() {
         let palette = RotoDriver.totalMixColors
         func info(_ kind: StripKind, _ color: Int?) -> StripInfo {

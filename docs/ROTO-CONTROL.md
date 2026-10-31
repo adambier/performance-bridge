@@ -455,3 +455,8 @@ marked "seen".
 - **Yellow** (run 23, seen): side by side, drawn as a page after plugging in again, schemes 3, 17,
   59, and 73 all showed; 73 was the closest to TotalMix's yellow ("not great"), 59 closer in hue
   but brownish. Yellow stays scheme 73.
+- **The table's colors.** Melbourne Instruments' Bitwig integration lists an RGB value for each
+  scheme (`ColorUtil.java` in [roto_control](https://github.com/Melbourne-Instruments/roto_control),
+  MIT), which is a quicker guide than the SysEx doc's table to which schemes to try. By it, the
+  neutral greys are 13 (white), 27, 41, 55, and 69 (darkest), with 70 black; 49, used for
+  TotalMix's grey, is a bluish grey. How each looks on the screens still has to be seen.
