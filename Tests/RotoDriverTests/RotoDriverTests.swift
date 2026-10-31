@@ -190,10 +190,11 @@ final class RotoDriverTests: XCTestCase {
         let (driver, hub, _) = connected()
         let bytes = driver.swatchBytes([3, 17, 59, 73, 1], hub: hub)
         XCTAssertTrue(bytes.contains(RotoOutgoing.trackDetails(RotoTrackDetails(index: 3, name: "scheme 73", colorScheme: 73),
-                                                               immediate: true).bytes))
+                                                               immediate: false).bytes))
         let header = Array(RotoOutgoing.trackDetails(RotoTrackDetails(index: 0, name: "", colorScheme: 0),
-                                                     immediate: true).bytes.prefix(7))
+                                                     immediate: false).bytes.prefix(7))
         XCTAssertEqual(bytes.occurrences(header), 4, "only the four tracks there are")
+        XCTAssertTrue(bytes.contains(RotoOutgoing.trackDetailsEnd.bytes))
     }
 
     func testExactColorForEachKind() {

@@ -466,7 +466,7 @@ final class BridgeSession: @unchecked Sendable {
                 print("swatch S S ... (schemes from 0 to 82, up to 8), or swatch done")
                 return true
             }
-            sendToRoto(driver.swatchBytes(schemes, hub: hub))
+            sendToRoto(driver.swatchBytes(schemes, hub: hub) + switchLights())
             log("Swatches on screens 1-\(min(schemes.count, 8)): schemes \(schemes.map(String.init).joined(separator: ", ")). `swatch done` to put the strips back.")
         case "sendall":
             dispatch(hub.connect(now: now))

@@ -447,3 +447,8 @@ marked "seen".
   but keeps it in an eight-entry table indexed by the track number, so indexes 0–7 work only on
   the first page (and stay with that screen afterward), and 8 or more overrun the table. If so,
   exact colors are usable only for the first eight tracks.
+- **SET TRACK DETAILS** (run 22, seen): `swatch` sent SET TRACK DETAILS (`0A 11`, shown at once)
+  for screens 1–4 on the first page with schemes 3, 17, 59, and 73; the names changed, the colors
+  did not. Exact colors sent in run 21 (indexes 0–6) may still have been held for those screens,
+  since the Roto-Control was not plugged in again in between, so this is not yet a clean result.
+  `swatch` now draws the page with TRACK DETAILS … END instead.

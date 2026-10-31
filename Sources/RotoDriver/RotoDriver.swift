@@ -171,16 +171,25 @@ public struct RotoDriver: Sendable {
         }.flatMap(\.bytes)
     }
 
-    /// SET TRACK DETAILS (shown at once) for the first screens of the current page, each named
-    /// "scheme N" in color scheme N, to compare schemes side by side. Screens past the last track
-    /// are skipped. Nothing outside all-tracks mode or before the handshake.
+    /// The current page drawn with its first screens as swatches, each named "scheme N" in color
+    /// scheme N, to compare schemes side by side; the other screens keep their strips. Drawn as a
+    /// page is (TRACK DETAILS … END), because SET TRACK DETAILS has been observed to change a
+    /// screen's name but not its color (run 22). Screens past the last track are skipped. Nothing
+    /// outside all-tracks mode or before the handshake.
     public func swatchBytes(_ schemes: [UInt8], hub: SurfaceHub) -> [UInt8] {
         guard handshake.isConnected, !inPluginMode, case .strips? = hub.mode(of: id) else { return [] }
-        return schemes.prefix(RotoCC.controlCount).enumerated().compactMap { offset, scheme -> RotoOutgoing? in
-            guard page.first + offset < page.count else { return nil }
-            return .trackDetails(RotoTrackDetails(index: page.first + offset, name: "scheme \(scheme)",
-                                                  colorScheme: scheme), immediate: true)
-        }.flatMap(\.bytes)
+        var messages: [RotoOutgoing] = [.trackCount(page.count), .firstTrack(page.first)]
+        for (offset, info) in infos.enumerated() where page.first + offset < page.count {
+            if offset < schemes.count {
+                messages.append(.trackDetails(RotoTrackDetails(index: page.first + offset, name: "scheme \(schemes[offset])",
+                                                               colorScheme: schemes[offset]), immediate: false))
+            } else if let info {
+                messages.append(.trackDetails(RotoTrackDetails(index: page.first + offset, name: info.name,
+                                                               colorScheme: scheme(for: info)), immediate: false))
+            }
+        }
+        messages.append(.trackDetailsEnd)
+        return messages.flatMap(\.bytes)
     }
 
     /// The bytes that set the exact colors of the current page again, without drawing the strips:
