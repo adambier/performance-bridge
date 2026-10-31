@@ -51,7 +51,7 @@ small driver of its own.
 
   Around the strips:
   - two views: sources (inputs and playbacks) and outputs (the assigned monitoring outputs first, then the sends; a monitoring role with nothing assigned shows no strip);
-  - a performance layout, chosen in the app: the order of each view (which TotalMix can't change) and whether the first playback starts a new page (blank strips after the inputs); channels it doesn't place yet follow in TotalMix's order; the app can also hide a channel from a surface's strips, but it stays a send target and a home submix choice. Which channels TotalMix hides from this OSC remote (Options → Channel Layout) are set only in TotalMix, under the rule in section 4;
+  - a performance layout, chosen in the app: the order of each view (which TotalMix can't change) and whether the first playback starts a new page (blank strips after the inputs); channels it doesn't place yet follow in TotalMix's order; the app has no hide setting of its own. Which channels TotalMix hides from this OSC remote (Options → Channel Layout…, or right-click a channel and choose Change Channel Layout) are set only in TotalMix, per OSC controller, under the rule in section 4;
   - monitoring outputs and sends: the outputs the control room assigns to Main Out, Main Out B, Phones 1–4, and cue are monitoring outputs; every other output TotalMix doesn't hide is a send;
   - the home submix (Main Out unless the app chooses another monitoring output, or, with "Show all outputs", any output), which source levels and pans go into; send knobs reach only the sends. Main Out is followed, not fixed: when Main Out is reassigned in TotalMix's control room, the home moves with it (the app's menu says so); any other choice stays on its output;
   - paging, and a focus mode (one source across all submixes);
@@ -92,12 +92,14 @@ The exception (Adam, 2026-10-31): a separate app setting for something TotalMix 
 acceptable when there is a strong case for the surface behaving differently from TotalMix at the
 same time. The case is made, and recorded, before the setting is added.
 
-Hidden channels (Adam, 2026-10-31). A channel can be hidden in the app's layout, so it leaves the
-surface but stays a home submix choice and a send target. A channel hidden from this OSC remote in
-TotalMix is not shown on any surface, and the app does not show it greyed out or offer to change it:
-greyed-out items take up room and cannot be acted on. The layout shows a note that channels hidden
-from OSC in TotalMix are not shown. A warning is shown only if the app can detect such channels,
-which is untested (`docs/TOTALMIX-OSC.md`); until then the note is shown without a warning.
+Hidden channels (Adam, 2026-10-31; revised the same day). Hiding is done only in TotalMix, where
+Channel Layout can hide a channel from each OSC controller separately, and from the Mixer/Matrix and
+the other controllers. The app has no hide setting of its own, so there is nothing to keep in step.
+A channel that TotalMix hides from an OSC Controller (Channel Layout, "Hide Channel in") is not shown on any surface that uses that controller, and the app does not
+show it greyed out or offer to change it: greyed-out items take up room and cannot be acted on. The
+layout shows a note that channels hidden in TotalMix are not shown. The app cannot detect hidden
+channels from OSC: a hidden channel sends nothing, as a missing one does (`docs/TOTALMIX-OSC.md`,
+test 8). So there is no warning, and the note stands alone.
 
 Documentation rule for TotalMix (Adam, 2026-10-31): TotalMix's menus and configuration screens are
 complex, so any text that tells the user where a TotalMix setting is (docs, app help, notes) gives
@@ -142,4 +144,5 @@ Don't:
 - **Claims.** Standing behavior in the present tense. Single observations as "has been observed to …". Inferences said to be inferences. Never claim more than the evidence supports.
 - **Spelling and punctuation.** The serial (Oxford) comma. "e.g.," or "for example" before parenthetical examples. American spelling throughout, in code comments and identifiers too.
 - **Words.** Plain, short words, and one term for one thing: channel, submix, mixer node, fader position, gain, strip, surface, driver.
+- **Send labels.** On a surface, a send is labeled "> " and the output's name (e.g., "> Phones"), never "to …" (Adam, 2026-10-31).
 - **Readability.** A prose paragraph longer than about eight lines is broken into paragraphs, or into a list where the parts are parallel.

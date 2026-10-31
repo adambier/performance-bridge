@@ -11,17 +11,15 @@ public enum ViewKind: Hashable, Codable, Sendable {
     case outputs
 }
 
-/// The order of the channels, as chosen in the app, and which strips the app leaves off a surface.
-/// TotalMix cannot reorder its channels; this can, in any order (playbacks among inputs, for
-/// example). A channel the app hides keeps its place in the sends and the home submix choices: it
-/// only leaves the surface's strips (Adam, 2026-10-31). Channels hidden from this OSC remote in
-/// TotalMix are not in the mirror at all, so they are not here either.
+/// The order of the channels, as chosen in the app. TotalMix cannot reorder its channels; this can,
+/// in any order (playbacks among inputs, for example). Channels hidden from this OSC remote in
+/// TotalMix are not in the mirror, so they are not here either. Hiding is done only in TotalMix, per
+/// OSC controller; the app has no setting of its own for it (Adam, 2026-10-31).
 ///
 /// For each view, the strips show:
 /// 1. the channels in the chosen order, in that order;
 /// 2. then any other channel, in TotalMix's order: one not yet placed, such as a channel just
-///    unhidden in TotalMix or one of a different interface, so that none goes missing;
-/// 3. but never a channel the layout hides from the strips (`hidden`).
+///    unhidden in TotalMix or one of a different interface, so that none goes missing.
 ///
 /// In the outputs view the assigned monitoring outputs always come before the sends; the chosen
 /// order applies within each group. With no chosen order, the monitoring outputs follow the order
@@ -31,24 +29,20 @@ public struct PerformanceLayout: Hashable, Codable, Sendable {
     public var sourceOrder: [ChannelRef]
     /// The outputs, in the order chosen; empty for TotalMix's order.
     public var outputOrder: [ChannelRef]
-    /// Channels the app leaves off the surface's strips, of either view. They stay sends and home
-    /// choices (see `channels(_:in:includingHidden:)`).
-    public var hidden: Set<ChannelRef>
     /// Whether the first playback in the sources view starts a new page, with blank strips after
     /// the inputs before it (Adam, 2026-10-30). Off by default.
     public var playbacksOnNewPage: Bool
 
     /// A layout; the default shows every channel in TotalMix's order.
-    public init(sourceOrder: [ChannelRef] = [], outputOrder: [ChannelRef] = [], hidden: Set<ChannelRef> = [],
+    public init(sourceOrder: [ChannelRef] = [], outputOrder: [ChannelRef] = [],
                 playbacksOnNewPage: Bool = false) {
         self.sourceOrder = sourceOrder
         self.outputOrder = outputOrder
-        self.hidden = hidden
         self.playbacksOnNewPage = playbacksOnNewPage
     }
 
     private enum CodingKeys: String, CodingKey {
-        case sourceOrder, outputOrder, hidden, playbacksOnNewPage
+        case sourceOrder, outputOrder, playbacksOnNewPage
     }
 
     /// Reads a saved layout; a missing field is empty, so layouts saved by older versions still load.
@@ -57,7 +51,6 @@ public struct PerformanceLayout: Hashable, Codable, Sendable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         sourceOrder = try container.decodeIfPresent([ChannelRef].self, forKey: .sourceOrder) ?? []
         outputOrder = try container.decodeIfPresent([ChannelRef].self, forKey: .outputOrder) ?? []
-        hidden = try container.decodeIfPresent(Set<ChannelRef>.self, forKey: .hidden) ?? []
         playbacksOnNewPage = try container.decodeIfPresent(Bool.self, forKey: .playbacksOnNewPage) ?? false
     }
 
@@ -85,21 +78,12 @@ public struct PerformanceLayout: Hashable, Codable, Sendable {
         return layout
     }
 
-    /// This layout with a channel hidden from, or shown on, the surface's strips.
-    public func settingHidden(_ ref: ChannelRef, _ isHidden: Bool) -> PerformanceLayout {
-        var layout = self
-        if isHidden { layout.hidden.insert(ref) } else { layout.hidden.remove(ref) }
-        return layout
+    /// The channels of a view, as the surfaces show them (see the type's description).
+    public func channels(_ view: ViewKind, in mirror: MixerMirror) -> [ChannelRef] {
+        orderedChannels(view, in: mirror)
     }
 
-    /// The channels of a view, as the strips show them (see the type's description). With
-    /// `includingHidden`, the channels the app hides are kept, for sends and home choices.
-    public func channels(_ view: ViewKind, in mirror: MixerMirror, includingHidden: Bool = false) -> [ChannelRef] {
-        let all = orderedChannels(view, in: mirror)
-        return includingHidden ? all : all.filter { !hidden.contains($0) }
-    }
-
-    /// The channels of a view in order, without the app's hidden list.
+    /// The channels of a view in order.
     private func orderedChannels(_ view: ViewKind, in mirror: MixerMirror) -> [ChannelRef] {
         switch view {
         case .sources:
@@ -122,17 +106,17 @@ public struct PerformanceLayout: Hashable, Codable, Sendable {
     }
 
     /// The channels of a view that the chosen order does not place yet (new to the layout), in
-    /// TotalMix's order, for the app to point out. Channels the app or TotalMix hides are not counted.
+    /// TotalMix's order, for the app to point out. Channels TotalMix hides are not in the mirror.
     public func unplaced(_ view: ViewKind, in mirror: MixerMirror) -> [ChannelRef] {
         let order = view == .sources ? sourceOrder : outputOrder
         guard !order.isEmpty else { return [] }
         let available = view == .sources
             ? mirror.visibleChannels(.input) + mirror.visibleChannels(.playback)
             : mirror.visibleChannels(.output)
-        return available.filter { !order.contains($0) && !hidden.contains($0) }
+        return available.filter { !order.contains($0) }
     }
 
-    /// The chosen order's available channels, then the rest in TotalMix's order (hidden ones included).
+    /// The chosen order's available channels, then the rest in TotalMix's order.
     private func arrange(_ available: [ChannelRef], _ order: [ChannelRef]) -> [ChannelRef] {
         let availableSet = Set(available)
         var seen: Set<ChannelRef> = []

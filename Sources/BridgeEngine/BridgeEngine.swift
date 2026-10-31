@@ -63,14 +63,11 @@ public struct LayoutItem: Equatable, Sendable {
     public var channel: ChannelRef
     /// The name a strip shows (see `SurfaceHub.stripName`).
     public var name: String
-    /// Whether the app hides it from the strips (`PerformanceLayout.hidden`).
-    public var hidden: Bool
 
     /// An item for the layout editor.
-    public init(channel: ChannelRef, name: String, hidden: Bool) {
+    public init(channel: ChannelRef, name: String) {
         self.channel = channel
         self.name = name
-        self.hidden = hidden
     }
 }
 
@@ -331,7 +328,7 @@ public final class BridgeEngine: @unchecked Sendable {
         return hub.layout
     }
 
-    /// Replaces the layout: the order, the channels the app hides, and the new-page option.
+    /// Replaces the layout: the order and the new-page option.
     public func setLayout(_ layout: PerformanceLayout) {
         lock.lock()
         dispatch(hub.setLayout(layout, now: now))
@@ -339,15 +336,13 @@ public final class BridgeEngine: @unchecked Sendable {
         publishStatus()
     }
 
-    /// The channels of a view for the layout editor, in the order the surfaces show them, with
-    /// the channels the app hides. Channels hidden from this OSC remote in TotalMix are not here.
+    /// The channels of a view for the layout editor, in the order the surfaces show them.
+    /// Channels hidden from this OSC remote in TotalMix are not here.
     public func layoutItems(_ view: ViewKind) -> [LayoutItem] {
         lock.lock()
         defer { lock.unlock() }
-        return hub.layout.channels(view, in: hub.mirror, includingHidden: true).map { ref in
-            LayoutItem(channel: ref,
-                       name: SurfaceHub.stripName(ref, hub.mirror.channels[ref]),
-                       hidden: hub.layout.hidden.contains(ref))
+        return hub.layout.channels(view, in: hub.mirror).map { ref in
+            LayoutItem(channel: ref, name: SurfaceHub.stripName(ref, hub.mirror.channels[ref]))
         }
     }
 
@@ -444,11 +439,10 @@ public final class BridgeEngine: @unchecked Sendable {
     }
 
     /// The outputs of a mirror that are not monitoring outputs, in the layout's order. Outputs hidden
-    /// from this OSC remote in TotalMix are left out; outputs the app hides are kept, since they can
-    /// still be the home submix.
+    /// from this OSC remote in TotalMix are left out.
     public static func otherChoices(_ mirror: MixerMirror, layout: PerformanceLayout) -> [HomeChoice] {
         let monitoring = mirror.monitoringOutputs
-        return layout.channels(.outputs, in: mirror, includingHidden: true).map(\.channel)
+        return layout.channels(.outputs, in: mirror).map(\.channel)
             .filter { !monitoring.contains($0) }.map { output in
             let name = mirror.channels[ChannelRef(.output, output)]?.name ?? "Output \(output + 1)"
             return HomeChoice(output: output, name: name, roles: [])

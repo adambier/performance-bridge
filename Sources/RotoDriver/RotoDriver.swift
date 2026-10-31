@@ -418,14 +418,15 @@ public struct RotoDriver: Sendable {
     }
 
     /// The label for a send knob: the output's name marked as a destination, so that it does not
-    /// read as that channel's own level. "to ADI-2" if it fits the Roto-Control's 12 characters,
-    /// else "> ADI-2 +6dB", else ">" and the name, cut to fit.
+    /// read as that channel's own level. Always "> " and the name (e.g., "> ADI-2 +6dB"), cut to
+    /// fit the Roto-Control's name field (without a trailing space where the cut falls after one).
     public static func sendLabel(_ name: String) -> String {
+        let label = "> " + name
         let limit = RotoSysEx.nameFieldLength - 1
-        for prefix in ["to ", "> "] where prefix.count + name.count <= limit {
-            return prefix + name
-        }
-        return String((">" + name).prefix(limit))
+        guard label.count > limit else { return label }
+        var cut = String(label.prefix(limit))
+        while cut.count > 2, cut.hasSuffix(" ") { cut.removeLast() }
+        return cut
     }
 
     // MARK: - Mapping

@@ -41,8 +41,6 @@ final class BridgeEngineTests: XCTestCase {
         _ = mirror.apply(.channel(bus: .output, channel: 6, parameter: "color", value: .number(0)))
         let others = BridgeEngine.otherChoices(mirror, layout: PerformanceLayout())
         XCTAssertEqual(others.map(\.name), ["ADI-2", "ADAT 1/2"])
-        let hiddenInApp = BridgeEngine.otherChoices(mirror, layout: PerformanceLayout(hidden: [ChannelRef(.output, 2)]))
-        XCTAssertEqual(hiddenInApp.map(\.name), ["ADI-2", "ADAT 1/2"], "an app-hidden output can still be the home submix")
         XCTAssertEqual(others.map(\.name), ["ADI-2", "ADAT 1/2"])
         XCTAssertTrue(others.allSatisfy { $0.roles.isEmpty })
     }

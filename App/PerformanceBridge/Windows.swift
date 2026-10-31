@@ -7,6 +7,9 @@ import SwiftUI
 #if canImport(TotalMixOSC)
 import TotalMixOSC
 #endif
+#if canImport(MIDITransport)
+import MIDITransport
+#endif
 
 /// Opens the app's windows, one of each, bringing the app forward (a menu-bar app is otherwise in
 /// the background).
@@ -48,7 +51,7 @@ struct AboutView: View {
                 .font(.title2.weight(.semibold))
             Text(Brand.version)
                 .foregroundStyle(.secondary)
-            Text("Connects hardware control surfaces to RME TotalMix FX, for mixing live.")
+            Text("Connects hardware control surfaces to RME TotalMix FX for mixing live.")
                 .multilineTextAlignment(.center)
                 .padding(.top, 4)
             Link("github.com/adambier/performance-bridge",
@@ -73,35 +76,38 @@ struct SettingsView: View {
     private let saved = SavedSettings.load()
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Form {
-                Section {
-                    TextField("Computer running TotalMix FX", text: $edited.host, prompt: Text("localhost"))
-                    portField("Incoming port", value: $edited.incomingPort,
-                              override: model.portOverrides.incoming)
-                    portField("Outgoing port", value: $edited.outgoingPort,
-                              override: model.portOverrides.outgoing)
-                } header: {
-                    Text("TotalMix FX")
-                        .font(.headline)
-                } footer: {
-                    Text("As set in TotalMix FX's preferences, under OSC, with Global OSC on. TotalMix FX receives on its incoming port and sends to its outgoing port. Its defaults are 7001 and 9001.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
+        VStack(alignment: .leading, spacing: 12) {
+            Text("TotalMix FX")
+                .font(.headline)
+            Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 10, verticalSpacing: 8) {
+                GridRow {
+                    label("Computer")
+                    TextField("Computer", text: $edited.host, prompt: Text("localhost"))
+                        .labelsHidden()
                 }
-                Section {
-                    TextField("MIDI port name", text: $edited.rotoPortName, prompt: Text("Roto"))
-                } header: {
-                    Text("Roto-Control")
-                        .font(.headline)
-                        .padding(.top, 8)
-                } footer: {
-                    Text("The name, or part of the name, of the Roto-Control's MIDI ports.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                portRow("Incoming port", value: $edited.incomingPort, override: model.portOverrides.incoming)
+                portRow("Outgoing port", value: $edited.outgoingPort, override: model.portOverrides.outgoing)
+            }
+            note("The computer that runs TotalMix FX, and the ports of the OSC controller set up for Performance Bridge in TotalMix FX: Options → Mixer Settings… → OSC, “Port (incoming)” and “Port (outgoing)”, with “Global OSC” chosen. TotalMix FX’s ports for controller 1 are 7001 and 9001.")
+
+            Divider()
+                .padding(.vertical, 4)
+
+            Text("Roto-Control")
+                .font(.headline)
+            Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 10, verticalSpacing: 8) {
+                GridRow {
+                    label("MIDI port")
+                    Picker("MIDI port", selection: $edited.rotoPortName) {
+                        ForEach(portChoices, id: \.self) { name in
+                            Text(portTitle(name)).tag(name)
+                        }
+                    }
+                    .labelsHidden()
                 }
             }
+            note("The MIDI ports connected now. If the Roto-Control isn’t listed, connect it by USB and open Settings again.")
+
             if !edited.isValid {
                 Text("Ports must be from 1 to 65535 and different from each other, and no field may be empty.")
                     .font(.caption)
@@ -120,19 +126,70 @@ struct SettingsView: View {
                 .keyboardShortcut(.defaultAction)
                 .disabled(!edited.isValid || edited == saved)
             }
+            .padding(.top, 8)
         }
         .padding(20)
-        .frame(width: 420)
+        .frame(width: 440)
         .fixedSize(horizontal: false, vertical: true)
     }
 
+    /// The names of the MIDI ports that both send and receive, as they are when the window opens.
+    @State private var ports = Self.listPorts()
+
+    private static func listPorts() -> [MIDIEndpointInfo] {
+        let destinations = Set(MIDIConnection.destinations().map(\.name))
+        var seen = Set<String>()
+        return MIDIConnection.sources()
+            .filter { destinations.contains($0.name) && seen.insert($0.name).inserted }
+            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+    }
+
+    /// The menu's choices: the ports, and the chosen name too when it is not exactly one of them
+    /// (e.g., the default "Roto", which matches "Roto-Control" by part of its name).
+    private var portChoices: [String] {
+        let names = ports.map(\.name)
+        return names.contains(edited.rotoPortName) ? names : [edited.rotoPortName] + names
+    }
+
+    /// A choice's title: a port's name, or a chosen name that is not a port's, with what it matches.
+    private func portTitle(_ name: String) -> String {
+        if ports.contains(where: { $0.name == name }) { return name }
+        if let port = MIDIEndpointInfo.match(name, in: ports) { return "“\(name)” (matches \(port.name))" }
+        return "“\(name)” (not found)"
+    }
+
+    /// A row label, right-aligned in its column, in the width all rows share.
+    private func label(_ text: String) -> some View {
+        Text(text)
+            .frame(width: 110, alignment: .trailing)
+    }
+
+    /// A note under a group, wrapping to the window's width.
+    private func note(_ text: String) -> some View {
+        Text(text)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    /// A port's row, with a line under it when a port from the command line is in use instead.
     @ViewBuilder
-    private func portField(_ label: String, value: Binding<Int>, override: UInt16?) -> some View {
-        TextField(label, value: value, format: .number.grouping(.never))
+    private func portRow(_ title: String, value: Binding<Int>, override: UInt16?) -> some View {
+        GridRow {
+            label(title)
+            TextField(title, value: value, format: .number.grouping(.never))
+                .labelsHidden()
+                .frame(width: 80)
+        }
         if let override {
-            Text("Port \(String(override)) from the command line is in use instead.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            GridRow {
+                Color.clear
+                    .gridCellUnsizedAxes([.horizontal, .vertical])
+                Text("Port \(String(override)) from the command line is in use instead.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 }

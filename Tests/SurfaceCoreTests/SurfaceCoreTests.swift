@@ -107,14 +107,10 @@ final class LayoutTests: XCTestCase {
         XCTAssertEqual(PerformanceLayout().unplaced(.sources, in: mirror), [], "with no chosen order nothing is new")
     }
 
-    func testAppHiddenStripsLeaveTheSurfaceButStayTargets() {
-        var hub = loadedHub(mode: .strips(view: .sources, first: 0, knob: .send(0), switch: .mute))
+    func testSendTargetsAreTheNonMonitoringOutputs() {
+        let hub = loadedHub(mode: .strips(view: .sources, first: 0, knob: .send(0), switch: .mute))
         XCTAssertEqual(hub.sendTargets, [2])
-        _ = hub.setLayout(PerformanceLayout(hidden: [ChannelRef(.output, 2)]), now: 1)
-        XCTAssertEqual(hub.sendTargets, [2], "a strip the app hides is still a send knob target")
-        XCTAssertFalse(hub.layout.channels(.outputs, in: hub.mirror).contains(ChannelRef(.output, 2)))
-        XCTAssertTrue(hub.layout.channels(.outputs, in: hub.mirror, includingHidden: true).contains(ChannelRef(.output, 2)))
-        XCTAssertEqual(hub.layout.unplaced(.outputs, in: hub.mirror), [], "hidden channels are not new")
+        XCTAssertTrue(hub.layout.channels(.outputs, in: hub.mirror).contains(ChannelRef(.output, 2)))
     }
 
     func testLayoutEditorHelpersChangeOnlyTheirPart() {
@@ -123,9 +119,6 @@ final class LayoutTests: XCTestCase {
         XCTAssertEqual(moved.sourceOrder, [ChannelRef(.playback, 0), ChannelRef(.input, 0)])
         XCTAssertEqual(moved.outputOrder, [])
         XCTAssertTrue(moved.playbacksOnNewPage, "moving channels keeps the new-page option")
-        let hidden = moved.settingHidden(ChannelRef(.input, 0), true)
-        XCTAssertEqual(hidden.hidden, [ChannelRef(.input, 0)])
-        XCTAssertEqual(hidden.settingHidden(ChannelRef(.input, 0), false).hidden, [])
         XCTAssertEqual(base.withOrder(.outputs, [ChannelRef(.output, 2)]).outputOrder, [ChannelRef(.output, 2)])
     }
 
@@ -150,7 +143,7 @@ final class LayoutTests: XCTestCase {
 
     func testLayoutRoundTripsThroughJSON() throws {
         let layout = PerformanceLayout(sourceOrder: [ChannelRef(.input, 3)], outputOrder: [ChannelRef(.output, 2)],
-                                       hidden: [ChannelRef(.output, 4)])
+                                       playbacksOnNewPage: true)
         let data = try JSONEncoder().encode(layout)
         XCTAssertEqual(try JSONDecoder().decode(PerformanceLayout.self, from: data), layout)
         XCTAssertEqual(try JSONDecoder().decode(PerformanceLayout.self, from: Data("{}".utf8)), PerformanceLayout(),
