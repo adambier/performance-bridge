@@ -248,4 +248,13 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 
 **Test 8a (baseline, `logs/test8a-unhidden.log`):** the same run with the ADI-2 input unhidden. Input 1 sent its settings, starting with `name = "ADI-2"`.
 
-**Not tested:** the other controllers; and what "Receive to hidden channels" does in the other direction. Its name, and the RME document's wording that hidden channels "may be received by option", suggest it governs messages that the remote sends to a hidden channel, not messages TotalMix sends from it. The inference is that test 8b did not test that direction. A test would send a fader or mute message to the hidden ADI-2 input from `sbdev send` with the option on and off, and check the input in TotalMix's window. The records above hold only for what TotalMix sends.
+**Test 8e (same day):** with ADI-2 hidden from OSC Controller 4 and "Receive to hidden channels" off, `sbdev send /mix/in/1/8/faderlin 0.5` did not move the ADI-2 fader in TotalMix's window. With the option on, the same message moved it. So the option lets TotalMix accept messages addressed to a hidden channel. It does not make TotalMix send that channel's state back to the remote (test 8b).
+
+**Test 9 (same day): which sends TotalMix applies.** Each message went to controller 4's incoming port (7004) with `sbdev send`, and the result was read in TotalMix's window:
+- `/output/8/faderlin 0.5` moved the ADAT 1/2 output fader (applied).
+- `/output/8/mute 1` lit the ADAT 1/2 output's M button (applied).
+- `/mix/in/1/8/faderlin 0.5` moved the ADI-2 input's fader in the ADAT 1/2 submix (applied, with the channel unhidden).
+- `/input/1/mute 1` (ADI-2) and `/input/3/mute 1` (Sonos) did not light the input's M button (not applied). The inference is that TotalMix ignores channel mute on inputs sent this way; it has not been checked whether a different message does.
+- `sbdev roundtrip` received no reply to a command, which matches test 5: TotalMix does not send a command's result back to the client that sent it.
+
+**Not tested:** the other controllers, other interfaces, and the input channel mute message in other forms.
