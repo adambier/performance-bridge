@@ -33,7 +33,8 @@ statement there carries its evidence.
 | `Sources/BridgeEngine/` | `BridgeEngine`: TotalMix and a Roto-Control connected through SurfaceCore and RotoDriver, with the UDP socket, the MIDI ports, and a clock; each side connects on its own and is retried every 3 s (an unplugged Roto-Control is reopened, a silent TotalMix asked for its state again); `BridgeSettings`, `BridgeStatus`, `HomeChoice` (for the app's menu). Platform code, like the transports it uses |
 | `Sources/UDPTransport/` | `UDPSocket`: POSIX UDP on macOS and Linux; a placeholder that throws on Windows |
 | `Sources/sbdev/` | Developer tool: `monitor`, `send`, `roundtrip`, `curve` (main.swift), `roto` (Roto.swift), `bridge` (Bridge.swift), and `midi` (MIDIMonitor.swift) |
-| `App/PerformanceBridge/` | A first look at the menu-bar app (macOS only): `swift run PerformanceBridge` (`--in-port`/`--out-port` override the saved ports). The menu, About (the icon at 128 points), and Settings (TotalMix's host and ports, the Roto-Control's port name, kept in the user defaults) |
+| `App/PerformanceBridge/` | The menu-bar app (macOS only): `swift run PerformanceBridge` (`--in-port`/`--out-port` override the saved ports), or the bundle from `make-app.sh`. The menu, Layout, About (the icon at 128 points), Settings (TotalMix's host and ports, the Roto-Control's MIDI port, kept in the user defaults), and "Check for Updates…" when Sparkle is linked |
+| `make-app.sh` | Builds "Performance Bridge.app" with `swiftc` as one module, with Sparkle; signing, notarization, and `--appcast` are the owner's |
 | `Design/AppIcon/` | The app icon and menu-bar glyph: `make_icon.py` (geometry, writes the SVGs), the layered master, the legacy icon set, and its README |
 | `Tests/` | One test target per library |
 | `docs/TOTALMIX-OSC.md` | What this project relies on in Global OSC, with evidence, and the open questions |
@@ -71,8 +72,9 @@ small driver of its own.
 - **Protocol sources.** Each driver's protocol facts go in a `docs/` file of their own, with evidence, as `TOTALMIX-OSC.md` does for TotalMix. The vendors' documents are linked, not committed:
   - Melbourne Instruments' [SysEx and serial API documents and integration code](https://github.com/Melbourne-Instruments/roto_control) (MIT);
   - Novation's [Launch Control XL 3 programmer's reference guide](https://userguides.novationmusic.com/hc/en-gb/articles/27840466285586-About-the-Launch-Control-XL-3-programmer-s-reference-guide).
-- **The app** (planned). A SwiftUI app modeled on pgdata Packer's (`adambier/3rd-wave-tools`):
-  - `make-app.sh` compiles every source folder into one module with `swiftc`;
+- **The app.** A SwiftUI app modeled on pgdata Packer's (`adambier/3rd-wave-tools`):
+  - `make-app.sh` compiles every library folder and the app into one module with `swiftc` (not `sbdev`); CI type-checks that build on macOS;
+  - version 0.1.0 until the first release; the build number is the commit count;
   - Sparkle 2.10.1 is pinned with its SHA-256, and the XPC services are removed;
   - the app is signed with a Developer ID, notarized, and updated through `appcast.xml` on `main`;
   - its icon and menu-bar glyph come from `Design/AppIcon/` (the About window shows the icon at 128 points); the icon's amber, #FFB13D, is the app's accent color;

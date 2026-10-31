@@ -70,6 +70,10 @@ swift run PerformanceBridge
 The app appears in the menu bar. Set TotalMix's host and ports in Settings, or give the ports on
 the command line with `--in-port` and `--out-port`. The connection log goes to the Terminal.
 
+To build the app itself, `./make-app.sh` makes "Performance Bridge.app" in the package folder (the
+Command Line Tools are enough; the first build downloads Sparkle). Open it with
+`open "Performance Bridge.app"`. `./make-app.sh debug` makes a debug build.
+
 The setup guide, [`docs/SETUP.md`](docs/SETUP.md), goes through each step and what the menu says.
 
 ## Documentation

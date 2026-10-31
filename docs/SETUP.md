@@ -1,7 +1,8 @@
 # Setting up Performance Bridge
 
 This guide sets up Performance Bridge with TotalMix FX and a Roto-Control. There is no released app yet:
-the app runs from source, with `swift run PerformanceBridge` (README, "Trying the app"). The steps below
+the app runs from source, with `swift run PerformanceBridge`, or is built with `./make-app.sh`
+(README, "Trying the app"). The steps below
 mark what has been checked on a Mac and what has not.
 
 **Checked.** The settings in each step were used in the tests in `docs/TOTALMIX-OSC.md` (section 6) and

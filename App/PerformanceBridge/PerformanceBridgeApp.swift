@@ -1,8 +1,7 @@
-// Performance Bridge: a first look at the menu-bar app (macOS only). Run it from the package with
+// Performance Bridge: the menu-bar app (macOS only). Run it from the package with
 // `swift run PerformanceBridge`, or `swift run PerformanceBridge --in-port 7004 --out-port 9004` to
 // override the ports saved in Settings; quit `sbdev bridge` first, since both need TotalMix's
-// outgoing port and the Roto-Control's MIDI ports. The released app will be built by make-app.sh
-// instead.
+// outgoing port and the Roto-Control's MIDI ports. make-app.sh builds the app bundle, with Sparkle.
 
 import AppKit
 import SwiftUI
@@ -15,6 +14,11 @@ import TotalMixOSC
 #if canImport(SurfaceCore)
 import SurfaceCore
 #endif
+// Sparkle (in-app updates) is linked by make-app.sh. Package.swift does not declare it, so
+// `swift run` compiles without it and the menu has no "Check for Updates…" item.
+#if canImport(Sparkle)
+import Sparkle
+#endif
 
 @main
 struct PerformanceBridgeApp: App {
@@ -22,6 +26,9 @@ struct PerformanceBridgeApp: App {
 
     init() {
         NSApplication.shared.setActivationPolicy(.accessory)
+        #if canImport(Sparkle)
+        AppUpdates.start()
+        #endif
     }
 
     var body: some Scene {
@@ -246,6 +253,9 @@ struct MenuContent: View {
         Button("About Performance Bridge") {
             Windows.show("about", title: "About Performance Bridge") { AboutView() }
         }
+        #if canImport(Sparkle)
+        Button("Check for Updates…") { AppUpdates.checkNow() }
+        #endif
         Button("Settings…") {
             Windows.show("settings", title: "Performance Bridge Settings") { SettingsView(model: model) }
         }
@@ -275,3 +285,27 @@ struct MenuContent: View {
         }
     }
 }
+
+#if canImport(Sparkle)
+/// In-app updates through Sparkle: the updater starts at launch (scheduled checks follow the user's
+/// choice, which Sparkle asks for on the second launch), and the menu can check at once.
+@MainActor
+enum AppUpdates {
+    private static var controller: SPUStandardUpdaterController?
+
+    /// Starts the updater, once.
+    static func start() {
+        if controller == nil {
+            controller = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil,
+                                                      userDriverDelegate: nil)
+        }
+    }
+
+    /// Checks for an update now, showing Sparkle's window with the result.
+    static func checkNow() {
+        start()
+        NSApplication.shared.activate(ignoringOtherApps: true)
+        controller?.checkForUpdates(nil)
+    }
+}
+#endif
