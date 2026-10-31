@@ -395,6 +395,6 @@ marked "seen".
   values suggest, and the driver's colors are chosen by eye. A second round (run 10) found 61
   forest or olive green against TotalMix's lime, and 17 lemon against TotalMix's yellow-orange;
   in a third (run 11), 18 looked fluorescent and 1 plain orange, a better match for TotalMix's
-  orange than 15.
+  orange than 15. Run 12: 47 looked olive, and 59 brownish ("peanut butter").
 - **SOLO and ARM** (run 7, seen): with the switches on solo, a press set PFL in TotalMix and lit
   the switch; on record arm, a press did nothing.
