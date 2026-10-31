@@ -240,6 +240,9 @@ struct MenuContent: View {
             }))
         Button("Ask TotalMix FX for its state") { model.engine.refresh() }
         Divider()
+        Button("Layout…") {
+            Windows.show("layout", title: "Performance Bridge Layout") { LayoutView(model: model) }
+        }
         Button("About Performance Bridge") {
             Windows.show("about", title: "About Performance Bridge") { AboutView() }
         }

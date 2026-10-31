@@ -74,6 +74,24 @@ public struct PerformanceLayout: Hashable, Codable, Sendable {
         return Array(channels[..<first]) + Array(repeating: nil, count: blanks) + Array(channels[first...])
     }
 
+    /// This layout with a view's order replaced by `refs`, as the layout editor produces it when a
+    /// channel is moved. Channels not in `refs` keep TotalMix's order after them.
+    public func withOrder(_ view: ViewKind, _ refs: [ChannelRef]) -> PerformanceLayout {
+        var layout = self
+        switch view {
+        case .sources: layout.sourceOrder = refs
+        case .outputs: layout.outputOrder = refs
+        }
+        return layout
+    }
+
+    /// This layout with a channel hidden from, or shown on, the surface's strips.
+    public func settingHidden(_ ref: ChannelRef, _ isHidden: Bool) -> PerformanceLayout {
+        var layout = self
+        if isHidden { layout.hidden.insert(ref) } else { layout.hidden.remove(ref) }
+        return layout
+    }
+
     /// The channels of a view, as the strips show them (see the type's description). With
     /// `includingHidden`, the channels the app hides are kept, for sends and home choices.
     public func channels(_ view: ViewKind, in mirror: MixerMirror, includingHidden: Bool = false) -> [ChannelRef] {

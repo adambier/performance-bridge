@@ -117,6 +117,18 @@ final class LayoutTests: XCTestCase {
         XCTAssertEqual(hub.layout.unplaced(.outputs, in: hub.mirror), [], "hidden channels are not new")
     }
 
+    func testLayoutEditorHelpersChangeOnlyTheirPart() {
+        let base = PerformanceLayout(playbacksOnNewPage: true)
+        let moved = base.withOrder(.sources, [ChannelRef(.playback, 0), ChannelRef(.input, 0)])
+        XCTAssertEqual(moved.sourceOrder, [ChannelRef(.playback, 0), ChannelRef(.input, 0)])
+        XCTAssertEqual(moved.outputOrder, [])
+        XCTAssertTrue(moved.playbacksOnNewPage, "moving channels keeps the new-page option")
+        let hidden = moved.settingHidden(ChannelRef(.input, 0), true)
+        XCTAssertEqual(hidden.hidden, [ChannelRef(.input, 0)])
+        XCTAssertEqual(hidden.settingHidden(ChannelRef(.input, 0), false).hidden, [])
+        XCTAssertEqual(base.withOrder(.outputs, [ChannelRef(.output, 2)]).outputOrder, [ChannelRef(.output, 2)])
+    }
+
     func testChannelsHiddenInTotalMixStayOutEvenWhenOrdered() {
         var mirror = MixerMirror()
         for event in setupEvents() { mirror.apply(event) }
