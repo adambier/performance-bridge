@@ -156,6 +156,19 @@ public struct RotoDriver: Sendable {
         return Self.colorScheme(for: info)
     }
 
+    /// SET TRACK DETAILS (shown at once) for the sources on the current page in TotalMix color
+    /// `color`: one message per strip, for trying color schemes without drawing the whole page,
+    /// which in quick succession has been followed by the Roto-Control freezing (run 19; that the
+    /// redraws caused it is an inference). Nothing outside all-tracks mode or before the handshake.
+    public func immediateDetails(forTotalMixColor color: Int, hub: SurfaceHub) -> [UInt8] {
+        guard handshake.isConnected, !inPluginMode, case .strips? = hub.mode(of: id) else { return [] }
+        return infos.enumerated().compactMap { offset, info -> RotoOutgoing? in
+            guard let info, info.kind == .source, info.color == color else { return nil }
+            return .trackDetails(RotoTrackDetails(index: page.first + offset, name: info.name,
+                                                  colorScheme: scheme(for: info)), immediate: true)
+        }.flatMap(\.bytes)
+    }
+
     /// The bytes that set the exact colors of the current page again, without drawing the strips:
     /// for changing a color while watching the screens. Nothing before the handshake is complete,
     /// in PLUGIN mode or single-track mode, or when `exactColors` is off.

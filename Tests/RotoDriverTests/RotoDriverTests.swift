@@ -168,6 +168,18 @@ final class RotoDriverTests: XCTestCase {
             RotoTrackDetails(index: 2, name: "Gtr", colorScheme: 5), immediate: false).bytes))
     }
 
+    func testImmediateDetailsForOneColor() {
+        let (start, hub, _) = connected()
+        var driver = start
+        driver.schemeOverrides[1] = 5
+        let bytes = driver.immediateDetails(forTotalMixColor: 1, hub: hub)
+        XCTAssertTrue(bytes.contains(RotoOutgoing.trackDetails(RotoTrackDetails(index: 2, name: "Gtr", colorScheme: 5),
+                                                               immediate: true).bytes))
+        XCTAssertEqual(bytes.occurrences(Array(RotoOutgoing.trackDetails(RotoTrackDetails(index: 0, name: "", colorScheme: 0),
+                                                                         immediate: true).bytes.prefix(7))), 4)
+        XCTAssertTrue(driver.immediateDetails(forTotalMixColor: 7, hub: hub).isEmpty)
+    }
+
     func testExactColorForEachKind() {
         let palette = RotoDriver.totalMixColors
         func info(_ kind: StripKind, _ color: Int?) -> StripInfo {

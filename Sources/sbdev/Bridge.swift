@@ -242,13 +242,13 @@ final class BridgeSession: @unchecked Sendable {
             lastColorSend = now
             sendToRoto(pendingColors.removeFirst(), paced: false)
         }
-        if let (index, scheme) = schemeTuning, tuneChanged, now - lastTuneSend >= 0.1 {
+        if let (index, scheme) = schemeTuning, tuneChanged, now - lastTuneSend >= 0.25 {
             tuneChanged = false
             lastTuneSend = now
             driver.schemeOverrides[index] = scheme
-            sendToRoto(driver.redraw(hub: hub), quiet: true)
-            sendToRoto(switchLights(), quiet: true)
-            sendToRoto(RotoOutgoing.showValue(.knob, control: 0, text: "scheme \(scheme)").bytes, quiet: true)
+            // One SET TRACK DETAILS per strip in this color, not the whole page: redrawing the page
+            // every 100 ms was followed by a freeze (run 19).
+            sendToRoto(driver.immediateDetails(forTotalMixColor: index, hub: hub), quiet: true)
             log("Scheme for \(index) \(colorNames[index - 1]): \(scheme)")
         }
         if let (index, hsv) = tuning, tuneChanged, now - lastTuneSend >= 0.05 {
@@ -444,7 +444,7 @@ final class BridgeSession: @unchecked Sendable {
             } else if words.count == 3, let index = Int(words[1]), (1...8).contains(index),
                       let scheme = UInt8(words[2]), scheme <= 82 {
                 driver.schemeOverrides[index] = scheme
-                sendToRoto(driver.redraw(hub: hub) + switchLights())
+                sendToRoto(driver.immediateDetails(forTotalMixColor: index, hub: hub))
             } else if words.count != 1 {
                 print("scheme tune N, scheme done, scheme N S (N from 1 to 8, S from 0 to 82), or scheme")
                 return true

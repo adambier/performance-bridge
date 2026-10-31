@@ -425,3 +425,9 @@ marked "seen".
   again (TRACK DETAILS … END, with no switch lights), the lower halves of several screens went
   dark. The labels are drawn with the switch lights, so `sbdev bridge` now sends the lights after
   each redraw (that this restores them is still to be seen).
+- **A freeze after many redraws** (run 19, seen; its log was overwritten): after `scheme tune` had
+  drawn the whole page up to every 100 ms for a while, the Roto-Control stopped responding: knobs
+  and switches did nothing, some front-panel buttons still lit, and it did not answer DAW STARTED
+  in the next run until plugged in again. Runs 17, 18, and 19 all froze while the host sent many
+  SysEx messages in a short time; that this is the cause is an inference. `scheme tune` now sends
+  one SET TRACK DETAILS per changed strip, at most every 250 ms.
