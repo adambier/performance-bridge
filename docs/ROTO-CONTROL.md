@@ -383,7 +383,8 @@ marked "seen".
 - **Meter colors** (`sbdev roto`, after run 7, seen): with thresholds 126 and 127, meter 1 at 125
   was green almost to its end, at 126 much the same (any yellow was at most a pixel or two), and
   at 127 full with a red last pixel. So a meter shows red at the red threshold itself. A yellow
-  threshold of 126 leaves no visible yellow, so `RotoDriver` now uses TotalMix's levels instead:
+  threshold of 126 leaves no visible yellow, so `RotoDriver` now borrows the levels of RME's own
+  hardware meters (docs/TOTALMIX-OSC.md):
   yellow from −5 dBFS (116) and red from −1 dBFS (124).
 - **SOLO and ARM** (run 7, seen): with the switches on solo, a press set PFL in TotalMix and lit
   the switch; on record arm, a press did nothing.
