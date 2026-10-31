@@ -452,3 +452,6 @@ marked "seen".
   did not. Exact colors sent in run 21 (indexes 0–6) may still have been held for those screens,
   since the Roto-Control was not plugged in again in between, so this is not yet a clean result.
   `swatch` now draws the page with TRACK DETAILS … END instead.
+- **Yellow** (run 23, seen): side by side, drawn as a page after plugging in again, schemes 3, 17,
+  59, and 73 all showed; 73 was the closest to TotalMix's yellow ("not great"), 59 closer in hue
+  but brownish. Yellow stays scheme 73.
