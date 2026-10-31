@@ -9,7 +9,8 @@ times taller than the real one so the bridge reads at small sizes.
 
 Writes, next to this script:
   master/        full-bleed 1024 x 1024 layers for the macOS 26 icon format (Icon Composer):
-                 1-sky.svg, 2-reflection.svg, 3-bridge.svg, 4-faders.svg, and composite.svg
+                 1-sky.svg (and 1-sky-dark.svg for the dark appearance), 2-reflection.svg,
+                 3-bridge.svg, 4-faders.svg, and composite.svg
   legacy/        shaped icons with a drop shadow, for an .icns: large.svg (128 px and up, with
                  the reflection), medium.svg (64 px), px32.svg and px16.svg (drawn on the pixel
                  grid)
@@ -26,6 +27,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 # Colors
 SKY = ("#1b2f52", "#0d1830", "#060b17")  # top, 60 %, bottom
+SKY_DARK = ("#111d3b", "#081024", "#02050e")  # the dark appearance: a little darker, more midnight (Adam)
 AMBER = "#ffb13d"                         # the cables and tower; also the app's accent color
 DECK_LARGE = "#33466a"
 DECK_SMALL = "#8597bb"                    # lighter, so the deck reads at 64 px and below
@@ -164,6 +166,8 @@ SHIFT = 'transform="translate(0 %d)"' % LARGE_SHIFT
 
 def master_layers():
     sky = svg(1024, '<rect width="1024" height="1024" fill="url(#sky)"></rect>', SKY_GRADIENT % "sky")
+    dark = SKY_GRADIENT.replace(SKY[0], SKY_DARK[0]).replace(SKY[1], SKY_DARK[1]).replace(SKY[2], SKY_DARK[2])
+    sky_dark = svg(1024, '<rect width="1024" height="1024" fill="url(#sky)"></rect>', dark % "sky")
     wdefs, wbody = water("m")
     water_layer = svg(1024, '<g %s><g %s>\n%s\n</g></g>' % (MASTER, SHIFT, wbody), wdefs)
     bridge_layer = svg(1024, '<g %s><g %s>\n%s\n</g></g>' % (MASTER, SHIFT, bridge(1, DECK_LARGE, 22, CAPS_LARGE)))
@@ -171,7 +175,7 @@ def master_layers():
     composite = svg(1024, '<rect width="1024" height="1024" fill="url(#sky)"></rect>\n<g %s><g %s>\n%s\n%s\n%s\n</g></g>' % (
         MASTER, SHIFT, wbody, bridge(1, DECK_LARGE, 22, CAPS_LARGE), shaded_caps(CAPS_LARGE, CAP_LARGE, "face")),
         SKY_GRADIENT % "sky" + "\n" + CAP_FACE % "face" + "\n" + wdefs)
-    return {"1-sky.svg": sky, "2-reflection.svg": water_layer, "3-bridge.svg": bridge_layer, "4-faders.svg": faders,
+    return {"1-sky.svg": sky, "1-sky-dark.svg": sky_dark, "2-reflection.svg": water_layer, "3-bridge.svg": bridge_layer, "4-faders.svg": faders,
             "composite.svg": composite}
 
 

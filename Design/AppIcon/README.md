@@ -8,7 +8,7 @@ slots, at night over water. The amber (#FFB13D) is also the app's accent color.
 
 | Folder | What | Used for |
 |---|---|---|
-| `master/` | Full-canvas 1024 × 1024 layers: `1-sky`, `2-reflection`, `3-bridge`, `4-faders`, and `composite` | The layered icon format of macOS 26 and later (import into Icon Composer, which makes the light, dark, clear, and tinted styles) |
+| `master/` | Full-canvas 1024 × 1024 layers: `1-sky` (and `1-sky-dark`), `2-reflection`, `3-bridge`, `4-faders`, and `composite` | The layered icon format of macOS 26 and later (import into Icon Composer, which makes the light, dark, clear, and tinted styles) |
 | `legacy/` | Shaped icons with a drop shadow: `large` (with the reflection and shaded caps), `medium` (plain, lighter and thicker deck), `px32` and `px16` (drawn on the pixel grid) | `AppIcon.iconset`, for an `.icns` |
 | `AppIcon.iconset/` | PNGs rendered from `legacy/`: 16 from `px16`; 32 from `px32`; 64 from `medium`; 128 and up from `large` | `iconutil -c icns AppIcon.iconset` on a Mac |
 | `menubar/` | `MenuBarIcon.svg`, an 18 × 18 point one-color template glyph (deck, tower, cables, three thin hangers), and its PNGs | The menu-bar item (copied into `App/PerformanceBridge/Resources/`) |
@@ -22,8 +22,9 @@ Rules the design keeps:
 - The reflection, waterline, and shaded caps appear at 128 px and up; 32 and 64 px are plain; 16 px
   has its own drawing.
 - The About window shows the icon at 128 points (the 256 px art), large enough for the details.
-- The dark appearance uses the same colors as the default (Adam, 2026-10-30): set it so in Icon
-  Composer rather than letting it darken the sky.
+- The dark appearance keeps the default look with a slightly darker, more midnight sky, still a
+  gradient (`1-sky-dark`; Adam, 2026-10-30): set it in Icon Composer rather than letting the system
+  darken the icon.
 - No wave lines across the water, in any style; the rippled reflection carries the water (Adam,
   2026-10-30).
 - No fader caps at 16 px or in the menu-bar glyph: at those sizes they read as dots (Adam).
