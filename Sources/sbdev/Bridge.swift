@@ -14,9 +14,10 @@ let bridgeUsage = """
     Usage:
       sbdev bridge [--host H] [--in-port P] [--out-port P] [--port NAME] [--home N] [--verbose]
           Connects TotalMix and a Roto-Control through SurfaceCore and the Roto-Control driver,
-          as the app will. Prints what is sent to TotalMix and the Roto-Control's SysEx messages,
-          with the time since starting; --verbose also prints what TotalMix sends (not /level
-          or /status) and every MIDI message to the Roto-Control. Then reads commands from the
+          as the app will. Prints what is sent to TotalMix, the SysEx messages in both directions,
+          and the names, colors, and control-room settings TotalMix sends, with the time since
+          starting; --verbose also prints everything else TotalMix sends (not /level or
+          /status) and every MIDI message to the Roto-Control. Then reads commands from the
           keyboard (type `help`).
           --host, --in-port, and --out-port are TotalMix's, as for monitor. --port names the
           Roto-Control's MIDI ports (default "Roto"). --home is the home submix's output number,
@@ -127,7 +128,13 @@ final class BridgeSession: @unchecked Sendable {
         }
         for message in packet.messages {
             guard let event = TotalMixEvent(message) else { continue }
-            if options.verbose, !message.address.hasPrefix("/level"), !message.address.hasPrefix("/status") {
+            let settingsChange: Bool
+            if case .channel(_, _, let parameter, _) = event {
+                settingsChange = ["name", "color", "stereo"].contains(parameter)
+            } else {
+                settingsChange = message.address.hasPrefix("/controlroom/")
+            }
+            if settingsChange || (options.verbose && !message.address.hasPrefix("/level") && !message.address.hasPrefix("/status")) {
                 log("← TotalMix \(message.address) \(message.arguments.map(describe).joined(separator: " "))")
             }
             dispatch(hub.handle(event, now: now))
@@ -187,7 +194,20 @@ final class BridgeSession: @unchecked Sendable {
         } catch {
             log("Could not send to the Roto-Control: \(error)")
         }
-        if options.verbose { log("→ Roto \(hex(bytes))") }
+        if options.verbose {
+            log("→ Roto \(hex(bytes))")
+            return
+        }
+        // Every SysEx message to the Roto-Control, for the tests (CCs, which carry knobs, lights,
+        // and meters, only with --verbose).
+        var start: Int?
+        for (index, byte) in bytes.enumerated() {
+            if byte == 0xF0 { start = index }
+            if byte == 0xF7, let first = start {
+                log("→ Roto \(hex(Array(bytes[first...index])))")
+                start = nil
+            }
+        }
     }
 
     private func log(_ text: String) {
