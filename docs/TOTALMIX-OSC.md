@@ -250,18 +250,21 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 
 **Test 8e (same day):** with ADI-2 hidden from OSC Controller 4 and "Receive to hidden channels" off, `sbdev send /mix/in/1/8/faderlin 0.5` did not move the ADI-2 fader in TotalMix's window. With the option on, the same message moved it. So the option lets TotalMix accept messages addressed to a hidden channel. It does not make TotalMix send that channel's state back to the remote (test 8b).
 
-**Test 9 (same day): which sends TotalMix applies.** Each message went to controller 4's incoming port (7004) with `sbdev send`, and the result was read in TotalMix's window:
+**Test 9 (same day): which sends TotalMix applies.** Each message went to controller 4's incoming port (7004) with `sbdev send`, and the result was read in TotalMix's window or in `sbdev monitor --sendall`:
 - `/output/8/faderlin 0.5` moved the ADAT 1/2 output fader (applied).
 - `/output/8/mute 1` lit the ADAT 1/2 output's M button (applied).
-- `/mix/in/1/8/faderlin 0.5` moved the ADI-2 input's fader in the ADAT 1/2 submix (applied, with the channel unhidden).
-- `/input/1/mute 1` (ADI-2) and `/input/3/mute 1` (Sonos) did not light the input's M button (not applied).
 - `sbdev roundtrip` received no reply to a command, which matches test 5: TotalMix does not send a command's result back to the client that sent it.
 
-**Follow-up on the input mute (same day, `sbdev monitor --sendall` read after each send):**
-- After `/input/1/mute 1` and `/input/3/mute 1`, the monitor reported `input 1 mute = 0` and `input 3 mute = 0`. TotalMix did not change the mute state.
-- The monitor also reported `globalmute = 1` and `mutegroup/3 = 1` in every dump, including one taken before these sends. Adam's screenshot of TotalMix's groups panel showed ADI-2 in no mute group. The screenshot did not show a Global Mute control.
-- Adam then set global mute to 0. The monitor reported `globalmute = 0`, and `/input/1/mute 1` still did not light the M button. The monitor reported `input 1 mute = 0`.
+**Channel numbers (corrected the same day).** The addresses count channels from 0, as the RME spec says, and a stereo pair's settings are addressed by its left channel. Earlier sends in this test used the 1-based numbers that `sbdev monitor` prints, so they missed the intended channels:
+- `/input/1/mute 1` and `/input/3/mute 1` did not change the mute state (`input 1 mute = 0` and `input 3 mute = 0` in the monitor). They addressed other channels, not the ADI-2 and Sonos inputs.
+- `/playback/1/mute 1` did not change the state (`playback 1 mute = 0`).
+- `/mix/in/1/8/faderlin 0.5` was recorded as moving the ADI-2 fader. Its address is not the ADI-2 input under 0-based numbering, so that result is not confirmed. See the next item.
 
-**Not known:** why TotalMix does not apply the input mute message. Global mute at 0 did not change the result, and ADI-2 was in no mute group, so neither accounts for it. The cause has not been found.
+**Rechecked with 0-based numbers (same day):**
+- `/playback/0/mute 1` lit the AES playback's M button (applied). `/playback/0/mute 0` turned it off.
+- `/input/0/mute 1` lit the ADI-2 input's M button (applied). `/input/0/mute 0` turned it off.
+- `/mix/in/0/8/faderlin 0.5` moved the ADI-2 input's fader in the ADAT 1/2 submix to −12.1 dB, which matches the spec's fader curve for position 0.5 (applied). `/mix/in/0/8/faderlin 0` returned it to the bottom.
 
-**Not tested:** the other controllers, other interfaces, and the input channel mute message in other forms.
+**Global mute.** The monitor reported `globalmute = 1` in the dumps before this recheck, and `globalmute = 0` after Adam turned it off. The 0-based input mute applied with global mute at 0. The AES M button showed a partial light after `/playback/0/mute 1`; the cause was not checked.
+
+**Not tested:** the other controllers, other interfaces, and whether the 1-based sends had any effect on channels other than the ones they addressed.
