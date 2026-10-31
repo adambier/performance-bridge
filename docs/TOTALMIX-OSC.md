@@ -248,7 +248,7 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 
 **Test 8a (baseline, `logs/test8a-unhidden.log`):** the same run with the ADI-2 input unhidden. Monitor input 1 sent its settings, starting with `name = "ADI-2"`.
 
-**Test 8e (same day), not confirmed:** with ADI-2 hidden from OSC Controller 4 and "Receive to hidden channels" off, `sbdev send /mix/in/1/8/faderlin 0.5` did not move the ADI-2 fader in TotalMix's window. With the option on, the same message moved it. But `/mix/in/1/8` addresses address 1, the right half of the ADI-2 pair, not address 0, the left channel that was hidden. The test therefore does not show that the option lets TotalMix accept messages for the hidden channel. It needs a rerun with `/mix/in/0/8/faderlin`. It does not make TotalMix send that channel's state back to the remote (test 8b).
+**Test 8e (same day):** with ADI-2 hidden from OSC Controller 4 and "Receive to hidden channels" off, `sbdev send /mix/in/1/8/faderlin 0.5` did not move the ADI-2 fader in TotalMix's window. With the option on, the same message moved it. Address 1 is the right half of the ADI-2 stereo pair, not its left channel (address 0), which the spec says addresses a pair. The message still went to the hidden pair, and TotalMix acted on it only with the option on. So the option lets TotalMix accept messages addressed to a hidden channel. It does not make TotalMix send that channel's state back to the remote (test 8b). Not yet repeated with the left channel's address, `/mix/in/0/8/faderlin`.
 
 **Test 9 (same day): which sends TotalMix applies.** Each message went to controller 4's incoming port (7004) with `sbdev send`, and the result was read in TotalMix's window or in `sbdev monitor --sendall`:
 - `/output/8/faderlin 0.5` moved the ADAT 1/2 output fader (applied). Address 8 is monitor output 9 (ADAT 1/2).
@@ -258,13 +258,13 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 **Channel numbers (corrected the same day).** The addresses count channels from 0, as the RME spec says, and a stereo pair's settings are addressed by its left channel. Earlier sends in this test used the monitor's display numbers as addresses, so they missed the intended channels:
 - `/input/1/mute 1` addressed address 1 (monitor input 2, the right half of ADI-2), and `/input/3/mute 1` addressed address 3 (monitor input 4). Neither is the Sonos input (address 2). The monitor showed `input 1 mute = 0` (address 0, ADI-2) and `input 3 mute = 0` (address 2, Sonos) unchanged, as expected.
 - `/playback/1/mute 1` addressed address 1 (monitor playback 2). The monitor showed `playback 1 mute = 0` (address 0, AES), unchanged, as expected.
-- `/mix/in/1/8/faderlin 0.5` addressed address 1 (the right half of ADI-2), not the left channel. That is the message used in test 8e; see that test.
+- `/mix/in/1/8/faderlin 0.5` addressed address 1 (the right half of ADI-2), not the left channel, and it moved the ADI-2 fader. So TotalMix has been observed to act on a mixer-node message addressed to a stereo pair's right channel. It is the message used in test 8e.
 
 **Rechecked with 0-based numbers (same day):**
 - `/playback/0/mute 1` lit the AES playback's M button (applied). `/playback/0/mute 0` turned it off.
 - `/input/0/mute 1` lit the ADI-2 input's M button (applied). `/input/0/mute 0` turned it off.
 - `/mix/in/0/8/faderlin 0.5` moved the ADI-2 input's fader in the ADAT 1/2 submix to −12.1 dB, which matches the spec's fader curve for position 0.5 (applied). `/mix/in/0/8/faderlin 0` returned it to the bottom.
 
-**Global mute.** The monitor reported `globalmute = 1` in the dumps before this recheck, and `globalmute = 0` after Adam turned it off. The 0-based input mute applied with global mute at 0. The AES M button showed a partial light after `/playback/0/mute 1`; the cause was not checked.
+**Global mute.** The monitor reported `globalmute = 1` in the dumps before this recheck, and `globalmute = 0` after Adam turned it off with `/globalmute 0`. RME's manual calls this the Mute Master button in the Control Strip: it lights when any Mute button is pressed, and "all selected mutes can be switched off and on again" with it (docs.rme-audio.com, Control Strip). With `globalmute = 0`, `/playback/0/mute 1` lit the AES M button only partially (Adam, screenshot 2026-10-31). Inference: a partial light shows a mute that is selected but switched off by the Mute Master, so the channel was probably not muted in the audio. Not checked by listening.
 
 **Not tested:** the other controllers, other interfaces, and the effect of the earlier sends on the channels at addresses 1 and 3.
