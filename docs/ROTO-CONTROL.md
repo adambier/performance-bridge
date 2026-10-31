@@ -370,4 +370,9 @@ marked "seen".
   sure whether a hand was on those knobs. The inference is that the motors' travel was reported as
   turns; test 1 saw no echo of a host move, but there the knob was at rest. `RotoDriver` now
   ignores a knob's reports for 0.75 s after it moves the knob, and for 2 s those within 200 counts
-  of where it put the knob.
+  of where it put the knob. In run 7, with the guard and hands off the Roto-Control (seen), nothing
+  went to TotalMix on connecting, but the Roto-Control still sent ROTO SELECT TRACK for knobs 3 and
+  8 about 0.6 s after the knobs were moved, which supports the inference that motor travel is
+  reported like a hand's.
+- **SOLO and ARM** (run 7, seen): with the switches on solo, a press set PFL in TotalMix and lit
+  the switch; on record arm, a press did nothing.
