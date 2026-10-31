@@ -41,7 +41,7 @@ struct LayoutView: View {
                 Text(view == .outputs
                      ? "Monitoring outputs (Main Out, Phones, and so on) always come first. Drag to order the sends."
                      : "Drag to change the order. TotalMix can't reorder its channels; this can.")
-                Text("Channel colors are set in TotalMix FX, in Channel Layout. Channels are hidden there too: right-click the channel, choose Change Channel Layout, and check the OSC Controller box under \u{201C}Hide Channel in.\u{201D} Channels hidden by an OSC controller in TotalMix are not shown on any surface configured for that controller.")
+                Text("Channel colors are set in TotalMix FX, in Channel Layout. Channels are hidden there too: right-click the channel, choose Change Channel Layout, and check the OSC Controller box under \u{201C}Hide Channel in.\u{201D} Channels that TotalMix hides from an OSC Controller are not shown on any surface that uses that controller.")
             }
             .font(.caption)
             .foregroundStyle(.secondary)
