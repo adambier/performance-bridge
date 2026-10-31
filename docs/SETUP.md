@@ -60,8 +60,8 @@ controller in TotalMix is not shown on any surface, and the app does not show it
    and Outputs.
 2. Select the channel's row in the table. Under "Hide Channel in", check "OSC Controller 1" for the controller
    the app uses (the app's default). Hiding from one controller does not affect the others, or Mixer/Matrix.
-   The text next to the group says it hides the channel in the selected OSC controller. What a checked box
-   does to the app has not been seen on screen.
+   The text next to the group says it hides the channel in the selected OSC controller. Confirmed by Adam on
+   2026-10-31: checking "OSC Controller" for a controller hides the channel from that controller.
 3. The table's "Remote Controller" column lists M1–M4 and O1–O4 for each channel. What that column shows
    for a hidden channel has not been checked.
 
