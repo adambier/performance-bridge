@@ -374,5 +374,9 @@ marked "seen".
   went to TotalMix on connecting, but the Roto-Control still sent ROTO SELECT TRACK for knobs 3 and
   8 about 0.6 s after the knobs were moved, which supports the inference that motor travel is
   reported like a hand's.
+- **SET CURRENT TRACK NAME** (run 7, seen): sent with "Outputs" while the second track set was
+  shown, it renamed screen 8's top half, the strip of the track last reported by ROTO SELECT
+  TRACK (7, counting from 0); the MENU window still showed "MIX-RTN". So it names the selected
+  track, not the track set, and no command found sets the MENU window's text.
 - **SOLO and ARM** (run 7, seen): with the switches on solo, a press set PFL in TotalMix and lit
   the switch; on record arm, a press did nothing.
