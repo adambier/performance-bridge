@@ -305,28 +305,29 @@ final class RotoDriverTests: XCTestCase {
         let step = driver.receive(sysEx(.mix, 0x01, [0x00, 0x02, 0x00, 0x00]), hub: &hub, now: 1)
         XCTAssertEqual(hub.mode(of: rotoID), .strips(view: .sources, first: 0, knob: .send(0), switch: .mute))
         XCTAssertTrue(step.midi.contains(RotoOutgoing.sendCount(1).bytes))
-        XCTAssertTrue(step.midi.contains(RotoOutgoing.sendNames(start: 0, names: ["to Phones"]).bytes))
+        XCTAssertTrue(step.midi.contains(RotoOutgoing.sendNames(start: 0, names: ["> Phones"]).bytes))
         let turn = driver.receive(knobCCs(0, 6000), hub: &hub, now: 2)
         XCTAssertEqual(turn.core.messages.map(\.address), ["/mix/in/0/2/faderlin"])
     }
 
     func testSendLabels() {
-        XCTAssertEqual(RotoDriver.sendLabel("Phones"), "to Phones")
+        XCTAssertEqual(RotoDriver.sendLabel("Phones"), "> Phones")
         XCTAssertEqual(RotoDriver.sendLabel("ADI-2 +6dB"), "> ADI-2 +6dB")
-        XCTAssertEqual(RotoDriver.sendLabel("Headphone Amp"), ">Headphone A")
-        XCTAssertEqual(RotoDriver.sendLabel(""), "to ")
+        XCTAssertEqual(RotoDriver.sendLabel("Headphone Amp"), "> Headphone")
+        XCTAssertEqual(RotoDriver.sendLabel("Phones 1 Left"), "> Phones 1 L")
+        XCTAssertEqual(RotoDriver.sendLabel(""), "> ")
     }
 
     func testSendNamesGoOutInEveryKnobMode() {
         let (_, _, midi) = connected()
-        XCTAssertTrue(midi.contains(RotoOutgoing.sendNames(start: 0, names: ["to Phones"]).bytes),
+        XCTAssertTrue(midi.contains(RotoOutgoing.sendNames(start: 0, names: ["> Phones"]).bytes),
                       "level mode too, so the names shown while SEL is held are current")
     }
 
     func testRequestedSendNames() {
         var (driver, hub, _) = connected()
         let step = driver.receive(sysEx(.mix, 0x07, [0x00]), hub: &hub, now: 1)
-        XCTAssertEqual(step.midi, RotoOutgoing.sendNames(start: 0, names: ["to Phones"]).bytes)
+        XCTAssertEqual(step.midi, RotoOutgoing.sendNames(start: 0, names: ["> Phones"]).bytes)
     }
 
     func testTheSecondTrackSetIsTheOutputs() {
@@ -349,7 +350,7 @@ final class RotoDriverTests: XCTestCase {
         let step = driver.receive(sysEx(.mix, 0x02, [0x00]), hub: &hub, now: 2)
         let vox = ChannelRef(.input, 2)
         XCTAssertEqual(hub.mode(of: rotoID), .focus(channel: vox, first: 0))
-        XCTAssertTrue(step.midi.contains(RotoOutgoing.sendNames(start: 0, names: ["to Phones"]).bytes))
+        XCTAssertTrue(step.midi.contains(RotoOutgoing.sendNames(start: 0, names: ["> Phones"]).bytes))
         XCTAssertTrue(step.midi.contains(RotoOutgoing.selectTrack(RotoTrackDetails(index: 1, name: "Vox", colorScheme: 27)).bytes))
         let send = driver.receive(knobCCs(2, 3000), hub: &hub, now: 3)
         XCTAssertEqual(send.core.messages.map(\.address), ["/mix/in/2/2/faderlin"], "knob 3 is the first send")
