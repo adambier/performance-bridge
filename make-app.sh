@@ -95,7 +95,7 @@ DEPLOYMENT_TARGET="13.0"
 FIRST_YEAR="2026"
 THIS_YEAR="$(date +%Y)"
 COPYRIGHT_YEARS="$FIRST_YEAR"
-if [ "$THIS_YEAR" -gt "$FIRST_YEAR" ]; then COPYRIGHT_YEARS="$FIRST_YEAR–$THIS_YEAR"; fi
+if [ "$THIS_YEAR" -gt "$FIRST_YEAR" ]; then COPYRIGHT_YEARS="${FIRST_YEAR}–${THIS_YEAR}"; fi
 COPYRIGHT="Copyright © $COPYRIGHT_YEARS Adam Arthur Bier. MIT License."
 
 # A second item for the same version would carry a new build number and signature but point at the
@@ -119,7 +119,7 @@ mkdir -p build
 
 if [ ! -d "$SPARKLE_DIR/Sparkle.framework" ]; then
     SPARKLE_ARCHIVE="build/Sparkle-$SPARKLE_VERSION.tar.xz"
-    echo "Downloading Sparkle $SPARKLE_VERSION…"
+    echo "Downloading Sparkle ${SPARKLE_VERSION}…"
     curl -fsSL -o "$SPARKLE_ARCHIVE" \
         "https://github.com/sparkle-project/Sparkle/releases/download/$SPARKLE_VERSION/Sparkle-$SPARKLE_VERSION.tar.xz"
     if [ "$(shasum -a 256 "$SPARKLE_ARCHIVE" | cut -d ' ' -f 1)" != "$SPARKLE_SHA256" ]; then
