@@ -115,6 +115,7 @@ The three rows of the mixer are spelled three ways (`TotalMixBus`). [RME doc]
 - **The current submix.** Input and playback channels sent no channel-level `volume` or `faderlin`: their faders in TotalMix's window arrived as mixer nodes of the selected submix. [test 1] Whether TotalMix accepts a channel-level `volume` for inputs, and what it would act on, is untested.
 - **Unanswered `/sendall`.** One `/sendall` went unanswered: status messages arrived, but nothing else. A later one, with the same settings, was answered in full. [test 1] The cause is unknown; the app should repeat the request if no reply comes.
 - **`/sologroup` and `/fadergroup`.** The document gives no value type for either. Both were sent as 0 or 1 by group. [test 1]
+- **Main Out B with Speaker B off.** Test 10 found Main Out B's submix kept the same as Main Out's with Speaker B on. Whether that holds with Speaker B off, or with Link off, is untested.
 - **Fader groups in `groupflags`.** Bits 12–15 are taken to be fader groups 1–4 (see section 2). Outputs 3/4 and 7/8 have bit 12 set [test 1]; whether they are in fader group 1 has not been checked in TotalMix's window.
 
 ## 6. Tests
@@ -270,3 +271,15 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 **Global mute.** The monitor reported `globalmute = 1` in the dumps before this recheck, and `globalmute = 0` after Adam turned it off with `/globalmute 0`. RME's manual calls this the Mute Master button in the Control Strip: it lights when any Mute button is pressed, and "all selected mutes can be switched off and on again" with it (docs.rme-audio.com, Control Strip). With `globalmute = 0`, `/playback/0/mute 1` lit the AES M button only partially (Adam, screenshot 2026-10-31). Inference: a partial light shows a mute that is selected but switched off by the Mute Master, so the channel was probably not muted in the audio. Not checked by listening.
 
 **Not tested:** the other controllers, other interfaces, and the effect of the earlier sends on the channels at addresses 1 and 3.
+
+### Test 10 (2026-10-31): Main Out B and Speaker B
+
+**Setup.** TotalMix FX "2.10 (1)" with a Digiface AES, controller 4. Main Out was "Monitors" (`controlroom/mainout = 0`), and no Main Out B was assigned (`mainoutb = -1`, test 9's dumps). In the Control Room section, assign → Main Out B → ADAT 5/6 (Adam, 2026-10-31). Before this, every mixer node into ADAT 5/6 was off (test 9's `/sendall` dump). Music played from the Mac into Main Out.
+
+**Findings:**
+- With Speaker B on, the Main Out B strip (ADAT 5/6) showed the music on its meter, and the Monitors meter stopped (Adam). RME's manual says Speaker B "switches playback from Main Out to Main Out B" (docs.rme-audio.com, Control Room strip).
+- `sbdev monitor --sendall` then reported `mainoutb = 12` (address 12, ADAT 5/6), `speakerb = 1`, and `linkab = 1`. Main Out B's mixer nodes (monitor output 13) were the same as Main Out's: Sonos at −8.2 dB; monitor inputs 5–13 and AES at 0 dB; ADI-2 and the other playbacks off.
+- `/mix/in/2/0/faderlin 0.5`, sent to Main Out (address 0), set Sonos to −12.13 dB in Main Out's submix and in Main Out B's, in the same reply.
+- The assign menu's item for no assignment is "None" (Adam). Afterward Sonos was returned to −8.2 dB, Speaker B turned off, and Main Out B set to None.
+
+**Inference:** while Main Out B is assigned and Speaker B is on, Main Out B plays Main Out's submix, and TotalMix keeps the two submixes the same. So a surface that writes to Main Out's submix reaches Main Out B as well, and the home submix need not move when Speaker B is switched. Not tested: whether the mirroring holds with Speaker B off, and with Link off.
