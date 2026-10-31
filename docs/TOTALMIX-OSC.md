@@ -244,4 +244,8 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 - A channel hidden from an OSC Controller sends no messages on that controller. From OSC alone, the app cannot tell a hidden channel from one the interface does not have. So the app cannot detect hidden channels.
 - Hiding does not renumber the channels that remain. This is one run; the baseline run shows the same numbers for the remaining inputs.
 
-**Not tested:** an unhidden baseline; whether "Receive to hidden channels" (Options → Mixer Settings… → OSC → Details) changes what is sent for a hidden channel; and the other controllers.
+**Test 8b (same day, `logs/test8b-receive-hidden.log`):** the same run with the ADI-2 input hidden from OSC Controller 4 and "Receive to hidden channels" on (Options → Mixer Settings… → OSC → Details). Input 1 sent nothing, as in the first run. Inputs 3 to 14, all 16 playbacks, and all 16 outputs were present. So on this connection, turning on "Receive to hidden channels" did not make TotalMix send a hidden channel's messages.
+
+**Test 8a (baseline, `logs/test8a-unhidden.log`):** the same run with the ADI-2 input unhidden. Input 1 sent its settings, starting with `name = "ADI-2"`.
+
+**Not tested:** the other controllers; and whether "Receive to hidden channels" changes what TotalMix sends in another connection or with another interface.
