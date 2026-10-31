@@ -361,8 +361,12 @@ final class SurfaceHubTests: XCTestCase {
             XCTAssertTrue(hub.touched(roto, strip: strip, true, now: 1).isEmpty)
         }
         XCTAssertTrue(hub.controlMoved(roto, strip: 1, to: .nan, now: 1).isEmpty)
+        _ = hub.controlMoved(roto, strip: 1, to: 0.1, now: 1.5)
         XCTAssertEqual(hub.controlMoved(roto, strip: 1, to: -3, now: 2).messages.first.flatMap(floatArgument), 0)
+        _ = hub.controlMoved(roto, strip: 2, to: 0.9, now: 2.5)
         XCTAssertEqual(hub.controlMoved(roto, strip: 2, to: 7, now: 3).messages.first.flatMap(floatArgument), 1)
+        XCTAssertTrue(hub.controlMoved(roto, strip: 3, to: 0, now: 3).messages.isEmpty,
+                      "the knob was put at 0.5, so a report of 0 is a jump")
         _ = hub.page(roto, by: Int.max, now: 4)
         _ = hub.page(roto, by: Int.min, now: 5)
         XCTAssertEqual(hub.mode(of: roto), .standard)

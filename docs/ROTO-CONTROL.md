@@ -399,6 +399,9 @@ marked "seen".
   TotalMix's green, and 73 was a little too green for its yellow.
 - **SET TRACK COLOUR** (run 14, seen): sent after TRACK DETAILS END, it changed the strip's color
   in MIX mode (FFC800, a yellow-orange), with the strip's name in white, where scheme 73 alone had
-  black text. The host cannot choose the text color.
+  black text. The host cannot choose the text color. In run 15 an exact color sent for the third
+  strip on the first page stayed on the third screen after paging, over the next page's own scheme,
+  and after the Roto-Control was plugged in again an exact color sent for a strip did not show.
+  So an exact color belongs to a screen rather than a track, and `RotoDriver` does not use them.
 - **SOLO and ARM** (run 7, seen): with the switches on solo, a press set PFL in TotalMix and lit
   the switch; on record arm, a press did nothing.

@@ -295,10 +295,6 @@ public struct RotoDriver: Sendable {
                                               immediate: false))
             }
             messages.append(.trackDetailsEnd)
-            for (offset, info) in infos.enumerated() {
-                guard let info, let color = Self.exactColor(for: info) else { continue }
-                messages.append(.trackColor(index: page.first + offset, color))
-            }
             for (offset, info) in infos.enumerated() where info == nil {
                 messages.append(.resetTrackDetails(page.first + offset))
             }
@@ -360,16 +356,6 @@ public struct RotoDriver: Sendable {
     /// The color scheme for sends until TotalMix's colors are matched: 22, seen as blue.
     public static let sendScheme: UInt8 = 22
 
-    /// An exact color for a strip, sent with SET TRACK COLOUR after its color scheme, where no
-    /// scheme in the table matches TotalMix closely enough: so far only yellow (TotalMix's index 7),
-    /// which on the Roto-Control's screens falls between scheme 73 (a little too green) and scheme 1
-    /// (orange). The Roto-Control shows SET TRACK COLOUR in MIX mode, with the strip's name in
-    /// white (docs/ROTO-CONTROL.md, test 4).
-    public static func exactColor(for info: StripInfo) -> RotoColor? {
-        guard info.kind == .source, info.color == 7 else { return nil }
-        return RotoColor(red: 0xFF, green: 0xD4, blue: 0x00)
-    }
-
     /// The Roto-Control color scheme for a strip: sources in their TotalMix color, outputs by kind
     /// (monitoring outputs green, sends blue).
     public static func colorScheme(for info: StripInfo) -> UInt8 {
@@ -386,7 +372,8 @@ public struct RotoDriver: Sendable {
     /// schemes are matched by eye on the Roto-Control's screens to the colors TotalMix draws ("pink"
     /// is drawn purple), because the screens show some of the SysEx doc's table colors differently:
     /// darker reds and oranges look brown, and purples look royal blue (docs/ROTO-CONTROL.md,
-    /// test 4). White is TotalMix's default and is drawn without a color.
+    /// test 4). White is TotalMix's default and is drawn without a color. Exact colors (SET TRACK
+    /// COLOUR) are not used: they have been observed to stay on a screen when the page changes.
     public static let schemeForTotalMixColor: [Int: UInt8] = [
         1: 13,  // white (default)
         2: 49,  // grey
@@ -394,7 +381,7 @@ public struct RotoDriver: Sendable {
         4: 14,  // red
         5: 9,   // blue
         6: 19,  // green, drawn lime
-        7: 73,  // yellow, drawn yellow-orange
+        7: 73,  // yellow, drawn yellow-orange (73 is a little too green; nothing in the table is closer)
         8: 67,  // pink, drawn purple
     ]
 

@@ -344,13 +344,13 @@ final class RotoDriverTests: XCTestCase {
         XCTAssertEqual(Double(sent), RotoFeedback.fraction(12288) * 2 - 1, accuracy: 1e-6)
     }
 
-    func testYellowGetsAnExactColor() {
-        let yellow = StripInfo(channel: ChannelRef(.playback, 12), name: "PB 13/14", color: 7, stereo: true,
-                               kind: .source, knobLabel: "", switchLabel: "")
-        XCTAssertEqual(RotoDriver.exactColor(for: yellow), RotoColor(red: 0xFF, green: 0xD4, blue: 0x00))
-        var other = yellow
-        other.color = 6
-        XCTAssertNil(RotoDriver.exactColor(for: other))
+    func testTurningWorksAfterTheBridgeMovesTheKnobFar() {
+        var (driver, hub, _) = connected()
+        _ = driver.receive(knobCCs(1, 1000), hub: &hub, now: 1)        // the user turns knob 2 down
+        _ = hub.handle(.mix(bus: .input, channel: 2, output: 0, parameter: "faderlin", value: .number(0.95)), now: 2)
+        _ = hub.tick(now: 2)                                            // TotalMix moves it far up; the motor follows
+        let turn = driver.receive(knobCCs(1, levelKnob(0.95) - 300), hub: &hub, now: 5)
+        XCTAssertFalse(turn.core.messages.isEmpty, "a turn from where the motor put the knob is not taken for a jump")
     }
 
     func testTotalMixColors() {

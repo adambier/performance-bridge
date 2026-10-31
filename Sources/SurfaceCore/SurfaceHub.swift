@@ -200,6 +200,8 @@ public struct SurfaceHub: Sendable {
         if let guardSize = caps.jumpGuard, let previous, abs(position - previous) > guardSize {
             if caps.feel == .follows, let shown = state.slots[index].knobShown {
                 output.add(.knob(index: index, value: shown), for: id)
+                state.physical[index] = shown
+                surfaces[id] = state
             }
             return output
         }
@@ -472,10 +474,12 @@ public struct SurfaceHub: Sendable {
                 slot.wasHeld = false
                 slot.knobShown = position
                 output.add(.knob(index: index, value: position), for: id)
+                if state.capabilities.feel == .follows, let position { state.physical[index] = position }
             } else if Self.differs(position, slot.knobShown) && !state.holds[index].isHeld(now: now) {
                 slot.knobShown = position
                 state.caught[index] = false
                 output.add(.knob(index: index, value: position), for: id)
+                if state.capabilities.feel == .follows, let position { state.physical[index] = position }
                 if let target = binding.knobTarget, let value = mirror.value(of: target) {
                     output.add(.valueText(index: index, text: text(for: target, value: value)), for: id)
                 }
