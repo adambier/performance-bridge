@@ -48,7 +48,7 @@ struct AboutView: View {
                 .font(.title2.weight(.semibold))
             Text(Brand.version)
                 .foregroundStyle(.secondary)
-            Text("Connects hardware control surfaces to RME TotalMix FX, for mixing live.")
+            Text("Connects hardware control surfaces to RME TotalMix FX for mixing live.")
                 .multilineTextAlignment(.center)
                 .padding(.top, 4)
             Link("github.com/adambier/performance-bridge",
