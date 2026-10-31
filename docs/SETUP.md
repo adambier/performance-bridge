@@ -74,10 +74,9 @@ channels change the channel numbers the app receives: the test run showed no ren
 ## Step 3: Connect the Roto-Control
 
 1. Connect the Roto-Control to the Mac by USB. It can be connected before or after the app starts.
-2. The app finds the Roto-Control by the name of its MIDI port. The default name is "Roto". To use a
-   different name, change it in Settings, under Roto-Control.
-3. If you need the exact port names, run `swift run sbdev roto ports` from the package folder. Quit the app
-   first if it is running, since both need the Roto-Control's MIDI ports.
+2. The app finds the Roto-Control by the name of its MIDI port. The default, "Roto", matches the port
+   named "Roto-Control". To choose another port, open Settings and pick it from the MIDI port menu under
+   Roto-Control; the menu lists the ports connected when Settings opens.
 
 ## Step 4: Start the app
 
@@ -131,7 +130,7 @@ The home submix is the output the surfaces' levels and pans go into. Choose it f
 - **TotalMix FX: port N in use.** Another program has the port. Quit `sbdev` or any other OSC remote.
 - **TotalMix FX: no answer.** Check that Global OSC is on and that the ports in Settings match TotalMix's
   (Step 1). Then choose **Ask TotalMix FX for its state**.
-- **Roto-Control: not found.** Check the cable, and the MIDI port name in Settings (Step 3).
+- **Roto-Control: not found.** Check the cable, and the MIDI port in Settings (Step 3).
 - **A channel is missing from the surfaces.** Check whether TotalMix hides it from the OSC controller the app uses
   (Step 2).
 
