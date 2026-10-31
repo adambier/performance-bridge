@@ -104,6 +104,43 @@ final class RotoDriverTests: XCTestCase {
         XCTAssertTrue(midi.contains(RotoFeedback.switchLight(3, on: false)))
     }
 
+    func testExactColorsGoToEveryScreen() {
+        let (start, hub, midi) = connected()
+        var driver = start
+        let trackColorHeader = Array(RotoOutgoing.trackColor(index: 0, RotoDriver.blankColor).bytes.prefix(7))
+        XCTAssertFalse(midi.contains(trackColorHeader), "no exact colors by default")
+        driver.exactColors = RotoDriver.totalMixColors
+        let redraw = driver.redraw(hub: hub)
+        let white = RotoDriver.totalMixColors[1]!
+        for strip in 0..<4 {
+            XCTAssertTrue(redraw.contains(RotoOutgoing.trackColor(index: strip, white).bytes), "strip \(strip + 1)")
+        }
+        for blank in 4..<8 {
+            XCTAssertTrue(redraw.contains(RotoOutgoing.trackColor(index: blank, RotoDriver.blankColor).bytes),
+                          "blank strip \(blank + 1) is black")
+        }
+        // The colors come after the strips are drawn and the blank ones reset.
+        let end = RotoOutgoing.trackDetailsEnd.bytes, firstColor = RotoOutgoing.trackColor(index: 0, white).bytes
+        let endAt = (0...(redraw.count - end.count)).first { Array(redraw[$0..<$0 + end.count]) == end }!
+        let colorAt = (0...(redraw.count - firstColor.count)).first { Array(redraw[$0..<$0 + firstColor.count]) == firstColor }!
+        XCTAssertLessThan(endAt, colorAt)
+        driver.exactColors = nil
+        XCTAssertFalse(driver.redraw(hub: hub).contains(firstColor))
+    }
+
+    func testExactColorForEachKind() {
+        let palette = RotoDriver.totalMixColors
+        func info(_ kind: StripKind, _ color: Int?) -> StripInfo {
+            StripInfo(channel: ChannelRef(.input, 0), name: "x", color: color, stereo: false, kind: kind,
+                      knobLabel: "", switchLabel: "")
+        }
+        XCTAssertEqual(RotoDriver.exactColor(for: info(.source, 7), palette: palette), palette[7])
+        XCTAssertEqual(RotoDriver.exactColor(for: info(.source, nil), palette: palette), palette[1])
+        XCTAssertEqual(RotoDriver.exactColor(for: info(.source, 42), palette: palette), palette[1])
+        XCTAssertEqual(RotoDriver.exactColor(for: info(.monitoring, 7), palette: palette), palette[6])
+        XCTAssertEqual(RotoDriver.exactColor(for: info(.send, 7), palette: palette), palette[5])
+    }
+
     func testNothingIsSentBeforeTheHandshake() {
         var hub = loadedHub()
         _ = hub.addSurface(rotoID, capabilities: RotoDriver.capabilities, now: 0)

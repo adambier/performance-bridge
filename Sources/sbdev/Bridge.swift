@@ -31,6 +31,13 @@ let bridgeCommandHelp = """
       home N | home main   the home submix: output N (from 1), or TotalMix's Main Out
       solo on | solo off   allow or forbid solo on the switches (off at the start)
       menu TEXT            test: send SET CURRENT TRACK NAME with TEXT, to see where it shows
+      color exact          test: exact colors (SET TRACK COLOUR) on all eight screens
+      color table          back to the color schemes alone
+      color N RRGGBB       test: set TotalMix color N (1-8) to an RGB color, and show exact colors
+      color tune N         test: tune TotalMix color N with knobs 1-3 (hue, saturation,
+                           brightness), watching the screens; the knobs leave the mixer alone
+      color done           stop tuning: the knobs go back to the mixer
+      color                list the exact colors
       sendall              ask TotalMix for its state again
       status               the mode, the home submix, the send targets, and the strips
       quit
@@ -81,6 +88,13 @@ final class BridgeSession: @unchecked Sendable {
     private var socket: UDPSocket?
     private var midi: MIDIConnection?
     private var oscDecodeErrors = 0
+    /// The TotalMix color being tuned with knobs 1–3, and its hue (0–360), saturation, and
+    /// brightness (0–1).
+    private var tuning: (index: Int, hsv: HSV)?
+    private var tuneDecoder = RotoControlDecoder()
+    private var tuneChanged = false
+    private var lastTuneSend = 0.0
+    private var lastTuneLog = 0.0
 
     init(options: BridgeOptions) {
         self.options = options
@@ -160,15 +174,71 @@ final class BridgeSession: @unchecked Sendable {
                 index += 1
             }
         }
-        let step = driver.receive(bytes, hub: &hub, now: now)
+        let step = driver.receive(tuning == nil ? bytes : takeTuningKnobs(bytes), hub: &hub, now: now)
         sendToRoto(step.midi)
         dispatch(step.core)
+    }
+
+    /// While tuning: takes the knob and touch CCs out of the bytes, uses knobs 1–3 for the color,
+    /// and returns the rest for the driver.
+    private func takeTuningKnobs(_ bytes: [UInt8]) -> [UInt8] {
+        guard let (index, start) = tuning else { return bytes }
+        var hsv = start
+        var rest: [UInt8] = []
+        var at = 0
+        while at < bytes.count {
+            if bytes[at] == 0xBF, at + 2 < bytes.count, (12...19).contains(bytes[at + 1]) || (44...59).contains(bytes[at + 1]) {
+                if case .knob(let knob, let position)? = tuneDecoder.decode(channel: RotoCC.channel, controller: bytes[at + 1], value: bytes[at + 2]) {
+                    let fraction = RotoFeedback.fraction(position)
+                    switch knob {
+                    case 0: hsv.hue = fraction * 360
+                    case 1: hsv.saturation = fraction
+                    case 2: hsv.brightness = fraction
+                    default: break
+                    }
+                    tuneChanged = true
+                }
+                at += 3
+            } else {
+                rest.append(bytes[at])
+                at += 1
+            }
+        }
+        tuning = (index, hsv)
+        return rest
     }
 
     private func tick() {
         lock.lock()
         defer { lock.unlock() }
         dispatch(hub.tick(now: now))
+        if let (index, hsv) = tuning, tuneChanged, now - lastTuneSend >= 0.05 {
+            tuneChanged = false
+            lastTuneSend = now
+            var palette = driver.exactColors ?? RotoDriver.totalMixColors
+            palette[index] = hsv.color
+            driver.exactColors = palette
+            sendToRoto(driver.exactColorBytes(hub: hub), quiet: true)
+            if now - lastTuneLog >= 0.5 {
+                lastTuneLog = now
+                log("Tuning \(index) \(colorNames[index - 1]): \(rgb(hsv.color)) \(hsv)")
+            }
+        }
+    }
+
+    private func startTuning(_ index: Int) {
+        var palette = driver.exactColors ?? RotoDriver.totalMixColors
+        let color = palette[index] ?? RotoDriver.blankColor
+        palette[index] = color
+        driver.exactColors = palette
+        let hsv = HSV(color)
+        tuning = (index, hsv)
+        tuneDecoder = RotoControlDecoder()
+        sendToRoto(driver.redraw(hub: hub))
+        sendToRoto(RotoFeedback.knob(0, position: RotoFeedback.position(hsv.hue / 360))
+                   + RotoFeedback.knob(1, position: RotoFeedback.position(hsv.saturation))
+                   + RotoFeedback.knob(2, position: RotoFeedback.position(hsv.brightness)))
+        log("Tuning \(index) \(colorNames[index - 1]) from \(rgb(color)) \(hsv): knob 1 hue, knob 2 saturation, knob 3 brightness. `color done` to stop.")
     }
 
     // MARK: Output
@@ -187,13 +257,14 @@ final class BridgeSession: @unchecked Sendable {
         }
     }
 
-    private func sendToRoto(_ bytes: [UInt8]) {
+    private func sendToRoto(_ bytes: [UInt8], quiet: Bool = false) {
         guard !bytes.isEmpty else { return }
         do {
             try midi?.send(bytes)
         } catch {
             log("Could not send to the Roto-Control: \(error)")
         }
+        if quiet { return }
         if options.verbose {
             log("→ Roto \(hex(bytes))")
             return
@@ -248,6 +319,39 @@ final class BridgeSession: @unchecked Sendable {
             let text = words.dropFirst().joined(separator: " ")
             sendToRoto(RotoOutgoing.currentTrackName(text).bytes)
             log("→ Roto SET CURRENT TRACK NAME \"\(text)\"")
+        case "color":
+            // A test of exact colors: does resending all eight screens keep them from sticking,
+            // and how do TotalMix's own colors look on the screens? (docs/ROTO-CONTROL.md, test 4)
+            if words.count == 3, words[1] == "tune", let index = Int(words[2]), (1...8).contains(index) {
+                startTuning(index)
+                return true
+            } else if words.count == 2, words[1] == "done" {
+                if let (index, hsv) = tuning {
+                    log("Tuned \(index) \(colorNames[index - 1]): \(rgb(hsv.color)) \(hsv)")
+                }
+                tuning = nil
+                dispatch(hub.resend(driver.id, now: now))
+            } else if words.count == 2, words[1] == "exact" {
+                driver.exactColors = driver.exactColors ?? RotoDriver.totalMixColors
+            } else if words.count == 2, words[1] == "table" {
+                tuning = nil
+                driver.exactColors = nil
+            } else if words.count == 3, let index = Int(words[1]), (1...8).contains(index),
+                      let color = parseRGB(words[2]) {
+                var palette = driver.exactColors ?? RotoDriver.totalMixColors
+                palette[index] = color
+                driver.exactColors = palette
+            } else if words.count != 1 {
+                print("color exact, color table, color N RRGGBB, color tune N (N from 1 to 8), color done, or color")
+                return true
+            }
+            if words.count > 1, words[1] != "done" { sendToRoto(driver.redraw(hub: hub)) }
+            if let palette = driver.exactColors {
+                let list = (1...8).map { "\($0) \(colorNames[$0 - 1]) \(palette[$0].map(rgb) ?? "-")" }
+                log("Exact colors: " + list.joined(separator: ", "))
+            } else {
+                log("Color schemes only (no exact colors)")
+            }
         case "sendall":
             dispatch(hub.connect(now: now))
         case "status":
@@ -270,6 +374,64 @@ final class BridgeSession: @unchecked Sendable {
         socket?.stop()
         midi?.close()
     }
+}
+
+/// TotalMix's color names, by index from 1.
+let colorNames = ["white", "grey", "orange", "red", "blue", "green", "yellow", "pink"]
+
+/// A color as hue (0–360), saturation, and brightness (0–1), for tuning with knobs.
+struct HSV: CustomStringConvertible {
+    var hue: Double
+    var saturation: Double
+    var brightness: Double
+
+    init(_ color: RotoColor) {
+        let r = Double(color.red) / 255, g = Double(color.green) / 255, b = Double(color.blue) / 255
+        let high = max(r, g, b), low = min(r, g, b), range = high - low
+        var hue = 0.0
+        if range > 0 {
+            if high == r { hue = 60 * ((g - b) / range).truncatingRemainder(dividingBy: 6) }
+            else if high == g { hue = 60 * ((b - r) / range + 2) }
+            else { hue = 60 * ((r - g) / range + 4) }
+        }
+        self.hue = hue < 0 ? hue + 360 : hue
+        saturation = high > 0 ? range / high : 0
+        brightness = high
+    }
+
+    var color: RotoColor {
+        let chroma = brightness * saturation
+        let sector = (hue.truncatingRemainder(dividingBy: 360)) / 60
+        let x = chroma * (1 - abs(sector.truncatingRemainder(dividingBy: 2) - 1))
+        let (r, g, b): (Double, Double, Double)
+        switch Int(sector) {
+        case 0: (r, g, b) = (chroma, x, 0)
+        case 1: (r, g, b) = (x, chroma, 0)
+        case 2: (r, g, b) = (0, chroma, x)
+        case 3: (r, g, b) = (0, x, chroma)
+        case 4: (r, g, b) = (x, 0, chroma)
+        default: (r, g, b) = (chroma, 0, x)
+        }
+        let m = brightness - chroma
+        func byte(_ v: Double) -> UInt8 { UInt8((min(max(v + m, 0), 1) * 255).rounded()) }
+        return RotoColor(red: byte(r), green: byte(g), blue: byte(b))
+    }
+
+    var description: String {
+        String(format: "(hue %.0f, saturation %.2f, brightness %.2f)", hue, saturation, brightness)
+    }
+}
+
+/// An RGB color from six hex digits, with or without a leading "#".
+func parseRGB(_ text: String) -> RotoColor? {
+    let digits = text.hasPrefix("#") ? String(text.dropFirst()) : text
+    guard digits.count == 6, let value = UInt32(digits, radix: 16) else { return nil }
+    return RotoColor(red: UInt8(value >> 16 & 0xFF), green: UInt8(value >> 8 & 0xFF), blue: UInt8(value & 0xFF))
+}
+
+/// Six hex digits for an RGB color.
+func rgb(_ color: RotoColor) -> String {
+    String(format: "%02X%02X%02X", color.red, color.green, color.blue)
 }
 
 func bridge(_ arguments: ArraySlice<String>) -> Never {

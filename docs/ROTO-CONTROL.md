@@ -405,3 +405,10 @@ marked "seen".
   So an exact color belongs to a screen rather than a track, and `RotoDriver` does not use them.
 - **SOLO and ARM** (run 7, seen): with the switches on solo, a press set PFL in TotalMix and lit
   the switch; on record arm, a press did nothing.
+- **Modes kept across sessions** (run 16, seen): on connecting, the Roto-Control reported SET MIX
+  ALL TRACKS MODE with knobs on send 1 and switches on record arm, the modes left from run 15, so
+  the knobs moved the first send's submix rather than the main one. No message sets these modes
+  from the host.
+- **Scheme 73** (run 16, seen): TotalMix's yellow drawn as scheme 73 looked "banana" against
+  TotalMix's "mango". `sbdev bridge` has `color` commands to try exact colors again, sent to all
+  eight screens on every page (blank ones black), and to tune a color with knobs 1–3.
