@@ -144,6 +144,12 @@ final class RotoDriverTests: XCTestCase {
         }
         // Blank screens are past the last track, and get no color.
         XCTAssertEqual(redraw.occurrences(header), 4)
+        // On a later page the index is still the screen, 0–7.
+        var paged = hub
+        let output = paged.setMode(rotoID, .strips(view: .sources, first: 2, knob: .level, switch: .mute), now: 1)
+        let bytes = driver.render(output.updates[rotoID] ?? [], hub: paged, now: 1)
+        XCTAssertTrue(bytes.contains(RotoOutgoing.trackColor(index: 0, white).bytes), "track 3 on screen 1")
+        XCTAssertFalse(bytes.contains(RotoOutgoing.trackColor(index: 2, white).bytes))
         // The colors come after the strips are drawn and the blank ones reset.
         let end = RotoOutgoing.trackDetailsEnd.bytes, firstColor = RotoOutgoing.trackColor(index: 0, white).bytes
         let endAt = (0...(redraw.count - end.count)).first { Array(redraw[$0..<$0 + end.count]) == end }!
@@ -178,6 +184,16 @@ final class RotoDriverTests: XCTestCase {
         XCTAssertEqual(bytes.occurrences(Array(RotoOutgoing.trackDetails(RotoTrackDetails(index: 0, name: "", colorScheme: 0),
                                                                          immediate: true).bytes.prefix(7))), 4)
         XCTAssertTrue(driver.immediateDetails(forTotalMixColor: 7, hub: hub).isEmpty)
+    }
+
+    func testSwatches() {
+        let (driver, hub, _) = connected()
+        let bytes = driver.swatchBytes([3, 17, 59, 73, 1], hub: hub)
+        XCTAssertTrue(bytes.contains(RotoOutgoing.trackDetails(RotoTrackDetails(index: 3, name: "scheme 73", colorScheme: 73),
+                                                               immediate: true).bytes))
+        let header = Array(RotoOutgoing.trackDetails(RotoTrackDetails(index: 0, name: "", colorScheme: 0),
+                                                     immediate: true).bytes.prefix(7))
+        XCTAssertEqual(bytes.occurrences(header), 4, "only the four tracks there are")
     }
 
     func testExactColorForEachKind() {

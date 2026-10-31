@@ -133,15 +133,16 @@ public struct RotoDriver: Sendable {
     public var exactColors: [Int: RotoColor]?
 
     /// The exact colors for the strips of the current page in all-tracks mode, or nothing when
-    /// `exactColors` is off. Every strip gets one because an exact color has been observed to stay
-    /// on its screen when the page changes (docs/ROTO-CONTROL.md, test 4). Blank screens get none:
-    /// they are past the last track, and the Roto-Control has been observed to hang after a color
-    /// was sent for a track past the track count (run 17; that this caused it is an inference).
+    /// `exactColors` is off. SET TRACK COLOUR's index is taken to be the screen (0–7), not the
+    /// track: an inference from test 4, where colors sent with indexes 0–7 showed on that screen
+    /// and stayed there when the page changed (runs 14 and 15), and every color sent with an index
+    /// of 8 or more was followed by the Roto-Control freezing (runs 15, 17, and 18). Every strip
+    /// gets a color, because a color stays on its screen; blank screens get none.
     private func exactColorMessages() -> [RotoOutgoing] {
         guard let palette = exactColors else { return [] }
         return infos.enumerated().compactMap { offset, info in
             guard let info, page.first + offset < page.count else { return nil }
-            return .trackColor(index: page.first + offset, Self.exactColor(for: info, palette: palette))
+            return .trackColor(index: offset, Self.exactColor(for: info, palette: palette))
         }
     }
 
@@ -166,6 +167,18 @@ public struct RotoDriver: Sendable {
             guard let info, info.kind == .source, info.color == color else { return nil }
             return .trackDetails(RotoTrackDetails(index: page.first + offset, name: info.name,
                                                   colorScheme: scheme(for: info)), immediate: true)
+        }.flatMap(\.bytes)
+    }
+
+    /// SET TRACK DETAILS (shown at once) for the first screens of the current page, each named
+    /// "scheme N" in color scheme N, to compare schemes side by side. Screens past the last track
+    /// are skipped. Nothing outside all-tracks mode or before the handshake.
+    public func swatchBytes(_ schemes: [UInt8], hub: SurfaceHub) -> [UInt8] {
+        guard handshake.isConnected, !inPluginMode, case .strips? = hub.mode(of: id) else { return [] }
+        return schemes.prefix(RotoCC.controlCount).enumerated().compactMap { offset, scheme -> RotoOutgoing? in
+            guard page.first + offset < page.count else { return nil }
+            return .trackDetails(RotoTrackDetails(index: page.first + offset, name: "scheme \(scheme)",
+                                                  colorScheme: scheme), immediate: true)
         }.flatMap(\.bytes)
     }
 

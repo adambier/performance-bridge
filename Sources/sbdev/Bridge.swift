@@ -43,6 +43,8 @@ let bridgeCommandHelp = """
       scheme done          stop: the knobs go back to the mixer
       scheme N S           use scheme S for TotalMix color N
       scheme               list the schemes for TotalMix's colors
+      swatch S S ...       test: show color schemes S side by side on the first screens
+      swatch done          draw the strips again
       sendall              ask TotalMix for its state again
       status               the mode, the home submix, the send targets, and the strips
       quit
@@ -454,6 +456,18 @@ final class BridgeSession: @unchecked Sendable {
                 return "\(index) \(colorNames[index - 1]) \(scheme)"
             }
             log("Schemes: " + list.joined(separator: ", "))
+        case "swatch":
+            if words.count == 2, words[1] == "done" {
+                dispatch(hub.resend(driver.id, now: now))
+                return true
+            }
+            let schemes = words.dropFirst().compactMap { UInt8($0) }.filter { $0 <= 82 }
+            guard !schemes.isEmpty, schemes.count == words.count - 1 else {
+                print("swatch S S ... (schemes from 0 to 82, up to 8), or swatch done")
+                return true
+            }
+            sendToRoto(driver.swatchBytes(schemes, hub: hub))
+            log("Swatches on screens 1-\(min(schemes.count, 8)): schemes \(schemes.map(String.init).joined(separator: ", ")). `swatch done` to put the strips back.")
         case "sendall":
             dispatch(hub.connect(now: now))
         case "status":

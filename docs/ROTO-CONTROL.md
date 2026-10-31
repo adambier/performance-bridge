@@ -431,3 +431,12 @@ marked "seen".
   in the next run until plugged in again. Runs 17, 18, and 19 all froze while the host sent many
   SysEx messages in a short time; that this is the cause is an inference. `scheme tune` now sends
   one SET TRACK DETAILS per changed strip, at most every 250 ms.
+- **`scheme tune`, lighter** (run 20, seen): one SET TRACK DETAILS per change, about 50 changes in
+  30 s, and no freeze.
+- **SET TRACK COLOUR's index** (run 20, seen; the reading is an inference): `color exact`, now
+  paced 150 ms apart, sent colors for tracks 8–14 and the Roto-Control froze again. Across test 4,
+  every SET TRACK COLOUR with an index of 0–7 worked (run 14: index 2) and every one with an index
+  of 8 or more was followed by a freeze (run 15: index 13, the hang before run 16; runs 17, 18,
+  and 20: indexes 8–15). With run 15's color staying on its screen across pages, this reads as:
+  the index is the screen (0–7), not the track, and an index past 7 freezes the firmware.
+  `RotoDriver` now sends the screen number.
