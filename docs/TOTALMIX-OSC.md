@@ -9,6 +9,7 @@ a copy of RME's documentation.
 - **[RME doc]**: RME's Global OSC protocol document for TotalMix FX 2.1 beta 2, revision 2026-07-21. It is not included in this repository.
 - **[RME manual]**: the TotalMix FX chapter of RME's Digiface AES User's Guide (PDF dated 2023-11-20). It predates Global OSC, so it describes TotalMix's settings, not this protocol.
 - **[RME forum]**: a post by RME's staff on RME's user forum, linked where it is cited.
+- **[Adam]**: information from the project's owner, from his use of TotalMix, without a published source cited here.
 - **[test N]**: a test against TotalMix, described in section 6 with the TotalMix version, the interface, and the settings used.
 
 A statement with neither marker is an inference, and says so.
@@ -60,7 +61,7 @@ The three rows of the mixer are spelled three ways (`TotalMixBus`). [RME doc]
 
 **Record-enable.** `record` is a channel setting that TotalMix sends and accepts. [RME doc] The document does not say what it does; the inference is that it is the channel's record-enable for DURec, TotalMix's recorder on interfaces that have one. The Digiface AES's manual does not mention DURec. [RME manual] This project does not use `record`.
 
-**Meter colors.** RME's M-32 AD Pro lights its front-panel level meters green from −54 dBFS (barely visible) to −20 dBFS (bright), yellow from −5 dBFS, orange from −4, red from −1, and red flashing fast at 0 dBFS for at least three samples in a row. [RME: [M-32 AD Pro manual, "Meter to dB"](https://docs.rme-audio.com/m32ad/020-4r_meter_to_db/)] This is a hardware meter, not TotalMix's; that TotalMix's meters use the same steps is not established here. Levels sent over OSC are peak levels in dB (above); SurfaceCore's `MeterScale` maps them to a surface's meter and borrows RME's −5 and −1 dBFS as its yellow and red thresholds.
+**Meter colors.** RME's M-32 AD Pro lights its front-panel level meters green from −54 dBFS (barely visible) to −20 dBFS (bright), yellow from −5 dBFS, orange from −4, red from −1, and red flashing fast at 0 dBFS for at least three samples in a row. [RME: [M-32 AD Pro manual, "Meter to dB"](https://docs.rme-audio.com/m32ad/020-4r_meter_to_db/)] This is a hardware meter, not TotalMix's; that TotalMix's meters use the same steps is not established here. TotalMix's own meters reach down to −65 dBFS. [Adam] Levels sent over OSC are peak levels in dB (above); SurfaceCore's `MeterScale` maps −65…0 dBFS to a surface's meter and borrows RME's −5 and −1 dBFS as its yellow and red thresholds.
 
 **Playback names.** TotalMix names each playback after the output of the same number, because by default playback n is routed to output n alone. [RME forum](https://forum.rme-audio.de/viewtopic.php?id=36883) SurfaceCore therefore shows playbacks as "PB 1/2", "PB 3/4", and so on, so that they cannot be mistaken for inputs. Whether Global OSC sends a playback's own name or its output's has not been checked.
 

@@ -92,7 +92,7 @@ final class RotoDriverTests: XCTestCase {
     func testConnectingDrawsEveryStrip() {
         let (driver, _, midi) = connected()
         XCTAssertTrue(driver.isConnected)
-        XCTAssertTrue(midi.contains(RotoOutgoing.meterThresholds(yellow: 116, red: 124).bytes))
+        XCTAssertTrue(midi.contains(RotoOutgoing.meterThresholds(yellow: 117, red: 125).bytes))
         XCTAssertTrue(midi.contains(RotoOutgoing.trackCount(4).bytes))
         XCTAssertTrue(midi.contains(RotoOutgoing.trackDetails(RotoTrackDetails(index: 2, name: "Gtr", colorScheme: 0),
                                                               immediate: false).bytes))
