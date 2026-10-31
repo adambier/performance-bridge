@@ -1,6 +1,6 @@
 # Runs the libraries' tests on Linux, macOS, and Windows on every push and pull request, so that the
-# Foundation-only libraries keep building everywhere Swift runs. The macOS app will be built and
-# released separately with make-app.sh.
+# Foundation-only libraries keep building everywhere Swift runs. The macOS app is built and
+# released separately with make-app.sh; the macOS job type-checks that build.
 
 name: Tests
 
@@ -27,6 +27,18 @@ jobs:
       - uses: actions/checkout@v5
       - name: Test
         run: PERFORMANCE_BRIDGE_TESTS=1 swift test
+      # make-app.sh compiles every library folder and the app as one module, which SwiftPM never
+      # checks: a top-level name shared by two folders, or a symbol one folder uses from another
+      # without `public`, fails only there. This type-checks that build without Sparkle (the app
+      # guards it with `#if canImport(Sparkle)`) and without producing an app bundle.
+      - name: Type-check the app as one module
+        run: |
+          SDK=$(xcrun --sdk macosx --show-sdk-path)
+          swiftc -typecheck -parse-as-library -sdk "$SDK" -target arm64-apple-macos13.0 \
+            -module-name PerformanceBridge \
+            Sources/OSCCodec/*.swift Sources/TotalMixOSC/*.swift Sources/RotoControl/*.swift \
+            Sources/MIDITransport/*.swift Sources/UDPTransport/*.swift Sources/SurfaceCore/*.swift \
+            Sources/RotoDriver/*.swift Sources/BridgeEngine/*.swift App/PerformanceBridge/*.swift
 
   windows:
     runs-on: windows-2022
