@@ -144,4 +144,5 @@ Don't:
 - **Claims.** Standing behavior in the present tense. Single observations as "has been observed to …". Inferences said to be inferences. Never claim more than the evidence supports.
 - **Spelling and punctuation.** The serial (Oxford) comma. "e.g.," or "for example" before parenthetical examples. American spelling throughout, in code comments and identifiers too.
 - **Words.** Plain, short words, and one term for one thing: channel, submix, mixer node, fader position, gain, strip, surface, driver.
+- **Send labels.** On a surface, a send is labeled "> " and the output's name (e.g., "> Phones"), never "to …" (Adam, 2026-10-31).
 - **Readability.** A prose paragraph longer than about eight lines is broken into paragraphs, or into a list where the parts are parallel.
