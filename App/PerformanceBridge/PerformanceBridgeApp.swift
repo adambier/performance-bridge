@@ -136,6 +136,21 @@ final class BridgeModel: ObservableObject {
         portOverrides = (port("--in-port"), port("--out-port"))
         engine = BridgeEngine(settings: Self.settings(SavedSettings.load(), overrides: portOverrides))
         start()
+        // The setup window opens by itself the first time the app runs; later, from the menu.
+        if !UserDefaults.standard.bool(forKey: Self.setupShownKey) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                guard let self else { return }
+                UserDefaults.standard.set(true, forKey: Self.setupShownKey)
+                self.showSetup()
+            }
+        }
+    }
+
+    private static let setupShownKey = "setupShown"
+
+    /// Opens the setup window.
+    func showSetup() {
+        Windows.show("setup", title: "Set Up Performance Bridge") { SetupView(model: self) }
     }
 
     /// The engine's settings from the saved settings, the command line, and the menu's choices.
@@ -212,8 +227,9 @@ struct MenuContent: View {
 
     var body: some View {
         // Short lines: a menu cuts long ones in the middle. The full reasons go to the log.
-        Text("TotalMix FX: " + totalMixState)
-        Text("Roto-Control: " + rotoState)
+        // The status lines open the setup window, which says what to do about either.
+        Button("TotalMix FX: " + totalMixState) { model.showSetup() }
+        Button("Roto-Control: " + rotoState) { model.showSetup() }
         Divider()
         Menu("Home submix") {
             ForEach(model.status.monitoringOutputs, id: \.output) { choice in
@@ -243,6 +259,7 @@ struct MenuContent: View {
         Button("Layout…") {
             Windows.show("layout", title: "Performance Bridge Layout") { LayoutView(model: model) }
         }
+        Button("Setup…") { model.showSetup() }
         Button("About Performance Bridge") {
             Windows.show("about", title: "About Performance Bridge") { AboutView() }
         }

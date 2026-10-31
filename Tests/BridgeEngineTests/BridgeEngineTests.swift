@@ -85,4 +85,97 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertTrue(engine.status.listening)
         #endif
     }
+
+    // MARK: The setup checklist
+
+    private func states(_ status: BridgeStatus) -> [String: SetupStep.State] {
+        Dictionary(uniqueKeysWithValues: SetupChecklist.steps(status: status, settings: BridgeSettings())
+            .map { ($0.id, $0.state) })
+    }
+
+    func testSetupChecklistBeforeAnything() {
+        var status = BridgeStatus()
+        status.listening = true
+        let steps = states(status)
+        XCTAssertEqual(steps["port"], .done)
+        XCTAssertEqual(steps["totalmix"], .waiting)
+        XCTAssertEqual(steps["channels"], .waiting)
+        XCTAssertEqual(steps["meters"], .optional)
+        XCTAssertEqual(steps["roto"], .waiting)
+        XCTAssertEqual(steps["hide"], .instruction)
+        XCTAssertEqual(steps["order"], .instruction)
+        XCTAssertFalse(SetupChecklist.isComplete(status))
+    }
+
+    func testSetupChecklistPortInUseIsAProblem() {
+        let steps = states(BridgeStatus())
+        XCTAssertEqual(steps["port"], .problem)
+        XCTAssertEqual(steps["totalmix"], .problem)
+    }
+
+    func testSetupChecklistWhenEverythingWorks() {
+        var status = BridgeStatus()
+        status.listening = true
+        status.totalMixAnswering = true
+        status.channelCount = 46
+        status.levelsSeen = true
+        status.rotoFound = true
+        status.rotoConnected = true
+        let steps = states(status)
+        for id in ["port", "totalmix", "channels", "meters", "roto"] { XCTAssertEqual(steps[id], .done, id) }
+        XCTAssertTrue(SetupChecklist.isComplete(status))
+    }
+
+    func testSetupChecklistNamesTheEnginesPortsAndTotalMixsLabels() throws {
+        let settings = BridgeSettings(endpoint: TotalMixEndpoint(host: "127.0.0.1", incomingPort: 7004, outgoingPort: 9004))
+        var status = BridgeStatus()
+        status.listening = true
+        let steps = SetupChecklist.steps(status: status, settings: settings)
+        let totalMix = try XCTUnwrap(steps.first { $0.id == "totalmix" })
+        XCTAssertTrue(totalMix.detail.contains("“Port (incoming)”: 7004"), totalMix.detail)
+        XCTAssertTrue(totalMix.detail.contains("“Port (outgoing)”: 9004"), totalMix.detail)
+        XCTAssertTrue(totalMix.detail.contains("Options → Mixer Settings… (F3) → OSC"), totalMix.detail)
+        XCTAssertTrue(totalMix.detail.contains("Global OSC"), totalMix.detail)
+        status.listening = false
+        let port = try XCTUnwrap(SetupChecklist.steps(status: status, settings: settings).first { $0.id == "port" })
+        XCTAssertEqual(port.title, "Port 9004 is in use")
+    }
+
+    func testSetupChecklistStatusOnlyAnswerSuggestsAskingAgain() throws {
+        var status = BridgeStatus()
+        status.listening = true
+        status.totalMixAnswering = true
+        let steps = SetupChecklist.steps(status: status, settings: BridgeSettings())
+        let channels = try XCTUnwrap(steps.first { $0.id == "channels" })
+        XCTAssertEqual(channels.state, .waiting)
+        XCTAssertTrue(channels.detail.contains("Ask TotalMix FX for its state"), channels.detail)
+    }
+
+    func testTheEngineCountsChannelsAndSeesLevels() throws {
+        #if os(Windows)
+        throw XCTSkip("No UDP sockets on Windows yet")
+        #else
+        var probe: UDPSocket? = try UDPSocket(listeningOn: 0, localOnly: true)
+        let port = try XCTUnwrap(probe?.localPort)
+        probe = nil   // closes it, leaving the port free for the engine
+        let endpoint = TotalMixEndpoint(host: "127.0.0.1", incomingPort: 9, outgoingPort: port)
+        let engine = BridgeEngine(settings: BridgeSettings(endpoint: endpoint, rotoPortName: "No such port here",
+                                                           retryInterval: 0.2))
+        engine.start()
+        defer { engine.stop() }
+        XCTAssertEqual(engine.status.channelCount, 0)
+        XCTAssertFalse(engine.status.levelsSeen)
+
+        let sender = try UDPSocket(listeningOn: 0, localOnly: true)
+        try sender.send(OSCMessage("/input/0/name", [.string("ADI-2")]).encoded(), to: "127.0.0.1", port: port)
+        try sender.send(OSCMessage("/level/in/0", [.float(-20)]).encoded(), to: "127.0.0.1", port: port)
+        let deadline = Date().addingTimeInterval(3)
+        while Date() < deadline, !(engine.status.channelCount == 1 && engine.status.levelsSeen) {
+            Thread.sleep(forTimeInterval: 0.05)
+        }
+        XCTAssertEqual(engine.status.channelCount, 1)
+        XCTAssertTrue(engine.status.levelsSeen)
+        XCTAssertTrue(engine.status.totalMixAnswering)
+        #endif
+    }
 }

@@ -19,6 +19,11 @@ notes and has not been seen in TotalMix, the step says so.
 - A Roto-Control, connected to the Mac by USB. The project has tested firmware 3.3.0.
 - The Swift toolchain (Xcode, or the Command Line Tools with Swift 5.9 or later), to run the app from source.
 
+The app has a setup window that follows these steps and checks each one live where it can: whether
+TotalMix FX answers, whether it has sent its channels, whether meters arrive, and whether the
+Roto-Control is connected. It opens by itself the first time the app runs; after that, choose
+**Setup…** from the menu, or click either status line.
+
 ## Step 1: Turn on Global OSC in TotalMix FX
 
 Steps 1 and 2 were checked on screen against two screenshots of TotalMix (Mac, 2026-10-31). The menu's

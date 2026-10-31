@@ -84,6 +84,13 @@ public struct BridgeStatus: Equatable, Sendable {
     public var listening = false
     /// Whether the Roto-Control's MIDI ports are open (it is plugged in), handshake or not.
     public var rotoFound = false
+    /// How many channels TotalMix has described (named or set) since the engine started: more than
+    /// zero once it has answered `/sendall` with its channels, not only its status.
+    public var channelCount = 0
+    /// Whether TotalMix has sent any level (meter) message since the engine started. It sends
+    /// levels only with "Send Level Data" on, and, per RME's protocol document, only when they
+    /// change, so a silent mixer may send none.
+    public var levelsSeen = false
     /// The home submix's output channel (0-based), if known.
     public var homeSubmix: Int?
     /// Whether the first playback starts a new page.
@@ -136,6 +143,7 @@ public final class BridgeEngine: @unchecked Sendable {
     private var ticker: Thread?
     private var running = false
     private var lastFromTotalMix: Double?
+    private var levelsSeen = false
     private var totalMixWasAnswering = false
     private var lastStatus = BridgeStatus()
     private var socketError: String?
@@ -361,6 +369,7 @@ public final class BridgeEngine: @unchecked Sendable {
         lastFromTotalMix = now
         for message in packet.messages {
             guard let event = TotalMixEvent(message) else { continue }
+            if case .level = event { levelsSeen = true }
             dispatch(hub.handle(event, now: now))
         }
         lock.unlock()
@@ -417,6 +426,8 @@ public final class BridgeEngine: @unchecked Sendable {
         status.rotoConnected = driver.isConnected
         status.listening = socket != nil
         status.rotoFound = midi != nil
+        status.channelCount = hub.mirror.channels.count
+        status.levelsSeen = levelsSeen
         status.homeSubmix = hub.homeSubmix
         status.playbacksOnNewPage = hub.layout.playbacksOnNewPage
         status.monitoringOutputs = Self.monitoringChoices(hub.mirror)
