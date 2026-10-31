@@ -483,16 +483,17 @@ public struct RotoDriver: Sendable {
     /// schemes are matched by eye on the Roto-Control's screens to the colors TotalMix draws ("pink"
     /// is drawn purple), because the screens show some of the SysEx doc's table colors differently:
     /// darker reds and oranges look brown, and purples look royal blue (docs/ROTO-CONTROL.md,
-    /// test 4). White is TotalMix's default and is drawn without a color. Exact colors (SET TRACK
-    /// COLOUR) are not used: they have been observed to stay on a screen when the page changes.
+    /// test 4). White is TotalMix's default; it is drawn as light grey (27, chosen by Adam from the
+    /// neutral greys, run 24). Exact colors (SET TRACK COLOUR) are not used: they have been
+    /// observed to show only on the first page and to stay on a screen when the page changes.
     public static let schemeForTotalMixColor: [Int: UInt8] = [
-        1: 13,  // white (default)
+        1: 27,  // white (default), drawn light grey
         2: 49,  // grey
         3: 1,   // orange
         4: 14,  // red
         5: 9,   // blue
         6: 19,  // green, drawn lime
-        7: 73,  // yellow, drawn yellow-orange (73 is a little too green; nothing in the table is closer)
+        7: 73,  // yellow, drawn yellow-orange (73 is too green, "banana"; nothing in the table is closer, run 23)
         8: 67,  // pink, drawn purple
     ]
 

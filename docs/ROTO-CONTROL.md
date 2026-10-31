@@ -460,3 +460,5 @@ marked "seen".
   MIT), which is a quicker guide than the SysEx doc's table to which schemes to try. By it, the
   neutral greys are 13 (white), 27, 41, 55, and 69 (darkest), with 70 black; 49, used for
   TotalMix's grey, is a bluish grey. How each looks on the screens still has to be seen.
+- **White** (run 24, seen): side by side, 13, 27, 41, 55, 69, and 49; TotalMix's default white is
+  drawn as 27 (light grey). Schemes 2 and 30 were no better than 73 for yellow.
