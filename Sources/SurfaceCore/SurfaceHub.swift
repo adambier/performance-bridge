@@ -51,7 +51,7 @@ public struct SurfaceHub: Sendable {
     public var sendTargets: [Int] {
         let home = homeSubmix
         let monitoring = mirror.monitoringOutputs
-        return layout.channels(.outputs, in: mirror, includingHidden: true).map(\.channel)
+        return layout.channels(.outputs, in: mirror).map(\.channel)
             .filter { $0 != home && !monitoring.contains($0) }
     }
 

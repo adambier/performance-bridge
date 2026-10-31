@@ -51,21 +51,22 @@ title is not in the screenshot, so the top-level menu is not checked.
 
 ## Step 2: Choose which channels the remote sees
 
-Channels that TotalMix hides from the OSC remote are not shown on any surface, and the app does not show
-them greyed out. Checked on screen (Adam, 2026-10-31) unless marked otherwise:
+Channels are hidden only in TotalMix FX, and the app has no setting for hiding. A channel hidden from an OSC
+controller in TotalMix is not shown on any surface, and the app does not show it greyed out. Checked on screen
+(Adam, 2026-10-31) unless marked otherwise:
 
 1. Open the Channel Layout window. Right-click a channel's strip in TotalMix's main window and choose
    "Change Channel Layout", or choose Options → Channel Layout…. The window has tabs for Inputs, Playbacks,
    and Outputs.
-2. Select the channel's row in the table. Under "Hide Channel in", the group lists "Mixer/Matrix",
-   "MIDI Controller 1–4", and "OSC Controller 1–4". Check the box for the OSC controller the app uses to hide the
-   channel from it. The screenshot shows every box clear for the selected channel. What a checked box does has
-   not been seen on screen.
+2. Select the channel's row in the table. Under "Hide Channel in", check "OSC Controller 1" for the controller
+   the app uses (the app's default). Hiding from one controller does not affect the others, or Mixer/Matrix.
+   The text next to the group says it hides the channel in the selected OSC controller. What a checked box
+   does to the app has not been seen on screen.
 3. The table's "Remote Controller" column lists M1–M4 and O1–O4 for each channel. What that column shows
    for a hidden channel has not been checked.
 
-To hide a channel only in the app, use the layout editor instead (Step 5). That does not change TotalMix.
-Whether TotalMix's hidden channels change the channel numbers the app receives has not been tested.
+Reordering is done in the app (Step 5). It does not change what TotalMix sends. Whether TotalMix's hidden
+channels change the channel numbers the app receives has not been tested.
 
 ## Step 3: Connect the Roto-Control
 
@@ -107,8 +108,8 @@ Choose **Layout…** from the menu.
 
 - The **Sources** and **Outputs** buttons switch between the two views.
 - Drag a channel to change its place on the surfaces. TotalMix cannot reorder its channels; the app can.
-- Clear a channel's checkbox to take it off the surfaces. It stays a send target and a home submix choice.
-- The note at the bottom repeats the rule for channels hidden in TotalMix (Step 2).
+- To take a channel off the surfaces, hide it in TotalMix (Step 2). The layout has no hide setting of its own.
+- The note at the bottom repeats the rule for channels hidden in TotalMix.
 
 ## Step 6: Choose the home submix
 
@@ -125,8 +126,8 @@ The home submix is the output the surfaces' levels and pans go into. Choose it f
 - **TotalMix FX: no answer.** Check that Global OSC is on and that the ports in Settings match TotalMix's
   (Step 1). Then choose **Ask TotalMix FX for its state**.
 - **Roto-Control: not found.** Check the cable, and the MIDI port name in Settings (Step 3).
-- **A channel is missing from the surfaces.** Check the layout (Step 5), and whether TotalMix hides it from
-  the OSC remote (Step 2). The layout note explains.
+- **A channel is missing from the surfaces.** Check whether TotalMix hides it from the OSC controller the app uses
+  (Step 2).
 
 ## Reporting a problem
 

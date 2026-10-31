@@ -1,6 +1,6 @@
-// The layout editor: the order of the sources and outputs on the surfaces, and which channels the
-// app takes off them. Channels hidden from this OSC remote in TotalMix are not listed, since the
-// app cannot see them.
+// The layout editor: the order of the sources and outputs on the surfaces. Channels are hidden only
+// in TotalMix FX, per OSC controller, so the editor has no hide setting. Channels hidden from this
+// OSC remote in TotalMix are not listed, since the app cannot see them.
 
 import SwiftUI
 #if canImport(SurfaceCore)
@@ -28,11 +28,7 @@ struct LayoutView: View {
 
             List {
                 ForEach(items, id: \.channel) { item in
-                    Toggle(item.name, isOn: Binding(
-                        get: { !item.hidden },
-                        set: { shown in
-                            model.engine.setLayout(model.engine.layout.settingHidden(item.channel, !shown))
-                        }))
+                    Text(item.name)
                 }
                 .onMove { source, destination in
                     items.move(fromOffsets: source, toOffset: destination)
@@ -45,7 +41,7 @@ struct LayoutView: View {
                 Text(view == .outputs
                      ? "Monitoring outputs (Main Out, Phones, and so on) always come first. Drag to order the sends."
                      : "Drag to change the order. TotalMix can't reorder its channels; this can.")
-                Text("Channels hidden from OSC in TotalMix are not shown here or on any surface. To show one, right-click the channel in TotalMix FX, choose Change Channel Layout, and clear the OSC Controller box that Performance Bridge uses under \u{201C}Hide Channel in.\u{201D}")
+                Text("Channels are hidden in TotalMix FX, not here: right-click the channel, choose Change Channel Layout, and check the OSC Controller box under \u{201C}Hide Channel in.\u{201D} Channels hidden from OSC in TotalMix are not shown here or on any surface.")
             }
             .font(.caption)
             .foregroundStyle(.secondary)
