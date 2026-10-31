@@ -115,23 +115,32 @@ public final class BridgeEngine: @unchecked Sendable {
     private var now: Double { Date().timeIntervalSince(startDate) }
 
     /// Opens the UDP socket and the MIDI ports, asks TotalMix for its state, and starts the
-    /// Roto-Control's handshake and the clock. Throws if a socket or port can't be opened.
+    /// Roto-Control's handshake and the clock. Throws if the UDP socket can't be opened (for
+    /// example, because another program, such as `sbdev bridge`, has TotalMix's outgoing port). A
+    /// Roto-Control that can't be found is not fatal: TotalMix still connects, and `status.error`
+    /// says why the Roto-Control didn't.
     public func start() throws {
         lock.lock()
         guard !running else { lock.unlock(); return }
         do {
             socket = try UDPSocket(listeningOn: settings.endpoint.outgoingPort)
+        } catch {
+            lastStatus.error = "Can't listen on port \(settings.endpoint.outgoingPort): \(error)"
+            let message = lastStatus.error ?? ""
+            lock.unlock()
+            log(message)
+            onStatus?(lastStatus)
+            throw error
+        }
+        var midiError: String?
+        do {
             midi = try MIDIConnection(clientName: "Performance Bridge", sourceName: settings.rotoPortName,
                                       destinationName: settings.rotoPortName) { [weak self] bytes in
                 self?.fromRoto(bytes)
             }
         } catch {
-            socket?.stop()
-            socket = nil
-            lastStatus.error = "\(error)"
-            lock.unlock()
-            onStatus?(lastStatus)
-            throw error
+            midiError = "Roto-Control not found (\(error))"
+            lastStatus.error = midiError
         }
         running = true
         socket?.startReceiving { [weak self] bytes, _ in self?.fromTotalMix(bytes) }
@@ -154,7 +163,8 @@ public final class BridgeEngine: @unchecked Sendable {
         ticker = thread
         thread.start()
         lock.unlock()
-        log("Started: TotalMix at \(settings.endpoint.host), ports \(settings.endpoint.incomingPort) and \(settings.endpoint.outgoingPort)")
+        log("Started: TotalMix at \(settings.endpoint.host), sending to port \(settings.endpoint.incomingPort), listening on \(settings.endpoint.outgoingPort)")
+        if let midiError { log(midiError) }
         publishStatus()
     }
 
@@ -304,10 +314,18 @@ public final class BridgeEngine: @unchecked Sendable {
     private func publishStatusIfChanged() {
         lock.lock()
         let status = makeStatus()
-        let changed = status != lastStatus
+        let previous = lastStatus
+        let changed = status != previous
         if changed { lastStatus = status }
         lock.unlock()
-        if changed { onStatus?(status) }
+        guard changed else { return }
+        if status.totalMixAnswering != previous.totalMixAnswering {
+            log(status.totalMixAnswering ? "TotalMix is answering" : "No answer from TotalMix for \(Int(Self.totalMixTimeout)) s")
+        }
+        if status.rotoConnected != previous.rotoConnected {
+            log(status.rotoConnected ? "Roto-Control connected" : "Roto-Control disconnected")
+        }
+        onStatus?(status)
     }
 
     private func log(_ text: String) {

@@ -59,6 +59,11 @@ final class BridgeModel: ObservableObject {
         if let port = port("--out-port") { settings.endpoint.outgoingPort = port }
         settings.playbacksOnNewPage = UserDefaults.standard.bool(forKey: "playbacksOnNewPage")
         engine = BridgeEngine(settings: settings)
+        // For now the log goes to the Terminal the app was started from.
+        engine.onLog = { line in
+            print(line)
+            fflush(stdout)
+        }
         engine.onStatus = { [weak self] status in
             Task { @MainActor in self?.status = status }
         }
