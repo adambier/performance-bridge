@@ -4,7 +4,9 @@
 
 import AppKit
 import SwiftUI
+#if canImport(TotalMixOSC)
 import TotalMixOSC
+#endif
 
 /// Opens the app's windows, one of each, bringing the app forward (a menu-bar app is otherwise in
 /// the background).

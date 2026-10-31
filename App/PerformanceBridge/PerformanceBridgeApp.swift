@@ -6,9 +6,15 @@
 
 import AppKit
 import SwiftUI
+#if canImport(BridgeEngine)
 import BridgeEngine
+#endif
+#if canImport(TotalMixOSC)
 import TotalMixOSC
+#endif
+#if canImport(SurfaceCore)
 import SurfaceCore
+#endif
 
 @main
 struct PerformanceBridgeApp: App {
@@ -32,11 +38,21 @@ struct PerformanceBridgeApp: App {
 /// The app's look: the icon's amber as its accent color, and the menu-bar glyph (a one-color
 /// template image from Design/AppIcon, which macOS colors to suit the menu bar).
 enum Brand {
+    /// The app's resources: the package's resource bundle under `swift run`, the app bundle when
+    /// make-app.sh builds everything as one module.
+    static var resources: Bundle {
+        #if SWIFT_PACKAGE
+        return Bundle.module
+        #else
+        return Bundle.main
+        #endif
+    }
+
     static let amber = Color(red: 1, green: 0xB1 / 255.0, blue: 0x3D / 255.0)
 
     /// The app icon at 128 points (the 128 and 256 px art from Design/AppIcon), for the About
     /// window.
-    static let appIcon: NSImage = Bundle.module.image(forResource: "AppIcon") ?? NSApplication.shared.applicationIconImage
+    static let appIcon: NSImage = resources.image(forResource: "AppIcon") ?? NSApplication.shared.applicationIconImage
 
     /// "Version 1.0 (12)" from the app bundle, or "Development build" when run with `swift run`.
     static let version: String = {
@@ -47,7 +63,7 @@ enum Brand {
     }()
 
     static let menuBarImage: NSImage = {
-        let image = Bundle.module.image(forResource: "MenuBarIcon")
+        let image = resources.image(forResource: "MenuBarIcon")
             ?? NSImage(systemSymbolName: "slider.horizontal.3", accessibilityDescription: "Performance Bridge")
             ?? NSImage()
         image.isTemplate = true

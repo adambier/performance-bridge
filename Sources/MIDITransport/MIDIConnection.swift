@@ -131,7 +131,8 @@ public final class MIDIConnection: @unchecked Sendable {
 
     /// Whether the source and destination are still in the system's lists and online. When a device
     /// is unplugged, CoreMIDI may mark its endpoints offline or leave them out of the lists (an
-    /// inference, not yet tested with the Roto-Control), so both are checked.
+    /// inference), so both are checked. Unplugging the Roto-Control has been observed to make this
+    /// false (2026-10-31); which of the two checks caught it is not known.
     public var isAvailable: Bool {
         Self.isOnline(sourceRef, among: (0..<MIDIGetNumberOfSources()).map { MIDIGetSource($0) })
             && Self.isOnline(destinationRef, among: (0..<MIDIGetNumberOfDestinations()).map { MIDIGetDestination($0) })
