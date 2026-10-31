@@ -399,11 +399,13 @@ public final class BridgeEngine: @unchecked Sendable {
         }
     }
 
-    /// The outputs of a mirror that are not monitoring outputs, in the layout's order, leaving out
-    /// those hidden from this OSC remote in TotalMix.
+    /// The outputs of a mirror that are not monitoring outputs, in the layout's order. Outputs hidden
+    /// from this OSC remote in TotalMix are left out; outputs the app hides are kept, since they can
+    /// still be the home submix.
     public static func otherChoices(_ mirror: MixerMirror, layout: PerformanceLayout) -> [HomeChoice] {
         let monitoring = mirror.monitoringOutputs
-        return layout.channels(.outputs, in: mirror).map(\.channel).filter { !monitoring.contains($0) }.map { output in
+        return layout.channels(.outputs, in: mirror, includingHidden: true).map(\.channel)
+            .filter { !monitoring.contains($0) }.map { output in
             let name = mirror.channels[ChannelRef(.output, output)]?.name ?? "Output \(output + 1)"
             return HomeChoice(output: output, name: name, roles: [])
         }

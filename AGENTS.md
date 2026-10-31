@@ -51,7 +51,7 @@ small driver of its own.
 
   Around the strips:
   - two views: sources (inputs and playbacks) and outputs (the assigned monitoring outputs first, then the sends; a monitoring role with nothing assigned shows no strip);
-  - a performance layout, chosen in the app: the order of each view (which TotalMix can't change) and whether the first playback starts a new page (blank strips after the inputs); channels it doesn't place yet follow in TotalMix's order. Which channels appear is set only in TotalMix (Channel Layout, hidden from this OSC remote), under the rule in section 4;
+  - a performance layout, chosen in the app: the order of each view (which TotalMix can't change) and whether the first playback starts a new page (blank strips after the inputs); channels it doesn't place yet follow in TotalMix's order; the app can also hide a channel from a surface's strips, but it stays a send target and a home submix choice. Which channels TotalMix hides from this OSC remote (Options → Channel Layout) are set only in TotalMix, under the rule in section 4;
   - monitoring outputs and sends: the outputs the control room assigns to Main Out, Main Out B, Phones 1–4, and cue are monitoring outputs; every other output TotalMix doesn't hide is a send;
   - the home submix (Main Out unless the app chooses another monitoring output, or, with "Show all outputs", any output), which source levels and pans go into; send knobs reach only the sends. Main Out is followed, not fixed: when Main Out is reassigned in TotalMix's control room, the home moves with it (the app's menu says so); any other choice stays on its output;
   - paging, and a focus mode (one source across all submixes);

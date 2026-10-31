@@ -107,6 +107,16 @@ final class LayoutTests: XCTestCase {
         XCTAssertEqual(PerformanceLayout().unplaced(.sources, in: mirror), [], "with no chosen order nothing is new")
     }
 
+    func testAppHiddenStripsLeaveTheSurfaceButStayTargets() {
+        var hub = loadedHub(mode: .strips(view: .sources, first: 0, knob: .send(0), switch: .mute))
+        XCTAssertEqual(hub.sendTargets, [2])
+        _ = hub.setLayout(PerformanceLayout(hidden: [ChannelRef(.output, 2)]), now: 1)
+        XCTAssertEqual(hub.sendTargets, [2], "a strip the app hides is still a send knob target")
+        XCTAssertFalse(hub.layout.channels(.outputs, in: hub.mirror).contains(ChannelRef(.output, 2)))
+        XCTAssertTrue(hub.layout.channels(.outputs, in: hub.mirror, includingHidden: true).contains(ChannelRef(.output, 2)))
+        XCTAssertEqual(hub.layout.unplaced(.outputs, in: hub.mirror), [], "hidden channels are not new")
+    }
+
     func testChannelsHiddenInTotalMixStayOutEvenWhenOrdered() {
         var mirror = MixerMirror()
         for event in setupEvents() { mirror.apply(event) }
@@ -127,12 +137,10 @@ final class LayoutTests: XCTestCase {
     }
 
     func testLayoutRoundTripsThroughJSON() throws {
-        let layout = PerformanceLayout(sourceOrder: [ChannelRef(.input, 3)], outputOrder: [ChannelRef(.output, 2)])
+        let layout = PerformanceLayout(sourceOrder: [ChannelRef(.input, 3)], outputOrder: [ChannelRef(.output, 2)],
+                                       hidden: [ChannelRef(.output, 4)])
         let data = try JSONEncoder().encode(layout)
         XCTAssertEqual(try JSONDecoder().decode(PerformanceLayout.self, from: data), layout)
-        let old = Data("{\"sourceOrder\":[],\"hidden\":[]}".utf8)
-        XCTAssertEqual(try JSONDecoder().decode(PerformanceLayout.self, from: old), PerformanceLayout(),
-                       "an older layout's hidden list is ignored")
         XCTAssertEqual(try JSONDecoder().decode(PerformanceLayout.self, from: Data("{}".utf8)), PerformanceLayout(),
                        "missing fields load as empty")
     }
