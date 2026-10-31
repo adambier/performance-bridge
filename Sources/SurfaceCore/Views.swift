@@ -5,41 +5,96 @@ import TotalMixOSC
 
 /// Which channels a surface's strips walk through.
 public enum ViewKind: Hashable, Codable, Sendable {
-    /// Inputs, then playbacks: the channels whose levels go into submixes.
+    /// Inputs and playbacks: the channels whose levels go into submixes.
     case sources
-    /// Outputs: the submixes' own faders.
+    /// Outputs: their own faders, monitoring outputs first, then sends.
     case outputs
 }
 
-/// The channels a performance uses, and their order, chosen in the app. A `nil` list means every
-/// channel TotalMix shows this OSC remote, in TotalMix's order.
+/// The order of the channels, and which ones a performance leaves out, as chosen in the app.
+/// TotalMix cannot reorder its channels; this can, in any order (playbacks among inputs, for
+/// example).
+///
+/// For each view, the strips show:
+/// 1. the channels in the chosen order, in that order;
+/// 2. then any other channel, in TotalMix's order: one not yet placed, such as a channel just
+///    unhidden in TotalMix or one of a different interface, so that none goes missing;
+/// 3. but never a channel the layout hides, or one TotalMix hides from this OSC remote.
+///
+/// In the outputs view the assigned monitoring outputs always come before the sends; the chosen
+/// order applies within each group. With no chosen order, the monitoring outputs follow the order
+/// of `MonitoringRole` (Main Out, Main Out B, Phones 1–4, cue).
 public struct PerformanceLayout: Hashable, Codable, Sendable {
-    /// The sources (inputs and playbacks) on the strips, in order; `nil` for all of them.
-    public var sources: [ChannelRef]?
-    /// The outputs on the strips and as send targets, in order; `nil` for all of them.
-    public var outputs: [ChannelRef]?
+    /// The sources (inputs and playbacks), in the order chosen; empty for TotalMix's order.
+    public var sourceOrder: [ChannelRef]
+    /// The outputs, in the order chosen; empty for TotalMix's order.
+    public var outputOrder: [ChannelRef]
+    /// Channels the performance leaves out, of either view.
+    public var hidden: Set<ChannelRef>
 
-    /// A layout; the default shows every channel.
-    public init(sources: [ChannelRef]? = nil, outputs: [ChannelRef]? = nil) {
-        self.sources = sources
-        self.outputs = outputs
+    /// A layout; the default shows every channel in TotalMix's order.
+    public init(sourceOrder: [ChannelRef] = [], outputOrder: [ChannelRef] = [], hidden: Set<ChannelRef> = []) {
+        self.sourceOrder = sourceOrder
+        self.outputOrder = outputOrder
+        self.hidden = hidden
     }
 
-    /// The channels of a view, as the strips show them. A chosen list keeps its order, minus
-    /// channels TotalMix hides from this OSC remote and outputs listed under sources (or the
-    /// reverse).
+    private enum CodingKeys: String, CodingKey {
+        case sourceOrder, outputOrder, hidden
+    }
+
+    /// Reads a saved layout; a missing field is empty, so layouts saved by older versions still load.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        sourceOrder = try container.decodeIfPresent([ChannelRef].self, forKey: .sourceOrder) ?? []
+        outputOrder = try container.decodeIfPresent([ChannelRef].self, forKey: .outputOrder) ?? []
+        hidden = try container.decodeIfPresent(Set<ChannelRef>.self, forKey: .hidden) ?? []
+    }
+
+    /// The channels of a view, as the strips show them (see the type's description).
     public func channels(_ view: ViewKind, in mirror: MixerMirror) -> [ChannelRef] {
         switch view {
         case .sources:
-            if let sources {
-                return sources.filter { $0.isSource && mirror.channels[$0]?.isHidden != true }
-            }
-            return mirror.visibleChannels(.input) + mirror.visibleChannels(.playback)
+            let available = mirror.visibleChannels(.input) + mirror.visibleChannels(.playback)
+            return arrange(available, sourceOrder)
         case .outputs:
-            if let outputs {
-                return outputs.filter { !$0.isSource && mirror.channels[$0]?.isHidden != true }
+            let available = mirror.visibleChannels(.output)
+            var monitoring: [ChannelRef] = []
+            for role in MonitoringRole.allCases {
+                guard let output = mirror.monitoring[role] else { continue }
+                let ref = ChannelRef(.output, output)
+                if available.contains(ref) && !monitoring.contains(ref) { monitoring.append(ref) }
             }
-            return mirror.visibleChannels(.output)
+            let arranged = arrange(available, outputOrder)
+            if outputOrder.isEmpty {
+                return monitoring.filter { !hidden.contains($0) } + arranged.filter { !monitoring.contains($0) }
+            }
+            return arranged.filter { monitoring.contains($0) } + arranged.filter { !monitoring.contains($0) }
         }
+    }
+
+    /// The channels of a view that the chosen order does not place yet (new to the layout), in
+    /// TotalMix's order, for the app to point out. Hidden channels are not counted.
+    public func unplaced(_ view: ViewKind, in mirror: MixerMirror) -> [ChannelRef] {
+        let order = view == .sources ? sourceOrder : outputOrder
+        guard !order.isEmpty else { return [] }
+        let available = view == .sources
+            ? mirror.visibleChannels(.input) + mirror.visibleChannels(.playback)
+            : mirror.visibleChannels(.output)
+        return available.filter { !order.contains($0) && !hidden.contains($0) }
+    }
+
+    /// The chosen order's available channels, then the rest in TotalMix's order, minus hidden ones.
+    private func arrange(_ available: [ChannelRef], _ order: [ChannelRef]) -> [ChannelRef] {
+        let availableSet = Set(available)
+        var seen: Set<ChannelRef> = []
+        var result: [ChannelRef] = []
+        for ref in order where availableSet.contains(ref) && !hidden.contains(ref) && seen.insert(ref).inserted {
+            result.append(ref)
+        }
+        for ref in available where !hidden.contains(ref) && !seen.contains(ref) {
+            result.append(ref)
+        }
+        return result
     }
 }

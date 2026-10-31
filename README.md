@@ -1,6 +1,6 @@
-# totalmix-surface-tools
+# Performance Bridge
 
-**Surface Bridge** will be a macOS app that connects hardware control surfaces to RME TotalMix FX
+**Performance Bridge** will be a macOS app that connects hardware control surfaces to RME TotalMix FX
 through TotalMix's Global OSC interface. With it, the knobs, faders, buttons, and displays of a
 surface show and control TotalMix's mixer, in both directions.
 
@@ -20,16 +20,18 @@ This project is in early development, and there is no app yet. What exists:
 - **`OSCCodec`**: OSC 1.0 messages and bundles, encoded and decoded.
 - **`TotalMixOSC`**: TotalMix's Global OSC addresses, the values TotalMix sends and accepts, and the curve between a fader's position and its gain.
 - **`RotoControl`**: the Roto-Control's MIDI protocol: its SysEx messages, its knobs, switches, and meters, and the handshake that connects it to a host. Tested against a Roto-Control (`docs/ROTO-CONTROL.md`, section 9).
-- **`SurfaceCore`**: the surface-neutral core. It keeps a copy of TotalMix's state and maps it onto any surface's strips: sources (inputs and playbacks) or outputs, levels into a chosen home submix, pans, sends, mute, PFL, and meters, with paging and a single-channel focus mode. It keeps TotalMix from moving a control in the user's hand, and makes faders without motors pick up. Tested on its own; no surface driver uses it yet.
+- **`SurfaceCore`**: the surface-neutral core. It keeps a copy of TotalMix's state and maps it onto any surface's strips: sources (inputs and playbacks) or outputs, levels into a chosen home submix, pans, sends, mute, PFL, and meters, with paging and a single-channel focus mode. It keeps TotalMix from moving a control in the user's hand, and makes faders without motors pick up. Tested on its own.
+- **`RotoDriver`**: the Roto-Control's driver on top of `SurfaceCore`, for its MIX mode: inputs and playbacks on the main track set and outputs on the second (monitoring outputs, such as Main Out and the phones, first and in green; then sends, in blue), level, pan, and send knob modes, mute, PFL (on the solo switches), single-track pages, names, colors, lights, and meters. Tested on its own; not yet tried on the hardware.
 - **`MIDITransport`**: a MIDI connection through CoreMIDI, on macOS.
 - **`UDPTransport`**: a small UDP socket, on macOS and Linux.
-- **`sbdev`**: a developer tool that prints what TotalMix sends and sends single messages to it, and that talks to a Roto-Control.
+- **`sbdev`**: a developer tool that prints what TotalMix sends and sends single messages to it, talks to a Roto-Control, and (`sbdev bridge`) runs the core and the Roto-Control driver between the two.
 
 ## Planned
 
-- **The Roto-Control.** Melbourne Instruments' Roto-Control comes first, driven through its published SysEx API. Its eight motorized knobs follow TotalMix.
+- **The Roto-Control.** Melbourne Instruments' Roto-Control comes first, driven through its published SysEx API. Its eight motorized knobs follow TotalMix. After MIX mode, its PLUGIN mode, for the parts of TotalMix that MIX mode can't reach.
 - **The Launch Control XL 3.** Novation's Launch Control XL 3 comes second, in its DAW mode. Its faders are not motorized, so they pick up TotalMix's values.
 - **The app.** A macOS app (macOS 13 or later) with in-app updates.
+- **Later: a DAW connection.** Arming tracks and driving the transport in a DAW from the surface, starting with Logic Pro and Bitwig Studio.
 
 ## Requirements
 

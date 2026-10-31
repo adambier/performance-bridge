@@ -71,6 +71,16 @@ public enum SurfaceMode: Hashable, Sendable {
     public static let standard = SurfaceMode.strips(view: .sources, first: 0, knob: .level, switch: .mute)
 }
 
+/// What kind of channel a strip shows.
+public enum StripKind: Hashable, Sendable {
+    /// An input or a playback.
+    case source
+    /// An output assigned to a monitoring role in the control room (`MonitoringRole`).
+    case monitoring
+    /// Any other output: a feed to other hardware.
+    case send
+}
+
 /// What one strip shows, apart from its values.
 public struct StripInfo: Hashable, Sendable {
     /// The channel on the strip.
@@ -81,6 +91,8 @@ public struct StripInfo: Hashable, Sendable {
     public var color: Int?
     /// Whether the channel is a stereo pair.
     public var stereo: Bool
+    /// Whether the channel is a source, a monitoring output, or a send.
+    public var kind: StripKind
     /// What the knob does, in a few words: the submix's name for a level or send, "Pan" for a pan.
     /// Empty when the knob does nothing.
     public var knobLabel: String
@@ -88,11 +100,13 @@ public struct StripInfo: Hashable, Sendable {
     public var switchLabel: String
 
     /// A strip's description.
-    public init(channel: ChannelRef, name: String, color: Int?, stereo: Bool, knobLabel: String, switchLabel: String) {
+    public init(channel: ChannelRef, name: String, color: Int?, stereo: Bool, kind: StripKind,
+                knobLabel: String, switchLabel: String) {
         self.channel = channel
         self.name = name
         self.color = color
         self.stereo = stereo
+        self.kind = kind
         self.knobLabel = knobLabel
         self.switchLabel = switchLabel
     }

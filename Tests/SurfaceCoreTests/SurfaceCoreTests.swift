@@ -95,19 +95,43 @@ final class LayoutTests: XCTestCase {
         XCTAssertEqual(sources, [ChannelRef(.input, 0), ChannelRef(.input, 2), ChannelRef(.input, 3), ChannelRef(.playback, 0)])
     }
 
-    func testChosenOrderSkipsHiddenAndWrongRow() {
+    func testChosenOrderThenNewChannels() {
         var mirror = MixerMirror()
         for event in setupEvents() { mirror.apply(event) }
-        let layout = PerformanceLayout(sources: [ChannelRef(.playback, 0), ChannelRef(.input, 2), ChannelRef(.output, 0)],
-                                       outputs: [ChannelRef(.output, 4), ChannelRef(.output, 2)])
-        XCTAssertEqual(layout.channels(.sources, in: mirror), [ChannelRef(.playback, 0), ChannelRef(.input, 2)])
-        XCTAssertEqual(layout.channels(.outputs, in: mirror), [ChannelRef(.output, 2)])
+        let layout = PerformanceLayout(sourceOrder: [ChannelRef(.playback, 0), ChannelRef(.input, 2), ChannelRef(.output, 0),
+                                                     ChannelRef(.input, 9)])
+        XCTAssertEqual(layout.channels(.sources, in: mirror),
+                       [ChannelRef(.playback, 0), ChannelRef(.input, 2), ChannelRef(.input, 0), ChannelRef(.input, 3)],
+                       "the playback first, then Vox; the rest follow in TotalMix's order; outputs and missing channels are ignored")
+        XCTAssertEqual(layout.unplaced(.sources, in: mirror), [ChannelRef(.input, 0), ChannelRef(.input, 3)])
+        XCTAssertEqual(PerformanceLayout().unplaced(.sources, in: mirror), [], "with no chosen order nothing is new")
+    }
+
+    func testHiddenChannelsStayOut() {
+        var mirror = MixerMirror()
+        for event in setupEvents() { mirror.apply(event) }
+        let layout = PerformanceLayout(sourceOrder: [ChannelRef(.input, 3)], hidden: [ChannelRef(.input, 0), ChannelRef(.output, 2)])
+        XCTAssertEqual(layout.channels(.sources, in: mirror), [ChannelRef(.input, 3), ChannelRef(.input, 2), ChannelRef(.playback, 0)])
+        XCTAssertEqual(layout.unplaced(.sources, in: mirror), [ChannelRef(.input, 2), ChannelRef(.playback, 0)])
+        XCTAssertEqual(layout.channels(.outputs, in: mirror), [ChannelRef(.output, 0)])
+    }
+
+    func testOutputOrderKeepsMonitoringFirst() {
+        var mirror = MixerMirror()
+        for event in setupEvents() { mirror.apply(event) }
+        mirror.apply(.channel(bus: .output, channel: 6, parameter: "color", value: .number(1)))
+        mirror.apply(.other(path: "controlroom/phones1", value: .number(6)))
+        let layout = PerformanceLayout(outputOrder: [ChannelRef(.output, 2), ChannelRef(.output, 6), ChannelRef(.output, 0)])
+        XCTAssertEqual(layout.channels(.outputs, in: mirror), [ChannelRef(.output, 6), ChannelRef(.output, 0), ChannelRef(.output, 2)],
+                       "monitoring outputs (Phones 1, Main) first in the chosen order, then the send")
     }
 
     func testLayoutRoundTripsThroughJSON() throws {
-        let layout = PerformanceLayout(sources: [ChannelRef(.input, 3)], outputs: nil)
+        let layout = PerformanceLayout(sourceOrder: [ChannelRef(.input, 3)], hidden: [ChannelRef(.output, 4)])
         let data = try JSONEncoder().encode(layout)
         XCTAssertEqual(try JSONDecoder().decode(PerformanceLayout.self, from: data), layout)
+        XCTAssertEqual(try JSONDecoder().decode(PerformanceLayout.self, from: Data("{}".utf8)), PerformanceLayout(),
+                       "missing fields load as empty")
     }
 }
 
@@ -225,10 +249,50 @@ final class SurfaceHubTests: XCTestCase {
         var hub = loadedHub()
         let output = hub.setHomeSubmix(2, now: 1)
         XCTAssertEqual(hub.strips(of: roto)?[1].knobTarget, .level(ChannelRef(.input, 2), submix: 2))
-        XCTAssertEqual(hub.sendTargets, [0])
+        XCTAssertEqual(hub.sendTargets, [], "Main Out is a monitoring output, so never a send")
         XCTAssertTrue(output.updates[roto]?.contains(.knob(index: 1, value: 0.5)) ?? false)
         _ = hub.setHomeSubmix(nil, now: 2)
         XCTAssertEqual(hub.homeSubmix, 0, "back to following Main Out")
+    }
+
+    func testMonitoringOutputsAreNotSends() {
+        var hub = loadedHub(mode: .strips(view: .sources, first: 0, knob: .send(0), switch: .mute))
+        let events: [TotalMixEvent] = [
+            .channel(bus: .output, channel: 6, parameter: "stereo", value: .number(1)),
+            .channel(bus: .output, channel: 6, parameter: "name", value: .text("Reverb")),
+            .channel(bus: .output, channel: 6, parameter: "color", value: .number(1)),
+            .other(path: "controlroom/phones1", value: .number(2)),
+        ]
+        for event in events { _ = hub.handle(event, now: 1) }
+        XCTAssertEqual(hub.mirror.monitoringOutputs, [0, 2])
+        XCTAssertEqual(hub.sendTargets, [6], "Main and Phones 1 are monitoring; output 7/8 is a send")
+        XCTAssertEqual(hub.strips(of: roto)?[0].knobTarget, .level(ChannelRef(.input, 0), submix: 6))
+        _ = hub.setHomeSubmix(2, now: 2)
+        XCTAssertEqual(hub.sendTargets, [6], "switching the home submix between monitoring outputs leaves the sends alone")
+        _ = hub.handle(.other(path: "controlroom/phones1", value: .number(-1)), now: 3)
+        _ = hub.handle(.other(path: "controlroom/cuechan", value: .number(6)), now: 3)
+        XCTAssertEqual(hub.sendTargets, [], "output 3/4 is now the home submix and 7/8 the cue output")
+    }
+
+    func testOutputsViewPutsMonitoringFirst() {
+        var hub = loadedHub(mode: .strips(view: .outputs, first: 0, knob: .level, switch: .mute))
+        let events: [TotalMixEvent] = [
+            .channel(bus: .output, channel: 6, parameter: "stereo", value: .number(1)),
+            .channel(bus: .output, channel: 6, parameter: "name", value: .text("Phones")),
+            .channel(bus: .output, channel: 6, parameter: "color", value: .number(1)),
+            .other(path: "controlroom/phones1", value: .number(6)),
+            .other(path: "controlroom/cuechan", value: .number(4)),
+        ]
+        for event in events { _ = hub.handle(event, now: 1) }
+        let strips = hub.strips(of: roto) ?? []
+        XCTAssertEqual(strips.prefix(3).map { $0.info?.channel }, [ChannelRef(.output, 0), ChannelRef(.output, 6), ChannelRef(.output, 2)],
+                       "Main, then Phones 1, then the send; the hidden cue output stays hidden")
+        XCTAssertEqual(strips.prefix(3).map { $0.info?.kind }, [.monitoring, .monitoring, .send])
+        XCTAssertNil(strips[3].info)
+        _ = hub.handle(.other(path: "controlroom/phones1", value: .number(-1)), now: 2)
+        XCTAssertEqual(hub.strips(of: roto)?.compactMap { $0.info?.channel }, [ChannelRef(.output, 0), ChannelRef(.output, 2), ChannelRef(.output, 6)],
+                       "an unassigned role shows no strip; its output becomes a send again")
+        XCTAssertEqual(hub.strips(of: roto)?[2].info?.kind, .send)
     }
 
     func testNoHomeSubmixMeansNoSourceLevels() {
@@ -282,10 +346,9 @@ final class SurfaceHubTests: XCTestCase {
         _ = hub.addSurface(roto, capabilities: small, now: 0)
         let next = hub.page(roto, by: 1, now: 1)
         XCTAssertTrue(next.updates[roto]?.contains(.page(first: 2, count: 4)) ?? false)
-        XCTAssertEqual(hub.strips(of: roto)?[1].info?.name, "Tracks")
-        _ = hub.page(roto, by: 1, now: 2)
-        XCTAssertEqual(hub.mode(of: roto), .strips(view: .sources, first: 3, knob: .level, switch: .mute))
-        XCTAssertTrue(hub.page(roto, by: 1, now: 3).isEmpty, "already at the last channel")
+        XCTAssertEqual(hub.strips(of: roto)?[1].info?.name, "PB 1/2", "playbacks are named by number, not after outputs")
+        XCTAssertTrue(hub.page(roto, by: 1, now: 2).isEmpty, "already on the last page")
+        XCTAssertEqual(hub.mode(of: roto), .strips(view: .sources, first: 2, knob: .level, switch: .mute))
         _ = hub.page(roto, by: -5, now: 4)
         XCTAssertEqual(hub.mode(of: roto), .standard)
     }
@@ -313,7 +376,7 @@ final class SurfaceHubTests: XCTestCase {
     }
 
     func testFocusShowsOneSourceAcrossSubmixes() {
-        var hub = loadedHub(mode: .focus(channel: ChannelRef(.input, 2), first: 0))
+        let hub = loadedHub(mode: .focus(channel: ChannelRef(.input, 2), first: 0))
         let strips = hub.strips(of: roto) ?? []
         let vox = ChannelRef(.input, 2)
         XCTAssertEqual(strips[0].knobTarget, .level(vox, submix: 0))
@@ -357,6 +420,18 @@ final class SurfaceHubTests: XCTestCase {
         let output = hub.handle(.channel(bus: .input, channel: 2, parameter: "name", value: .text("Lead")), now: 1)
         guard case .strip(1, let info?)? = output.updates[roto]?.first else { return XCTFail("no strip update") }
         XCTAssertEqual(info.name, "Lead")
+    }
+}
+
+final class StripNameTests: XCTestCase {
+    func testPlaybacksAreNamedByNumber() {
+        var stereo = ChannelState()
+        stereo.stereo = true
+        stereo.name = "Main"
+        XCTAssertEqual(SurfaceHub.stripName(ChannelRef(.playback, 0), stereo), "PB 1/2")
+        XCTAssertEqual(SurfaceHub.stripName(ChannelRef(.playback, 4), ChannelState()), "PB 5")
+        XCTAssertEqual(SurfaceHub.stripName(ChannelRef(.input, 0), stereo), "Main", "inputs keep TotalMix's name")
+        XCTAssertEqual(SurfaceHub.stripName(ChannelRef(.output, 3), nil), "output 4")
     }
 }
 

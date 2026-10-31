@@ -45,11 +45,13 @@ public struct SurfaceHub: Sendable {
     /// The app's choice, or else the control room's Main Out; `nil` before TotalMix has sent it.
     public var homeSubmix: Int? { homeChoice ?? mirror.mainOut }
 
-    /// The outputs the send knobs reach, in order: the outputs view's channels, minus the home
-    /// submix. `send(0)` is the first.
+    /// The outputs the send knobs reach, in order: the outputs view's channels, minus the
+    /// monitoring outputs (Main Out, Main Out B, Phones 1–4, and cue, as the control room assigns
+    /// them) and the home submix. These are the feeds to other hardware. `send(0)` is the first.
     public var sendTargets: [Int] {
         let home = homeSubmix
-        return layout.channels(.outputs, in: mirror).map(\.channel).filter { $0 != home }
+        let monitoring = mirror.monitoringOutputs
+        return layout.channels(.outputs, in: mirror).map(\.channel).filter { $0 != home && !monitoring.contains($0) }
     }
 
     /// The surfaces, in the order they were added.
@@ -81,7 +83,7 @@ public struct SurfaceHub: Sendable {
             return meterChanged(ref, now: now)
         case .node(let key):
             return refresh(where: { $0.contains(node: key) }, now: now)
-        case .channel, .mainOut:
+        case .channel, .controlRoom:
             return refreshAll(now: now)
         }
     }
@@ -351,8 +353,10 @@ public struct SurfaceHub: Sendable {
 
     private func binding(_ ref: ChannelRef, knob: ControlTarget?, switch switchTarget: ControlTarget?, meter: Bool) -> StripBinding {
         let state = mirror.channels[ref]
-        let info = StripInfo(channel: ref, name: state?.name ?? ref.description, color: state?.color,
-                             stereo: state?.stereo ?? false, knobLabel: knob.map(label) ?? "",
+        let kind: StripKind = ref.isSource ? .source
+            : mirror.monitoringOutputs.contains(ref.channel) ? .monitoring : .send
+        let info = StripInfo(channel: ref, name: Self.stripName(ref, state), color: state?.color,
+                             stereo: state?.stereo ?? false, kind: kind, knobLabel: knob.map(label) ?? "",
                              switchLabel: switchTarget.map(label) ?? "")
         var meterChannels: [ChannelRef] = []
         if meter {
@@ -360,6 +364,17 @@ public struct SurfaceHub: Sendable {
             if state?.stereo == true { meterChannels.append(ChannelRef(ref.bus, ref.channel + 1)) }
         }
         return StripBinding(info: info, knobTarget: knob, switchTarget: switchTarget, meterChannels: meterChannels)
+    }
+
+    /// The name a strip shows. Playbacks show "PB 1/2" (or "PB 3" for a mono channel), because
+    /// TotalMix names each playback after the output of the same number (RME: the default routing
+    /// is 1:1), which makes playbacks hard to tell from inputs. Other channels show TotalMix's name.
+    public static func stripName(_ ref: ChannelRef, _ state: ChannelState?) -> String {
+        if ref.bus == .playback {
+            let first = ref.channel + 1
+            return state?.stereo == true ? "PB \(first)/\(first + 1)" : "PB \(first)"
+        }
+        return state?.name ?? ref.description
     }
 
     private func label(_ target: ControlTarget) -> String {
@@ -403,12 +418,16 @@ public struct SurfaceHub: Sendable {
         guard var state = surfaces[id] else { return mode }
         state.mode = mode
         let count = layoutSlots(state).count
-        let last = max(count - 1, 0)
+        // Past the end, go to the start of the last page, so that pages stay aligned (the
+        // Roto-Control pages in multiples of 8).
+        let pageSize = max(state.capabilities.stripCount, 1)
+        let lastPage = max(count - 1, 0) / pageSize * pageSize
+        func fit(_ first: Int) -> Int { first >= count ? lastPage : max(first, 0) }
         switch mode {
         case .strips(let view, let first, let knob, let switchFunction):
-            return .strips(view: view, first: min(max(first, 0), last), knob: knob, switch: switchFunction)
+            return .strips(view: view, first: fit(first), knob: knob, switch: switchFunction)
         case .focus(let channel, let first):
-            return .focus(channel: channel, first: min(max(first, 0), last))
+            return .focus(channel: channel, first: fit(first))
         }
     }
 

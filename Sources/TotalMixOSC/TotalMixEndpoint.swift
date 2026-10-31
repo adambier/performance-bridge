@@ -3,7 +3,7 @@ import Foundation
 /// Where TotalMix's Global OSC service is, as set in TotalMix's preferences.
 ///
 /// The ports are named from TotalMix's side, as its preferences name them: TotalMix receives on its
-/// incoming port (Surface Bridge sends there) and sends to its outgoing port (Surface Bridge listens
+/// incoming port (Performance Bridge sends there) and sends to its outgoing port (Performance Bridge listens
 /// there).
 public struct TotalMixEndpoint: Equatable, Sendable, Codable {
     /// The computer running TotalMix.

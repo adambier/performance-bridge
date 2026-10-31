@@ -1,6 +1,6 @@
 # TotalMix FX Global OSC: what this project relies on
 
-This is a working reference for the parts of TotalMix FX's Global OSC interface that Surface Bridge
+This is a working reference for the parts of TotalMix FX's Global OSC interface that Performance Bridge
 uses, with the evidence for each statement. It is written in this project's own words; it is not
 a copy of RME's documentation.
 
@@ -8,6 +8,7 @@ a copy of RME's documentation.
 
 - **[RME doc]**: RME's Global OSC protocol document for TotalMix FX 2.1 beta 2, revision 2026-07-21. It is not included in this repository.
 - **[RME manual]**: the TotalMix FX chapter of RME's Digiface AES User's Guide (PDF dated 2023-11-20). It predates Global OSC, so it describes TotalMix's settings, not this protocol.
+- **[RME forum]**: a post by RME's staff on RME's user forum, linked where it is cited.
 - **[test N]**: a test against TotalMix, described in section 6 with the TotalMix version, the interface, and the settings used.
 
 A statement with neither marker is an inference, and says so.
@@ -17,7 +18,7 @@ linear scale" off and on, and the fader messages it accepts.
 
 ## 1. Connection
 
-- TotalMix receives on its "incoming" port and sends to its "outgoing" port. Both ports, and the address of the computer that receives TotalMix's messages, are set in TotalMix's preferences. Surface Bridge's defaults are localhost, incoming 7001, and outgoing 9001.
+- TotalMix receives on its "incoming" port and sends to its "outgoing" port. Both ports, and the address of the computer that receives TotalMix's messages, are set in TotalMix's preferences. Performance Bridge's defaults are localhost, incoming 7001, and outgoing 9001.
 - **Bundles.** TotalMix sends every message inside an OSC bundle. [test 3]
   - A single change, or a status message, comes as a bundle of one message.
   - The `/sendall` reply comes as bundles of up to 16 messages, none larger than 480 bytes.
@@ -26,7 +27,7 @@ linear scale" off and on, and the fader messages it accepts.
 - The document says "Follow Submix" should be off when Global OSC is used. [RME doc]
   - TotalMix's Options menu has no item by that name. The closest is "Submix linked to MIDI / OSC controller (1-4)": "The 8-channel group follows the currently selected submix", whether the submix is chosen on the remote or in TotalMix, and it "can be useful to deactivate this feature for specific windows". [RME manual]
   - The inference is that this is the setting the document means. Test 1, with it on, showed no effect on what Global OSC sends.
-- "Lock Remote to submix", on the OSC page of TotalMix's preferences, lets a remote "only modify the submix selected from the drop-down list". [RME manual] It is left off: Surface Bridge chooses submixes itself.
+- "Lock Remote to submix", on the OSC page of TotalMix's preferences, lets a remote "only modify the submix selected from the drop-down list". [RME manual] It is left off: Performance Bridge chooses submixes itself.
 - The document says status is sent at about one parameter per second. [RME doc] It does not define "status"; the inference here is that it means the `/status/…` messages.
 
 ## 2. Numbering and values
@@ -56,6 +57,10 @@ The three rows of the mixer are spelled three ways (`TotalMixBus`). [RME doc]
 | Levels (`/level/…`) | `in` | `pb` | `out` |
 
 **Channel settings** have the form `/<bus>/<channel>/<parameter>`, with sub-paths for the low cut, EQ, dynamics, AutoLevel, and Room EQ. Examples are `mute`, `name` (a string), `faderlin`, `volume`, `balpan`, `color` (sent only), and `eq/band1gain`. [RME doc]
+
+**Record-enable.** `record` is a channel setting that TotalMix sends and accepts. [RME doc] The document does not say what it does; the inference is that it is the channel's record-enable for DURec, TotalMix's recorder on interfaces that have one. The Digiface AES's manual does not mention DURec. [RME manual] This project does not use `record`.
+
+**Playback names.** TotalMix names each playback after the output of the same number, because by default playback n is routed to output n alone. [RME forum](https://forum.rme-audio.de/viewtopic.php?id=36883) SurfaceCore therefore shows playbacks as "PB 1/2", "PB 3/4", and so on, so that they cannot be mistaken for inputs. Whether Global OSC sends a playback's own name or its output's has not been checked.
 
 `color` is 0 for a hidden channel, and otherwise a color index from 1 (1 is the default color). [RME doc] The inference is that "hidden" means hidden from this OSC remote in Options → Channel Layout; SurfaceCore leaves such channels off the strips. Whether TotalMix sends a hidden channel's settings at all is untested.
 
@@ -187,10 +192,22 @@ messages left out).
 - `/output/8/faderlin` 0.5 and `/output/8/volume` −20 were sent alternately, three times each. Each one therefore changed the fader, between −12.1 dB and −20 dB.
 - `/mix/in/8/2/faderlin` 0.5 was sent, then `/mix/in/8/2/fader` −10.
 
-So, with "Re-send received" off, TotalMix does not echo a command to its sender. Surface Bridge
+So, with "Re-send received" off, TotalMix does not echo a command to its sender. Performance Bridge
 therefore records the values it sends itself. The only messages that can move a surface's control
 are changes made elsewhere, in TotalMix's window or from another client.
 
 **The check.** `roundtrip` does receive on the outgoing port. `/sendchan/output/8`, a request that
 must be answered, came back with output 9's settings: the first bundle after 21 ms and the last
 after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last command had set.
+
+
+### Test 6 (2026-10-30): PFL and Live Mode
+
+**Setup.** TotalMix FX "2.10 (1)" with a Digiface AES, through `sbdev bridge` and `sbdev monitor
+--sendsettings`. The user's notes are marked "seen".
+
+**Findings:**
+
+- **PFL shows only in Live Mode.** `/input/<n>/pfl` 1 was sent and accepted, but the user found no sign of it in TotalMix's window until "Live Mode, PFL replaces Solo" (PFL Mode, in Settings) was turned on; then the channel's Solo/PFL button lit, and clicking it in TotalMix was sent back as `pfl` (seen). [RME manual: Live Mode replaces Solo with PFL]
+- **Live Mode cannot be read.** Turning Live Mode off and on sent nothing, and the reply to `/sendsettings` does not mention it. RME's document lists only the device name, the connection, and the DSP load as status. [RME doc]
+- **PFL goes to Main when Cue/PFL to is unassigned.** With `controlroom/cuechan` reported as −1, PFL on a silent input silenced Main, which had been playing another input (seen). [RME manual: the Cue/PFL to setting also routes PFL]

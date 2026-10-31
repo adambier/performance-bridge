@@ -67,7 +67,7 @@ public enum RotoSysEx {
 public enum RotoCommandGroup: UInt8, Sendable {
     /// General commands (`0A`): the handshake, tracks, and transport.
     case general = 0x0A
-    /// PLUGIN mode (`0B`). Surface Bridge does not use it.
+    /// PLUGIN mode (`0B`). Performance Bridge does not use it.
     case plugin = 0x0B
     /// MIX mode (`0C`).
     case mix = 0x0C

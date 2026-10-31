@@ -10,6 +10,8 @@
 //   sbdev curve --table               print the curve in steps of 1 dB
 //   sbdev roto ports | sbdev roto [options]
 //                                     list MIDI ports; talk to a Roto-Control (Roto.swift)
+//   sbdev bridge [options]            run SurfaceCore and the Roto-Control driver between TotalMix
+//                                     and a Roto-Control, as the app will (Bridge.swift)
 
 import Foundation
 import OSCCodec
@@ -37,6 +39,7 @@ let usage = """
       sbdev curve --table
       sbdev roto ports
       sbdev roto [options]      (sbdev roto --help for the options)
+      sbdev bridge [options]    (sbdev bridge --help for the options)
 
     Defaults: --host localhost --in-port 7001 --out-port 9001 (TotalMix's own defaults).
     In-port is the port TotalMix receives on; out-port the port TotalMix sends to.
@@ -292,6 +295,7 @@ case "send": send(parseOptions(arguments.dropFirst()))
 case "roundtrip": roundtrip(parseOptions(arguments.dropFirst()))
 case "curve": curve(Array(arguments.dropFirst()))
 case "roto": roto(arguments.dropFirst())
+case "bridge": bridge(arguments.dropFirst())
 case "-h", "--help", "help": print(usage); exit(0)
 default: fail("Unknown command \(command).\n\n\(usage)")
 }

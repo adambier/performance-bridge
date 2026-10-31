@@ -1,4 +1,4 @@
-# AGENTS.md: totalmix-surface-tools for AI coding tools
+# AGENTS.md: Performance Bridge for AI coding tools
 
 This is a machine-first orientation for Claude Code, Cursor, Copilot, and similar tools working in
 this repository. Human developers can paste this file into their tool, or point the tool here,
@@ -11,8 +11,8 @@ statement there carries its evidence.
 
 | Item | Value |
 |---|---|
-| Repository | `adambier/totalmix-surface-tools` (GitHub), Swift package `totalmix-surface-tools` |
-| What it is | Surface Bridge, a macOS app (planned) that connects hardware control surfaces to RME TotalMix FX through its Global OSC interface, plus the libraries and developer tool behind it |
+| Repository | `adambier/performance-bridge` (GitHub), Swift package `performance-bridge` |
+| What it is | Performance Bridge, a macOS app (planned) that connects hardware control surfaces to RME TotalMix FX through its Global OSC interface, plus the libraries and developer tool behind it |
 | Surfaces | Melbourne Instruments Roto-Control first; Novation Launch Control XL 3 second; Mackie Control (MCU) surfaces possibly later |
 | License | MIT (`LICENSE`); not affiliated with or endorsed by RME, Melbourne Instruments, or Novation |
 | Language, tooling | Swift, `swift-tools-version:5.9`; CI uses the `swift:6.0-noble` image on Linux, Swift 6.2 on Windows, and the runner's Xcode on macOS; XCTest |
@@ -29,8 +29,9 @@ statement there carries its evidence.
 | `Sources/RotoControl/` | Roto-Control protocol: `RotoSysEx` (framing, 14-bit numbers, names), `RotoIncoming` and `RotoOutgoing` (SysEx messages), `RotoMIDIParser`, `RotoControlDecoder` and `RotoFeedback` (CCs and 14-bit knobs), `RotoHandshake`, `RotoInputDecoder`; PLUGIN mode in `RotoPlugin.swift` (`RotoHash`, `RotoPluginDetails`, `RotoParameterDetails`, `RotoControlMapping`) |
 | `Sources/MIDITransport/` | `MIDIConnection`: a CoreMIDI connection on macOS, a placeholder that throws elsewhere; `UniversalPackets`: MIDI 1.0 bytes to and from CoreMIDI's UMP words (Foundation only, tested everywhere) |
 | `Sources/SurfaceCore/` | The surface-neutral core: `SurfaceHub` (the engine: strips, paging, the home submix, holds, pickup, thinning, meters), `MixerMirror` (TotalMix's state), `PerformanceLayout` and `ViewKind`, `SurfaceCapabilities` and `SurfaceMode`, `SurfaceUpdate` and `CoreOutput`, `MeterScale` and `ValueText` |
+| `Sources/RotoDriver/` | `RotoDriver`: the Roto-Control's MIX mode on top of SurfaceCore (handshake, track sets, knob and switch modes, single-track pages, strips, knobs, lights, meters, value text); `RotoStep` |
 | `Sources/UDPTransport/` | `UDPSocket`: POSIX UDP on macOS and Linux; a placeholder that throws on Windows |
-| `Sources/sbdev/` | Developer tool: `monitor`, `send`, `roundtrip`, `curve` (main.swift), and `roto` (Roto.swift) |
+| `Sources/sbdev/` | Developer tool: `monitor`, `send`, `roundtrip`, `curve` (main.swift), `roto` (Roto.swift), and `bridge` (Bridge.swift) |
 | `Tests/` | One test target per library |
 | `docs/TOTALMIX-OSC.md` | What this project relies on in Global OSC, with evidence, and the open questions |
 | `docs/ROTO-CONTROL.md` | What this project relies on in the Roto-Control's protocol, with evidence, and the open questions |
@@ -43,11 +44,13 @@ small driver of its own.
 - **SurfaceCore** (`Sources/SurfaceCore/`). The aim is TotalMix FX as a performance mixer, for live use. Channel strips, each with:
   - a knob or fader: level, pan, or a send;
   - a switch: mute, PFL, or solo (off by default);
-  - a name, a color, and a meter.
+  - a name, a color, and a meter. Playbacks are named "PB 1/2" and so on, not after the outputs TotalMix names them for.
 
   Around the strips:
-  - two views: sources (inputs, then playbacks) and outputs;
-  - the home submix (Main Out unless the app chooses another), which source levels and pans go into; sends are the other outputs' submixes;
+  - two views: sources (inputs and playbacks) and outputs (the assigned monitoring outputs first, then the sends; a monitoring role with nothing assigned shows no strip);
+  - a performance layout, chosen in the app: the order of each view (which TotalMix can't change) and the channels it hides; channels it doesn't place yet follow in TotalMix's order;
+  - monitoring outputs and sends: the outputs the control room assigns to Main Out, Main Out B, Phones 1–4, and cue are monitoring outputs; every other output TotalMix doesn't hide is a send;
+  - the home submix (Main Out unless the app chooses another monitoring output), which source levels and pans go into; send knobs reach only the sends;
   - paging, and a focus mode (one source across all submixes);
   - the feedback rules: a control the user holds (touched, or moved in the last 250 ms) is not moved by TotalMix and catches up when let go; controls without motors pick up; continuous messages are thinned to one per address per 20 ms; meters update at most 12 times per second.
 
@@ -57,10 +60,11 @@ small driver of its own.
   - for each control, whether it is motorized, an endless encoder with an LED ring, or a control that needs pickup;
   - its resolution;
   - its displays.
-- **Drivers** (planned), one per surface:
-  - **RotoControl**: the Roto-Control's SysEx API, with 14-bit motorized knobs: MIX mode for channel strips, and PLUGIN mode (being tested) for the parts of TotalMix that MIX mode can't reach. The protocol layer (`Sources/RotoControl/`) and the CoreMIDI transport (`Sources/MIDITransport/`) exist; the driver, which maps them onto SurfaceCore, does not yet.
+- **Drivers**, one per surface:
+  - **RotoDriver** (`Sources/RotoDriver/`): the Roto-Control's SysEx API, with 14-bit motorized knobs. MIX mode drives the channel strips: the audio track set is the sources view and the master and return set the outputs view; the solo switches are PFL (as TotalMix's Solo is in Live Mode) and the record-arm switches do nothing (the firmware still shows their "ARM REC" label). Until TotalMix's colors are matched to the Roto-Control's, monitoring outputs show green and sends blue. PLUGIN mode, for the parts of TotalMix that MIX mode can't reach, is not driven yet. The driver is pure, like `SurfaceHub`; the app (or `sbdev bridge`) connects it to `MIDITransport`.
   - **LaunchControlXL3**: the Launch Control XL 3's DAW mode, with 7-bit faders that are not motorized and endless encoders.
   - **MackieControl**: later.
+- **Later (version 1.1.0 or after): a DAW connection.** The Roto-Control's record-arm switches would arm and disarm tracks, and its transport switches would drive the transport, in the user's DAW, starting with Logic Pro and Bitwig Studio.
 - **Protocol sources.** Each driver's protocol facts go in a `docs/` file of their own, with evidence, as `TOTALMIX-OSC.md` does for TotalMix. The vendors' documents are linked, not committed:
   - Melbourne Instruments' [SysEx and serial API documents and integration code](https://github.com/Melbourne-Instruments/roto_control) (MIT);
   - Novation's [Launch Control XL 3 programmer's reference guide](https://userguides.novationmusic.com/hc/en-gb/articles/27840466285586-About-the-Launch-Control-XL-3-programmer-s-reference-guide).
@@ -68,13 +72,13 @@ small driver of its own.
   - `make-app.sh` compiles every source folder into one module with `swiftc`;
   - Sparkle 2.10.1 is pinned with its SHA-256, and the XPC services are removed;
   - the app is signed with a Developer ID, notarized, and updated through `appcast.xml` on `main`;
-  - it has its own Sparkle signing key, under the keychain account `org.biers.surfacebridge`. The public half, for `SUPublicEDKey`, is `KTt3BYFC8qH22G0zlWbtdfe7E9OGSw14LgkrZQCmfC4=`; the private half stays in the release signer's keychain.
+  - it has its own Sparkle signing key, under the keychain account `org.biers.performancebridge`. The public half, for `SUPublicEDKey`, is `KTt3BYFC8qH22G0zlWbtdfe7E9OGSw14LgkrZQCmfC4=`; the private half stays in the release signer's keychain.
 
 ## 4. Rules (do / don't)
 
 Do:
 
-- Keep `OSCCodec`, `TotalMixOSC`, `RotoControl`, `SurfaceCore`, and the planned drivers Foundation-only, UI-free, and building on Linux, macOS, and Windows. Platform code (CoreMIDI, sockets, SwiftUI) stays in `UDPTransport`, `MIDITransport`, or the app.
+- Keep `OSCCodec`, `TotalMixOSC`, `RotoControl`, `SurfaceCore`, `RotoDriver`, and the planned drivers Foundation-only, UI-free, and building on Linux, macOS, and Windows. Platform code (CoreMIDI, sockets, SwiftUI) stays in `UDPTransport`, `MIDITransport`, or the app.
 - Write cross-library imports as `#if canImport(OSCCodec)` / `import OSCCodec` / `#endif`. The app build will compile every folder as one module, and there such an import must compile out. No two top-level declarations in the library folders may share a name.
 - Put any new or changed claim about what TotalMix does in `docs/TOTALMIX-OSC.md` with its evidence: RME's document and its revision, or a test naming the TotalMix version and the interface. Mark inferences as inferences, in the code comment as well as the document. Do the same for the surfaces in their own documents.
 - Give every `public` declaration a `///` doc comment.
@@ -91,7 +95,7 @@ Don't:
 ## 5. How to verify
 
 - **Tests on Linux and Windows:** `swift test`.
-- **Tests on a Mac:** `SURFACE_BRIDGE_TESTS=1 swift test`. This needs full Xcode, because XCTest is not part of the Command Line Tools.
+- **Tests on a Mac:** `PERFORMANCE_BRIDGE_TESTS=1 swift test`. This needs full Xcode, because XCTest is not part of the Command Line Tools.
 - **Against TotalMix:**
   - `swift run sbdev monitor --sendall` prints what TotalMix sends.
   - `swift run sbdev send /input/0/mute 1` sends one message.
@@ -101,6 +105,7 @@ Don't:
 - **Against a Roto-Control** (macOS):
   - `swift run sbdev roto ports` lists the MIDI ports.
   - `swift run sbdev roto` connects, runs the handshake, prints everything the Roto-Control sends, and takes commands (`help` lists them). `--type`, `--setup none`, and `--raw` are for the tests in `docs/ROTO-CONTROL.md` section 8.
+- **TotalMix and a Roto-Control together** (macOS): `swift run sbdev bridge --in-port 7004 --out-port 9004` runs SurfaceCore and the Roto-Control driver as the app will, and prints what goes to TotalMix (`help` lists the commands).
 
 ## 6. House style for text (README, docs, DocC, app strings)
 
