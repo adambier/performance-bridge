@@ -254,9 +254,8 @@ and step names.
 2. **Type `03`.** What does the Roto-Control wait for in PLUGIN mode when the host claims Logic, and does SET PLUGIN CONTROL DETAILS work then?
 3. **The 0 dB indent.** Where exactly is the `02` indent (inferred 13003)? Do send knobs get one, with `01` and `02`, as the 3.1.0 release notes say? Does `03` get one?
 4. **The hold rule.** Does a power cycle clear it? Does anything other than a change of knob mode clear it, such as switching to PLUGIN mode and back? Is the release always about 3,300–3,700 counts in?
-5. **The FX label.** With SEL held, screen 3's bottom half shows "FX" under "Send 1" (seen); the SysEx doc names no FX switch mode.
-6. **PLUGIN mode with no plugins.** `RotoDriver` does not drive PLUGIN mode yet, and answers SET PLUGIN MODE with NUM PLUGINS 0, FIRST PLUGIN 0, and PLUGIN DETAILS END. Does that settle the Roto-Control, or does it repeat SET PLUGIN MODE as it did with type `03`?
-7. **The meter thresholds.** `RotoDriver` sets yellow at 126 and red at 127, so that red means full scale. Does a meter turn red at the red threshold, or only above it?
+5. **The FX label.** With SEL held, screen 3's bottom half shows "FX" under "Send 1" (seen); pressing that switch chooses the send knob mode (test 4). Is "FX" anything more than the label for that button? The SysEx doc names no FX switch mode.
+6. **The meter thresholds.** `RotoDriver` sets yellow at 126 and red at 127, so that red means full scale. Does a meter turn red at the red threshold, or only above it?
 
 ## 9. Tests
 
@@ -378,5 +377,9 @@ marked "seen".
   shown, it renamed screen 8's top half, the strip of the track last reported by ROTO SELECT
   TRACK (7, counting from 0); the MENU window still showed "MIX-RTN". So it names the selected
   track, not the track set, and no command found sets the MENU window's text.
+- **PLUGIN mode with no plugins** (run 7): answered with NUM PLUGINS 0, FIRST PLUGIN 0, and PLUGIN
+  DETAILS END, the Roto-Control sent SET PLUGIN MODE once each time the user chose PLUGIN mode
+  and nothing more. Seen: the knob screens black, the MENU window blue with "---" on top and the
+  selected track's name below, and no flicker or cycling.
 - **SOLO and ARM** (run 7, seen): with the switches on solo, a press set PFL in TotalMix and lit
   the switch; on record arm, a press did nothing.
