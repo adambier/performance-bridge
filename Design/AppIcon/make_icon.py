@@ -14,7 +14,8 @@ Writes, next to this script:
   legacy/        shaped icons with a drop shadow, for an .icns: large.svg (128 px and up, with
                  the reflection), medium.svg (64 px), px32.svg and px16.svg (drawn on the pixel
                  grid)
-  menubar/       MenuBarIcon.svg, a one-color template glyph (18 x 18 points)
+  menubar/       MenuBarIcon.svg, a one-color template glyph (20 x 18 points), and in
+                 alternatives/ the bridge glyph kept for later
 
 Standard library only. Render the SVGs to PNG with any SVG renderer (render.js uses Chromium
 through Playwright) and build the .icns with `iconutil -c icns AppIcon.iconset` on a Mac.
@@ -233,16 +234,38 @@ def pixel_icon(n):
 
 
 def menubar():
-    """A one-color template glyph for the menu bar, 18 x 18 points: deck, tower, cables, and three
-    thin hangers (no fader caps: at this size they read as dots); macOS colors template images to
-    suit the menu bar."""
-    parts = ['<rect x="1" y="13" width="16" height="1.5" rx="0.75"></rect>',
-             '<rect x="11.25" y="2.5" width="1.5" height="11"></rect>',
-             '<g fill="none" stroke="#000000" stroke-width="1.2" stroke-linecap="round">'
-             '<path d="M 12 3 Q 6.75 13 1.5 13"></path><path d="M 12 3 Q 14.5 13 17 13"></path></g>',
-             '<g stroke="#000000" stroke-width="0.8"><line x1="6.5" y1="10.9" x2="6.5" y2="13"></line>'
-             '<line x1="9" y1="8.1" x2="9" y2="13"></line><line x1="14.5" y1="10.7" x2="14.5" y2="13"></line></g>']
-    return svg(18, '<g fill="#000000">\n' + "\n".join(parts) + "\n</g>")
+    """The menu-bar glyph (design D′, chosen by Adam, 2026-10-30): three faders under an arching
+    cable, as a one-color template image, 20 x 18 points; macOS colors template images to suit the
+    menu bar. The slots stop short of the arc so the two don't merge at actual size."""
+    parts = ['<path d="M 1.5 8 Q 10 -2.5 18.5 8" fill="none" stroke="#000000" stroke-width="1.2" stroke-linecap="round"></path>']
+    for x, top, cap in ((5.5, 7.0, 12.8), (10, 5.5, 9.8), (14.5, 7.0, 11.8)):
+        parts.append('<line x1="%g" y1="%g" x2="%g" y2="16.5" stroke="#000000" stroke-width="0.8" stroke-linecap="round"></line>' % (x, top, x))
+        parts.append('<rect x="%g" y="%g" width="3.2" height="2" rx="0.5"></rect>' % (x - 1.6, cap))
+    return ('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="18" viewBox="0 0 20 18">\n<g fill="#000000">\n%s\n</g>\n</svg>\n'
+            % "\n".join(parts))
+
+
+def menubar_bridge():
+    """The alternative glyph kept for later (design B): the icon's single-tower bridge, wide and
+    low, with five hangers and piers in the water, 26 x 18 points."""
+    deck, tx, top, a0, a1 = 12.5, 17, 2.2, 2, 24
+
+    def cable(anchor):
+        return '<path d="M %g %g Q %g %g %g %g" fill="none" stroke="#000000" stroke-width="1.1" stroke-linecap="round"></path>' % (
+            tx, top, (anchor + tx) / 2, deck, anchor, deck)
+
+    def hanger(x, anchor):
+        u = (x - anchor) / (tx - anchor)
+        return '<line x1="%g" y1="%.2f" x2="%g" y2="%g" stroke="#000000" stroke-width="0.7"></line>' % (x, deck - (deck - top) * u * u, x, deck)
+
+    parts = ['<rect x="0.6" y="%g" width="24.8" height="1.5" rx="0.75"></rect>' % deck,
+             '<rect x="%g" y="1.8" width="1.6" height="%g"></rect>' % (tx - 0.8, deck + 2.2),
+             cable(a0), cable(a1)]
+    parts += [hanger(x, a0) for x in (5.5, 8, 10.5, 13, 15.2)] + [hanger(x, a1) for x in (19, 21.3)]
+    parts += ['<rect x="1.4" y="%g" width="1.2" height="3"></rect>' % (deck + 1.2),
+              '<rect x="23.4" y="%g" width="1.2" height="3"></rect>' % (deck + 1.2)]
+    return ('<svg xmlns="http://www.w3.org/2000/svg" width="26" height="18" viewBox="0 0 26 18">\n<g fill="#000000">\n%s\n</g>\n</svg>\n'
+            % "\n".join(parts))
 
 
 def write(rel, text):
@@ -260,4 +283,5 @@ if __name__ == "__main__":
     write("legacy/px32.svg", pixel_icon(32))
     write("legacy/px16.svg", pixel_icon(16))
     write("menubar/MenuBarIcon.svg", menubar())
+    write("menubar/alternatives/MenuBarIcon-bridge.svg", menubar_bridge())
     print("Wrote master/, legacy/, and menubar/ in", HERE)

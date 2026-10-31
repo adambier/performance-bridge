@@ -11,7 +11,7 @@ slots, at night over water. The amber (#FFB13D) is also the app's accent color.
 | `master/` | Full-canvas 1024 × 1024 layers: `1-sky` (and `1-sky-dark`), `2-reflection`, `3-bridge`, `4-faders`, and `composite` | The layered icon format of macOS 26 and later (import into Icon Composer, which makes the light, dark, clear, and tinted styles) |
 | `legacy/` | Shaped icons with a drop shadow: `large` (with the reflection and shaded caps), `medium` (plain, lighter and thicker deck), `px32` and `px16` (drawn on the pixel grid) | `AppIcon.iconset`, for an `.icns` |
 | `AppIcon.iconset/` | PNGs rendered from `legacy/`: 16 from `px16`; 32 from `px32`; 64 from `medium`; 128 and up from `large` | `iconutil -c icns AppIcon.iconset` on a Mac |
-| `menubar/` | `MenuBarIcon.svg`, an 18 × 18 point one-color template glyph (deck, tower, cables, three thin hangers), and its PNGs | The menu-bar item (copied into `App/PerformanceBridge/Resources/`) |
+| `menubar/` | `MenuBarIcon.svg`, a 20 × 18 point one-color template glyph (three faders under an arching cable, design D′), and its PNGs; `alternatives/MenuBarIcon-bridge.svg`, the single-tower bridge glyph (design B), kept in case we switch | The menu-bar item (copied into `App/PerformanceBridge/Resources/`) |
 
 Rules the design keeps:
 
@@ -27,7 +27,8 @@ Rules the design keeps:
   darken the icon.
 - No wave lines across the water, in any style; the rippled reflection carries the water (Adam,
   2026-10-30).
-- No fader caps at 16 px or in the menu-bar glyph: at those sizes they read as dots (Adam).
+- No fader caps at 16 px: they read as dots (Adam). The menu-bar glyph is a separate, simpler
+  drawing (three faders under a cable), since the bridge squeezed into the menu bar read as a hat.
 
 Open points, to check on a Mac:
 
