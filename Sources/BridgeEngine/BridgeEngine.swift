@@ -328,7 +328,7 @@ public final class BridgeEngine: @unchecked Sendable {
         return hub.layout
     }
 
-    /// Replaces the layout: the order, the channels the app hides, and the new-page option.
+    /// Replaces the layout: the order and the new-page option.
     public func setLayout(_ layout: PerformanceLayout) {
         lock.lock()
         dispatch(hub.setLayout(layout, now: now))
