@@ -30,7 +30,7 @@ This project is in early development. There is no released app yet, only a first
 
 ## Planned
 
-- **The Roto-Control.** Melbourne Instruments' Roto-Control comes first, driven through its published SysEx API. Its eight motorized knobs follow TotalMix. After MIX mode, its PLUGIN mode, for the parts of TotalMix that MIX mode can't reach.
+- **The Roto-Control.** Melbourne Instruments' Roto-Control comes first, driven through its published SysEx API. Its eight motorized knobs follow TotalMix. Version 1.0 uses its MIX mode; its PLUGIN mode, for the parts of TotalMix that MIX mode can't reach (e.g., the control room), comes in a later 1.x release.
 - **The Launch Control XL 3.** Novation's Launch Control XL 3 comes second, in its DAW mode. Its faders are not motorized, so they pick up TotalMix's values.
 - **The app.** A signed macOS app (macOS 13 or later) with in-app updates, a setup guide, and a layout editor.
 - **Later: a DAW connection.** Arming tracks and driving the transport in a DAW from the surface, starting with Logic Pro and Bitwig Studio.
