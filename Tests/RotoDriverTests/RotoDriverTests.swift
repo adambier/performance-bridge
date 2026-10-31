@@ -110,7 +110,26 @@ final class RotoDriverTests: XCTestCase {
         var driver = RotoDriver(id: rotoID)
         let step = driver.receive(knobCCs(1, 4000), hub: &hub, now: 1)
         XCTAssertEqual(step, RotoStep())
-        XCTAssertTrue(driver.render([.knob(index: 0, value: 0.5)], hub: hub).isEmpty)
+        XCTAssertTrue(driver.render([.knob(index: 0, value: 0.5)], hub: hub, now: 100).isEmpty)
+    }
+
+    func testMotorTravelIsNotTakenForTheUser() {
+        var (driver, hub, _) = connected()
+        let target = levelKnob(0.5)
+        XCTAssertEqual(driver.receive(knobCCs(1, target - 900), hub: &hub, now: 0.3), RotoStep(), "the motor still travelling")
+        XCTAssertEqual(driver.receive(knobCCs(1, target + 4), hub: &hub, now: 0.9), RotoStep(), "settling near the target")
+        XCTAssertFalse(driver.receive(knobCCs(1, target - 900), hub: &hub, now: 1.0).core.messages.isEmpty,
+                       "after the settle time, a real turn goes through")
+        XCTAssertFalse(driver.receive(knobCCs(2, levelKnob(0.5) + 4), hub: &hub, now: 2.5).core.messages.isEmpty,
+                       "and after the jitter time, so does a small one")
+    }
+
+    func testIsMotor() {
+        XCTAssertFalse(RotoDriver.isMotor(report: 100, target: nil, now: 1))
+        XCTAssertTrue(RotoDriver.isMotor(report: 100, target: (5000, 0), now: 0.7))
+        XCTAssertTrue(RotoDriver.isMotor(report: 5150, target: (5000, 0), now: 1.5))
+        XCTAssertFalse(RotoDriver.isMotor(report: 5300, target: (5000, 0), now: 1.5))
+        XCTAssertFalse(RotoDriver.isMotor(report: 5000, target: (5000, 0), now: 2.5))
     }
 
     func testTurningAKnobSetsTheNode() {
@@ -233,9 +252,9 @@ final class RotoDriverTests: XCTestCase {
         let enter = driver.receive(sysEx(.plugin, 0x01, [0x00]), hub: &hub, now: 1)
         XCTAssertEqual(enter.midi, [RotoOutgoing.pluginCount(0), .firstPlugin(0), .pluginDetailsEnd].flatMap(\.bytes))
         XCTAssertEqual(driver.receive(knobCCs(1, 8191), hub: &hub, now: 2), RotoStep())
-        XCTAssertTrue(driver.render([.knob(index: 1, value: 0.2)], hub: hub).isEmpty)
+        XCTAssertTrue(driver.render([.knob(index: 1, value: 0.2)], hub: hub, now: 100).isEmpty)
         _ = driver.receive(sysEx(.mix, 0x01, [0x00, 0x00, 0x00, 0x00]), hub: &hub, now: 3)
-        XCTAssertFalse(driver.receive(knobCCs(1, 8000), hub: &hub, now: 4).core.messages.isEmpty, "back in MIX mode")
+        XCTAssertFalse(driver.receive(knobCCs(1, 8000), hub: &hub, now: 6).core.messages.isEmpty, "back in MIX mode")
     }
 
     func testOtherSurfacesGetTheirUpdates() {
@@ -250,7 +269,7 @@ final class RotoDriverTests: XCTestCase {
     func testMetersAndValuesFromTheHub() {
         var (driver, hub, _) = connected()
         let output = hub.handle(.level(bus: .input, channel: 2, peakDB: -30), now: 1)
-        let midi = driver.render(output.updates[rotoID] ?? [], hub: hub)
+        let midi = driver.render(output.updates[rotoID] ?? [], hub: hub, now: 100)
         let value = UInt8(MeterScale.value(peakDB: -30))
         XCTAssertEqual(midi, RotoFeedback.meter(1, left: value, right: value))
     }
@@ -282,7 +301,7 @@ final class RotoDriverTests: XCTestCase {
         _ = driver.receive(sysEx(.mix, 0x07, [0x7F]), hub: &hub, now: 9)
         XCTAssertEqual(hub.mode(of: rotoID), .strips(view: .sources, first: 0, knob: .send(127), switch: .mute))
         XCTAssertNil(hub.strips(of: rotoID)?[0].knobTarget, "send 128 does not exist")
-        XCTAssertTrue(driver.render([.strip(index: 99, info: nil), .meter(index: 7, value: 500)], hub: hub)
+        XCTAssertTrue(driver.render([.strip(index: 99, info: nil), .meter(index: 7, value: 500)], hub: hub, now: 100)
                         .contains(RotoFeedback.meter(7, left: 127, right: 127)))
     }
 

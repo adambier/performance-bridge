@@ -29,7 +29,7 @@ public struct RotoStep: Equatable, Sendable {
 ///
 /// The driver does no input or output. The app passes it the bytes from the Roto-Control's MIDI
 /// port with `receive(_:hub:now:)` and sends on what comes back; it passes the hub's updates for
-/// this surface to `render(_:hub:)` and sends the bytes to the Roto-Control.
+/// this surface to `render(_:hub:now:)` and sends the bytes to the Roto-Control.
 ///
 /// How the Roto-Control's MIX mode maps onto the core (docs/ROTO-CONTROL.md):
 /// - the audio track set is the sources view, and the master and return set the outputs view;
@@ -102,6 +102,18 @@ public struct RotoDriver: Sendable {
     private var trackSet: RotoTrackSet = .audio
     private var infos: [StripInfo?] = Array(repeating: nil, count: RotoCC.controlCount)
     private var page = (first: 0, count: 0)
+    private var motorTargets: [(position: Int, time: Double)?] = Array(repeating: nil, count: RotoCC.controlCount)
+
+    /// How long after the driver moves a knob its reports are ignored, in seconds, while the motor
+    /// travels. On connecting, knobs the driver had just moved have been observed to report
+    /// positions near their new ones for about 0.6 s, which a host would otherwise pass on as the
+    /// user's turns (docs/ROTO-CONTROL.md, test 4; that the motor caused them is an inference).
+    public static let motorSettleTime: Double = 0.75
+    /// For a while longer, reports this close to where the driver put the knob (in counts of
+    /// 16,383) are taken as the motor settling, not the user.
+    public static let motorJitter = 200
+    /// How long the closeness rule lasts after the driver moves a knob, in seconds.
+    public static let motorJitterTime: Double = 2
 
     /// A driver for one Roto-Control, which will claim `hostType` (Bitwig by default).
     public init(id: SurfaceID, hostType: RotoHostType = .bitwig) {
@@ -140,7 +152,7 @@ public struct RotoDriver: Sendable {
             inPluginMode = false
             let thresholds = Self.meterThresholds
             step.midi += RotoOutgoing.meterThresholds(yellow: thresholds.yellow, red: thresholds.red).bytes
-            take(hub.resend(id, now: now), hub: hub, into: &step)
+            take(hub.resend(id, now: now), hub: hub, now: now, into: &step)
             return
         }
         guard handshake.isConnected else { return }
@@ -157,21 +169,21 @@ public struct RotoDriver: Sendable {
             trackSet = mode.trackSet
             let next = SurfaceMode.strips(view: Self.view(mode.trackSet), first: firstIfSameView(hub, mode.trackSet),
                                           knob: Self.knobFunction(mode), switch: Self.switchFunction(mode.switchMode))
-            take(hub.setMode(id, next, now: now), hub: hub, into: &step)
+            take(hub.setMode(id, next, now: now), hub: hub, now: now, into: &step)
         case .trackSet(let set):
             trackSet = set
             selectedTrack = 0
             guard case .strips(_, _, let knob, let switchFunction)? = hub.mode(of: id) else { return }
             take(hub.setMode(id, .strips(view: Self.view(set), first: 0, knob: knob, switch: switchFunction), now: now),
-                 hub: hub, into: &step)
+                 hub: hub, now: now, into: &step)
         case .setFirstTrack(let first):
             guard case .strips(let view, _, let knob, let switchFunction)? = hub.mode(of: id) else { return }
             take(hub.setMode(id, .strips(view: view, first: first, knob: knob, switch: switchFunction), now: now),
-                 hub: hub, into: &step)
+                 hub: hub, now: now, into: &step)
         case .selectTrack(let index):
             selectedTrack = index
             if case .focus(_, let first)? = hub.mode(of: id), let channel = channel(at: index, hub: hub) {
-                take(hub.setMode(id, .focus(channel: channel, first: first), now: now), hub: hub, into: &step)
+                take(hub.setMode(id, .focus(channel: channel, first: first), now: now), hub: hub, now: now, into: &step)
             }
         case .singleTrackMode(let controlPage):
             inPluginMode = false
@@ -179,7 +191,7 @@ public struct RotoDriver: Sendable {
             // sends 1–6; each later page eight sends, so page p starts at the core's slot 8p.
             guard let channel = channel(at: selectedTrack, hub: hub) ?? channel(at: 0, hub: hub) else { return }
             take(hub.setMode(id, .focus(channel: channel, first: max(controlPage, 0) * 8), now: now),
-                 hub: hub, into: &step)
+                 hub: hub, now: now, into: &step)
         case .requestSendNames(let sendIndex):
             step.midi += sendNames(start: RotoOutgoing.sendNamesStart(forSendIndex: sendIndex), hub: hub).bytes
         case .requestTransportStatus:
@@ -193,25 +205,28 @@ public struct RotoDriver: Sendable {
         guard handshake.isConnected, !inPluginMode else { return }
         switch event {
         case .knob(let index, let position):
+            if Self.isMotor(report: position, target: motorTargets.indices.contains(index) ? motorTargets[index] : nil, now: now) {
+                return
+            }
             var value = RotoFeedback.fraction(position)
             if isLevel(index, hub: hub) { value = Self.faderPosition(forKnob: value, indent: indent) }
-            take(hub.controlMoved(id, strip: index, to: value, now: now), hub: hub, into: &step)
+            take(hub.controlMoved(id, strip: index, to: value, now: now), hub: hub, now: now, into: &step)
         case .touch(let index, let touched):
-            take(hub.touched(id, strip: index, touched, now: now), hub: hub, into: &step)
+            take(hub.touched(id, strip: index, touched, now: now), hub: hub, now: now, into: &step)
         case .switch(let index, let value):
             // Type 02: 127 on a press, nothing on release (docs/ROTO-CONTROL.md, section 5).
             guard value >= 64 else { return }
-            take(hub.switchPressed(id, strip: index, now: now), hub: hub, into: &step)
+            take(hub.switchPressed(id, strip: index, now: now), hub: hub, now: now, into: &step)
         case .transport, .levelToZeroDB, .otherCC:
             break
         }
     }
 
     /// Moves this surface's updates out of a core output and into MIDI.
-    private mutating func take(_ output: CoreOutput, hub: SurfaceHub, into step: inout RotoStep) {
+    private mutating func take(_ output: CoreOutput, hub: SurfaceHub, now: Double, into step: inout RotoStep) {
         var output = output
         if let own = output.updates.removeValue(forKey: id) {
-            step.midi += render(own, hub: hub)
+            step.midi += render(own, hub: hub, now: now)
         }
         step.core.append(output)
     }
@@ -220,7 +235,7 @@ public struct RotoDriver: Sendable {
 
     /// Turns the hub's updates for this surface into MIDI for the Roto-Control. Returns nothing
     /// before the handshake is complete, or in PLUGIN mode.
-    public mutating func render(_ updates: [SurfaceUpdate], hub: SurfaceHub) -> [UInt8] {
+    public mutating func render(_ updates: [SurfaceUpdate], hub: SurfaceHub, now: Double) -> [UInt8] {
         guard handshake.isConnected, !inPluginMode, !updates.isEmpty else { return [] }
         var pageChanged = false
         var controls: [UInt8] = []
@@ -236,7 +251,9 @@ public struct RotoDriver: Sendable {
             case .knob(let index, let value):
                 guard var value else { continue }
                 if isLevel(index, hub: hub) { value = Self.knobPosition(forFader: value, indent: indent) }
-                controls += RotoFeedback.knob(index, position: RotoFeedback.position(value))
+                let position = RotoFeedback.position(value)
+                if motorTargets.indices.contains(index) { motorTargets[index] = (position, now) }
+                controls += RotoFeedback.knob(index, position: position)
             case .valueText(let index, let text):
                 controls += RotoOutgoing.showValue(.knob, control: index, text: text).bytes
             case .switchState(let index, let on):
@@ -357,6 +374,16 @@ public struct RotoDriver: Sendable {
     public static func colorScheme(forTotalMixColor color: Int?) -> UInt8 {
         guard let color, color > 1 else { return 0 }
         return UInt8(((color - 1) * 11) % 83)
+    }
+
+    /// Whether a knob report is the motor settling after the driver moved the knob, rather than
+    /// the user: within `motorSettleTime` of the move, or within `motorJitterTime` and
+    /// `motorJitter` counts of where the knob was sent.
+    public static func isMotor(report position: Int, target: (position: Int, time: Double)?, now: Double) -> Bool {
+        guard let target else { return false }
+        let elapsed = now - target.time
+        if elapsed < motorSettleTime { return true }
+        return elapsed < motorJitterTime && abs(position - target.position) <= motorJitter
     }
 
     /// Whether a strip's knob is a level or a send (a fader position), whose scale is bent to the

@@ -364,3 +364,10 @@ marked "seen".
   send the names in every knob mode.
 - **Single-track mode:** knob 3 set the focused input's level into the first send's submix. Switches
   1 and 2 sent no CC at all in single-track mode (run 5), so a host cannot use them there.
+- **Knob reports on connecting** (run 6): within 0.6 s of the driver sending knob positions on
+  connecting, knobs 5–7 reported positions near the ones sent (for example 0.444, 0.458, and
+  0.456 for a position of about 0.46), and the driver passed them on to TotalMix. The user is not
+  sure whether a hand was on those knobs. The inference is that the motors' travel was reported as
+  turns; test 1 saw no echo of a host move, but there the knob was at rest. `RotoDriver` now
+  ignores a knob's reports for 0.75 s after it moves the knob, and for 2 s those within 200 counts
+  of where it put the knob.

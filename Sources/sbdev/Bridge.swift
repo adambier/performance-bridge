@@ -176,7 +176,7 @@ final class BridgeSession: @unchecked Sendable {
             log("→ TotalMix \(message.address) \(message.arguments.map(describe).joined(separator: " "))")
         }
         for (id, updates) in output.updates where id == driver.id {
-            sendToRoto(driver.render(updates, hub: hub))
+            sendToRoto(driver.render(updates, hub: hub, now: now))
         }
     }
 
