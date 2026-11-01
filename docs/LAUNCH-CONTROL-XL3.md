@@ -90,9 +90,8 @@ encoders report on channel 16, buttons on channel 1, and Shift on channel 7.
 
 - **Button values.** The guide doesn't say what a button sends. The library reads 64 or more as
   pressed and less as released (inference: 127 and 0, as is usual).
-- **Encoders, absolute.** By default an encoder sends 0–127, and "if the DAW sends them position
-  information, they automatically pick that up". [Programmer's reference guide, "Absolute and
-  relative encoder modes"] The guide doesn't say in which message. The library sends the
+- **Encoders, absolute.** By default an encoder sends 0–127, and takes on any position a host
+  sends it. [Programmer's reference guide, "Absolute and relative encoder modes"] The guide doesn't say in which message. The library sends the
   encoder's own Control Change back on channel 16 (inference, to test).
 - **Encoders, relative.** Each row can be switched to relative output separately, with feature
   controls 69, 72, and 73 for rows 1–3. A relative row then reports Control Changes 64 higher
@@ -108,9 +107,9 @@ encoders report on channel 16, buttons on channel 1, and Shift on channel 7.
   - Whether encoders report touch too is also open.
 - **Fader pickup.** The programmer's reference guide lists feature control 70 as "DAW Fader
   Pickup", on or off, with no description. [Programmer's reference guide, feature controls]
-  - The user guide's pickup ("moving the fader doesn't change the parameter until you pass the
-    current value") is the Settings menu's, which "doesn't affect DAW modes". [User guide, "Fader
-    pickup" and Settings]
+  - The user guide's pickup, where a moved fader takes over only once it reaches the parameter's
+    value, is the Settings menu's, which leaves DAW modes alone. [User guide, "Fader pickup" and
+    Settings]
   - That feature 70 works the same way in DAW mode is an inference. So is that the device learns
     the parameter's value from the position message above. Test 7 checks both.
 
@@ -150,8 +149,9 @@ encoders report on channel 16, buttons on channel 1, and Shift on channel 7.
 
 Control Changes on channel 7 to the DAW port set them. The same Control Change on channel 8 asks
 for one, and replies come on channel 7. In DAW mode all of them listen, but only a few reply.
-Note 11 on channel 16 (velocity 127 or 0) can "enable all of them or revert to the DAW set". The
-inference is that this means their replies, since in DAW mode they all listen already.
+Note 11 on channel 16 (velocity 127 or 0) enables every feature control, or goes back to DAW
+mode's own set. The inference is that this means their replies, since in DAW mode they all
+listen already.
 [Programmer's reference guide, "Launch Control XL 3 feature Controls"]
 
 | CC | Feature | Values |
@@ -179,21 +179,21 @@ Each is resolved here as stated, until the device settles it.
    and 16h–1Dh for "Custom Modes 8 - 16". Mode 8 is listed twice, and 16h–1Dh is eight values for
    nine modes. Its feature control table gives 12h–1Dh for modes 5–16. The library follows the
    table.
-2. **How many Custom Modes.** The programmer's reference guide has 16. The user guide has "15
-   Custom Modes, and one Default mode (slot 16)".
+2. **How many Custom Modes.** The programmer's reference guide has 16. The user guide has 15, with
+   a Default mode in the sixteenth slot.
 3. **Which button chooses which DAW mode.** The user guide says Mode plus Mute/Select is DAW Mixer
    and Solo/Arm is DAW Control six times, in the Ableton Live, Logic Pro, Cubase, and Bitwig
    Studio chapters. Twice, in the DAW Control tips, it says the reverse.
 4. **Display targets for names.** The programmer's reference guide's note on arrangements mentions
-   "targets only setting names (22h(34) – 28h(40))", which overlaps encoder targets (34–36) and
+   targets that only set names, 22h–28h (34–40), a range that overlaps encoder targets (34–36) and
    button numbers (37–40). The target list gives no such range.
 5. **Bitmap targets.** The bitmap section names the stationary display 20h and the global
    temporary display 21h, where "Configure displays" uses 35h and 36h.
 6. **Bitmap message end.** The bitmap message is shown ending with 7Fh, not F7h, and the reply as
    F0h … 09h 7Fh, with no F7h. The 7Fh may be a misprint for F7h, or the reply may have a 7Fh and
    lost its F7h in print (inference either way). The library reads either form as the reply.
-7. **The global MIDI channel.** The feature control table gives "00h - 0eh (0 - 15) where 00h (0)
-   is channel 1 and 0Eh (15) is channel 16"; 0Eh is 14. Performance Bridge leaves this setting
+7. **The global MIDI channel.** The feature control table gives the range as 00h–0Eh, called 0–15,
+   with 00h as channel 1 and 0Eh as channel 16; but 0Eh is 14. Performance Bridge leaves this setting
    alone, so it doesn't matter here.
 
 ## 8. Tests to run on the device
