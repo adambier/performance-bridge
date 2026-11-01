@@ -252,7 +252,7 @@ and step names.
 
 1. **SET PLUGIN MODE's data byte.** It has always been `00`. Does it change with more than eight plugins (a page number, perhaps)?
 2. **Type `03`.** What does the Roto-Control wait for in PLUGIN mode when the host claims Logic, and does SET PLUGIN CONTROL DETAILS work then?
-3. **The 0 dB indent.** Where exactly is the `02` indent (inferred 13003)? Do send knobs get one, with `01` and `02`, as the 3.1.0 release notes say? Does `03` get one?
+3. **The 0 dB indent.** Settled for `02` by test 5: level knobs at 13004, send knobs none. Still open: do send knobs get one with `01`, as the 3.1.0 release notes say? Does `03` get one?
 4. **The hold rule.** Does a power cycle clear it? Does anything other than a change of knob mode clear it, such as switching to PLUGIN mode and back? Is the release always about 3,300–3,700 counts in?
 5. **The FX label.** With SEL held, screen 3's bottom half shows "FX" under "Send 1" (seen); pressing that switch chooses the send knob mode (test 4), and pressing it again steps through the sends (seen, 2026-10-30). Is "FX" anything more than the label for that button? The SysEx doc names no FX switch mode.
 
@@ -465,3 +465,17 @@ marked "seen".
   change the send.
 - **White** (run 24, seen): side by side, 13, 27, 41, 55, 69, and 49; TotalMix's default white is
   drawn as 27 (light grey). Schemes 2 and 30 were no better than 73 for yellow.
+
+### Test 5 (2026-11-01): where the `02` indent is, and send knobs
+
+**Setup.** Firmware 3.3.0, SysEx API 1.6. `sbdev roto`, claiming Bitwig (`02`), 16 tracks. Knob 1 was turned slowly upward from below, three times in level mode and then several times in send mode (send index 4). Logs from Adam, 2026-11-01.
+
+**Findings:**
+- **Level knobs.** In all three passes through the upper range, knob 1 reported exactly **13004** and then nothing for 0.40, 0.13, and 0.12 s before going on (13033, 13053, 13054). No other value in the passes had a comparable pause. Adam didn't feel a detent this time; on 2026-10-30 he had felt one (test 4).
+- **Send knobs.** In three passes through the same range in send mode, knob 1 went straight through: 12987 → 13035 and 12994 → 13024, with no stop at 13004 or anywhere between about 12700 and 13300.
+- **Ends.** Turned past 16383, the knob went to 0 (two passes), and past 0 to 16383. This fits the rule for the ends of the range in section 8, settled earlier.
+
+**Consequences.**
+- The `02` indent is at 13004, one count above the 13003 inferred from Bitwig's volume law. `RotoDriver` now uses 13004.
+- Send knobs have no indent with `02`. The 3.1.0 release notes' send indents may hold only for other types, or not on 3.3.0 (inference).
+- The indent's hold is weak enough that a hand may not feel it.

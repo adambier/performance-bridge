@@ -58,14 +58,14 @@ public struct RotoDriver: Sendable {
 
     /// Where the Roto-Control's 0 dB indent sits on a level or send knob (0…1) for each claimed host
     /// type, or `nil` where it is not known.
-    /// - Bitwig (`02`): about 0.794, felt at "-0.8 dB" on a TotalMix fader (docs/ROTO-CONTROL.md,
-    ///   section 3). The exact value, 0.5 raised to 1/3, is Bitwig's 0 dB on a volume law of twice
-    ///   the cube of the position: an inference, from memory of Bitwig, not from Melbourne
-    ///   Instruments' code or a measurement.
+    /// - Bitwig (`02`): 13004 of 16383 (0.794), where level knobs stopped in three passes out of
+    ///   three (docs/ROTO-CONTROL.md, test 5). Send knobs have no indent there with `02` (test 5);
+    ///   their scale is bent the same way anyway, so every level-type knob puts 0 dB in the same
+    ///   place.
     /// - Ableton (`01`): 13926 of 16383, where the Roto-Control reported landing in it (test 3).
     public static func unityIndent(for hostType: RotoHostType) -> Double? {
         switch hostType {
-        case .bitwig: return pow(0.5, 1.0 / 3.0)
+        case .bitwig: return 13004.0 / Double(RotoSysEx.maximum14Bit)
         case .ableton: return 13926.0 / Double(RotoSysEx.maximum14Bit)
         case .logic: return nil
         }
