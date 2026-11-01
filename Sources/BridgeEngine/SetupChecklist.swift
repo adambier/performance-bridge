@@ -105,7 +105,7 @@ public enum SetupChecklist {
         steps.append(SetupStep(id: "hide", title: "Channels the surfaces don’t show", state: .instruction,
                                detail: "Channels are hidden in TotalMix FX: right-click the channel, choose Change Channel Layout, and under “Hide Channel in” check the OSC Controller box for the controller Performance Bridge uses. Channel colors are set in the same window."))
         steps.append(SetupStep(id: "order", title: "The order of the channels", state: .instruction,
-                               detail: "TotalMix FX can’t reorder its channels; Performance Bridge can. Choose Settings… from the menu, open the Channel Layout tab, and drag."))
+                               detail: "Choose Settings… from the menu, open the Channel Layout tab, and drag. Restore TotalMix FX Order puts them back."))
         return steps
     }
 

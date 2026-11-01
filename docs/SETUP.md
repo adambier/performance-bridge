@@ -125,7 +125,9 @@ If TotalMix does not show its state, choose **Ask TotalMix FX for Its State** fr
 Choose **Settings…** from the menu, and open the **Channel Layout** tab.
 
 - The **Sources** and **Outputs** buttons switch between the two views.
-- Drag a channel to change its place on the surfaces. TotalMix cannot reorder its channels; the app can.
+- Drag a channel to change its place on the surfaces. In the Outputs view, monitoring outputs and sends are
+  ordered in their own sections, since monitoring outputs always come first.
+- **Restore TotalMix FX Order** puts the view back in TotalMix FX's order.
 - To take a channel off the surfaces, hide it in TotalMix (Step 2). The layout has no hide setting of its own.
 - Channel colors are set in TotalMix FX's own Channel Layout window (the Color column, and the Color (Name) menu for the selected channel). Checked on screen (Adam, 2026-10-31).
 - The note at the bottom repeats the rule for channels hidden in TotalMix.
