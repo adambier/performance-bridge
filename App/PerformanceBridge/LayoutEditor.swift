@@ -48,14 +48,15 @@ struct LayoutView: View {
                     // "Control Room", as TotalMix FX calls the section these outputs are assigned in
                     // (Adam, 2026-10-31). Two titled sections are clear enough without brackets or
                     // colors (Adam).
-                    Section("Control Room") {
-                        rows(monitoringItems)
-                            .onMove { move($0, $1, monitoring: true) }
-                    }
-                    Section("Sends") {
-                        rows(otherItems)
-                            .onMove { move($0, $1, monitoring: false) }
-                    }
+                    // Group titles as plain rows rather than Section headers: macOS pins a section
+                    // header on a gray bar while its list scrolls (Adam, 2026-10-31: the bar looked
+                    // out of place). Each group is still reordered on its own.
+                    groupTitle("Control Room")
+                    rows(monitoringItems)
+                        .onMove { move($0, $1, monitoring: true) }
+                    groupTitle("Sends")
+                    rows(otherItems)
+                        .onMove { move($0, $1, monitoring: false) }
                 } else {
                     rows(otherItems)
                         .onMove { move($0, $1, monitoring: false) }
@@ -91,7 +92,7 @@ struct LayoutView: View {
             .fixedSize(horizontal: false, vertical: true)
         }
         .padding(20)
-        .frame(height: 490)
+        .frame(height: 620)
         .onAppear {
             // A visit here usually follows changes in TotalMix FX's own Channel Layout window,
             // which TotalMix doesn't announce over OSC: refresh the channels first.
@@ -99,6 +100,16 @@ struct LayoutView: View {
             reload()
         }
         .onChange(of: model.status) { _ in reload() }
+    }
+
+    /// A group's title, as a row that isn't dragged and doesn't pin.
+    private func groupTitle(_ text: String) -> some View {
+        Text(text)
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .padding(.top, 6)
+            .listRowSeparator(.hidden)
+            .moveDisabled(true)
     }
 
     /// A group's rows: a drag handle and the channel's name.
