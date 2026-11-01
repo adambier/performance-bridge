@@ -56,7 +56,7 @@ linear scale" off and on, and the fader messages it accepts.
   - solo groups 1–4 in bits 6–9;
   - fader groups 1–4 in bits 12–15. The document writes "12..16", taken here to be a slip.
 
-  Only the mute bit is confirmed; the solo and fader positions follow from the document. `TotalMixGroupFlags` decodes the value.
+  The mute bit (test 1) and fader group 1's bit (test 17: outputs 3/4 and 7/8 are in fader group 1 in TotalMix's window) are confirmed; the solo positions follow from the document. A `groupflags` bit says a channel belongs to a group, whether or not the group is switched on; `/fadergroup/N` (and likewise `/mutegroup`, `/sologroup`) says whether it is on (test 17). `TotalMixGroupFlags` decodes the value.
 - **Control-room assignments.** `mainout`, `mainoutb`, `phones1`–`phones4`, `cuechan`, `extinchannel`, and `talkchannel` hold the 0-based number of the assigned channel's left channel, and −1 for none. Main Out = 0 ("Monitors", outputs 1/2), Phones 1 = 2 ("ADI-2 3/4"), and Phones 2 = 6 ("Phones 2", outputs 7/8) were sent and match TotalMix's window. [test 1] The same reading for the other assignments is an inference.
 - **Triggers.** For trigger messages (`/undo`, `/sendall`, and so on), a value is optional. A value below 0.5 makes TotalMix ignore the message, so `TotalMixCommand` always sends 1.0. [RME doc]
 
@@ -123,7 +123,6 @@ The three rows of the mixer are spelled three ways (`TotalMixBus`). [RME doc]
 - **The current submix.** Input and playback channels sent no channel-level `volume` or `faderlin`: their faders in TotalMix's window arrived as mixer nodes of the selected submix. [test 1] Whether TotalMix accepts a channel-level `volume` for inputs, and what it would act on, is untested.
 - **Unanswered `/sendall`.** One `/sendall` went unanswered: status messages arrived, but nothing else. A later one, with the same settings, was answered in full. [test 1] The cause is unknown; the app should repeat the request if no reply comes.
 - **`/sologroup` and `/fadergroup`.** The document gives no value type for either. Both were sent as 0 or 1 by group. [test 1]
-- **Fader groups in `groupflags`.** Bits 12–15 are taken to be fader groups 1–4 (see section 2). Outputs 3/4 and 7/8 have bit 12 set [test 1]; whether they are in fader group 1 has not been checked in TotalMix's window.
 
 ## 6. Tests
 
@@ -382,3 +381,17 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 **Inferences.** `00 20 0D` is RME's manufacturer ID. The other bits of `c` may hold the footswitch; not tested. A fast turn may send larger steps (02, 0E, …); not seen.
 
 **Consequence.** Performance Bridge could use the ARC alongside TotalMix, e.g. its keys for paging, without taking it away from TotalMix.
+
+### Test 17 (2026-11-01): fader group 1
+
+**Setup.** TotalMix FX "2.10 (1)" with a Digiface AES, controller 4. Test 1 had found `groupflags` 4098 (bits 12 and 1) for outputs 3/4 and 7/8.
+
+**Findings** (Adam, 2026-11-01):
+- **In TotalMix's window.** ADI-2 3/4 (output 3/4) and Phones 2 (output 7/8) are in fader group 1. Moving one fader alone moved nothing else. With the "groups" panel's fader button 1 switched on (red), both faders' knobs turned red and moved together.
+- **Over OSC, with the group on.** `/sendall` reported `output 3 groupflags = 4098`, `output 7 groupflags = 4098`, `fadergroup/1 = 1`, and `fadergroup/2`–`/4` = 0. Every mixer node into those outputs reported `groupflags = 0`.
+- **Switching the group off** sent `fadergroup/1 = 0` at once, as a change.
+
+**Consequences.**
+- Bit 12 is fader group 1, as section 2 reads RME's document.
+- A `groupflags` bit is membership, whether or not the group is on. `/fadergroup/N` says whether group N is on, and TotalMix announces it when it changes.
+- A surface moving a grouped output's fader moves only that one over OSC. Whether TotalMix moves the others when the group is on and the command comes over OSC is untested ("Set all faders in group", in Global OSC's Details window, may decide it; inference).
