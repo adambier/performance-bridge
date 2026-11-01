@@ -134,13 +134,13 @@ Choose **Settings…** from the menu, and open the **Channel Layout** tab.
 - **Playbacks start on a new page**, under the Sources list, puts the first playback at the start of a new
   page of strips, after blank strips that fill the inputs' last page.
 
-## Step 6: Choose the home submix
+## Step 6: Choose the mix output
 
-The home submix is the output the surfaces' levels and pans go into. Choose it from the menu, under
-**Home Submix**.
+The mix output is the output whose submix the surfaces' levels and pans go into. Choose it from the
+menu, under **Mix Output**.
 
-- Main Out is the default. Choosing Main Out's output saves "follow Main Out", so the home moves when Main Out
-  is reassigned in TotalMix.
+- Main Out is the default. Choosing Main Out's output saves "follow Main Out", so the mix output moves when
+  Main Out is reassigned in TotalMix.
 - Any other output is in the **Other Outputs** submenu of the same menu.
 
 ## If something does not work

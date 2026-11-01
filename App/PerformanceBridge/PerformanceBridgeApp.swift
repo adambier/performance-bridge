@@ -332,7 +332,9 @@ struct MenuContent: View {
         Text("TotalMix FX: " + totalMixState)
         Text("Roto-Control: " + rotoState)
         Divider()
-        Menu("Home Submix") {
+        // "Mix Output" (Adam, 2026-10-31): the output whose submix the level knobs and pans go into;
+        // the code calls it the home submix.
+        Menu("Mix Output") {
             ForEach(model.status.monitoringOutputs, id: \.output) { choice in
                 Button(label(for: choice)) { model.setHomeSubmix(choice.output) }
             }
