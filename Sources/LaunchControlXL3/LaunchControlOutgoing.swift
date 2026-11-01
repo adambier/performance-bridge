@@ -67,8 +67,9 @@ public enum LaunchControlOutgoing {
         sysExHeader + [0x02, on ? 0x7F : 0x00, 0xF7]
     }
 
-    /// Turns on every feature control's replies (`true`), or returns to DAW mode's own set
-    /// (`false`): note 11 on channel 16.
+    /// Enables all feature controls (`true`), or returns to DAW mode's own set (`false`): note 11
+    /// on channel 16. In DAW mode all of them listen already, so the inference is that this turns
+    /// on their replies.
     public static func featureControls(_ on: Bool) -> [UInt8] {
         [0x9F, 0x0B, on ? 0x7F : 0x00]
     }
@@ -79,7 +80,7 @@ public enum LaunchControlOutgoing {
     }
 
     /// Asks for a feature control's setting: the same Control Change on channel 8; the reply comes
-    /// on channel 7.
+    /// on channel 7. The guide gives no value for the question; 0 is an inference.
     public static func queryFeature(_ number: UInt8) -> [UInt8] {
         [0xB7, number & 0x7F, 0x00]
     }
@@ -97,14 +98,16 @@ public enum LaunchControlOutgoing {
         return feature(numbers[row], on ? 0x7F : 0x00)
     }
 
-    /// Turns the faders' own pickup on or off (feature control 70): with it on, a fader changes
-    /// nothing until it passes the value it controls.
+    /// Turns "DAW Fader Pickup" on or off (feature control 70). The guide doesn't describe it; that
+    /// a fader then changes nothing until it passes the value it controls is an inference from the
+    /// user guide's pickup for Custom Modes.
     public static func faderPickup(_ on: Bool) -> [UInt8] {
         feature(0x46, on ? 0x7F : 0x00)
     }
 
-    /// Turns touch reports for faders and encoders on or off (feature control 71). Touches then
-    /// come on channel 15 (see `LaunchControlEvent.touch`).
+    /// Turns touch reports on or off (feature control 71). They then come on channel 15 (see
+    /// `LaunchControlEvent.touch`). Whether a "touch" is a touch sensor or Shift held while moving
+    /// a control is open (docs/LAUNCH-CONTROL-XL3.md).
     public static func touchEvents(_ on: Bool) -> [UInt8] {
         feature(0x47, on ? 0x7F : 0x00)
     }
@@ -127,7 +130,8 @@ public enum LaunchControlOutgoing {
     }
 
     /// Lights a control in one of the 128 palette colors (Control Change on channel 1, with the
-    /// control's own number), or `nil` for a control without a light.
+    /// control's own number; for an encoder, its absolute-mode number even in relative mode, by
+    /// inference from the guide's RGB section), or `nil` for a control without a light.
     public static func color(_ element: LaunchControlElement, _ index: UInt8) -> [UInt8]? {
         guard element.hasLight, element.isValid else { return nil }
         return [0xB0, element.controlNumber, index & 0x7F]

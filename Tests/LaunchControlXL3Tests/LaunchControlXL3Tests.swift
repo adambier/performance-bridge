@@ -120,6 +120,8 @@ final class LaunchControlXL3Tests: XCTestCase {
                        "running status, with a clock byte in between")
         XCTAssertEqual(parser.feed(LaunchControlOutgoing.sysExHeader + [0x09, 0x7F, 0xF7] + [0xB0, 116, 127]),
                        [.bitmapReady, .button(.play, pressed: true)])
+        XCTAssertEqual(parser.feed(LaunchControlOutgoing.sysExHeader + [0x09, 0xF7]), [.bitmapReady],
+                       "the reply read with the guide's 7Fh as a misprint for F7h")
         XCTAssertEqual(parser.feed(LaunchControlOutgoing.sysExHeader + [0x09] + [0xB0, 118, 127]),
                        [.button(.record, pressed: true)], "an unfinished SysEx message is dropped")
     }

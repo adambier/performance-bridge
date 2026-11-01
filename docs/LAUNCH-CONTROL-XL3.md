@@ -21,8 +21,9 @@ the project folder (`Novation Docs/`).
   read from the PDF.
 - **[User guide]** "Launch Control XL 3 user guide" (PDF, English). It describes the controls and
   the DAW modes as a user sees them.
-- **[Bitwig setup]** "Launch Control XL Mk3, Bitwig Studio controller extension, setup" (PDF,
-  shipped with Novation's Bitwig extension). It gives the DAW port names on Windows and Linux.
+- **[Bitwig setup]** "Launch Control XL Mk3, Bitwig Studio controller extension, setup": Bitwig's
+  PDF (its branding), shipped with the Bitwig extension for the device. It gives the DAW port
+  names on macOS (in a screenshot), Windows, and Linux.
 
 Bracketed tags below name the source. "Inference" marks anything the sources don't say outright.
 
@@ -36,9 +37,10 @@ Bracketed tags below name the source. "Inference" marks anything the sources don
 - On Linux the DAW ports are "LCXL3 1 LCXL3 1 DAW Out" (the device's output, the host's input)
   and "LCXL3 1 LCXL3 1 DAW In". On Windows they are "MIDIIN2 (LCXL3 1 MIDI)" and "MIDIOUT2
   (LCXL3 1 MIDI)". [Bitwig setup]
-- The macOS names are in a picture there and haven't been read. `sbdev lcxl` guesses "LCXL3 1
-  DAW", which would match one source and one destination if the macOS names follow the Linux
-  pattern (inference).
+- On macOS, Bitwig's screenshot shows the input as "LCXL3 1 DAW Out" and the output as "LCXL3 1
+  DAW In". [Bitwig setup, page 2] Bitwig may show names that differ from CoreMIDI's (inference),
+  so `sbdev lcxl` matches by part of the name, "LCXL3 1 DAW", which picks one source and one
+  destination if the CoreMIDI names follow the same pattern.
 - In DAW mode the DIN outputs send nothing. [Programmer's reference guide, "DAW mode"]
 
 ## 3. DAW mode
@@ -57,9 +59,10 @@ Bracketed tags below name the source. "Inference" marks anything the sources don
 
   [Programmer's reference guide, feature control table; its prose differs, section 7]
 - **What the modes change.** On the device, Mode plus Mute/Select or Solo/Arm chooses between
-  them. The user guide gives the pairing both ways round (section 7). In both DAW modes the
-  faders and buttons stay the same, and only what a host assigns the encoders changes. [User
-  guide, Ableton Live chapter] So, for Performance Bridge, the two modes are two encoder pages
+  them. The user guide gives the pairing both ways round (section 7). For Ableton Live, Logic
+  Pro, Cubase, and Bitwig Studio the faders and buttons stay the same, and only what the encoders
+  control changes; in FL Studio the modes change the buttons too. [User guide, the chapters for
+  each DAW] So, for Performance Bridge, the two modes are two encoder pages
   that the device switches for us (inference).
 
 ## 4. The controls
@@ -69,7 +72,7 @@ encoders report on channel 16, buttons on channel 1, and Shift on channel 7.
 
 | Control | Control Change | Notes |
 |---|---|---|
-| Faders 1–8 | 5–12 | **not motorized**, no LED |
+| Faders 1–8 | 5–12 | **not motorized**; no LED in the guide's pictures |
 | Encoders, row 1 (top) | 13–20 | endless; one LED under each |
 | Encoders, row 2 | 21–28 | |
 | Encoders, row 3 | 29–36 | |
@@ -95,19 +98,28 @@ encoders report on channel 16, buttons on channel 1, and Shift on channel 7.
   controls 69, 72, and 73 for rows 1–3. A relative row then reports Control Changes 64 higher
   (77–84, 85–92, and 93–100). The value is 64 for no movement, above 64 for clockwise steps, and
   below 64 for anticlockwise. [Programmer's reference guide]
-- **Touch.** With touch reports on (feature control 71), touching a fader or an encoder sends its
-  Control Change on channel 15, with 127 for touch and 0 for release. For example, BEh 05h 7Fh is
-  the first fader touched. [Programmer's reference guide, "Continuous control touch events"]
-- **Fader pickup.** Feature control 70 turns the device's own pickup on or off: "moving the fader
-  doesn't change the parameter until you pass the current value". [Programmer's reference guide,
-  feature controls; User guide, "Fader pickup"] For that, the device must know the parameter's
-  value. The inference is that it learns it from the position message above.
+- **Touch.** With touch reports on (feature control 71), a "touch" sends the control's Control
+  Change on channel 15, with 127 for touch on and 0 for off. The guide's only example is a fader:
+  BEh 05h 7Fh for the leftmost. [Programmer's reference guide, "Continuous control touch events"]
+  - What a touch is remains open. The guide describes the display's touch setting as "this is
+    the Shift + rotate" (section 5), and the user guide never mentions touch sensing. So a
+    "touch" may be moving a control with Shift held, not a touch sensor (inference).
+  - It matters for SurfaceCore, which holds a control while it is touched. Test 5 checks both.
+  - Whether encoders report touch too is also open.
+- **Fader pickup.** The programmer's reference guide lists feature control 70 as "DAW Fader
+  Pickup", on or off, with no description. [Programmer's reference guide, feature controls]
+  - The user guide's pickup ("moving the fader doesn't change the parameter until you pass the
+    current value") is the Settings menu's, which "doesn't affect DAW modes". [User guide, "Fader
+    pickup" and Settings]
+  - That feature 70 works the same way in DAW mode is an inference. So is that the device learns
+    the parameter's value from the position message above. Test 7 checks both.
 
 ## 5. Lights and the screen
 
 - **Palette colors.** A Control Change on channel 1, with the control's own number, lights it in
-  one of 128 palette colors. Encoders use their absolute numbers even when in relative mode.
-  [Programmer's reference guide, "Colouring the surface"] The palette is a picture in the guide
+  one of 128 palette colors. [Programmer's reference guide, "Colouring the surface"] The guide
+  says encoder LEDs use their absolute numbers even in relative mode, under "RGB Colour"; that the
+  same holds for palette colors is an inference. The palette is a picture in the guide
   (page 12). Index 0 looks dark gray, perhaps off, and 3 looks white (inference from the picture).
 - **RGB.** SysEx 01h 53h, then the control, red, green, and blue, lights a button or an encoder in
   a color of its own. [Programmer's reference guide, "RGB Colour"] SysEx data bytes are 7-bit, so
@@ -138,7 +150,8 @@ encoders report on channel 16, buttons on channel 1, and Shift on channel 7.
 
 Control Changes on channel 7 to the DAW port set them. The same Control Change on channel 8 asks
 for one, and replies come on channel 7. In DAW mode all of them listen, but only a few reply.
-Note 11 on channel 16 (velocity 127 or 0) turns all replies on, or back to DAW mode's set.
+Note 11 on channel 16 (velocity 127 or 0) can "enable all of them or revert to the DAW set". The
+inference is that this means their replies, since in DAW mode they all listen already.
 [Programmer's reference guide, "Launch Control XL 3 feature Controls"]
 
 | CC | Feature | Values |
@@ -169,16 +182,19 @@ Each is resolved here as stated, until the device settles it.
 2. **How many Custom Modes.** The programmer's reference guide has 16. The user guide has "15
    Custom Modes, and one Default mode (slot 16)".
 3. **Which button chooses which DAW mode.** The user guide says Mode plus Mute/Select is DAW Mixer
-   and Solo/Arm is DAW Control in one place (Ableton Live encoders), and the reverse in a tip two
-   pages later.
+   and Solo/Arm is DAW Control six times, in the Ableton Live, Logic Pro, Cubase, and Bitwig
+   Studio chapters. Twice, in the DAW Control tips, it says the reverse.
 4. **Display targets for names.** The programmer's reference guide's note on arrangements mentions
    "targets only setting names (22h(34) – 28h(40))", which overlaps encoder targets (34–36) and
    button numbers (37–40). The target list gives no such range.
 5. **Bitmap targets.** The bitmap section names the stationary display 20h and the global
    temporary display 21h, where "Configure displays" uses 35h and 36h.
-6. **Bitmap message end.** The bitmap message is shown ending with 7Fh, not F7h, and the reply has
-   no F7h. Both are taken to be misprints for F7h (inference). The library reads the reply only
-   if it ends with F7h.
+6. **Bitmap message end.** The bitmap message is shown ending with 7Fh, not F7h, and the reply as
+   F0h … 09h 7Fh, with no F7h. The 7Fh may be a misprint for F7h, or the reply may have a 7Fh and
+   lost its F7h in print (inference either way). The library reads either form as the reply.
+7. **The global MIDI channel.** The feature control table gives "00h - 0eh (0 - 15) where 00h (0)
+   is channel 1 and 0Eh (15) is channel 16"; 0Eh is 14. Performance Bridge leaves this setting
+   alone, so it doesn't matter here.
 
 ## 8. Tests to run on the device
 
@@ -191,7 +207,8 @@ port names.
    including Track < and > (103, 102) and the Novation button. What do buttons send: 127 and 0?
 4. **Modes.** Mode plus Mute/Select, then plus Solo/Arm: which reports 1 and which 2 (section 7,
    item 3)? Does `mode control` switch the device?
-5. **Touch.** Faders and encoders, with `touch on`.
+5. **Touch.** With `touch on`: touch a fader and an encoder without moving them, then move each
+   with Shift held. Which sends channel 15 reports?
 6. **Encoder position.** `pos e11 0`, then turn the encoder one step: does it continue from 0
    (taken) or from where it was (not)? The same with `pos e11 127`.
 7. **Fader pickup.** `pickup on`, `pos f1 64`, then move fader 1 from the bottom. Does it send
