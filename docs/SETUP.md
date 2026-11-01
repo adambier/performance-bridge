@@ -71,7 +71,7 @@ title is not in the screenshot, so the top-level menu is not checked.
 ## Step 2: Choose which channels the remote sees
 
 Channels are hidden only in TotalMix FX, and the app has no setting for hiding. A channel that TotalMix hides
-from an OSC Controller is not shown on any surface that uses that controller, and the app does not show it greyed out. Checked on screen
+from an OSC Controller is not shown on the hardware controllers connected through it, and the app does not show it greyed out. Checked on screen
 (Adam, 2026-10-31) unless marked otherwise:
 
 1. Open the Channel Layout window. Right-click a channel's strip in TotalMix's main window and choose
@@ -129,11 +129,11 @@ going quiet.
 Choose **Settings…** from the menu, and open the **Channel Layout** tab.
 
 - The **Sources** and **Outputs** buttons switch between the two views.
-- Drag a channel to change its place on the surfaces. In the Outputs view, the **Control Room** outputs (those
+- Drag a channel to change its place on the hardware controllers. In the Outputs view, the **Control Room** outputs (those
   assigned in TotalMix FX's control room: Main Out, Phones, and so on) and the **Sends** are ordered in their
   own sections, since control room outputs always come first.
 - **Restore TotalMix FX Order** puts the view back in TotalMix FX's order.
-- To take a channel off the surfaces, hide it in TotalMix (Step 2). The layout has no hide setting of its own.
+- To take a channel off the hardware controllers, hide it in TotalMix (Step 2). The layout has no hide setting of its own.
 - Channel colors are set in TotalMix FX's own Channel Layout window (the Color column, and the Color (Name) menu for the selected channel). Checked on screen (Adam, 2026-10-31).
 - The note at the bottom repeats the rule for channels hidden in TotalMix.
 - **Playbacks start on a new page**, under the Sources list, puts the first playback at the start of a new
@@ -141,7 +141,7 @@ Choose **Settings…** from the menu, and open the **Channel Layout** tab.
 
 ## Step 6: Choose the mix output
 
-The mix output is the output whose submix the surfaces' levels and pans go into. Choose it from the
+The mix output is the output whose submix the hardware controllers' levels and pans go into. Choose it from the
 menu, under **Mix Output**.
 
 - Main Out is the default. Choosing Main Out's output saves "follow Main Out", so the mix output moves when
@@ -154,7 +154,7 @@ menu, under **Mix Output**.
 - **TotalMix FX: No Answer.** Check that Global OSC is on and that the ports in Settings match TotalMix's
   (Step 1). Then choose **Refresh Channels from TotalMix FX**.
 - **Roto-Control: Not Found.** Check the cable, and the MIDI port in Settings (Step 3).
-- **A channel is missing from the surfaces.** Check whether TotalMix hides it from the OSC controller the app uses
+- **A channel is missing from the hardware controllers.** Check whether TotalMix hides it from the OSC controller the app uses
   (Step 2).
 
 ## Reporting a problem
