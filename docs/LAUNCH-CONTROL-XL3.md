@@ -142,7 +142,8 @@ encoders report on channel 16, buttons on channel 1, and Shift on channel 7.
   one of 128 palette colors. [Programmer's reference guide, "Colouring the surface"] The guide
   says encoder LEDs use their absolute numbers even in relative mode, under "RGB Colour"; that the
   same holds for palette colors is an inference. The palette is a picture in the guide
-  (page 12). Index 0 looks dark gray, perhaps off, and 3 looks white (inference from the picture).
+  (page 12). Index 0 is off and 5 is red (test 4); indices 0–39 have been seen to match the picture's
+  run of colors, as far as a photo can show.
 - **RGB.** SysEx 01h 53h, then the control, red, green, and blue, lights a button or an encoder in
   a color of its own. [Programmer's reference guide, "RGB Colour"] SysEx data bytes are 7-bit, so
   each part is 0–127. That this covers the LED's full range is an inference.
@@ -238,7 +239,7 @@ port names.
    nothing until it passes the middle?
 8. **Relative encoders.** Done (test 2): as the guide says. `relative 1 on`: do encoders 1–8 report 77–84 with 65 and 63 for single
    steps?
-9. **Colors.** `palette 0`, `palette 40`, and `palette 80`. Compare with the guide's palette. Is 0
+9. **Colors.** Done (test 4) for indices 0–39 and RGB; 40–127 not yet seen. `palette 0`, `palette 40`, and `palette 80`. Compare with the guide's palette. Is 0
    off? Then `rgb b11 127 0 0`, and check the Track, Page, Record, Play, and Novation buttons for
    lights.
 10. **Screen.** `display f1 2`, then `text f1 0 Mix`, `text f1 1 ADI-2`, `text f1 2 -6.0 dB`, and
@@ -342,3 +343,18 @@ Everything in this section is inference, for discussion with Adam before the dri
 - With feature 70 on, the device does pickup itself. It holds back a fader's values until the fader passes the position the host sent, and shows that position on the screen meanwhile.
 - That suits the driver better than SurfaceCore's own pickup, since the user sees the target. The driver can turn feature 70 on and send each fader's position, and give SurfaceCore a fader that "follows" (inference, to settle when the driver is written).
 - Test 2's run, where nothing was held back, stays unexplained.
+
+### Test 4 (2026-11-01): colors
+
+**Setup.** As test 1. `sbdev lcxl`, then `palette 0` (encoders 0–23, then buttons 24–39, as CCs on channel 1), a photo, then `rgb b11 127 0 0` and `color C 5` for `pageup`, `trackleft`, `record`, `play`, `soloarm`, and `novation`.
+
+**Findings:**
+- Index 0 is off: encoder 1's LED stayed dark.
+- The 40 indices ran from grays and white through pink, reds, oranges, yellows, and greens to cyans and blues, in the same order as the guide's palette picture. The pale tints (1–3, 8, 12, 16, 20) looked near white in the photo, so their exact shades have not been checked.
+- `rgb b11 127 0 0` lit top-row button 1 red.
+- Index 5 lit Page up, Track left, Record, Play, and Solo/Arm red, so each has a color LED of its own.
+- The Novation button has no LED, as the library assumed: `sbdev` refused `color novation 5` without sending.
+
+**Consequences.**
+- The driver can use palette indices for the strips' colors and RGB where a palette color is too far off, e.g., to match TotalMix's eight colors.
+- Page, Track, Record, Play, and Solo/Arm can show state, e.g., whether another page exists.
