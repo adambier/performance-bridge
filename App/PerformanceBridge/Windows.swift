@@ -124,7 +124,7 @@ struct SettingsView: View {
                 portRow("Incoming port", value: $edited.incomingPort, override: model.portOverrides.incoming)
                 portRow("Outgoing port", value: $edited.outgoingPort, override: model.portOverrides.outgoing)
             }
-            note("The computer that runs TotalMix FX, and the ports of the OSC controller set up for Performance Bridge in TotalMix FX: Options → Mixer Settings… → OSC, “Port (incoming)” and “Port (outgoing)”, with “Global OSC” chosen. TotalMix FX’s ports for controller 1 are 7001 and 9001.")
+            note("The computer that runs TotalMix FX, and the ports of the OSC controller set up for Performance Bridge in TotalMix FX: Options → Mixer Settings… → OSC, “Port (incoming)” and “Port (outgoing)”, with “Global OSC” chosen.")
 
             Divider()
                 .padding(.vertical, 4)

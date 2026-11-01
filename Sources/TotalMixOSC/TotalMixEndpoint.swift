@@ -13,13 +13,15 @@ public struct TotalMixEndpoint: Equatable, Sendable, Codable {
     /// The port TotalMix sends to.
     public var outgoingPort: UInt16
 
-    /// Makes an endpoint; the defaults are TotalMix's on this computer.
+    /// Makes an endpoint; the defaults are this computer with ports 7001 and 9001, which RME's
+    /// manual gives as typical values (docs/TOTALMIX-OSC.md, section 1). They are not known to be
+    /// TotalMix's own defaults.
     public init(host: String = "localhost", incomingPort: UInt16 = 7001, outgoingPort: UInt16 = 9001) {
         self.host = host
         self.incomingPort = incomingPort
         self.outgoingPort = outgoingPort
     }
 
-    /// TotalMix on this computer with its default ports, 7001 and 9001.
+    /// TotalMix on this computer with ports 7001 and 9001, Performance Bridge's defaults.
     public static let standard = TotalMixEndpoint()
 }
