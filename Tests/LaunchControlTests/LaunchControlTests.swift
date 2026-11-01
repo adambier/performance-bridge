@@ -1,9 +1,9 @@
 import XCTest
-@testable import LaunchControlXL3
+@testable import LaunchControl
 
 /// Checks the Launch Control XL 3's messages against Novation's programmer's reference guide,
 /// version 1.0. These are checks of this library against the guide, not of the device.
-final class LaunchControlXL3Tests: XCTestCase {
+final class LaunchControlTests: XCTestCase {
     func testControlNumbersFollowTheGuidesMap() {
         XCTAssertEqual(LaunchControlElement.fader(0).controlNumber, 5)
         XCTAssertEqual(LaunchControlElement.fader(7).controlNumber, 12)
@@ -128,5 +128,33 @@ final class LaunchControlXL3Tests: XCTestCase {
                        "the reply read with the guide's 7Fh as a misprint for F7h")
         XCTAssertEqual(parser.feed(LaunchControlOutgoing.sysExHeader + [0x09] + [0xB0, 118, 127]),
                        [.button(.record, pressed: true)], "an unfinished SysEx message is dropped")
+    }
+
+    func testModelsDifferInTheirSysExHeaderAndControls() {
+        XCTAssertEqual(LaunchControlModel.xl3.sysExHeader, [0xF0, 0x00, 0x20, 0x29, 0x02, 0x15])
+        XCTAssertEqual(LaunchControlModel.lc3.sysExHeader, [0xF0, 0x00, 0x20, 0x29, 0x02, 0x16])
+        XCTAssertEqual(LaunchControlModel.xl3.elements.count, LaunchControlElement.all.count)
+        // 16 encoders, 8 buttons, Function (Solo/Arm's place), Novation, Page and Track pairs, Shift.
+        XCTAssertEqual(LaunchControlModel.lc3.elements.count, 16 + 8 + 7)
+        XCTAssertFalse(LaunchControlModel.lc3.has(.fader(0)))
+        XCTAssertFalse(LaunchControlModel.lc3.has(.encoder(row: 2, column: 0)))
+        XCTAssertFalse(LaunchControlModel.lc3.has(.button(row: 1, column: 0)))
+        XCTAssertFalse(LaunchControlModel.lc3.has(.record))
+        XCTAssertTrue(LaunchControlModel.lc3.has(.soloArm))
+        XCTAssertEqual(LaunchControlModel(sysEx: [0xF0, 0x00, 0x20, 0x29, 0x02, 0x16, 0x09, 0xF7]), .lc3)
+        XCTAssertNil(LaunchControlModel(sysEx: [0xF0, 0x00, 0x20, 0x29, 0x02, 0x14, 0x09, 0xF7]))
+    }
+
+    func testSysExMessagesCarryTheModelsHeader() {
+        let target = LaunchControlDisplayTarget.control(.encoder(row: 0, column: 0))
+        XCTAssertEqual(LaunchControlOutgoing.text(target, field: 1, "Hi", model: .lc3),
+                       [0xF0, 0x00, 0x20, 0x29, 0x02, 0x16, 0x06, 13, 1, 0x48, 0x69, 0xF7])
+        XCTAssertEqual(LaunchControlOutgoing.configureDisplay(.stationary, .titleAndEightNames, model: .lc3),
+                       [0xF0, 0x00, 0x20, 0x29, 0x02, 0x16, 0x04, 0x35, 0x63, 0xF7])
+        XCTAssertEqual(LaunchControlOutgoing.rgb(.button(row: 0, column: 0), red: 1, green: 2, blue: 3, model: .lc3),
+                       [0xF0, 0x00, 0x20, 0x29, 0x02, 0x16, 0x01, 0x53, 37, 1, 2, 3, 0xF7])
+        XCTAssertEqual(LaunchControlOutgoing.dawModeSysEx(true, model: .lc3), [0xF0, 0x00, 0x20, 0x29, 0x02, 0x16, 0x02, 0x7F, 0xF7])
+        var parser = LaunchControlParser()
+        XCTAssertEqual(parser.feed(LaunchControlModel.lc3.sysExHeader + [0x09, 0x7F, 0xF7]), [.bitmapReady])
     }
 }

@@ -44,21 +44,21 @@ var targets: [Target] = [
     .target(name: "OSCCodec"),
     .target(name: "TotalMixOSC", dependencies: ["OSCCodec"]),
     .target(name: "RotoControl"),
-    .target(name: "LaunchControlXL3"),
+    .target(name: "LaunchControl"),
     .target(name: "MIDITransport"),
     .target(name: "UDPTransport"),
     .target(name: "SurfaceCore", dependencies: ["OSCCodec", "TotalMixOSC"]),
     .target(name: "RotoDriver", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "SurfaceCore"]),
     .target(name: "BridgeEngine", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "MIDITransport", "UDPTransport",
                                                  "SurfaceCore", "RotoDriver"]),
-    .executableTarget(name: "sbdev", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "LaunchControlXL3", "MIDITransport", "UDPTransport",
+    .executableTarget(name: "sbdev", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "LaunchControl", "MIDITransport", "UDPTransport",
                                                    "SurfaceCore", "RotoDriver"]),
 ]
 let products: [Product] = [
     .library(name: "OSCCodec", targets: ["OSCCodec"]),
     .library(name: "TotalMixOSC", targets: ["TotalMixOSC"]),
     .library(name: "RotoControl", targets: ["RotoControl"]),
-    .library(name: "LaunchControlXL3", targets: ["LaunchControlXL3"]),
+    .library(name: "LaunchControl", targets: ["LaunchControl"]),
     .library(name: "MIDITransport", targets: ["MIDITransport"]),
     .library(name: "UDPTransport", targets: ["UDPTransport"]),
     .library(name: "SurfaceCore", targets: ["SurfaceCore"]),
@@ -77,7 +77,7 @@ if includeTests {
     targets.append(.testTarget(name: "OSCCodecTests", dependencies: ["OSCCodec"]))
     targets.append(.testTarget(name: "TotalMixOSCTests", dependencies: ["OSCCodec", "TotalMixOSC"]))
     targets.append(.testTarget(name: "RotoControlTests", dependencies: ["RotoControl"]))
-    targets.append(.testTarget(name: "LaunchControlXL3Tests", dependencies: ["LaunchControlXL3"]))
+    targets.append(.testTarget(name: "LaunchControlTests", dependencies: ["LaunchControl"]))
     targets.append(.testTarget(name: "MIDITransportTests", dependencies: ["MIDITransport", "RotoControl"]))
     targets.append(.testTarget(name: "UDPTransportTests", dependencies: ["UDPTransport"]))
     targets.append(.testTarget(name: "SurfaceCoreTests", dependencies: ["SurfaceCore", "TotalMixOSC", "OSCCodec"]))

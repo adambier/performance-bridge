@@ -1,8 +1,10 @@
-// Messages to the Launch Control XL 3 in DAW mode, sent to its DAW port. Source: Novation's
-// "Launch Control XL 3 programmer's reference guide", version 1.0 (April 2026): "DAW mode control",
-// "Absolute and relative encoder modes", "Continuous control touch events", "Colouring the
-// surface", "Controlling the screen", and "Launch Control XL 3 feature Controls". None of these
-// has been checked on the device yet (docs/LAUNCH-CONTROL-XL3.md).
+// Messages to a Launch Control XL 3 or Launch Control 3 in DAW mode, sent to its DAW port. Source:
+// Novation's "Launch Control XL 3 programmer's reference guide", version 1.0 (April 2026): "DAW mode
+// control", "Absolute and relative encoder modes", "Continuous control touch events", "Colouring the
+// surface", "Controlling the screen", and "Launch Control XL 3 feature Controls"; and the same
+// sections of the "Launch Control 3 programmer's reference guide", version 1.1. Checked on an XL 3
+// except where a doc comment says otherwise (docs/LAUNCH-CONTROL-XL3.md, section 10); the Launch
+// Control 3 has not been checked on a device (docs/LAUNCH-CONTROL-3.md).
 
 import Foundation
 
@@ -53,8 +55,9 @@ public enum LaunchControlArrangement: UInt8, Sendable, CaseIterable {
 /// bytes of one message, for the DAW port.
 public enum LaunchControlOutgoing {
     /// The start of every SysEx message to or from the Launch Control XL 3: F0h, Novation's
-    /// manufacturer ID (00h 20h 29h), and 02h 15h.
-    public static let sysExHeader: [UInt8] = [0xF0, 0x00, 0x20, 0x29, 0x02, 0x15]
+    /// manufacturer ID (00h 20h 29h), and 02h 15h. `LaunchControlModel.sysExHeader` gives each
+    /// model's.
+    public static let sysExHeader: [UInt8] = LaunchControlModel.xl3.sysExHeader
 
     /// Enters DAW mode (`true`) or returns to standalone mode (`false`): note 12 on channel 16,
     /// velocity 127 or 0. A host sends it on connecting and on quitting.
@@ -63,8 +66,8 @@ public enum LaunchControlOutgoing {
     }
 
     /// The same as `dawMode(_:)`, as Novation's SysEx form (command 02h).
-    public static func dawModeSysEx(_ on: Bool) -> [UInt8] {
-        sysExHeader + [0x02, on ? 0x7F : 0x00, 0xF7]
+    public static func dawModeSysEx(_ on: Bool, model: LaunchControlModel = .xl3) -> [UInt8] {
+        model.sysExHeader + [0x02, on ? 0x7F : 0x00, 0xF7]
     }
 
     /// Enables all feature controls (`true`), or returns to DAW mode's own set (`false`): note 11
@@ -98,16 +101,17 @@ public enum LaunchControlOutgoing {
         return feature(numbers[row], on ? 0x7F : 0x00)
     }
 
-    /// Turns "DAW Fader Pickup" on or off (feature control 70). The guide doesn't describe it; that
-    /// a fader then changes nothing until it passes the value it controls is an inference from the
-    /// user guide's pickup for Custom Modes.
+    /// Turns "DAW Fader Pickup" on or off (feature control 70; XL 3 only). The guide doesn't
+    /// describe it. With it on, a fader sends no values until it passes the position last sent
+    /// with `position(_:_:)`, and the screen shows that position meanwhile
+    /// (docs/LAUNCH-CONTROL-XL3.md, test 3; one earlier run was not held back, test 2).
     public static func faderPickup(_ on: Bool) -> [UInt8] {
         feature(0x46, on ? 0x7F : 0x00)
     }
 
     /// Turns touch reports on or off (feature control 71). They then come on channel 15 (see
-    /// `LaunchControlEvent.touch`). Whether a "touch" is a touch sensor or Shift held while moving
-    /// a control is open (docs/LAUNCH-CONTROL-XL3.md).
+    /// `LaunchControlEvent.touch`). They come from movement, not a touch sensor
+    /// (docs/LAUNCH-CONTROL-XL3.md, test 1).
     public static func touchEvents(_ on: Bool) -> [UInt8] {
         feature(0x47, on ? 0x7F : 0x00)
     }
@@ -140,15 +144,17 @@ public enum LaunchControlOutgoing {
     /// Lights a control in a color of its own (SysEx 01h 53h), each part 0–127 (SysEx data bytes
     /// are 7-bit; that the device reads 0–127 as its full range is an inference), or `nil` for a
     /// control without a light.
-    public static func rgb(_ element: LaunchControlElement, red: UInt8, green: UInt8, blue: UInt8) -> [UInt8]? {
+    public static func rgb(_ element: LaunchControlElement, red: UInt8, green: UInt8, blue: UInt8,
+                           model: LaunchControlModel = .xl3) -> [UInt8]? {
         guard element.hasLight, element.isValid else { return nil }
-        return sysExHeader + [0x01, 0x53, element.controlNumber, red & 0x7F, green & 0x7F, blue & 0x7F, 0xF7]
+        return model.sysExHeader + [0x01, 0x53, element.controlNumber, red & 0x7F, green & 0x7F, blue & 0x7F, 0xF7]
     }
 
     /// Tells a fader or an encoder the position of what it controls, 0–127, or `nil` for any other
-    /// control. Novation's guide says absolute encoders pick up position information from the host
-    /// but not in which message; sending the control's own Control Change back on channel 16 is an
-    /// inference, and so is that faders use it for their pickup.
+    /// control: the control's own Control Change, sent back on channel 16. Novation's guide says
+    /// absolute encoders pick up position information from the host but not in which message.
+    /// An encoder continues from the position sent (docs/LAUNCH-CONTROL-XL3.md, test 2), and a
+    /// fader with pickup on waits for it (test 3).
     public static func position(_ element: LaunchControlElement, _ value: UInt8) -> [UInt8]? {
         guard element.isContinuous, element.isValid else { return nil }
         return [0xBF, element.controlNumber, value & 0x7F]
@@ -158,25 +164,28 @@ public enum LaunchControlOutgoing {
     /// itself when its control moves (`onChange`) or is touched with Shift held (`onTouch`). Both
     /// are on by default. `nil` for a target that has no display.
     public static func configureDisplay(_ target: LaunchControlDisplayTarget, _ arrangement: LaunchControlArrangement,
-                                        onChange: Bool = true, onTouch: Bool = true) -> [UInt8]? {
+                                        onChange: Bool = true, onTouch: Bool = true,
+                                        model: LaunchControlModel = .xl3) -> [UInt8]? {
         guard let byte = target.byte else { return nil }
         let config = arrangement.rawValue | (onChange ? 0x40 : 0) | (onTouch ? 0x20 : 0)
-        return sysExHeader + [0x04, byte, config, 0xF7]
+        return model.sysExHeader + [0x04, byte, config, 0xF7]
     }
 
     /// Brings a display up with its current text (`true`) or takes it down (`false`), or `nil` for a
     /// target that has no display.
-    public static func showDisplay(_ target: LaunchControlDisplayTarget, _ show: Bool) -> [UInt8]? {
+    public static func showDisplay(_ target: LaunchControlDisplayTarget, _ show: Bool,
+                                   model: LaunchControlModel = .xl3) -> [UInt8]? {
         guard let byte = target.byte else { return nil }
-        return sysExHeader + [0x04, byte, show ? 0x7F : 0x00, 0xF7]
+        return model.sysExHeader + [0x04, byte, show ? 0x7F : 0x00, 0xF7]
     }
 
     /// Fills in one text field of a display (SysEx 06h), or `nil` for a target that has no display.
     /// The text is made fit for the screen by `LaunchControlText.bytes(_:)`. How many characters a
     /// field shows is not in the guide.
-    public static func text(_ target: LaunchControlDisplayTarget, field: Int, _ text: String) -> [UInt8]? {
+    public static func text(_ target: LaunchControlDisplayTarget, field: Int, _ text: String,
+                            model: LaunchControlModel = .xl3) -> [UInt8]? {
         guard let byte = target.byte, (0..<128).contains(field) else { return nil }
-        return sysExHeader + [0x06, byte, UInt8(field)] + LaunchControlText.bytes(text) + [0xF7]
+        return model.sysExHeader + [0x06, byte, UInt8(field)] + LaunchControlText.bytes(text) + [0xF7]
     }
 }
 
