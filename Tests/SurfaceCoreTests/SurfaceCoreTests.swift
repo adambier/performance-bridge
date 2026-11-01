@@ -312,13 +312,13 @@ final class SurfaceHubTests: XCTestCase {
         var hub = loadedHub()
         let output = hub.setHomeSubmix(2, now: 1)
         XCTAssertEqual(hub.strips(of: roto)?[1].knobTarget, .level(ChannelRef(.input, 2), submix: 2))
-        XCTAssertEqual(hub.sendTargets, [], "Main Out is a monitoring output, so never a send")
+        XCTAssertEqual(hub.sendTargets, [0], "with Phones as the home, Main Out is a send target")
         XCTAssertTrue(output.updates[roto]?.contains(.knob(index: 1, value: 0.5)) ?? false)
         _ = hub.setHomeSubmix(nil, now: 2)
         XCTAssertEqual(hub.homeSubmix, 0, "back to following Main Out")
     }
 
-    func testMonitoringOutputsAreNotSends() {
+    func testSendTargetsAreTheControlRoomMixesFirstThenTheOtherOutputs() {
         var hub = loadedHub(mode: .strips(view: .sources, first: 0, knob: .send(0), switch: .mute))
         let events: [TotalMixEvent] = [
             .channel(bus: .output, channel: 6, parameter: "stereo", value: .number(1)),
@@ -328,13 +328,27 @@ final class SurfaceHubTests: XCTestCase {
         ]
         for event in events { _ = hub.handle(event, now: 1) }
         XCTAssertEqual(hub.mirror.monitoringOutputs, [0, 2])
-        XCTAssertEqual(hub.sendTargets, [6], "Main and Phones 1 are monitoring; output 7/8 is a send")
-        XCTAssertEqual(hub.strips(of: roto)?[0].knobTarget, .level(ChannelRef(.input, 0), submix: 6))
+        XCTAssertEqual(hub.sendTargets, [2, 6], "Phones 1 first (a control room mix), then output 7/8; Main Out is the home")
+        XCTAssertEqual(hub.strips(of: roto)?[0].knobTarget, .level(ChannelRef(.input, 0), submix: 2))
         _ = hub.setHomeSubmix(2, now: 2)
-        XCTAssertEqual(hub.sendTargets, [6], "switching the home submix between monitoring outputs leaves the sends alone")
+        XCTAssertEqual(hub.sendTargets, [0, 6], "with Phones 1 as the home, Main Out takes its place")
         _ = hub.handle(.other(path: "controlroom/phones1", value: .number(-1)), now: 3)
         _ = hub.handle(.other(path: "controlroom/cuechan", value: .number(6)), now: 3)
-        XCTAssertEqual(hub.sendTargets, [], "output 3/4 is now the home submix and 7/8 the cue output")
+        XCTAssertEqual(hub.sendTargets, [0], "output 3/4 is now the home and 7/8 the cue output; Main Out remains")
+    }
+
+    func testMainOutBAndCueAreNeverSendTargets() {
+        var hub = loadedHub(mode: .strips(view: .sources, first: 0, knob: .send(0), switch: .mute))
+        for event: TotalMixEvent in [
+            .channel(bus: .output, channel: 6, parameter: "name", value: .text("Spare")),
+            .channel(bus: .output, channel: 8, parameter: "name", value: .text("Cue")),
+            .other(path: "controlroom/mainoutb", value: .number(6)),
+            .other(path: "controlroom/cuechan", value: .number(8)),
+        ] { _ = hub.handle(event, now: 1) }
+        XCTAssertFalse(hub.sendTargets.contains(6), "Main Out B mirrors Main Out (test 10)")
+        XCTAssertFalse(hub.sendTargets.contains(8), "PFL takes over the cue output")
+        _ = hub.handle(.other(path: "controlroom/phones2", value: .number(8)), now: 2)
+        XCTAssertTrue(hub.sendTargets.contains(8), "an output that is also Phones 2 is included")
     }
 
     func testOutputsViewPutsMonitoringFirst() {
