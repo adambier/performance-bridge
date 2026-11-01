@@ -36,56 +36,75 @@ isn't connected, and drawn normally when both are; a fault shows the red dot on 
 
 ## Step 1: Turn on Global OSC in TotalMix FX
 
-Steps 1 and 2 were checked on screen against two screenshots of TotalMix (Mac, 2026-10-31). The menu's
-title is not in the screenshot, so the top-level menu is not checked.
+Checked on screen with TotalMix FX "2.10 (1)" on a Mac (Adam, 2026-10-31); the screenshots are from it.
 
-1. Open the Options menu, and check "Enable OSC Control" (Options → Enable OSC Control). The menu also lists
-   "Enable MIDI Control" as a separate item, which is unchecked. RME's online manual names the item "Enable
-   MIDI / OSC Control" (docs.rme-audio.com/aoxd/818-1c_menu_options/); the label in the running TotalMix
-   differs from the manual.
-2. Choose Options → Mixer Settings… (shortcut F3), and open the OSC tab.
-3. Under "Select Controller", choose the slot the remote will use (1–4), and check "In Use" for it. The
-   Mixer Settings window opens on controller 1, which other programs may use. Checked on screen (Adam, 2026-10-31):
-   controller 4 selected, "In Use" checked. The tests also used controller 4.
-4. Under "Compatibility (Mode)", choose "Global OSC".
-5. Check the ports. Under "TotalMix FX OSC Service", "Port (incoming)" is where the app sends to TotalMix. Under
-   "Remote Controller Address", "Host" is the computer the app runs on, and "Port (outgoing)" is where TotalMix
-   sends to the app. These are per controller slot. On controller 4 the screenshot shows incoming 7004, host
-   127.0.0.1, and outgoing 9004. On controller 1 the screenshot shows 7001 and 9001, and host localhost.
-   The app's defaults are 7001 and 9001, so for controller 4 set the app's ports to 7004 and 9004 in Settings (Connections tab)
-   (or start it with `--in-port 7004 --out-port 9004`). The app sends to 127.0.0.1 or localhost; both reach
-   the same Mac, and the app's Settings take the host name.
-6. Under "Options", the screenshot shows "Send Level Data" on, "Peak Hold" off, and "Lock Remote to Submix" off.
-   The tests had "Send Level Data" off. Whether the app needs it on is not tested. "Number of faders per bank"
-   reads 8 on controller 4 and 48 on controller 1; its effect on the app is not tested.
-7. The "Details" button opens a window titled "Gobal OSC - Detailed Settings". TotalMix's title has this spelling.
-   Checked on screen (Adam, 2026-10-31): "Send changes" on, "Send status" on, "Send all data on start (enable)" off,
-   "Receive to hidden channels" off, "Send faders in linear scale" on, "Re-send received" off, and bandwidth
-   limitation 500kByte/s. Test 1 had "Send faders in linear scale" off, and test 2 had it on. Whether the app
-   needs any of these set a certain way is not tested.
-8. Options → Submix linked to OSC Controller is a submenu with one item per controller, 1 to 4. Checked on screen
-   (Adam, 2026-10-31): all four checked. RME's Global OSC document says "Follow Submix" should be off with Global
-   OSC; this submenu is inferred to be that setting, since TotalMix has no item by that name. The tests ran with it
-   checked, and it made no difference to what Global OSC sends (`docs/TOTALMIX-OSC.md`, section 1). So far there is no reason to change it.
+1. Open TotalMix FX's **Options** menu and check **Enable OSC Control**. (RME's online manual calls the item
+   "Enable MIDI / OSC Control", docs.rme-audio.com/aoxd/818-1c_menu_options/; the running TotalMix shows "Enable
+   OSC Control" and a separate "Enable MIDI Control".)
 
-## Step 2: Choose which channels the remote sees
+   <img src="../App/PerformanceBridge/Resources/totalmix-options-menu.png" width="300" alt="TotalMix FX's Options menu, with Enable OSC Control checked">
 
-Channels are hidden only in TotalMix FX, and the app has no setting for hiding. A channel that TotalMix hides
-from an OSC Controller is not shown on the hardware controllers connected through it, and the app does not show it greyed out. Checked on screen
-(Adam, 2026-10-31) unless marked otherwise:
+2. Choose **Options → Mixer Settings…** (shortcut F3) and open the **OSC** tab.
+3. Under **Select Controller**, choose a controller (1–4) for Performance Bridge, and check **In Use**.
+   - Each program or device that connects to TotalMix FX over OSC (Performance Bridge, a tablet app, another
+     remote) needs its own controller, and each controller needs its own ports: no two controllers may share
+     one (Adam, 2026-10-31).
+   - Controller 1 is shown below, with incoming 7001 and outgoing 9001. If another program already uses
+     controller 1, choose another controller and give it ports no other controller uses (for example, 7002 and
+     9002).
+4. Under **Compatibility (Mode)**, choose **Global OSC**.
+5. Set the ports:
+   - **Port (incoming)**, under "Totalmix FX OSC Service" (TotalMix's capitalization), is where Performance
+     Bridge sends to TotalMix. The **Host** above it is your Mac's own name, shown for reference.
+   - Under **Remote Controller Address**, **Host** is the computer Performance Bridge runs on (`localhost` or
+     `127.0.0.1` on the same Mac), and **Port (outgoing)** is where TotalMix sends to Performance Bridge.
+   - Enter the same two ports in Performance Bridge's **Settings… → Connections**. Its defaults are 7001 and
+     9001, which RME's manual gives as typical values. To try other ports without changing Settings, start the
+     app with `--in-port` and `--out-port`.
 
-1. Open the Channel Layout window. Right-click a channel's strip in TotalMix's main window and choose
-   "Change Channel Layout", or choose Options → Channel Layout…. The window has tabs for Inputs, Playbacks,
-   and Outputs.
-2. Select the channel's row in the table. Under "Hide Channel in", check "OSC Controller 1" for the controller
-   the app uses (the app's default). Hiding from one controller does not affect the others, or Mixer/Matrix.
-   The text next to the group says it hides the channel in the selected OSC controller. Confirmed by Adam on
-   2026-10-31: checking "OSC Controller" for a controller hides the channel from that controller.
-3. The table's "Remote Controller" column lists M1–M4 and O1–O4 for each channel. What that column shows
-   for a hidden channel has not been checked.
+   <img src="../App/PerformanceBridge/Resources/totalmix-osc-tab.png" width="380" alt="Mixer Settings, OSC tab: controller 1 in use, ports 7001 and 9001, host localhost, Global OSC">
 
-Reordering is done in the app (Step 5). It does not change what TotalMix sends. Whether TotalMix's hidden
-channels change the channel numbers the app receives: the test run showed no renumbering, but that is one run. The app cannot detect hidden channels; a hidden channel simply does not appear.
+6. Under **Options**, check **Send Level Data** for meters on the hardware controllers, and leave **Lock Remote
+   to Submix** off (Performance Bridge chooses submixes itself). The effect of **Number of faders per bank** on
+   the app has not been tested.
+7. Click **Details**, which opens "Gobal OSC - Detailed Settings" (TotalMix's spelling), and check **Send
+   changes** and **Send status**. The other settings shown are the ones used in the tests: "Send all data on
+   start (enable)" off, "Receive to hidden channels" off, "Set all faders in group" off, "Send faders in linear
+   scale" on (TotalMix accepts both scales, test 2), "Re-send received (use carefully!)" off, and "Bandwith
+   Limitation" (TotalMix's spelling) at 500kByte/s. Whether the app needs
+   any of them set a certain way has not been tested.
+
+   <img src="../App/PerformanceBridge/Resources/totalmix-osc-details.png" width="320" alt="Gobal OSC - Detailed Settings: Send changes and Send status checked">
+
+8. **Options → Submix linked to OSC Controller** is a submenu with one item per controller, 1 to 4; all four
+   were checked on Adam's Mac. RME's Global OSC document says "Follow Submix" should be off with Global OSC;
+   this submenu is inferred to be that setting, since TotalMix has no item by that name. The tests ran with it
+   checked, and it made no difference to what Global OSC sends (`docs/TOTALMIX-OSC.md`, section 1), so there is
+   no reason to change it.
+
+## Step 2: Choose which channels the hardware controllers show
+
+Channels are hidden only in TotalMix FX; Performance Bridge has no setting for hiding. A channel that TotalMix
+hides from an OSC Controller is not shown on the hardware controllers connected through it, and the app does
+not show it greyed out. Checked on screen (Adam, 2026-10-31) unless marked otherwise.
+
+1. Open TotalMix FX's own **Channel Layout** window: right-click a channel's strip and choose **Change Channel
+   Layout**, or choose **Options → Channel Layout…**. It has tabs for Inputs, Playbacks, and Outputs.
+2. Select the channel's row. Under **Hide Channel in**, check the **OSC Controller** box for the controller
+   Performance Bridge uses (OSC Controller 1 for controller 1). Hiding from one controller doesn't affect the
+   others, or Mixer/Matrix.
+3. The **Color** column, and **Color (Name)** below the boxes, set the channel's color, which the
+   Roto-Control shows too.
+
+   <img src="../App/PerformanceBridge/Resources/totalmix-channel-layout.png" width="560" alt="TotalMix FX's Channel Layout window, Inputs tab, with the Hide Channel in boxes">
+
+4. Then choose **Refresh Channels from TotalMix FX** in Performance Bridge's menu: TotalMix doesn't announce
+   hidden or shown channels over OSC (`docs/TOTALMIX-OSC.md`, test 11). The app also refreshes by itself when
+   its Channel Layout tab opens.
+
+The table's **Remote Controller** column lists M1–M4 and O1–O4 for each channel when nothing is hidden; what it
+shows for a hidden channel has not been checked. Hiding has been seen not to renumber the other channels (one
+run).
 
 ## Step 3: Connect the Roto-Control
 

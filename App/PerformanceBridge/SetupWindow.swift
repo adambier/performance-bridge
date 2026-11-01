@@ -2,6 +2,7 @@
 // each checked live where the app can see it (SetupChecklist in BridgeEngine). It opens by itself
 // the first time the app runs, and from the menu (Setup Guide…) after that.
 
+import AppKit
 import SwiftUI
 #if canImport(BridgeEngine)
 import BridgeEngine
@@ -15,6 +16,15 @@ struct SetupView: View {
     /// The steps that are notes, not checks: shown apart, without a mark, so they don't read as
     /// to-dos (Adam, 2026-10-31).
     private static let noteIDs: Set<String> = ["hide", "order"]
+
+    /// Screenshots of TotalMix FX for a step, shown under "Show in TotalMix FX" while the step
+    /// needs doing. They are from TotalMix FX "2.10 (1)" on a Mac (Adam, 2026-10-31), published
+    /// with his permission; TotalMix's windows rarely change.
+    private static let screenshots: [String: [String]] = [
+        "totalmix": ["totalmix-options-menu", "totalmix-osc-tab", "totalmix-osc-details"],
+        "meters": ["totalmix-osc-tab"],
+        "hide": ["totalmix-channel-layout"],
+    ]
 
     private var checks: [SetupStep] { steps.filter { !Self.noteIDs.contains($0.id) } }
     private var notes: [SetupStep] { steps.filter { Self.noteIDs.contains($0.id) } }
@@ -49,6 +59,7 @@ struct SetupView: View {
                                 .foregroundStyle(.secondary)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .textSelection(.enabled)
+                            screenshots(for: step)
                         }
                     }
                 }
@@ -68,6 +79,7 @@ struct SetupView: View {
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                             .textSelection(.enabled)
+                        screenshots(for: note)
                     }
                 }
             }
@@ -84,6 +96,36 @@ struct SetupView: View {
         .padding(20)
         .frame(width: 520)
         .fixedSize(horizontal: false, vertical: true)
+    }
+
+    /// A step's screenshots, folded away until asked for, each at most its own size (they are
+    /// Retina captures, so half their pixels) and no wider than the window allows.
+    @ViewBuilder
+    private func screenshots(for step: SetupStep) -> some View {
+        let images = (Self.screenshots[step.id] ?? []).compactMap { Brand.resources.image(forResource: $0) }
+        if !images.isEmpty {
+            DisclosureGroup("Show in TotalMix FX") {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(images.indices, id: \.self) { index in
+                        let image = images[index]
+                        Image(nsImage: image)
+                            .resizable()
+                            .interpolation(.high)
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxWidth: min(screenshotPoints(image), 440), alignment: .leading)
+                            .accessibilityLabel("Screenshot of TotalMix FX")
+                    }
+                }
+                .padding(.top, 4)
+            }
+            .font(.callout)
+        }
+    }
+
+    /// A screenshot's width in points: half its pixels, since they were taken on a Retina display.
+    private func screenshotPoints(_ image: NSImage) -> CGFloat {
+        let pixels = image.representations.first.map { CGFloat($0.pixelsWide) } ?? image.size.width
+        return pixels / 2
     }
 
     /// The mark for a step's state: a check when done, a clock while waiting, a warning for a

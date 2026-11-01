@@ -63,11 +63,11 @@ public enum SetupChecklist {
         let oscSetup = """
             In TotalMix FX:
             1. Options → Enable OSC Control: checked.
-            2. Options → Mixer Settings… (F3) → OSC. Under “Select Controller”, choose a controller that no other program uses, and check “In Use”.
+            2. Options → Mixer Settings… (F3) → OSC. Under “Select Controller”, choose a controller that no other program or device uses, and check “In Use”.
             3. “Compatibility (Mode)”: Global OSC.
-            4. “Port (incoming)”: \(incoming). Under “Remote Controller Address”, “Host”: 127.0.0.1 if Performance Bridge runs on this Mac, and “Port (outgoing)”: \(outgoing).
+            4. “Port (incoming)”: \(incoming). Under “Remote Controller Address”, “Host”: localhost if Performance Bridge runs on this Mac, and “Port (outgoing)”: \(outgoing).
             5. Click Details, and check “Send changes” and “Send status”.
-            If TotalMix FX uses other ports, set the same ones in Performance Bridge’s Settings.
+            Each controller needs its own ports: no two may share one. If TotalMix FX uses other ports, set the same ones in Performance Bridge’s Settings.
             """
         if status.totalMixAnswering {
             steps.append(SetupStep(id: "totalmix", title: "TotalMix FX answers", state: .done, detail: ""))
