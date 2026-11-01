@@ -14,14 +14,18 @@ public enum LaunchControlEvent: Equatable, Sendable {
     /// A button was pressed (`true`) or released (`false`). That a button sends 127 when pressed
     /// and 0 when released is an inference; the guide gives no values.
     case button(LaunchControlElement, pressed: Bool)
-    /// A "touch" began (`true`) or ended (`false`), with touch reports on (channel 15). The guide's
-    /// example is a fader; whether encoders report it, and whether it is a touch sensor or Shift
-    /// held while moving the control, is open.
+    /// A control started moving (`true`) or stopped (`false`), with touch reports on (channel 15).
+    /// Despite the guide's name, these come from movement, not a touch sensor: on just before the
+    /// first value, off 80–150 ms after the last (docs/LAUNCH-CONTROL-XL3.md, test 1). Encoders send
+    /// them too, on their relative numbers while in relative mode (test 2).
     case touch(LaunchControlElement, touched: Bool)
     /// The surface mode changed, by the user or on request (channel 7, Control Change 30).
     case mode(LaunchControlMode)
     /// Any other feature control's reply (channel 7).
     case feature(number: UInt8, value: UInt8)
+    /// The device confirmed entering (`true`) or leaving (`false`) DAW mode, by echoing the note
+    /// that asks for it (`9F 0C 7F` or `00`; docs/LAUNCH-CONTROL-XL3.md, test 1).
+    case dawMode(Bool)
     /// The device is ready for the next bitmap (SysEx 09h, with or without a 7Fh before F7h; the
     /// guide's version of it is misprinted, docs/LAUNCH-CONTROL-XL3.md).
     case bitmapReady
@@ -31,6 +35,10 @@ public enum LaunchControlEvent: Equatable, Sendable {
     /// What a channel message (status, and one or two data bytes) reports.
     public init(status: UInt8, _ data1: UInt8, _ data2: UInt8) {
         let channel = status & 0x0F
+        if status == 0x9F, data1 == 0x0C {
+            self = .dawMode(data2 >= 64)
+            return
+        }
         guard status & 0xF0 == 0xB0 else {
             self = .unknown([status, data1, data2])
             return
@@ -46,9 +54,13 @@ public enum LaunchControlEvent: Equatable, Sendable {
                 self = .unknown([status, data1, data2])
             }
         case 14:
-            // Touch reports use the controls' own numbers (e.g., BEh 05h 7Fh for the first fader).
+            // Touch reports use the controls' own numbers (e.g., BEh 05h 7Fh for the first fader),
+            // and an encoder row in relative mode its relative numbers (seen, 2026-11-01).
             if let element = LaunchControlElement(channel: 15, controlNumber: data1) {
                 self = .touch(element, touched: data2 >= 64)
+            } else if (77...100).contains(data1) {
+                let index = Int(data1) - 77
+                self = .touch(.encoder(row: index / 8, column: index % 8), touched: data2 >= 64)
             } else {
                 self = .unknown([status, data1, data2])
             }

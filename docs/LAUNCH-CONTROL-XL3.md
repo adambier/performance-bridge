@@ -114,8 +114,8 @@ encoders report on channel 16, buttons on channel 1, and Shift on channel 7.
 - **Button values.** The guide doesn't say what a button sends. The library reads 64 or more as
   pressed and less as released (inference: 127 and 0, as is usual).
 - **Encoders, absolute.** By default an encoder sends 0–127, and takes on any position a host
-  sends it. [Programmer's reference guide, "Absolute and relative encoder modes"] The guide doesn't say in which message. The library sends the
-  encoder's own Control Change back on channel 16 (inference, to test).
+  sends it. [Programmer's reference guide, "Absolute and relative encoder modes"] The guide doesn't say in which message; the encoder's own Control
+  Change back on channel 16 works (test 2).
 - **Encoders, relative.** Each row can be switched to relative output separately, with feature
   controls 69, 72, and 73 for rows 1–3. A relative row then reports Control Changes 64 higher
   (77–84, 85–92, and 93–100). The value is 64 for no movement, above 64 for clockwise steps, and
@@ -230,13 +230,13 @@ port names.
    including Track < and > (103, 102) and the Novation button. What do buttons send: 127 and 0?
 4. **Modes.** Mode plus Mute/Select, then plus Solo/Arm: which reports 1 and which 2 (section 7,
    item 3)? Does `mode control` switch the device?
-5. **Touch.** With `touch on`: touch a fader and an encoder without moving them, then move each
+5. **Touch.** Done (test 1): movement, not a sensor. With `touch on`: touch a fader and an encoder without moving them, then move each
    with Shift held. Which sends channel 15 reports?
-6. **Encoder position.** `pos e11 0`, then turn the encoder one step: does it continue from 0
+6. **Encoder position.** Done (test 2): taken. `pos e11 0`, then turn the encoder one step: does it continue from 0
    (taken) or from where it was (not)? The same with `pos e11 127`.
-7. **Fader pickup.** `pickup on`, `pos f1 64`, then move fader 1 from the bottom. Does it send
+7. **Fader pickup.** Done (test 2): not seen. `pickup on`, `pos f1 64`, then move fader 1 from the bottom. Does it send
    nothing until it passes the middle?
-8. **Relative encoders.** `relative 1 on`: do encoders 1–8 report 77–84 with 65 and 63 for single
+8. **Relative encoders.** Done (test 2): as the guide says. `relative 1 on`: do encoders 1–8 report 77–84 with 65 and 63 for single
    steps?
 9. **Colors.** `palette 0`, `palette 40`, and `palette 80`. Compare with the guide's palette. Is 0
    off? Then `rgb b11 127 0 0`, and check the Track, Page, Record, Play, and Novation buttons for
@@ -308,3 +308,17 @@ Everything in this section is inference, for discussion with Adam before the dri
 - **The screen** showed a moved fader's or encoder's value for a moment, then went dark.
 
 **Consequences.** The library's control map, button values, and Shift are right. Its touch reports are really movement reports: SurfaceCore can't use them as a hand resting on a control, only as a sign of movement, which its holds already take from the values. The library should read the DAW mode echo (`9F 0C`), and CC 31, as their own events (inference: harmless either way).
+
+### Test 2 (2026-11-01): encoder positions, relative mode, and fader pickup
+
+**Setup.** As test 1. `sbdev lcxl`; logs from Adam.
+
+**Findings:**
+- **Encoder positions.** After `pos e11 100` (`BF 0D 64`: the encoder's own Control Change on channel 16), turning the top-left encoder clockwise reported 101, 102, … 107. The screen showed the same. So an absolute encoder takes the position the host sends it in this message, which the guide didn't name (section 4).
+- **A change of direction.** The first move after turning the other way sent touch on and off with no value, in both absolute and relative mode (seen three times). The device seems to drop the first step after reversing.
+- **Relative mode.** After `relative 1 on`, the top-left encoder sent Control Change 77 (`4D`) on channel 16, with 65 clockwise and 63 anticlockwise, one step at a time when turned slowly. Its touch reports used 77 too (`BE 4D 7F` and `00`), not 13. The library now reads both.
+- **Fader pickup.** After `pickup on` (`B6 46 7F`) and `pos f1 64`, fader 1 was moved from 53 down to 0, then from 0 up to 127. Every value was sent, all the way, with no gap below or at 64. So whatever "DAW Fader Pickup" does, it didn't hold back fader 1's values around a position sent this way. Either faders don't take this message, or the feature works some other way (inference either way).
+
+**Consequences.**
+- Encoders can stay in absolute mode, with the host sending positions, as the Roto-Control's knobs are driven (section 9). Relative mode works too, as a fallback.
+- Pickup for the faders has to be SurfaceCore's own, which it already does for surfaces whose controls need it.
