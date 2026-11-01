@@ -22,7 +22,7 @@ notes and has not been seen in TotalMix, the step says so.
 The app has a setup window that follows these steps and checks each one live where it can: whether
 TotalMix FX answers, whether it has sent its channels, whether meters arrive, and whether the
 Roto-Control is connected. It opens by itself the first time the app runs; after that, choose
-**Setup Guide…** from the menu, or click either status line.
+**Setup Guide…** from the menu.
 
 The window also opens by itself, at most once per launch, for a problem that has never worked with
 the current settings: the port in use; TotalMix FX running but not answering for 30 seconds; or the
@@ -107,13 +107,14 @@ To use ports other than the saved ones, add them to the command line:
 swift run PerformanceBridge --in-port 7004 --out-port 9004
 ```
 
-The menu-bar icon shows two status lines:
+The menu-bar icon's menu starts with two status lines, dimmed because they only report. The app keeps
+retrying in every state:
 
-- **TotalMix FX: connected** means TotalMix has answered. **No answer** means it has not yet; the app asks
-  again every 3 seconds. **Port N in use, retrying** means another program has the port the app sends from,
-  so quit that program, such as `sbdev`.
-- **Roto-Control: connected** means the handshake is complete. **Connecting** means the device was found and
-  the handshake is under way. **Not found, retrying** means no port matches the name in Settings.
+- **TotalMix FX: Connected** means TotalMix has answered. **No Answer** means it has not yet; the app asks
+  again every 3 seconds. **Port N in Use** means another program has the port the app sends from, so quit
+  that program, such as `sbdev`.
+- **Roto-Control: Connected** means the handshake is complete. **Connecting** means the device was found and
+  the handshake is under way. **Not Found** means no MIDI port matches the one in Settings.
 
 The full reason for any state goes to the log in the Terminal the app was started from.
 
@@ -142,10 +143,10 @@ The home submix is the output the surfaces' levels and pans go into. Choose it f
 
 ## If something does not work
 
-- **TotalMix FX: port N in use.** Another program has the port. Quit `sbdev` or any other OSC remote.
-- **TotalMix FX: no answer.** Check that Global OSC is on and that the ports in Settings match TotalMix's
+- **TotalMix FX: Port N in Use.** Another program has the port. Quit `sbdev` or any other OSC remote.
+- **TotalMix FX: No Answer.** Check that Global OSC is on and that the ports in Settings match TotalMix's
   (Step 1). Then choose **Ask TotalMix FX for Its State**.
-- **Roto-Control: not found.** Check the cable, and the MIDI port in Settings (Step 3).
+- **Roto-Control: Not Found.** Check the cable, and the MIDI port in Settings (Step 3).
 - **A channel is missing from the surfaces.** Check whether TotalMix hides it from the OSC controller the app uses
   (Step 2).
 

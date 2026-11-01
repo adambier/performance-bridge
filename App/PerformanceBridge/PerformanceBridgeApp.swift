@@ -310,25 +310,27 @@ final class BridgeModel: ObservableObject {
 struct MenuContent: View {
     @ObservedObject var model: BridgeModel
 
+    // Short states of about the same length: a menu sizes itself when it opens, so a longer state
+    // arriving while it's open is cut in the middle. (The engine keeps retrying in every state.)
     private var totalMixState: String {
         let status = model.status
-        if status.totalMixAnswering { return "connected" }
-        if !status.listening { return "port \(model.engine.settings.endpoint.outgoingPort) in use, retrying" }
-        return "no answer"
+        if status.totalMixAnswering { return "Connected" }
+        if !status.listening { return "Port \(model.engine.settings.endpoint.outgoingPort) in Use" }
+        return "No Answer"
     }
 
     private var rotoState: String {
         let status = model.status
-        if status.rotoConnected { return "connected" }
-        if status.rotoFound { return "connecting" }
-        return "not found, retrying"
+        if status.rotoConnected { return "Connected" }
+        if status.rotoFound { return "Connecting" }
+        return "Not Found"
     }
 
     var body: some View {
-        // Short lines: a menu cuts long ones in the middle. The full reasons go to the log.
-        // The status lines open the setup window, which says what to do about either.
-        Button("TotalMix FX: " + totalMixState) { model.showSetup() }
-        Button("Roto-Control: " + rotoState) { model.showSetup() }
+        // Status only, always dimmed (Adam, 2026-10-31), as macOS's own menu bar menus show status
+        // lines. The full reasons go to the log; the Setup Guide says what to do.
+        Text("TotalMix FX: " + totalMixState)
+        Text("Roto-Control: " + rotoState)
         Divider()
         Menu("Home Submix") {
             ForEach(model.status.monitoringOutputs, id: \.output) { choice in
