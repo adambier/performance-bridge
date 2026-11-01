@@ -124,7 +124,7 @@ struct SettingsView: View {
                 portRow("Incoming port", value: $edited.incomingPort, override: model.portOverrides.incoming)
                 portRow("Outgoing port", value: $edited.outgoingPort, override: model.portOverrides.outgoing)
             }
-            note("The computer that runs TotalMix FX and the ports of the OSC controller set up for Performance Bridge in TotalMix FX: Options → Mixer Settings… → OSC, “Port (incoming)” and “Port (outgoing)”, with “Global OSC” selected by “Compatibility (Mode)”.")
+            note("The computer that runs TotalMix FX and the ports of the OSC controller set up for Performance Bridge.\n\nIn TotalMix FX: Options → Mixer Settings… → OSC, “Port (incoming)” and “Port (outgoing)”, with “Global OSC” selected by “Compatibility (Mode)”.")
 
             Divider()
                 .padding(.vertical, 4)
@@ -142,11 +142,11 @@ struct SettingsView: View {
                     .labelsHidden()
                 }
             }
-            note("The MIDI ports connected now. If the Roto-Control isn’t listed, connect it by USB and open Settings again.")
+            note("The MIDI ports connected now.\n\nIf the Roto-Control isn’t listed, connect it by USB and open Settings again.")
 
             if !edited.isValid {
                 Text("Ports must be from 1 to 65535 and different from each other, and no field may be empty.")
-                    .font(.caption)
+                    .font(.callout)
                     .foregroundStyle(.red)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -199,12 +199,17 @@ struct SettingsView: View {
             .frame(width: 110, alignment: .trailing)
     }
 
-    /// A note under a group, wrapping to the window's width.
+    /// A note under a group, wrapping to the window's width, in callout size rather than caption,
+    /// and with a blank line starting a new paragraph, for legibility (Adam, 2026-10-31).
     private func note(_ text: String) -> some View {
-        Text(text)
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .fixedSize(horizontal: false, vertical: true)
+        VStack(alignment: .leading, spacing: 6) {
+            ForEach(text.components(separatedBy: "\n\n"), id: \.self) { paragraph in
+                Text(paragraph)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .font(.callout)
+        .foregroundStyle(.secondary)
     }
 
     /// A port's row, with a line under it when a port from the command line is in use instead.
@@ -221,7 +226,7 @@ struct SettingsView: View {
                 Color.clear
                     .gridCellUnsizedAxes([.horizontal, .vertical])
                 Text("Port \(String(override)) from the command line is in use instead.")
-                    .font(.caption)
+                    .font(.callout)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
