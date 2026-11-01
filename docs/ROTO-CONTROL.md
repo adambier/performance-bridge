@@ -253,7 +253,7 @@ and step names.
 1. **SET PLUGIN MODE's data byte.** It has always been `00`. Does it change with more than eight plugins (a page number, perhaps)?
 2. **Type `03`.** What does the Roto-Control wait for in PLUGIN mode when the host claims Logic, and does SET PLUGIN CONTROL DETAILS work then?
 3. **The 0 dB indent.** Settled for `02` by test 5: level knobs at 13004, send knobs none. Still open: do send knobs get one with `01`, as the 3.1.0 release notes say? Does `03` get one?
-4. **The hold rule.** Does a power cycle clear it? Does anything other than a change of knob mode clear it, such as switching to PLUGIN mode and back? Is the release always about 3,300–3,700 counts in?
+4. **The hold rule.** A power cycle clears it (test 6). Still open: does switching to PLUGIN mode and back clear it? Is the release always about 3,300–3,700 counts in?
 5. **The FX label.** With SEL held, screen 3's bottom half shows "FX" under "Send 1" (seen); pressing that switch chooses the send knob mode (test 4), and pressing it again steps through the sends (seen, 2026-10-30). Is "FX" anything more than the label for that button? The SysEx doc names no FX switch mode.
 
 ## 9. Tests
@@ -479,3 +479,14 @@ marked "seen".
 - The `02` indent is at 13004, one count above the 13003 inferred from Bitwig's volume law. `RotoDriver` now uses 13004.
 - Send knobs have no indent with `02`. The 3.1.0 release notes' send indents may hold only for other types, or not on 3.3.0 (inference).
 - The indent's hold is weak enough that a hand may not feel it.
+
+### Test 6 (2026-11-01): the hold rule and a power cycle
+
+**Setup.** Firmware 3.3.0, `sbdev roto` claiming Bitwig (`02`), knobs in send mode throughout (send index 4).
+
+**Findings** (Adam, 2026-11-01):
+- `knob 1 0.5` moved knob 1 to a little left of its middle (seen).
+- Turned up past the top, knob 1 then **held**: it resisted and went silent (felt; this part of the log wasn't kept).
+- `sbdev roto` was quit and the Roto-Control unplugged for 5 seconds and plugged in again. In a new `sbdev roto`, with no position sent, knob 1 turned up to 16383, went silent for 0.45 s, reported 0, and carried on upward: a **wrap** (log kept).
+
+**Consequence.** A power cycle clears the hold, as the rule in section 6 predicts: the knob holds only once the host has sent it a position since it was last powered (and since the knob mode last changed). `RotoDriver` sends positions as soon as it connects, so after a power cycle the knobs hold again once the handshake is done (inference from the driver's behavior).
