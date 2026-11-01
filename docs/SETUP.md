@@ -150,6 +150,8 @@ Choose **Settings…** from the menu and open the **Channel Layout** tab.
 - Drag a channel to change its place on the hardware controllers. In the Outputs view, the **Control Room** outputs (those
   assigned in TotalMix FX's control room: Main Out, Phones, and so on) and the **Hardware Outputs** are ordered in their
   own sections, since control room outputs always come first.
+- Click a channel's name to give it a **label** for the hardware controllers, e.g., a short name for mixing. The label shows only on the hardware controllers; TotalMix FX keeps its own name, shown dimmed beside the label. Clear the label to show TotalMix FX's name again. A playback without a label shows as "PB 1/2" and so on, since an unnamed playback has its output's hardware name, the same as an input's.
+- The order and the labels are saved, and kept when Performance Bridge restarts.
 - **Restore TotalMix FX Order** puts the view back in TotalMix FX's order. It is dimmed when the order is already TotalMix FX's.
 - To take a channel off the hardware controllers, hide it in TotalMix (Step 2). The layout has no hide setting of its own.
 - Channel colors can be set in TotalMix FX's own Channel Layout window (the Color column and the Color (Name) menu for the selected channel). Checked on screen (Adam, 2026-10-31).

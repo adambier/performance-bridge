@@ -110,6 +110,10 @@ final class LaunchControlXL3Tests: XCTestCase {
         XCTAssertEqual(LaunchControlEvent(status: 0xB6, 0x1E, 2), .mode(.dawControl))
         XCTAssertEqual(LaunchControlEvent(status: 0xB6, 0x70, 90), .feature(number: 0x70, value: 90))
         XCTAssertEqual(LaunchControlEvent(status: 0x90, 1, 1), .unknown([0x90, 1, 1]))
+        XCTAssertEqual(LaunchControlEvent(status: 0x9F, 0x0C, 0x7F), .dawMode(true), "seen on the device")
+        XCTAssertEqual(LaunchControlEvent(status: 0x9F, 0x0C, 0x00), .dawMode(false))
+        XCTAssertEqual(LaunchControlEvent(status: 0xBE, 0x4D, 0x7F), .touch(.encoder(row: 0, column: 0), touched: true),
+                       "a relative row's touch reports use its relative numbers (seen)")
     }
 
     func testParserHandlesSplitMessagesRunningStatusAndSysEx() {

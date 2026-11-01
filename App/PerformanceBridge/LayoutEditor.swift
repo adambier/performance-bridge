@@ -1,6 +1,9 @@
-// The layout editor: the order of the sources and outputs on the surfaces. Channels are hidden only
-// in TotalMix FX, per OSC controller, so the editor has no hide setting. Channels hidden from this
-// OSC remote in TotalMix are not listed, since the app cannot see them.
+// The layout editor: the order of the sources and outputs on the surfaces, and labels for them.
+// Channels are hidden only in TotalMix FX, per OSC controller, so the editor has no hide setting.
+// Channels hidden from this OSC remote in TotalMix are not listed, since the app cannot see them.
+// Labels are the app's own, for the hardware controllers only (Adam, 2026-11-01; AGENTS.md
+// section 4); a channel without one shows TotalMix's name. The wording here is to be checked in the
+// UI review (Adam, 2026-11-01).
 
 import SwiftUI
 #if canImport(SurfaceCore)
@@ -40,8 +43,9 @@ struct LayoutView: View {
             .onChange(of: view) { _ in reload() }
 
             // Above the list, as an instruction rather than a heading (Adam, 2026-10-31).
-            Text("Drag to reorder.")
+            Text("Drag to reorder. Click a name to give it a label for the hardware controllers.")
                 .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
 
             List {
                 if view == .outputs {
@@ -89,6 +93,7 @@ struct LayoutView: View {
                 // One short paragraph each, in callout size, for legibility (Adam, 2026-10-31).
                 Text("Hide and show channels in TotalMix FX’s own Channel Layout window: right-click the channel, choose Change Channel Layout, and check or uncheck the OSC Controller box under \u{201C}Hide Channel in.\u{201D}")
                 Text("Channel colors can be set in the same window.")
+                Text("Labels show only on the hardware controllers. Clear a label to show TotalMix FX’s name again.")
                 Text("Channels that TotalMix hides from an OSC Controller are not shown on the hardware controllers connected through it.")
             }
             .font(.callout)
@@ -123,8 +128,16 @@ struct LayoutView: View {
                 Image(systemName: "line.3.horizontal")
                     .foregroundStyle(.tertiary)
                     .accessibilityHidden(true)
-                Text(item.name)
-                Spacer()
+                LabelField(item: item) { text in
+                    model.engine.setLabel(text, for: item.channel)
+                    reload()
+                }
+                if item.label != nil {
+                    // TotalMix's own name, for reference, while a label replaces it.
+                    Text(item.defaultName)
+                        .foregroundStyle(.tertiary)
+                        .lineLimit(1)
+                }
             }
             .frame(minHeight: 24)
             .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
@@ -151,6 +164,34 @@ struct LayoutView: View {
     private func reload() {
         items = model.engine.layoutItems(view)
         isTotalMixOrder = model.engine.isTotalMixOrder(view)
+    }
+}
+
+/// A channel's label for the hardware controllers, edited in place. Without a label it shows the
+/// name the strip would show anyway, dimmed (TotalMix's name, or "PB 1/2" for a playback). The label
+/// is saved when Return is pressed or the field loses focus; an empty field removes it.
+struct LabelField: View {
+    let item: LayoutItem
+    let commit: (String) -> Void
+    @State private var text = ""
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        TextField("Label", text: $text, prompt: Text(item.defaultName))
+            .textFieldStyle(.plain)
+            .labelsHidden()
+            .focused($focused)
+            .onAppear { text = item.label ?? "" }
+            .onChange(of: item.label) { text = $0 ?? "" }
+            .onSubmit { save() }
+            .onChange(of: focused) { if !$0 { save() } }
+            .accessibilityLabel("Label for \(item.defaultName)")
+    }
+
+    private func save() {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed != (item.label ?? "") else { return }
+        commit(trimmed)
     }
 }
 

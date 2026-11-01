@@ -31,6 +31,8 @@ public struct BridgeSettings: Equatable, Sendable {
     public var homeSubmix: Int?
     /// Whether the first playback starts a new page (`PerformanceLayout.playbacksOnNewPage`).
     public var playbacksOnNewPage = false
+    /// The layout to start with: the channel order and labels saved by the app.
+    public var layout = PerformanceLayout()
     /// How often the engine tries again to open TotalMix's port or the Roto-Control's MIDI ports
     /// while either is not open, in seconds.
     public var retryInterval: Double = 3
@@ -61,13 +63,19 @@ public struct HomeChoice: Equatable, Hashable, Sendable {
 public struct LayoutItem: Equatable, Sendable {
     /// The channel.
     public var channel: ChannelRef
-    /// The name a strip shows (see `SurfaceHub.stripName`).
+    /// The name a strip shows (see `SurfaceHub.stripName`): the label if there is one.
     public var name: String
+    /// The name a strip shows without a label: TotalMix's name, or "PB 1/2" for a playback.
+    public var defaultName: String
+    /// The label chosen in the app, if any.
+    public var label: String?
 
     /// An item for the layout editor.
-    public init(channel: ChannelRef, name: String) {
+    public init(channel: ChannelRef, name: String, defaultName: String? = nil, label: String? = nil) {
         self.channel = channel
         self.name = name
+        self.defaultName = defaultName ?? name
+        self.label = label
     }
 }
 
@@ -133,6 +141,9 @@ public final class BridgeEngine: @unchecked Sendable {
     public var onLog: (@Sendable (String) -> Void)?
     /// Called when the status changes.
     public var onStatus: (@Sendable (BridgeStatus) -> Void)?
+    /// Called with the new layout whenever the app changes it (order, new-page option, or labels),
+    /// so the app can save it. Set it before `start()`.
+    public var onLayoutChange: (@Sendable (PerformanceLayout) -> Void)?
 
     private let lock = NSLock()
     private let startDate = Date()
@@ -174,11 +185,9 @@ public final class BridgeEngine: @unchecked Sendable {
         running = true
         dispatch(hub.addSurface(driver.id, capabilities: RotoDriver.capabilities, now: now))
         if let home = settings.homeSubmix { dispatch(hub.setHomeSubmix(home, now: now)) }
-        if settings.playbacksOnNewPage {
-            var layout = hub.layout
-            layout.playbacksOnNewPage = true
-            dispatch(hub.setLayout(layout, now: now))
-        }
+        var layout = settings.layout
+        if settings.playbacksOnNewPage { layout.playbacksOnNewPage = true }
+        if layout != hub.layout { dispatch(hub.setLayout(layout, now: now)) }
         lock.unlock()
         log("Started: TotalMix at \(settings.endpoint.host), sending to port \(settings.endpoint.incomingPort), listening on \(settings.endpoint.outgoingPort)")
         openSocketIfDue(force: true)
@@ -326,6 +335,22 @@ public final class BridgeEngine: @unchecked Sendable {
         layout.playbacksOnNewPage = on
         dispatch(hub.setLayout(layout, now: now))
         lock.unlock()
+        layoutChanged(layout)
+        publishStatus()
+    }
+
+    private func layoutChanged(_ layout: PerformanceLayout) {
+        onLayoutChange?(layout)
+    }
+
+    /// Sets the label the hardware controllers show for `ref`; an empty or `nil` text removes it, so
+    /// the channel shows TotalMix's name again (`PerformanceLayout.withLabel`).
+    public func setLabel(_ text: String?, for ref: ChannelRef) {
+        lock.lock()
+        let layout = hub.layout.withLabel(text, for: ref)
+        dispatch(hub.setLayout(layout, now: now))
+        lock.unlock()
+        layoutChanged(layout)
         publishStatus()
     }
 
@@ -336,11 +361,12 @@ public final class BridgeEngine: @unchecked Sendable {
         return hub.layout
     }
 
-    /// Replaces the layout: the order and the new-page option.
+    /// Replaces the layout: the order, the new-page option, and the labels.
     public func setLayout(_ layout: PerformanceLayout) {
         lock.lock()
         dispatch(hub.setLayout(layout, now: now))
         lock.unlock()
+        layoutChanged(layout)
         publishStatus()
     }
 
@@ -350,7 +376,10 @@ public final class BridgeEngine: @unchecked Sendable {
         lock.lock()
         defer { lock.unlock() }
         return hub.layout.channels(view, in: hub.mirror).map { ref in
-            LayoutItem(channel: ref, name: SurfaceHub.stripName(ref, hub.mirror.channels[ref]))
+            let state = hub.mirror.channels[ref]
+            let label = hub.layout.label(for: ref)
+            return LayoutItem(channel: ref, name: SurfaceHub.stripName(ref, state, label: label),
+                              defaultName: SurfaceHub.stripName(ref, state), label: label)
         }
     }
 

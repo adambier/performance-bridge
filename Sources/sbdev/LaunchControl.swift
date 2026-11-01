@@ -261,6 +261,7 @@ func describeLaunchControl(_ event: LaunchControlEvent) -> String {
         case .custom(let number): return "mode Custom \(number)"
         }
     case .feature(let number, let value): return "feature \(number) = \(value)"
+    case .dawMode(let on): return "DAW mode \(on ? "confirmed" : "left")"
     case .bitmapReady: return "bitmap ready"
     case .unknown(let bytes): return "unknown: \(hex(bytes))"
     }

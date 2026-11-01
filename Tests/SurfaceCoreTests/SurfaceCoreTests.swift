@@ -514,6 +514,40 @@ final class SurfaceHubTests: XCTestCase {
 }
 
 final class StripNameTests: XCTestCase {
+    func testALabelReplacesTheNameUntilCleared() {
+        var stereo = ChannelState()
+        stereo.stereo = true
+        stereo.name = "AES"
+        XCTAssertEqual(SurfaceHub.stripName(ChannelRef(.playback, 0), stereo, label: "Mac"), "Mac")
+        XCTAssertEqual(SurfaceHub.stripName(ChannelRef(.input, 0), stereo, label: "Vox"), "Vox")
+        XCTAssertEqual(SurfaceHub.stripName(ChannelRef(.playback, 0), stereo, label: ""), "PB 1/2", "an empty label is no label")
+
+        let ref = ChannelRef(.input, 2)
+        let labeled = PerformanceLayout().withLabel("  Keys ", for: ref)
+        XCTAssertEqual(labeled.label(for: ref), "Keys", "labels are trimmed")
+        XCTAssertNil(labeled.withLabel("   ", for: ref).label(for: ref), "a blank label is removed")
+        XCTAssertNil(labeled.withLabel(nil, for: ref).label(for: ref))
+    }
+
+    func testLabelsAreSavedAndOldLayoutsStillLoad() throws {
+        let layout = PerformanceLayout(sourceOrder: [ChannelRef(.input, 2)], playbacksOnNewPage: true)
+            .withLabel("Mac", for: ChannelRef(.playback, 0))
+        let data = try JSONEncoder().encode(layout)
+        XCTAssertEqual(try JSONDecoder().decode(PerformanceLayout.self, from: data), layout)
+        let old = Data(#"{"sourceOrder":[],"outputOrder":[],"playbacksOnNewPage":false}"#.utf8)
+        XCTAssertEqual(try JSONDecoder().decode(PerformanceLayout.self, from: old).labels, [:])
+    }
+
+    func testStripsUseTheLabels() {
+        var hub = SurfaceHub()
+        for event in setupEvents() { _ = hub.handle(event, now: 0) }
+        _ = hub.addSurface(roto, capabilities: rotoCaps, now: 0)
+        let first = hub.strips(of: roto)?[0].info?.channel
+        XCTAssertNotNil(first)
+        _ = hub.setLayout(hub.layout.withLabel("Vox", for: first!), now: 1)
+        XCTAssertEqual(hub.strips(of: roto)?[0].info?.name, "Vox")
+    }
+
     func testPlaybacksAreNamedByNumber() {
         var stereo = ChannelState()
         stereo.stereo = true
