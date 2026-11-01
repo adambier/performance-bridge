@@ -113,6 +113,10 @@ struct LayoutView: View {
             }
             .frame(minHeight: 24)
             .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
+            // No lines between rows: a short one-column list, grouped by section titles and
+            // brackets, reads better without them (Apple's HIG keeps row lines and alternating
+            // backgrounds for large or multicolumn tables), and lines would break the brackets.
+            .listRowSeparator(.hidden)
         }
     }
 
