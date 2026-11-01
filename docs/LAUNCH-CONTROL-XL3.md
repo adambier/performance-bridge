@@ -224,9 +224,9 @@ Each is resolved here as stated, until the device settles it.
 Run with `swift run sbdev lcxl` (macOS; `sbdev lcxl --help`). First, `sbdev lcxl ports` lists the
 port names.
 
-1. **Ports.** The macOS names of the DAW ports. Does `--port "LCXL3 1 DAW"` connect?
+1. **Ports.** Done (test 1). The macOS names of the DAW ports. Does `--port "LCXL3 1 DAW"` connect?
 2. **DAW mode.** Does the device show DAW mode on entering, and return to standalone on `quit`? With firmware 1.2's "DAW Connection" set to Switch (the default), does entering DAW mode move it to DAW Mixer? With "Connect Only", does it stay in its Custom Mode, and does `mode mixer` then move it?
-3. **The control map.** Move every control and check its name and value against section 4,
+3. **The control map.** Done (test 1). Move every control and check its name and value against section 4,
    including Track < and > (103, 102) and the Novation button. What do buttons send: 127 and 0?
 4. **Modes.** Mode plus Mute/Select, then plus Solo/Arm: which reports 1 and which 2 (section 7,
    item 3)? Does `mode control` switch the device?
@@ -271,3 +271,40 @@ Everything in this section is inference, for discussion with Adam before the dri
 - **Screen.** A name and value on every move, which the Roto-Control's displays also show. The
   stationary display could show the page and the mix output.
 - **Port.** The DAW port, so the MIDI port and Custom Modes stay free for other uses.
+
+## 10. Test records
+
+### Test 1 (2026-11-01): ports, DAW mode, and the control map
+
+**Setup.** Adam's Launch Control XL 3, firmware 1.2, "DAW Connection" at its default (Switch). `sbdev lcxl` (and `--raw`), which enters DAW mode and turns on touch reports. Logs from Adam.
+
+**Findings:**
+- **Ports.** `sbdev lcxl` found "LCXL3 1 DAW Out" and "LCXL3 1 DAW In" by its default name, "LCXL3 1 DAW" (section 2).
+- **Entering and leaving DAW mode.** The device answered `9F 0C 7F` to the same message, and `9F 0C 00` on leaving: it echoes the DAW mode message. Mode Select then showed DAW Mixer. It sent no mode report on entering. On leaving it reported Custom 1 (`B6 1E 06`), whichever mode it had been in before.
+- **The control map** matches section 4 for all 59 controls tried. Moved one by one in order, these reported where the map puts them, and nothing else did:
+  - faders 1–8 (Control Changes 5–12, channel 16);
+  - all 24 encoders, row by row (13–36, channel 16);
+  - top-row buttons 1–8 and bottom-row buttons 1–8 (37–52, channel 1);
+  - Solo/Arm (65), Mute/Select (66), the Novation button (104), Page up and down (106, 107), Track < and > (103, 102), Record (118), and Play (116), all on channel 1;
+  - Shift (63, channel 7).
+- **Buttons** send 127 when pressed and 0 when released, Shift included. The Novation button sends, though the user guide says it does nothing yet. Buttons don't light by themselves in DAW mode.
+- **Encoders** are smooth, with no detents. In absolute mode, values step by 1 when turned slowly. Faster turns skip values (1 → 3, 1 → 5 → 7), so the device accelerates (inference: the "Encoder Curve" feature, section 6). At 0, turning anticlockwise sends no value.
+- **"Touch" is movement, not a touch sensor.** With touch reports on, a fader or encoder sends touch on (channel 15, 127) just before its first value and touch off (0) about 80 ms (encoders) to 120–150 ms (faders) after its last. Turning an encoder at 0 anticlockwise sent touch on and off with no value between. Touching without moving wasn't tried; the inference is that it sends nothing.
+- **Mode selection.** After Mode is pressed, the screen shows "Mode Select" and goes dark after a second or so. But the buttons stay mode selectors until a mode is chosen:
+  - top-row button 1 chose Custom 1 (named "Tonverk Mixer" on Adam's unit);
+  - bottom-row button 1 chose Custom 9 (the button is labeled 9 underneath);
+  - Mute/Select chose DAW Mixer.
+
+  Meanwhile Page and Track sent nothing.
+- **Mode reports.** Every mode report on Control Change 30 came with **Control Change 31**, which the guide doesn't list:
+
+  | Mode | CC 30 | CC 31 |
+  |---|---|---|
+  | DAW Mixer | 1 | 1 |
+  | Custom 1 | 6 | 6 |
+  | Custom 9 | 22 | 17 |
+
+  So CC 31 is not a copy of CC 30, and its meaning is unknown. Custom 9 as 22 fits the guide's feature table (section 7, item 1).
+- **The screen** showed a moved fader's or encoder's value for a moment, then went dark.
+
+**Consequences.** The library's control map, button values, and Shift are right. Its touch reports are really movement reports: SurfaceCore can't use them as a hand resting on a control, only as a sign of movement, which its holds already take from the values. The library should read the DAW mode echo (`9F 0C`), and CC 31, as their own events (inference: harmless either way).
