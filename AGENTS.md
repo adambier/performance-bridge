@@ -50,13 +50,13 @@ small driver of its own.
 - **SurfaceCore** (`Sources/SurfaceCore/`). The aim is TotalMix FX as a performance mixer, for live use. Channel strips, each with:
   - a knob or fader: level, pan, or a send;
   - a switch: mute, PFL, or solo (off by default);
-  - a name, a color, and a meter. Playbacks are named "PB 1/2" and so on, not after the outputs TotalMix names them for.
+  - a name, a color, and a meter. The name is the channel's label if the app gave it one (section 4, recorded exceptions), and otherwise TotalMix's name; playbacks without a label are named "PB 1/2" and so on, since an unnamed playback has its output's hardware name (test 15).
 
   Around the strips:
   - two views: sources (inputs and playbacks) and outputs (the assigned monitoring outputs first, then the sends; a monitoring role with nothing assigned shows no strip);
-  - a performance layout, chosen in the app: the order of each view (which TotalMix can't change) and whether the first playback starts a new page (blank strips after the inputs); channels it doesn't place yet follow in TotalMix's order; the app has no hide setting of its own. Which channels TotalMix hides from this OSC remote (Options → Channel Layout…, or right-click a channel and choose Change Channel Layout) are set only in TotalMix, per OSC controller, under the rule in section 4;
+  - a performance layout, chosen in the app and saved: the order of each view (which TotalMix can't change), whether the first playback starts a new page (blank strips after the inputs), and the labels; channels it doesn't place yet follow in TotalMix's order; the app has no hide setting of its own. Which channels TotalMix hides from this OSC remote (Options → Channel Layout…, or right-click a channel and choose Change Channel Layout) are set only in TotalMix, per OSC controller, under the rule in section 4;
   - monitoring outputs and sends: the outputs the control room assigns to Main Out, Main Out B, Phones 1–4, and cue are monitoring outputs; every other output TotalMix doesn't hide is a send (the app's text calls monitoring outputs "Control Room" outputs and the rest "Hardware Outputs", as TotalMix FX's window does; Adam, 2026-10-31);
-  - the home submix, called "Mix Output" in the app (Adam, 2026-10-31) (Main Out unless the app chooses another control room output, or any other output from the menu's Hardware Outputs submenu), which source levels and pans go into; send knobs reach every other output except Main Out B (it mirrors Main Out with Speaker B on, test 10) and the cue output, control room outputs first (Adam, 2026-10-31: headphone mixes are the ones changed during a performance). Main Out is followed, not fixed: when Main Out is reassigned in TotalMix's control room, the home moves with it; any other choice stays on its output;
+  - the home submix, called "Mix Output" in the app (Adam, 2026-10-31) (Main Out unless the app chooses another control room output, or any other output from the menu's Hardware Outputs submenu), which source levels and pans go into; send knobs reach every other output except Main Out B (it mirrors Main Out whether Speaker B and Link are on or off, tests 10 and 14) and the cue output, control room outputs first (Adam, 2026-10-31: headphone mixes are the ones changed during a performance). Main Out is followed, not fixed: when Main Out is reassigned in TotalMix's control room, the home moves with it; any other choice stays on its output;
   - paging, and a focus mode (one source across all submixes);
   - the feedback rules: a control the user holds (touched, or moved in the last 250 ms) is not moved by TotalMix and catches up when let go; controls without motors pick up; continuous messages are thinned to one per address per 20 ms; meters update at most 12 times per second.
 
@@ -95,6 +95,15 @@ reading a setting from TotalMix instead of asking for it), that cost is accepted
 The exception (Adam, 2026-10-31): a separate app setting for something TotalMix also configures is
 acceptable when there is a strong case for the surface behaving differently from TotalMix at the
 same time. The case is made, and recorded, before the setting is added.
+
+Recorded exceptions:
+- **Labels** (Adam, 2026-11-01). The app can give any channel a label of its own, shown only on
+  the hardware controllers; a channel without one shows TotalMix's name. The case: TotalMix's names
+  serve TotalMix (routing, the matrix, recall), while a hardware controller's labels serve quick
+  mixing on a small screen; and TotalMix's default playback names repeat its inputs' hardware names
+  ("AES", "SPDIF", …; test 15), which Global OSC can't tell from names the user gave. A playback
+  without a label keeps showing "PB 1/2". The UI and its wording get a close look in the UI review
+  and Adam's own (Adam, 2026-11-01).
 
 Hidden channels (Adam, 2026-10-31; revised the same day). Hiding is done only in TotalMix, where
 Channel Layout can hide a channel from each OSC controller separately, and from the Mixer/Matrix and

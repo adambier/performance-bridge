@@ -32,17 +32,24 @@ public struct PerformanceLayout: Hashable, Codable, Sendable {
     /// Whether the first playback in the sources view starts a new page, with blank strips after
     /// the inputs before it (Adam, 2026-10-30). Off by default.
     public var playbacksOnNewPage: Bool
+    /// Labels chosen in the app for the hardware controllers, by channel; a channel without one shows
+    /// TotalMix's name (or "PB 1/2" for a playback). An exception to "configure it only in TotalMix"
+    /// (AGENTS.md section 4; Adam, 2026-11-01): TotalMix's names serve TotalMix, while a hardware
+    /// controller's labels serve quick mixing on a small screen, and TotalMix's default playback
+    /// names repeat its inputs' hardware names (test 15).
+    public var labels: [ChannelRef: String]
 
-    /// A layout; the default shows every channel in TotalMix's order.
+    /// A layout; the default shows every channel in TotalMix's order, under TotalMix's names.
     public init(sourceOrder: [ChannelRef] = [], outputOrder: [ChannelRef] = [],
-                playbacksOnNewPage: Bool = false) {
+                playbacksOnNewPage: Bool = false, labels: [ChannelRef: String] = [:]) {
         self.sourceOrder = sourceOrder
         self.outputOrder = outputOrder
         self.playbacksOnNewPage = playbacksOnNewPage
+        self.labels = labels
     }
 
     private enum CodingKeys: String, CodingKey {
-        case sourceOrder, outputOrder, playbacksOnNewPage
+        case sourceOrder, outputOrder, playbacksOnNewPage, labels
     }
 
     /// Reads a saved layout; a missing field is empty, so layouts saved by older versions still load.
@@ -52,6 +59,21 @@ public struct PerformanceLayout: Hashable, Codable, Sendable {
         sourceOrder = try container.decodeIfPresent([ChannelRef].self, forKey: .sourceOrder) ?? []
         outputOrder = try container.decodeIfPresent([ChannelRef].self, forKey: .outputOrder) ?? []
         playbacksOnNewPage = try container.decodeIfPresent(Bool.self, forKey: .playbacksOnNewPage) ?? false
+        labels = try container.decodeIfPresent([ChannelRef: String].self, forKey: .labels) ?? [:]
+    }
+
+    /// The label chosen for `ref`, if any.
+    public func label(for ref: ChannelRef) -> String? {
+        labels[ref]
+    }
+
+    /// This layout with `ref`'s label set to `text`, trimmed; an empty or `nil` text removes the
+    /// label, so the channel shows TotalMix's name again.
+    public func withLabel(_ text: String?, for ref: ChannelRef) -> PerformanceLayout {
+        var layout = self
+        let trimmed = text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        layout.labels[ref] = trimmed.isEmpty ? nil : trimmed
+        return layout
     }
 
     /// The strips of a view on a surface with pages of `pageSize` strips: the view's channels, with

@@ -406,7 +406,7 @@ public struct SurfaceHub: Sendable {
         let state = mirror.channels[ref]
         let kind: StripKind = ref.isSource ? .source
             : mirror.monitoringOutputs.contains(ref.channel) ? .monitoring : .send
-        let info = StripInfo(channel: ref, name: Self.stripName(ref, state), color: state?.color,
+        let info = StripInfo(channel: ref, name: Self.stripName(ref, state, label: layout.label(for: ref)), color: state?.color,
                              stereo: state?.stereo ?? false, kind: kind, knobLabel: knob.map(label) ?? "",
                              switchLabel: switchTarget.map(label) ?? "")
         var meterChannels: [ChannelRef] = []
@@ -417,10 +417,12 @@ public struct SurfaceHub: Sendable {
         return StripBinding(info: info, knobTarget: knob, switchTarget: switchTarget, meterChannels: meterChannels)
     }
 
-    /// The name a strip shows. Playbacks show "PB 1/2" (or "PB 3" for a mono channel), because
-    /// TotalMix names each playback after the output of the same number (RME: the default routing
-    /// is 1:1), which makes playbacks hard to tell from inputs. Other channels show TotalMix's name.
-    public static func stripName(_ ref: ChannelRef, _ state: ChannelState?) -> String {
+    /// The name a strip shows: the label chosen in the app, if any (`PerformanceLayout.labels`).
+    /// Otherwise playbacks show "PB 1/2" (or "PB 3" for a mono channel), because an unnamed playback
+    /// arrives with its output's hardware name (test 15), which makes playbacks hard to tell from
+    /// inputs; other channels show TotalMix's name.
+    public static func stripName(_ ref: ChannelRef, _ state: ChannelState?, label: String? = nil) -> String {
+        if let label, !label.isEmpty { return label }
         if ref.bus == .playback {
             let first = ref.channel + 1
             return state?.stereo == true ? "PB \(first)/\(first + 1)" : "PB \(first)"
@@ -441,7 +443,7 @@ public struct SurfaceHub: Sendable {
 
     private func outputName(_ output: Int) -> String {
         let ref = ChannelRef(.output, output)
-        return mirror.channels[ref]?.name ?? ref.description
+        return layout.label(for: ref) ?? mirror.channels[ref]?.name ?? ref.description
     }
 
     private func isPan(_ target: ControlTarget) -> Bool {

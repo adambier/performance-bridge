@@ -311,12 +311,27 @@ final class BridgeModel: ObservableObject {
                                              outgoingPort: overrides.outgoing ?? UInt16(saved.outgoingPort))
         settings.rotoPortName = saved.rotoPortName.trimmingCharacters(in: .whitespaces)
         settings.playbacksOnNewPage = UserDefaults.standard.bool(forKey: "playbacksOnNewPage")
+        settings.layout = savedLayout()
         settings.homeSubmix = UserDefaults.standard.object(forKey: homeSubmixKey) as? Int
         return settings
     }
 
+    /// The key for the saved layout (channel order, new-page option, and labels), as JSON.
+    nonisolated private static let layoutKey = "layout"
+
+    /// The layout saved last, or the default (TotalMix's order and names). Earlier builds didn't
+    /// save the order at all, so it went back to TotalMix's at every launch and every Apply.
+    private static func savedLayout() -> PerformanceLayout {
+        guard let data = UserDefaults.standard.data(forKey: layoutKey),
+              let layout = try? JSONDecoder().decode(PerformanceLayout.self, from: data) else { return PerformanceLayout() }
+        return layout
+    }
+
     private func start() {
         let engine = self.engine
+        engine.onLayoutChange = { layout in
+            if let data = try? JSONEncoder().encode(layout) { UserDefaults.standard.set(data, forKey: Self.layoutKey) }
+        }
         // For now the log goes to the Terminal the app was started from.
         engine.onLog = { line in
             print(line)

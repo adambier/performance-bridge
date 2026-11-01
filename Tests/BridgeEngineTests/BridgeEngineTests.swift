@@ -179,6 +179,38 @@ final class BridgeEngineTests: XCTestCase {
         #endif
     }
 
+    func testTheSavedLayoutIsUsedAndLabelChangesAreReported() throws {
+        #if os(Windows)
+        throw XCTSkip("No UDP sockets on Windows yet")
+        #else
+        var probe: UDPSocket? = try UDPSocket(listeningOn: 0, localOnly: true)
+        let port = try XCTUnwrap(probe?.localPort)
+        probe = nil
+        let endpoint = TotalMixEndpoint(host: "127.0.0.1", incomingPort: 9, outgoingPort: port)
+        var settings = BridgeSettings(endpoint: endpoint, rotoPortName: "No such port here", retryInterval: 0.2)
+        settings.layout = PerformanceLayout().withLabel("Vox", for: ChannelRef(.input, 0))
+        let engine = BridgeEngine(settings: settings)
+        let saved = SavedLayouts()
+        engine.onLayoutChange = { saved.append($0) }
+        engine.start()
+        defer { engine.stop() }
+        XCTAssertEqual(engine.layout.label(for: ChannelRef(.input, 0)), "Vox", "the saved layout is used at start")
+
+        let sender = try UDPSocket(listeningOn: 0, localOnly: true)
+        try sender.send(OSCMessage("/input/0/name", [.string("ADI-2")]).encoded(), to: "127.0.0.1", port: port)
+        let deadline = Date().addingTimeInterval(3)
+        while Date() < deadline, engine.layoutItems(.sources).isEmpty { Thread.sleep(forTimeInterval: 0.05) }
+        let item = try XCTUnwrap(engine.layoutItems(.sources).first)
+        XCTAssertEqual(item.name, "Vox")
+        XCTAssertEqual(item.defaultName, "ADI-2")
+        XCTAssertEqual(item.label, "Vox")
+
+        engine.setLabel("", for: ChannelRef(.input, 0))
+        XCTAssertEqual(engine.layoutItems(.sources).first?.name, "ADI-2", "clearing the label shows TotalMix's name")
+        XCTAssertEqual(saved.all.last?.labels, [:], "the change is reported, for the app to save")
+        #endif
+    }
+
     // MARK: When the setup window opens by itself
 
     private func status(listening: Bool = true, answering: Bool = false, found: Bool = false,
@@ -308,4 +340,12 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertEqual(version(running: true, "1.96").state, .problem)
         XCTAssertEqual(version(running: false, "2.10", answering: true).state, .done, "an answer means it runs")
     }
+}
+
+/// Layouts reported by the engine, collected across threads.
+private final class SavedLayouts: @unchecked Sendable {
+    private let lock = NSLock()
+    private var layouts: [PerformanceLayout] = []
+    func append(_ layout: PerformanceLayout) { lock.lock(); layouts.append(layout); lock.unlock() }
+    var all: [PerformanceLayout] { lock.lock(); defer { lock.unlock() }; return layouts }
 }
