@@ -34,7 +34,7 @@ struct PerformanceBridgeApp: App {
     var body: some Scene {
         MenuBarExtra {
             MenuContent(model: model)
-                .tint(Brand.amber)
+                .tint(Brand.accent)
         } label: {
             // Three looks (Adam, 2026-10-31): normal when TotalMix FX and the Roto-Control are both
             // connected; dimmed when either is down for a routine reason (closed, unplugged); dimmed
@@ -57,7 +57,7 @@ struct PerformanceBridgeApp: App {
     }
 }
 
-/// The app's look: the icon's amber as its accent color, and the menu-bar glyph (a one-color
+/// The app's look: the icon's amber as its accent color when the user's accent is Multicolor, and the menu-bar glyph (a one-color
 /// template image from Design/AppIcon, which macOS colors to suit the menu bar).
 enum Brand {
     /// The app's resources: the package's resource bundle under `swift run`, the app bundle when
@@ -71,6 +71,22 @@ enum Brand {
     }
 
     static let amber = Color(red: 1, green: 0xB1 / 255.0, blue: 0x3D / 255.0)
+
+    /// Whether the user's accent color (System Settings → Appearance → Accent color) is
+    /// Multicolor, the one choice that lets an app use its own accent color (Apple's HIG, Color).
+    /// macOS keeps the choice in the global defaults' `AppleAccentColor`, which is absent for
+    /// Multicolor (inference from macOS's behavior; not checked on Adam's Mac). Read only: the app
+    /// never writes another app's or the system's preferences.
+    static var userChoseMulticolor: Bool {
+        UserDefaults.standard.persistentDomain(forName: UserDefaults.globalDomain)?["AppleAccentColor"] == nil
+    }
+
+    /// The app's accent: its amber when the user's accent color is Multicolor, and the user's own
+    /// accent color otherwise (Adam, 2026-10-31). Read when a window opens, so a change in System
+    /// Settings shows the next time a window opens.
+    static var accent: Color {
+        userChoseMulticolor ? amber : .accentColor
+    }
 
     /// The app icon at 128 points (the 128 and 256 px art from Design/AppIcon), for the About
     /// window.

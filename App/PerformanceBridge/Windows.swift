@@ -26,7 +26,7 @@ enum Windows {
             return window
         }()
         window.title = title
-        window.contentViewController = NSHostingController(rootView: content().tint(Brand.amber))
+        window.contentViewController = NSHostingController(rootView: content().tint(Brand.accent))
         if !window.isVisible { window.center() }
         NSApplication.shared.activate(ignoringOtherApps: true)
         window.makeKeyAndOrderFront(nil)
