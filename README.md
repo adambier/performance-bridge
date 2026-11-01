@@ -1,11 +1,11 @@
 # Performance Bridge
 
-**Performance Bridge** will be a macOS app that connects hardware control surfaces to RME TotalMix FX
+**Performance Bridge** will be a macOS app that connects hardware controllers to RME TotalMix FX
 through TotalMix's Global OSC interface. With it, the knobs, faders, buttons, and displays of a
-surface show and control TotalMix's mixer, in both directions.
+hardware controller show and control TotalMix's mixer, in both directions.
 
 Its aim is TotalMix FX as a performance mixer: for mixing live, in practice or on stage, with the
-hands on the surface rather than the mouse.
+hands on the hardware controller rather than the mouse.
 
 The repository also holds the Swift libraries behind the app, and a developer tool for checking
 them against TotalMix. The libraries depend only on Foundation, and they build on macOS, Linux, and
@@ -33,7 +33,7 @@ This project is in early development. There is no released app yet, only a first
 - **The Roto-Control.** Melbourne Instruments' Roto-Control comes first, driven through its published SysEx API. Its eight motorized knobs follow TotalMix. Version 1.0 uses its MIX mode; its PLUGIN mode, for the parts of TotalMix that MIX mode can't reach (e.g., the control room), comes in a later 1.x release.
 - **The Launch Control XL 3.** Novation's Launch Control XL 3 comes second, in its DAW mode. Its faders are not motorized, so they pick up TotalMix's values.
 - **The app.** A signed macOS app (macOS 13 or later) with in-app updates, a setup guide, and a layout editor.
-- **Later: a DAW connection.** Arming tracks and driving the transport in a DAW from the surface, starting with Logic Pro and Bitwig Studio.
+- **Later: a DAW connection.** Arming tracks and driving the transport in a DAW from the hardware controller, starting with Logic Pro and Bitwig Studio.
 
 ## Requirements
 

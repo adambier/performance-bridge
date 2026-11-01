@@ -90,7 +90,7 @@ public enum SetupChecklist {
         steps.append(status.levelsSeen
             ? SetupStep(id: "meters", title: "Meters arrive", state: .done, detail: "")
             : SetupStep(id: "meters", title: "No meters yet", state: .optional,
-                        detail: "For meters on the surfaces: in TotalMix FX, Options → Mixer Settings… (F3) → OSC, check “Send Level Data” for the controller. TotalMix FX sends levels only when they change, so play something to see them."))
+                        detail: "For meters on the hardware controllers: in TotalMix FX, Options → Mixer Settings… (F3) → OSC, check “Send Level Data” for the controller. TotalMix FX sends levels only when they change, so play something to see them."))
 
         if status.rotoConnected {
             steps.append(SetupStep(id: "roto", title: "Roto-Control connected", state: .done, detail: ""))
@@ -102,7 +102,7 @@ public enum SetupChecklist {
                                    detail: "Connect the Roto-Control by USB. If it’s connected, choose its MIDI port in Performance Bridge’s Settings."))
         }
 
-        steps.append(SetupStep(id: "hide", title: "Channels the surfaces don’t show", state: .instruction,
+        steps.append(SetupStep(id: "hide", title: "Channels the hardware controllers don’t show", state: .instruction,
                                detail: "Channels are hidden in TotalMix FX: right-click the channel, choose Change Channel Layout, and under “Hide Channel in” check the OSC Controller box for the controller Performance Bridge uses. Channel colors are set in the same window."))
         steps.append(SetupStep(id: "order", title: "The order of the channels", state: .instruction,
                                detail: "Choose Settings… from the menu, open the Channel Layout tab, and drag. Restore TotalMix FX Order puts them back."))

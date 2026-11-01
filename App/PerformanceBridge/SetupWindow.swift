@@ -30,7 +30,7 @@ struct SetupView: View {
                 Text("Set up Performance Bridge")
                     .font(.title3.weight(.semibold))
                 Text(SetupChecklist.isComplete(model.status)
-                     ? "Everything the surfaces need is working."
+                     ? "Everything the hardware controllers need is working."
                      : "Each step updates as soon as it works. Leave this window open while you set up TotalMix FX.")
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

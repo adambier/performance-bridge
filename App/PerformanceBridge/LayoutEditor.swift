@@ -85,7 +85,7 @@ struct LayoutView: View {
                 if view == .outputs {
                     Text("Control room outputs (Main Out, Phones, and so on) always come first.")
                 }
-                Text("Channel colors are set in TotalMix FX’s own Channel Layout window, and channels are hidden there too: right-click the channel, choose Change Channel Layout, and check the OSC Controller box under \u{201C}Hide Channel in.\u{201D} Channels that TotalMix hides from an OSC Controller are not shown on any surface that uses that controller.")
+                Text("Channel colors are set in TotalMix FX’s own Channel Layout window, and channels are hidden there too: right-click the channel, choose Change Channel Layout, and check the OSC Controller box under \u{201C}Hide Channel in.\u{201D} Channels that TotalMix hides from an OSC Controller are not shown on the hardware controllers connected through it.")
             }
             .font(.caption)
             .foregroundStyle(.secondary)
