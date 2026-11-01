@@ -140,7 +140,7 @@ The home submix is the output the surfaces' levels and pans go into. Choose it f
 **Home Submix**.
 
 - Main Out is the default. Choosing Main Out's output saves "follow Main Out", so the home moves when Main Out
-  is reassigned in TotalMix. The menu says so.
+  is reassigned in TotalMix.
 - Any other output is in the **Other Outputs** submenu of the same menu.
 
 ## If something does not work
