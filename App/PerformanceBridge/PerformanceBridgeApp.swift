@@ -360,7 +360,7 @@ struct MenuContent: View {
         // asks for more.
         Divider()
         Button("Setup Guide…") { model.showSetup() }
-        Button("Ask TotalMix FX for Its State") { model.engine.refresh() }
+        Button("Refresh Channels from TotalMix FX") { model.engine.refresh() }
         Divider()
         Button("About Performance Bridge") {
             Windows.show("about", title: "About Performance Bridge") { AboutView() }

@@ -354,10 +354,12 @@ public final class BridgeEngine: @unchecked Sendable {
         }
     }
 
-    /// Asks TotalMix for its whole state again.
+    /// Refreshes the channels from TotalMix (`SurfaceHub.refreshChannels`): asks for its whole
+    /// state again and drops channels its answer leaves out, so channels hidden or shown in
+    /// TotalMix since the last refresh leave or join the surfaces.
     public func refresh() {
         lock.lock()
-        dispatch(hub.connect(now: now))
+        dispatch(hub.refreshChannels(now: now))
         lock.unlock()
     }
 
@@ -390,10 +392,10 @@ public final class BridgeEngine: @unchecked Sendable {
         checkMIDIIfDue()
         openMIDIIfDue()
         lock.lock()
-        // TotalMix has gone quiet (quit, restarted, or OSC turned off): ask for its state until it
-        // answers, so the mirror is whole again when it comes back.
+        // TotalMix has gone quiet (quit, restarted, or OSC turned off): refresh the channels, asking
+        // until it answers, so the mirror is whole and current again when it comes back.
         let answering = lastFromTotalMix.map { now - $0 < Self.totalMixTimeout } ?? false
-        if totalMixWasAnswering, !answering { dispatch(hub.connect(now: now)) }
+        if totalMixWasAnswering, !answering { dispatch(hub.refreshChannels(now: now)) }
         totalMixWasAnswering = answering
         dispatch(hub.tick(now: now))
         sendToRoto(driver.tick(now: now))

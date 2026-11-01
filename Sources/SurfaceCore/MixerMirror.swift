@@ -266,6 +266,23 @@ public struct MixerMirror: Sendable {
         return state == before ? nil : .node(key)
     }
 
+    /// Forgets every channel not in `kept`, with its meters and the mixer nodes it is the source or
+    /// output of, after a full refresh from TotalMix: a channel TotalMix no longer reports, such as
+    /// one hidden from this OSC remote since the last refresh, sends nothing to say so
+    /// (docs/TOTALMIX-OSC.md, tests 8 and 11). Returns whether anything was forgotten.
+    @discardableResult
+    public mutating func keepOnly(_ kept: Set<ChannelRef>) -> Bool {
+        let gone = Set(channels.keys).subtracting(kept)
+        guard !gone.isEmpty else { return false }
+        for ref in gone { channels[ref] = nil }
+        meters = meters.filter { !gone.contains($0.key) }
+        nodes = nodes.filter { key, _ in
+            !gone.contains(key.source) && !gone.contains(ChannelRef(.output, key.output))
+        }
+        for bus in Set(gone.map(\.bus)) { visible[bus] = listVisible(bus) }
+        return true
+    }
+
     /// The channels of one row that a surface can show, in TotalMix's order: every channel with a
     /// reported setting, minus the right halves of stereo pairs and channels hidden from this OSC
     /// remote.

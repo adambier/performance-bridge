@@ -122,6 +122,44 @@ final class LayoutTests: XCTestCase {
         XCTAssertEqual(base.withOrder(.outputs, [ChannelRef(.output, 2)]).outputOrder, [ChannelRef(.output, 2)])
     }
 
+    func testRefreshChannelsDropsChannelsTotalMixNoLongerReports() {
+        var hub = SurfaceHub()
+        for event: TotalMixEvent in [
+            .channel(bus: .input, channel: 0, parameter: "name", value: .text("ADI-2")),
+            .channel(bus: .input, channel: 2, parameter: "name", value: .text("Sonos")),
+            .mix(bus: .input, channel: 0, output: 0, parameter: "faderlin", value: .number(0.5)),
+            .level(bus: .input, channel: 0, peakDB: -20),
+        ] { _ = hub.handle(event, now: 0) }
+        XCTAssertEqual(hub.mirror.visibleChannels(.input), [ChannelRef(.input, 0), ChannelRef(.input, 2)])
+
+        // ADI-2 hidden in TotalMix: the answer to the refresh leaves it out.
+        let asked = hub.refreshChannels(now: 10)
+        XCTAssertTrue(asked.messages.contains { $0.address == "/sendall" })
+        _ = hub.handle(.channel(bus: .input, channel: 2, parameter: "name", value: .text("Sonos")), now: 10.05)
+        _ = hub.tick(now: 10.5)
+        XCTAssertNotNil(hub.mirror.channels[ChannelRef(.input, 0)], "kept until the answer is complete")
+        _ = hub.tick(now: 11.1)
+        XCTAssertNil(hub.mirror.channels[ChannelRef(.input, 0)])
+        XCTAssertTrue(hub.mirror.nodes.isEmpty, "its mixer node goes too")
+        XCTAssertNil(hub.mirror.meters[ChannelRef(.input, 0)], "and its meter")
+        XCTAssertEqual(hub.mirror.visibleChannels(.input), [ChannelRef(.input, 2)])
+
+        // Shown again: the next refresh brings it back.
+        _ = hub.refreshChannels(now: 20)
+        _ = hub.handle(.channel(bus: .input, channel: 0, parameter: "name", value: .text("ADI-2")), now: 20.05)
+        _ = hub.handle(.channel(bus: .input, channel: 2, parameter: "name", value: .text("Sonos")), now: 20.06)
+        _ = hub.tick(now: 21.2)
+        XCTAssertEqual(hub.mirror.visibleChannels(.input), [ChannelRef(.input, 0), ChannelRef(.input, 2)])
+    }
+
+    func testRefreshChannelsKeepsEverythingWhileTotalMixIsSilent() {
+        var hub = SurfaceHub()
+        _ = hub.handle(.channel(bus: .input, channel: 0, parameter: "name", value: .text("ADI-2")), now: 0)
+        _ = hub.refreshChannels(now: 10)
+        for second in 11...30 { _ = hub.tick(now: Double(second)) }
+        XCTAssertNotNil(hub.mirror.channels[ChannelRef(.input, 0)], "no answer, nothing dropped")
+    }
+
     func testAnEmptyOrderRestoresTotalMixsOrder() {
         let hub = loadedHub(mode: .strips(view: .sources, first: 0, knob: .level, switch: .mute))
         let totalMixOrder = PerformanceLayout().channels(.sources, in: hub.mirror)

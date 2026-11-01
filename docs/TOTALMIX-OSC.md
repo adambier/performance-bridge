@@ -284,3 +284,14 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 - The assign menu's item for no assignment is "None" (Adam). Afterward Sonos was returned to −8.2 dB, Speaker B turned off, and Main Out B set to None.
 
 **Inference:** while Main Out B is assigned and Speaker B is on, Main Out B plays Main Out's submix, and TotalMix keeps the two submixes the same. So a surface that writes to Main Out's submix reaches Main Out B as well, and the home submix need not move when Speaker B is switched. Not tested: whether the mirroring holds with Speaker B off, and with Link off.
+
+### Test 11 (2026-10-31): hiding and showing a channel sends nothing
+
+**Setup.** TotalMix FX "2.10 (1)" with a Digiface AES, controller 4. `sbdev monitor --in-port 7004 --out-port 9004`, without `--sendall`, so it printed only what TotalMix sent unasked, filtered to the ADI-2 input (monitor input 1, address 0).
+
+**Findings** (Adam, 2026-10-31):
+- Hiding ADI-2 from OSC Controller 4 (Channel Layout, "Hide Channel in") printed nothing.
+- Showing it again printed nothing.
+- Moving the ADI-2 fader then printed `mix input 1 → output 13 faderlin` messages every 20 ms, so the monitor was receiving.
+
+**Consequence.** TotalMix doesn't announce a channel hidden from or shown to an OSC remote. The app learns of it only by asking for the whole state again (`/sendall`) and comparing: a hidden channel is left out of the answer (test 8), and a shown one is in it. So the app refreshes its channels on request ("Refresh Channels from TotalMix FX"), when its Channel Layout tab opens, and when TotalMix comes back after going quiet.
