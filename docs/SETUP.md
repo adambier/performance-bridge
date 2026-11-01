@@ -22,7 +22,7 @@ notes and has not been seen in TotalMix, the step says so.
 The app has a setup window that follows these steps and checks each one live where it can: whether
 TotalMix FX answers, whether it has sent its channels, whether meters arrive, and whether the
 Roto-Control is connected. It opens by itself the first time the app runs; after that, choose
-**Setup…** from the menu, or click either status line.
+**Setup Guide…** from the menu, or click either status line.
 
 The window also opens by itself, at most once per launch, for a problem that has never worked with
 the current settings: the port in use; TotalMix FX running but not answering for 30 seconds; or the
@@ -121,12 +121,12 @@ If TotalMix does not show its state, choose **Ask TotalMix FX for its state** fr
 
 ## Step 5: Set the layout
 
-Choose **Layout…** from the menu.
+Choose **Channel Layout…** from the menu.
 
 - The **Sources** and **Outputs** buttons switch between the two views.
 - Drag a channel to change its place on the surfaces. TotalMix cannot reorder its channels; the app can.
 - To take a channel off the surfaces, hide it in TotalMix (Step 2). The layout has no hide setting of its own.
-- Channel colors are set in TotalMix FX, in Channel Layout (the Color column, and the Color (Name) menu for the selected channel). Checked on screen (Adam, 2026-10-31).
+- Channel colors are set in TotalMix FX's own Channel Layout window (the Color column, and the Color (Name) menu for the selected channel). Checked on screen (Adam, 2026-10-31).
 - The note at the bottom repeats the rule for channels hidden in TotalMix.
 - **Playbacks start on a new page**, under the Sources list, puts the first playback at the start of a new
   page of strips, after blank strips that fill the inputs' last page.

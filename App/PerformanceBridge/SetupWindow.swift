@@ -1,6 +1,6 @@
 // The setup window: the steps of setting up Performance Bridge with TotalMix FX and a Roto-Control,
 // each checked live where the app can see it (SetupChecklist in BridgeEngine). It opens by itself
-// the first time the app runs, and from the menu (Setup…, or either status line) after that.
+// the first time the app runs, and from the menu (Setup Guide…, or either status line) after that.
 
 import SwiftUI
 #if canImport(BridgeEngine)
@@ -51,8 +51,8 @@ struct SetupView: View {
                 Button("Settings…") {
                     Windows.show("settings", title: "Performance Bridge Settings") { SettingsView(model: model) }
                 }
-                Button("Layout…") {
-                    Windows.show("layout", title: "Performance Bridge Layout") { LayoutView(model: model) }
+                Button("Channel Layout…") {
+                    Windows.show("layout", title: "Performance Bridge Channel Layout") { LayoutView(model: model) }
                 }
                 Spacer()
                 Button("Done") { Windows.close("setup") }

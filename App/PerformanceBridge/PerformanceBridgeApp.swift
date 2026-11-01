@@ -251,7 +251,7 @@ final class BridgeModel: ObservableObject {
 
     /// Opens the setup window.
     func showSetup() {
-        Windows.show("setup", title: "Set Up Performance Bridge") { SetupView(model: self) }
+        Windows.show("setup", title: "Performance Bridge Setup Guide") { SetupView(model: self) }
     }
 
     /// The engine's settings from the saved settings, the command line, and the menu's choices.
@@ -358,10 +358,10 @@ struct MenuContent: View {
         }
         Button("Ask TotalMix FX for its state") { model.engine.refresh() }
         Divider()
-        Button("Layout…") {
-            Windows.show("layout", title: "Performance Bridge Layout") { LayoutView(model: model) }
+        Button("Channel Layout…") {
+            Windows.show("layout", title: "Performance Bridge Channel Layout") { LayoutView(model: model) }
         }
-        Button("Setup…") { model.showSetup() }
+        Button("Setup Guide…") { model.showSetup() }
         Button("About Performance Bridge") {
             Windows.show("about", title: "About Performance Bridge") { AboutView() }
         }
