@@ -14,6 +14,8 @@
 //                                     and a Roto-Control, as the app will (Bridge.swift)
 //   sbdev lcxl ports | sbdev lcxl [options]
 //                                     talk to a Launch Control XL 3 in DAW mode (LaunchControl.swift)
+//   sbdev lcbridge [options]          run SurfaceCore and the Launch Control driver between TotalMix
+//                                     and a Launch Control XL 3 or Launch Control 3 (LaunchBridge.swift)
 
 import Foundation
 import OSCCodec
@@ -44,6 +46,7 @@ let usage = """
       sbdev roto [options]      (sbdev roto --help for the options)
       sbdev bridge [options]    (sbdev bridge --help for the options)
       sbdev lcxl [options]      talks to a Launch Control XL 3 (sbdev lcxl --help)
+      sbdev lcbridge [options]  TotalMix and a Launch Control, as the app will (sbdev lcbridge --help)
 
     Defaults: --host localhost --in-port 7001 --out-port 9001 (Performance Bridge's defaults;
     RME's manual gives them as typical values).
@@ -303,6 +306,7 @@ case "roto": roto(arguments.dropFirst())
 case "bridge": bridge(arguments.dropFirst())
 case "midi": midiMonitor(arguments.dropFirst())
 case "lcxl": launchControl(arguments.dropFirst())
+case "lcbridge": launchBridge(arguments.dropFirst())
 case "-h", "--help", "help": print(usage); exit(0)
 default: fail("Unknown command \(command).\n\n\(usage)")
 }
