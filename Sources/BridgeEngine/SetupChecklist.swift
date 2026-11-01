@@ -83,7 +83,7 @@ public enum SetupChecklist {
             steps.append(SetupStep(id: "channels", title: "TotalMix FX hasn’t sent its channels yet",
                                    state: .waiting,
                                    detail: status.totalMixAnswering
-                                       ? "TotalMix FX answered with its status only. Choose Ask TotalMix FX for Its State from the menu."
+                                       ? "TotalMix FX answered with its status only. Performance Bridge keeps asking; if this stays, choose Refresh Channels from TotalMix FX from the menu."
                                        : "This follows once TotalMix FX answers."))
         }
 

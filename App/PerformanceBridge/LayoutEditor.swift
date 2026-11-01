@@ -92,7 +92,12 @@ struct LayoutView: View {
         }
         .padding(20)
         .frame(height: 490)
-        .onAppear { reload() }
+        .onAppear {
+            // A visit here usually follows changes in TotalMix FX's own Channel Layout window,
+            // which TotalMix doesn't announce over OSC: refresh the channels first.
+            model.engine.refresh()
+            reload()
+        }
         .onChange(of: model.status) { _ in reload() }
     }
 

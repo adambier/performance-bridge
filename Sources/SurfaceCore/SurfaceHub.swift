@@ -20,6 +20,10 @@ public struct SurfaceHub: Sendable {
     /// messages (docs/TOTALMIX-OSC.md, test 1), so only a channel setting or a mixer node counts as
     /// an answer.
     public static let snapshotRetry: Double = 1
+    /// How long after TotalMix's last channel or node message a refresh counts as complete, in
+    /// seconds. TotalMix's reply to `/sendall` (962 messages) has been observed to arrive within
+    /// 83 ms (docs/TOTALMIX-OSC.md, test 1); this leaves a wide margin.
+    public static let refreshSettle: Double = 1
 
     /// The core's copy of TotalMix's state.
     public private(set) var mirror = MixerMirror()
@@ -35,6 +39,10 @@ public struct SurfaceHub: Sendable {
     private var order: [SurfaceID] = []
     private var thinner = OutgoingThinner()
     private var snapshotAskedAt: Double?
+    /// During a refresh: the channels TotalMix has reported since it began, and when it last
+    /// reported one.
+    private var refreshSeen: Set<ChannelRef>?
+    private var refreshLastHeard: Double?
 
     /// A hub with no surfaces.
     public init(layout: PerformanceLayout = PerformanceLayout()) {
@@ -72,10 +80,29 @@ public struct SurfaceHub: Sendable {
         return output
     }
 
+    /// Asks TotalMix for everything again, and then forgets the channels its answer leaves out, so
+    /// that channels hidden from or shown to this OSC remote in TotalMix since the last refresh
+    /// leave or join the surfaces. TotalMix sends nothing when a channel is hidden or shown
+    /// (docs/TOTALMIX-OSC.md, tests 8 and 11). The surfaces keep what they show until the answer
+    /// is complete, so nothing blanks.
+    public mutating func refreshChannels(now: Double) -> CoreOutput {
+        refreshSeen = []
+        refreshLastHeard = nil
+        return connect(now: now)
+    }
+
     /// Takes one message from TotalMix.
     public mutating func handle(_ event: TotalMixEvent, now: Double) -> CoreOutput {
         switch event {
-        case .channel, .mix: snapshotAskedAt = nil
+        case .channel(let bus, let channel, _, _):
+            snapshotAskedAt = nil
+            if refreshSeen != nil {
+                refreshSeen?.insert(ChannelRef(bus, channel))
+                refreshLastHeard = now
+            }
+        case .mix:
+            snapshotAskedAt = nil
+            if refreshSeen != nil { refreshLastHeard = now }
         default: break
         }
         guard let change = mirror.apply(event) else { return CoreOutput() }
@@ -96,6 +123,11 @@ public struct SurfaceHub: Sendable {
         if let asked = snapshotAskedAt, now - asked >= Self.snapshotRetry {
             snapshotAskedAt = now
             output.messages.append(TotalMixCommand.sendAll())
+        }
+        if let seen = refreshSeen, let heard = refreshLastHeard, now - heard >= Self.refreshSettle {
+            refreshSeen = nil
+            refreshLastHeard = nil
+            if mirror.keepOnly(seen) { output.append(refreshAll(now: now)) }
         }
         output.messages += thinner.flush(now: now)
         for id in order {

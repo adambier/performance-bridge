@@ -148,7 +148,7 @@ final class BridgeEngineTests: XCTestCase {
         let steps = SetupChecklist.steps(status: status, settings: BridgeSettings())
         let channels = try XCTUnwrap(steps.first { $0.id == "channels" })
         XCTAssertEqual(channels.state, .waiting)
-        XCTAssertTrue(channels.detail.contains("Ask TotalMix FX for Its State"), channels.detail)
+        XCTAssertTrue(channels.detail.contains("Refresh Channels from TotalMix FX"), channels.detail)
     }
 
     func testTheEngineCountsChannelsAndSeesLevels() throws {

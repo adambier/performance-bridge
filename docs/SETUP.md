@@ -118,7 +118,10 @@ retrying in every state:
 
 The full reason for any state goes to the log in the Terminal the app was started from.
 
-If TotalMix does not show its state, choose **Ask TotalMix FX for Its State** from the menu.
+After hiding or showing channels in TotalMix FX's own Channel Layout window, choose **Refresh Channels from
+TotalMix FX** from the menu: TotalMix doesn't announce those changes over OSC (`docs/TOTALMIX-OSC.md`, test 11).
+The app also refreshes by itself when its Channel Layout tab opens and when TotalMix FX comes back after
+going quiet.
 
 ## Step 5: Set the layout
 
@@ -148,7 +151,7 @@ menu, under **Mix Output**.
 
 - **TotalMix FX: Port N in Use.** Another program has the port. Quit `sbdev` or any other OSC remote.
 - **TotalMix FX: No Answer.** Check that Global OSC is on and that the ports in Settings match TotalMix's
-  (Step 1). Then choose **Ask TotalMix FX for Its State**.
+  (Step 1). Then choose **Refresh Channels from TotalMix FX**.
 - **Roto-Control: Not Found.** Check the cable, and the MIDI port in Settings (Step 3).
 - **A channel is missing from the surfaces.** Check whether TotalMix hides it from the OSC controller the app uses
   (Step 2).
