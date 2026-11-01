@@ -78,6 +78,13 @@ public struct PerformanceLayout: Hashable, Codable, Sendable {
         return layout
     }
 
+    /// Whether a view shows its channels in TotalMix's own order, as it would with no order set
+    /// (e.g., after Restore TotalMix FX Order, or with an order that puts them back where TotalMix
+    /// has them).
+    public func isTotalMixOrder(_ view: ViewKind, in mirror: MixerMirror) -> Bool {
+        channels(view, in: mirror) == withOrder(view, []).channels(view, in: mirror)
+    }
+
     /// The channels of a view, as the surfaces show them (see the type's description).
     public func channels(_ view: ViewKind, in mirror: MixerMirror) -> [ChannelRef] {
         orderedChannels(view, in: mirror)

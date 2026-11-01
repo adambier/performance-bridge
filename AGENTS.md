@@ -149,4 +149,6 @@ Don't:
 - **Words.** Plain, short words, and one term for one thing: channel, submix, mixer node, fader position, gain, strip, surface, driver.
 - **"Hardware controller" in user-facing text** (the app, the setup guide, the README's introduction): what the code and the technical docs call a "surface" (Adam, 2026-10-31). TotalMix FX's "OSC Controller" keeps its own name.
 - **Send labels.** On a surface, a send is labeled "> " and the output's name (e.g., "> Phones"), never "to …" (Adam, 2026-10-31).
+- **Commas before "and".** No comma before "and" joining only two items or two short parts (e.g., "Click Details and check …"); the serial comma, for three or more, stays (Adam, 2026-10-31).
+- **Instructions in user-facing text.** Tell the user what to do, in the imperative ("Hide and show channels in TotalMix FX."), and say what is optional with "can" ("Channel colors can be set in the same window."), rather than describing it in the passive ("Channels are hidden in TotalMix FX.") (Adam, 2026-10-31).
 - **Readability.** A prose paragraph longer than about eight lines is broken into paragraphs, or into a list where the parts are parallel.
