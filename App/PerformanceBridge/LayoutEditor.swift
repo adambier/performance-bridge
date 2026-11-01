@@ -54,7 +54,7 @@ struct LayoutView: View {
                     groupTitle("Control Room")
                     rows(monitoringItems)
                         .onMove { move($0, $1, monitoring: true) }
-                    groupTitle("Sends")
+                    groupTitle("Hardware Outputs")   // TotalMix FX's name for its other outputs (Adam, 2026-10-31)
                     rows(otherItems)
                         .onMove { move($0, $1, monitoring: false) }
                 } else {
