@@ -49,10 +49,11 @@ var targets: [Target] = [
     .target(name: "UDPTransport"),
     .target(name: "SurfaceCore", dependencies: ["OSCCodec", "TotalMixOSC"]),
     .target(name: "RotoDriver", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "SurfaceCore"]),
+    .target(name: "LaunchControlDriver", dependencies: ["OSCCodec", "TotalMixOSC", "LaunchControl", "SurfaceCore"]),
     .target(name: "BridgeEngine", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "MIDITransport", "UDPTransport",
                                                  "SurfaceCore", "RotoDriver"]),
     .executableTarget(name: "sbdev", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "LaunchControl", "MIDITransport", "UDPTransport",
-                                                   "SurfaceCore", "RotoDriver"]),
+                                                   "SurfaceCore", "RotoDriver", "LaunchControlDriver"]),
 ]
 let products: [Product] = [
     .library(name: "OSCCodec", targets: ["OSCCodec"]),
@@ -63,6 +64,7 @@ let products: [Product] = [
     .library(name: "UDPTransport", targets: ["UDPTransport"]),
     .library(name: "SurfaceCore", targets: ["SurfaceCore"]),
     .library(name: "RotoDriver", targets: ["RotoDriver"]),
+    .library(name: "LaunchControlDriver", targets: ["LaunchControlDriver"]),
     .library(name: "BridgeEngine", targets: ["BridgeEngine"]),
     .executable(name: "sbdev", targets: ["sbdev"]),
 ]
@@ -82,6 +84,7 @@ if includeTests {
     targets.append(.testTarget(name: "UDPTransportTests", dependencies: ["UDPTransport"]))
     targets.append(.testTarget(name: "SurfaceCoreTests", dependencies: ["SurfaceCore", "TotalMixOSC", "OSCCodec"]))
     targets.append(.testTarget(name: "BridgeEngineTests", dependencies: ["BridgeEngine", "SurfaceCore", "TotalMixOSC", "OSCCodec", "UDPTransport"]))
+    targets.append(.testTarget(name: "LaunchControlDriverTests", dependencies: ["LaunchControlDriver", "LaunchControl", "SurfaceCore", "TotalMixOSC", "OSCCodec"]))
     targets.append(.testTarget(name: "RotoDriverTests", dependencies: ["RotoDriver", "RotoControl", "SurfaceCore", "TotalMixOSC", "OSCCodec"]))
 }
 
