@@ -37,6 +37,23 @@ enum Windows {
         open[id]?.title = title
     }
 
+    /// Resizes the window named `id` to fit its content, keeping its top edge where it is. A
+    /// hosted SwiftUI view makes its window grow when the content grows, but not shrink when it
+    /// shrinks, so the Settings window calls this when its tab changes (Adam, 2026-10-31). The
+    /// change is animated, as macOS settings windows animate between panes, unless Reduce Motion
+    /// is on.
+    static func fitToContent(_ id: String) {
+        guard let window = open[id], let view = window.contentViewController?.view else { return }
+        view.layoutSubtreeIfNeeded()
+        let content = view.fittingSize
+        guard content.width > 0, content.height > 0 else { return }
+        var frame = window.frameRect(forContentRect: NSRect(origin: .zero, size: content))
+        frame.origin.x = window.frame.minX
+        frame.origin.y = window.frame.maxY - frame.height
+        let animate = !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        window.setFrame(frame, display: true, animate: animate)
+    }
+
     /// Closes the window named `id`, if it is open.
     static func close(_ id: String) {
         open[id]?.close()
@@ -118,7 +135,11 @@ struct SettingsWindowView: View {
         .padding(.top, 8)
         .frame(width: 480)
         .onAppear { show(tab) }
-        .onChange(of: tab) { show($0) }
+        .onChange(of: tab) { tab in
+            show(tab)
+            // After SwiftUI has laid out the new tab.
+            DispatchQueue.main.async { Windows.fitToContent("settings") }
+        }
     }
 
     /// A tab's content while it shows, and nothing otherwise.
