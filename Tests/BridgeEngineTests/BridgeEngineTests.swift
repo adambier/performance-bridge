@@ -303,7 +303,7 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertEqual(version(running: false, nil).state, .waiting)
         XCTAssertEqual(version(running: true, nil).state, .instruction)
         XCTAssertEqual(version(running: true, "2.10 (1)").state, .done)
-        XCTAssertEqual(version(running: true, "2.10 (1)").title, "TotalMix FX 2.10 (1) has Global OSC")
+        XCTAssertEqual(version(running: true, "2.10 (1)").title, "TotalMix FX has Global OSC")
         XCTAssertEqual(version(running: true, "2.1 RC1").state, .done)
         XCTAssertEqual(version(running: true, "1.96").state, .problem)
         XCTAssertEqual(version(running: false, "2.10", answering: true).state, .done, "an answer means it runs")

@@ -123,7 +123,7 @@ public enum SetupChecklist {
                              detail: "Performance Bridge couldn’t read it. " + needs)
         }
         if parsed.supportsGlobalOSC {
-            return SetupStep(id: "version", title: "TotalMix FX \(text) has Global OSC", state: .done, detail: "")
+            return SetupStep(id: "version", title: "TotalMix FX has Global OSC", state: .done, detail: "")
         }
         return SetupStep(id: "version", title: "TotalMix FX \(text) is too old", state: .problem,
                          detail: needs + " Update it from RME’s website.")
