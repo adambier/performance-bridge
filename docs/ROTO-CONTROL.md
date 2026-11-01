@@ -254,7 +254,7 @@ and step names.
 2. **Type `03`.** What does the Roto-Control wait for in PLUGIN mode when the host claims Logic, and does SET PLUGIN CONTROL DETAILS work then?
 3. **The 0 dB indent.** Settled for `02` by test 5: level knobs at 13004, send knobs none. Still open: do send knobs get one with `01`, as the 3.1.0 release notes say? Does `03` get one?
 4. **The hold rule.** A power cycle clears it (test 6). Still open: does switching to PLUGIN mode and back clear it? Is the release always about 3,300–3,700 counts in?
-5. **The FX label.** With SEL held, screen 3's bottom half shows "FX" under "Send 1" (seen); pressing that switch chooses the send knob mode (test 4), and pressing it again steps through the sends (seen, 2026-10-30). Is "FX" anything more than the label for that button? The SysEx doc names no FX switch mode.
+5. **The FX label.** Settled by test 7: it labels the send-mode switch, shown only while the host reports sends.
 
 ## 9. Tests
 
@@ -490,3 +490,14 @@ marked "seen".
 - `sbdev roto` was quit and the Roto-Control unplugged for 5 seconds and plugged in again. In a new `sbdev roto`, with no position sent, knob 1 turned up to 16383, went silent for 0.45 s, reported 0, and carried on upward: a **wrap** (log kept).
 
 **Consequence.** A power cycle clears the hold, as the rule in section 6 predicts: the knob holds only once the host has sent it a position since it was last powered (and since the knob mode last changed). `RotoDriver` sends positions as soon as it connects, so after a power cycle the knobs hold again once the handshake is done (inference from the driver's behavior).
+
+### Test 7 (2026-11-01): the "FX" label
+
+**Setup.** Firmware 3.3.0, `sbdev roto` claiming Bitwig (`02`), 16 tracks and 16 sends named "Send 1" to "Send 16", knobs in send mode at send index 4.
+
+**Findings** (Adam, 2026-11-01):
+- With SEL held, the third screen read "Send 5" on top and "FX" below. "Send 5" is the name the host gave send index 4.
+- After `sends 0` (NUM SEND TRACKS 0), the row under SEL read VOLUME, PAN, MUTE, SOLO, ARM REC: the send switch was gone. Pressing the third switch chose mute mode. At the next mode report the knobs had gone back from send to level, with send index 0 (log).
+- `sends 16` put the sends back.
+
+**Consequence.** "FX" is only the label of the send-mode switch, and the screen above it names the selected send. The switch exists only while the host reports at least one send, and the Roto-Control leaves send mode when the host reports none. With no outputs to send to, `RotoDriver` should report no sends (inference; it reports one per send output now).
