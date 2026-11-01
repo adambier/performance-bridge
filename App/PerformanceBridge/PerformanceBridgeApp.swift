@@ -211,11 +211,11 @@ final class BridgeModel: ObservableObject {
         if running != totalMixRunning { totalMixRunning = running }
         if version != totalMixVersion { totalMixVersion = version }
         let tooOld = version.flatMap(TotalMixVersion.init).map { !$0.supportsGlobalOSC } ?? false
-        let reason = watch.update(status: status, totalMixRunning: running, now: Date().timeIntervalSinceReferenceDate,
-                                  totalMixTooOld: tooOld)
+        let now = Date().timeIntervalSinceReferenceDate
+        let reason = watch.update(status: status, totalMixRunning: running, now: now, totalMixTooOld: tooOld)
         if watch.totalMixWorked { UserDefaults.standard.set(true, forKey: totalMixWorkedKey) }
         if watch.rotoWorked { UserDefaults.standard.set(true, forKey: rotoWorkedKey) }
-        let attention = watch.needsAttention(status: status, totalMixRunning: running)
+        let attention = watch.needsAttention(status: status, now: now)
         if attention != needsAttention { needsAttention = attention }
         if let reason {
             switch reason {

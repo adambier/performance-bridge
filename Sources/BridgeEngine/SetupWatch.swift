@@ -4,8 +4,14 @@ import Foundation
 ///
 /// The rule (Adam, 2026-10-31): the window opens by itself only for something that has never worked
 /// with the current settings, at most once per launch, because a window that takes the focus during
-/// a performance is worse than a missed hint. Once a connection has worked, losing it only marks the
+/// a performance is worse than a missed hint. Once a connection has worked, a fault only marks the
 /// menu-bar icon.
+///
+/// The mark is for faults only, not for idle states (Adam, 2026-10-31): the app may run all the
+/// time, with TotalMix FX closed or the Roto-Control unplugged while the mixer isn't in use, and
+/// neither should leave a standing red dot. So the mark shows for the port in use, TotalMix running
+/// but silent for `attentionDelay` seconds, or a Roto-Control plugged in but not connected for
+/// `attentionDelay` seconds.
 ///
 /// - The port in use at launch: the window opens at once.
 /// - TotalMix FX running but not answering for `totalMixDelay` seconds, when it has never answered
@@ -36,6 +42,9 @@ public struct SetupWatch: Sendable {
     public static let totalMixDelay: Double = 30
     /// How long the Roto-Control's handshake may take before the window opens, in seconds.
     public static let rotoDelay: Double = 15
+    /// How long TotalMix may be silent while running, or the Roto-Control unconnected while plugged
+    /// in, before the menu-bar icon is marked, in seconds: long enough for a normal start.
+    public static let attentionDelay: Double = 10
 
     /// Whether TotalMix has ever answered with the current settings.
     public private(set) var totalMixWorked: Bool
@@ -43,8 +52,6 @@ public struct SetupWatch: Sendable {
     public private(set) var rotoWorked: Bool
 
     private var listenedThisLaunch = false
-    private var totalMixAnsweredThisLaunch = false
-    private var rotoConnectedThisLaunch = false
     private var silentSince: Double?
     private var rotoPendingSince: Double?
     private var opened = false
@@ -61,14 +68,8 @@ public struct SetupWatch: Sendable {
                                 totalMixTooOld: Bool = false) -> Reason? {
         guard status.running else { return nil }
         if status.listening { listenedThisLaunch = true }
-        if status.totalMixAnswering {
-            totalMixWorked = true
-            totalMixAnsweredThisLaunch = true
-        }
-        if status.rotoConnected {
-            rotoWorked = true
-            rotoConnectedThisLaunch = true
-        }
+        if status.totalMixAnswering { totalMixWorked = true }
+        if status.rotoConnected { rotoWorked = true }
         if status.listening, totalMixRunning, !status.totalMixAnswering {
             silentSince = silentSince ?? now
         } else {
@@ -95,14 +96,15 @@ public struct SetupWatch: Sendable {
         return reason
     }
 
-    /// Whether the menu-bar icon should show its warning mark: the port is in use, TotalMix isn't
-    /// answering though it is running or answered earlier in this launch, or a Roto-Control that
-    /// connected in this launch is no longer connected.
-    public func needsAttention(status: BridgeStatus, totalMixRunning: Bool) -> Bool {
+    /// Whether the menu-bar icon should show its warning mark, as of the last `update`: the port is
+    /// in use, TotalMix is running but has been silent for `attentionDelay` seconds, or the
+    /// Roto-Control is plugged in but hasn't connected for `attentionDelay` seconds. TotalMix not
+    /// running, or the Roto-Control unplugged, is idle, not a fault.
+    public func needsAttention(status: BridgeStatus, now: Double) -> Bool {
         guard status.running else { return false }
         if !status.listening { return true }
-        if !status.totalMixAnswering, totalMixRunning || totalMixAnsweredThisLaunch { return true }
-        if rotoConnectedThisLaunch, !status.rotoConnected { return true }
+        if let since = silentSince, now - since >= Self.attentionDelay { return true }
+        if let since = rotoPendingSince, now - since >= Self.attentionDelay { return true }
         return false
     }
 }
