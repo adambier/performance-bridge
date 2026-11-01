@@ -12,6 +12,8 @@
 //                                     list MIDI ports; talk to a Roto-Control (Roto.swift)
 //   sbdev bridge [options]            run SurfaceCore and the Roto-Control driver between TotalMix
 //                                     and a Roto-Control, as the app will (Bridge.swift)
+//   sbdev lcxl ports | sbdev lcxl [options]
+//                                     talk to a Launch Control XL 3 in DAW mode (LaunchControl.swift)
 
 import Foundation
 import OSCCodec
@@ -41,8 +43,10 @@ let usage = """
       sbdev midi <port name>    prints what a MIDI device sends (e.g., an ARC USB's keys)
       sbdev roto [options]      (sbdev roto --help for the options)
       sbdev bridge [options]    (sbdev bridge --help for the options)
+      sbdev lcxl [options]      talks to a Launch Control XL 3 (sbdev lcxl --help)
 
-    Defaults: --host localhost --in-port 7001 --out-port 9001 (TotalMix's own defaults).
+    Defaults: --host localhost --in-port 7001 --out-port 9001 (Performance Bridge's defaults;
+    RME's manual gives them as typical values).
     In-port is the port TotalMix receives on; out-port the port TotalMix sends to.
     monitor numbers channels from 1, as TotalMix's window does; addresses count from 0
     (/input/2/mute is input 3).
@@ -298,6 +302,7 @@ case "curve": curve(Array(arguments.dropFirst()))
 case "roto": roto(arguments.dropFirst())
 case "bridge": bridge(arguments.dropFirst())
 case "midi": midiMonitor(arguments.dropFirst())
+case "lcxl": launchControl(arguments.dropFirst())
 case "-h", "--help", "help": print(usage); exit(0)
 default: fail("Unknown command \(command).\n\n\(usage)")
 }
