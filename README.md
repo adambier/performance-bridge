@@ -20,13 +20,14 @@ This project is in early development. There is no released app yet, only a first
 - **`OSCCodec`**: OSC 1.0 messages and bundles, encoded and decoded.
 - **`TotalMixOSC`**: TotalMix's Global OSC addresses, the values TotalMix sends and accepts, and the curve between a fader's position and its gain.
 - **`RotoControl`**: the Roto-Control's MIDI protocol: its SysEx messages, its knobs, switches, and meters, and the handshake that connects it to a host. Tested against a Roto-Control (`docs/ROTO-CONTROL.md`, section 9).
+- **`LaunchControlXL3`**: the Launch Control XL 3's DAW mode protocol (its controls, colors, screen, and settings), built from Novation's programmer's reference guide and not yet checked on the device (`docs/LAUNCH-CONTROL-XL3.md`).
 - **`SurfaceCore`**: the surface-neutral core. It keeps a copy of TotalMix's state and maps it onto any surface's strips: sources (inputs and playbacks) or outputs, levels into a chosen home submix, pans, sends, mute, PFL, and meters, with paging and a single-channel focus mode. It keeps TotalMix from moving a control in the user's hand, and makes faders without motors pick up. Tested on its own.
 - **`RotoDriver`**: the Roto-Control's driver on top of `SurfaceCore`, for its MIX mode: inputs and playbacks on the main track set and outputs on the second (monitoring outputs, such as Main Out and the phones, first, then sends), level, pan, and send knob modes, mute, PFL (on the solo switches), single-track pages, names, TotalMix's colors (outputs left white show green for monitoring and blue for sends), lights, and meters. Tried on the hardware through `sbdev bridge`.
 - **`BridgeEngine`**: TotalMix and a Roto-Control connected through the core and the driver: the socket, the MIDI ports, and a clock. Each side connects on its own and is tried again every 3 seconds, so either can be started, quit, or unplugged at any time.
 - **The app, a first look**: a menu-bar app (macOS 13 or later) that runs `BridgeEngine`, with the connection states, the home submix, an option to start the playbacks on a new page, About, and Settings for TotalMix's host and ports.
 - **`MIDITransport`**: a MIDI connection through CoreMIDI, on macOS.
 - **`UDPTransport`**: a small UDP socket, on macOS and Linux.
-- **`sbdev`**: a developer tool that prints what TotalMix sends and sends single messages to it, talks to a Roto-Control, and (`sbdev bridge`) runs the core and the Roto-Control driver between the two.
+- **`sbdev`**: a developer tool that prints what TotalMix sends and sends single messages to it, talks to a Roto-Control or (`sbdev lcxl`) a Launch Control XL 3, and (`sbdev bridge`) runs the core and the Roto-Control driver between the two.
 
 ## Planned
 

@@ -12,6 +12,8 @@ import Foundation
 //                  fader curve; Foundation only
 //   RotoControl    Melbourne Instruments Roto-Control: SysEx messages, CCs, 14-bit knobs, and the
 //                  handshake; Foundation only
+//   LaunchControlXL3  Novation Launch Control XL 3: DAW mode's controls, colors, screen, and feature
+//                  controls, from Novation's programmer's reference guide; Foundation only
 //   MIDITransport  a MIDI connection through CoreMIDI (macOS only; elsewhere it lists no ports and
 //                  throws), and the conversion between MIDI 1.0 bytes and CoreMIDI's packets
 //   UDPTransport   a small UDP socket for talking to TotalMix (POSIX on macOS and Linux; not yet
@@ -23,7 +25,7 @@ import Foundation
 //                  the sockets, the MIDI ports, and a clock: what the app runs
 //   sbdev          developer tool for checking the libraries against TotalMix and the surfaces
 //
-// Planned: the Launch Control XL 3's driver, and the PerformanceBridge app (SwiftUI, macOS only, built
+// Planned: the Launch Control XL 3's driver (on top of LaunchControlXL3), and the PerformanceBridge app (SwiftUI, macOS only, built
 // by make-app.sh).
 //
 // On a Mac the test targets are opt-in (PERFORMANCE_BRIDGE_TESTS=1), as in 3rd-wave-tools: with only
@@ -42,19 +44,21 @@ var targets: [Target] = [
     .target(name: "OSCCodec"),
     .target(name: "TotalMixOSC", dependencies: ["OSCCodec"]),
     .target(name: "RotoControl"),
+    .target(name: "LaunchControlXL3"),
     .target(name: "MIDITransport"),
     .target(name: "UDPTransport"),
     .target(name: "SurfaceCore", dependencies: ["OSCCodec", "TotalMixOSC"]),
     .target(name: "RotoDriver", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "SurfaceCore"]),
     .target(name: "BridgeEngine", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "MIDITransport", "UDPTransport",
                                                  "SurfaceCore", "RotoDriver"]),
-    .executableTarget(name: "sbdev", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "MIDITransport", "UDPTransport",
+    .executableTarget(name: "sbdev", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "LaunchControlXL3", "MIDITransport", "UDPTransport",
                                                    "SurfaceCore", "RotoDriver"]),
 ]
 let products: [Product] = [
     .library(name: "OSCCodec", targets: ["OSCCodec"]),
     .library(name: "TotalMixOSC", targets: ["TotalMixOSC"]),
     .library(name: "RotoControl", targets: ["RotoControl"]),
+    .library(name: "LaunchControlXL3", targets: ["LaunchControlXL3"]),
     .library(name: "MIDITransport", targets: ["MIDITransport"]),
     .library(name: "UDPTransport", targets: ["UDPTransport"]),
     .library(name: "SurfaceCore", targets: ["SurfaceCore"]),
@@ -73,6 +77,7 @@ if includeTests {
     targets.append(.testTarget(name: "OSCCodecTests", dependencies: ["OSCCodec"]))
     targets.append(.testTarget(name: "TotalMixOSCTests", dependencies: ["OSCCodec", "TotalMixOSC"]))
     targets.append(.testTarget(name: "RotoControlTests", dependencies: ["RotoControl"]))
+    targets.append(.testTarget(name: "LaunchControlXL3Tests", dependencies: ["LaunchControlXL3"]))
     targets.append(.testTarget(name: "MIDITransportTests", dependencies: ["MIDITransport", "RotoControl"]))
     targets.append(.testTarget(name: "UDPTransportTests", dependencies: ["UDPTransport"]))
     targets.append(.testTarget(name: "SurfaceCoreTests", dependencies: ["SurfaceCore", "TotalMixOSC", "OSCCodec"]))
