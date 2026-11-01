@@ -36,10 +36,23 @@ struct PerformanceBridgeApp: App {
             MenuContent(model: model)
                 .tint(Brand.amber)
         } label: {
-            // The attention image is drawn in color, so it must not be rendered as a template.
-            Image(nsImage: model.needsAttention ? Brand.menuBarAttentionImage : Brand.menuBarImage)
-                .renderingMode(model.needsAttention ? .original : .template)
-                .accessibilityLabel(model.needsAttention ? "Performance Bridge, needs attention" : "Performance Bridge")
+            // Three looks (Adam, 2026-10-31): normal when TotalMix FX and the Roto-Control are both
+            // connected; dimmed when either is down for a routine reason (closed, unplugged); dimmed
+            // with a red dot for a fault. The attention image is drawn in color, so it must not be
+            // rendered as a template.
+            if model.needsAttention {
+                Image(nsImage: Brand.menuBarAttentionImage)
+                    .renderingMode(.original)
+                    .accessibilityLabel("Performance Bridge, needs attention")
+            } else if model.allConnected {
+                Image(nsImage: Brand.menuBarImage)
+                    .renderingMode(.template)
+                    .accessibilityLabel("Performance Bridge, connected")
+            } else {
+                Image(nsImage: Brand.menuBarDimmedImage)
+                    .renderingMode(.template)
+                    .accessibilityLabel("Performance Bridge, not connected")
+            }
         }
     }
 }
@@ -79,18 +92,34 @@ enum Brand {
         return image
     }()
 
-    /// The menu-bar glyph with a red dot at its lower right, cut free of the glyph, for a
-    /// connection that needs attention (SetupWatch.needsAttention). A template image is one color,
-    /// so this one is not a template: the glyph is drawn in the label color and the dot in the
-    /// system red, both resolved for the appearance it is drawn in (light or dark menu bar).
-    /// (Adam, 2026-10-31: red, since it reads as a problem, and amber is close to macOS's orange
-    /// microphone dot.)
+    /// How strongly a dimmed glyph is drawn: the 35% Apple uses for disabled elements (Bjango,
+    /// "Designing macOS menu bar extras").
+    static let dimmedOpacity: CGFloat = 0.35
+
+    /// The menu-bar glyph dimmed, for a connection that is down for a routine reason. Still a
+    /// template, so macOS colors it for the menu bar; the opacity carries through.
+    static let menuBarDimmedImage: NSImage = {
+        let base = menuBarImage
+        let image = NSImage(size: base.size, flipped: false) { rect in
+            base.draw(in: rect, from: .zero, operation: .sourceOver, fraction: dimmedOpacity)
+            return true
+        }
+        image.isTemplate = true
+        return image
+    }()
+
+    /// The menu-bar glyph, dimmed, with a red dot at its lower right, cut free of the glyph, for a
+    /// fault (SetupWatch.needsAttention): dimmed since a connection is down, red since it needs
+    /// attention (Adam, 2026-10-31; red because it reads as a problem, and amber is close to
+    /// macOS's orange microphone dot). A template image is one color, so this one is not a
+    /// template: the glyph is drawn in the label color and the dot in the system red, both
+    /// resolved for the appearance it is drawn in (light or dark menu bar).
     static let menuBarAttentionImage: NSImage = {
         let base = menuBarImage
         let image = NSImage(size: base.size, flipped: false) { rect in
             base.draw(in: rect)
-            NSColor.labelColor.setFill()
-            rect.fill(using: .sourceAtop)   // the glyph's shape, in the menu bar's text color
+            NSColor.labelColor.withAlphaComponent(dimmedOpacity).setFill()
+            rect.fill(using: .sourceIn)     // the glyph's shape, dimmed, in the menu bar's text color
             let diameter = (min(rect.width, rect.height) * 0.4).rounded()
             let dot = NSRect(x: rect.maxX - diameter, y: rect.minY, width: diameter, height: diameter)
             NSGraphicsContext.current?.compositingOperation = .clear
@@ -150,6 +179,9 @@ final class BridgeModel: ObservableObject {
     @Published var status = BridgeStatus()
     /// Whether the menu-bar icon shows its warning mark.
     @Published private(set) var needsAttention = false
+    /// Whether TotalMix FX and the Roto-Control are both connected (the menu-bar icon is dimmed
+    /// otherwise).
+    var allConnected: Bool { status.totalMixAnswering && status.rotoConnected }
     /// Whether TotalMix FX is among the running apps, and its version from its app bundle, for the
     /// setup window.
     @Published private(set) var totalMixRunning = false
