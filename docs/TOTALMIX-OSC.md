@@ -123,7 +123,6 @@ The three rows of the mixer are spelled three ways (`TotalMixBus`). [RME doc]
 - **The current submix.** Input and playback channels sent no channel-level `volume` or `faderlin`: their faders in TotalMix's window arrived as mixer nodes of the selected submix. [test 1] Whether TotalMix accepts a channel-level `volume` for inputs, and what it would act on, is untested.
 - **Unanswered `/sendall`.** One `/sendall` went unanswered: status messages arrived, but nothing else. A later one, with the same settings, was answered in full. [test 1] The cause is unknown; the app should repeat the request if no reply comes.
 - **`/sologroup` and `/fadergroup`.** The document gives no value type for either. Both were sent as 0 or 1 by group. [test 1]
-- **Main Out B with Speaker B off.** Test 10 found Main Out B's submix kept the same as Main Out's with Speaker B on. Whether that holds with Speaker B off, or with Link off, is untested.
 - **Fader groups in `groupflags`.** Bits 12–15 are taken to be fader groups 1–4 (see section 2). Outputs 3/4 and 7/8 have bit 12 set [test 1]; whether they are in fader group 1 has not been checked in TotalMix's window.
 
 ## 6. Tests
@@ -290,7 +289,7 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 - `/mix/in/2/0/faderlin 0.5`, sent to Main Out (address 0), set Sonos to −12.13 dB in Main Out's submix and in Main Out B's, in the same reply.
 - The assign menu's item for no assignment is "None" (Adam). Afterward Sonos was returned to −8.2 dB, Speaker B turned off, and Main Out B set to None.
 
-**Inference:** while Main Out B is assigned and Speaker B is on, Main Out B plays Main Out's submix, and TotalMix keeps the two submixes the same. So a surface that writes to Main Out's submix reaches Main Out B as well, and the home submix need not move when Speaker B is switched. Not tested: whether the mirroring holds with Speaker B off, and with Link off.
+**Inference:** while Main Out B is assigned and Speaker B is on, Main Out B plays Main Out's submix, and TotalMix keeps the two submixes the same. So a surface that writes to Main Out's submix reaches Main Out B as well, and the home submix need not move when Speaker B is switched. Test 14 found the same with Speaker B off and with Link off.
 
 ### Test 11 (2026-10-31): hiding and showing a channel sends nothing
 
@@ -337,3 +336,18 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
   - `Hide State` didn't change for either.
 
 **Consequences.** The file records each channel's color and which remotes hide it. TotalMix writes it on quitting but not on every change, so it can lag what TotalMix shows. The app keeps learning about hidden channels over OSC (test 11).
+
+### Test 14 (2026-11-01): Main Out B with Speaker B off, and with Link off
+
+**Setup.** TotalMix FX "2.10 (1)" with a Digiface AES, controller 4. In the control room section, assign → Main Out B → ADAT 5/6 (address 12, monitor output 13; Adam has named it "Speaker B"). Speaker B (the "speaker B" button in the control room's column of buttons) was off. The Main Out B strip has a LINK button where other strips have CUE; it was lit (Adam's screenshot).
+
+**Findings** (Adam, 2026-11-01):
+- **Speaker B off, Link on.** `/mix/in/2/0/faderlin 0.5` (Sonos into Main Out) was sent, and a `/sendall` then reported Sonos at 0.5 (−12.13 dB) in both output 1 (Main Out) and output 13 (Main Out B). TotalMix's window, showing Main Out B's submix, read −12.1 for Sonos.
+- **Speaker B off, Link off** (LINK unlit). `/mix/in/2/0/faderlin 0.4` was sent. TotalMix at once reported `mix input 3 → output 13 faderlin = 0.4`, 2 ms later. A `/sendall` reported 0.4 (−18.91 dB) in both submixes.
+- **A changed copy is reported.** TotalMix doesn't echo the address a client sent (test 5). It does send the change it made to Main Out B's submix as a result. With the value already at 0.5, the first command changed nothing, and nothing was sent.
+- Afterward Sonos was set back to −8.2 dB (`faderlin` 0.576931) and Main Out B to None.
+
+**Consequences.**
+- While Main Out B is assigned, its submix follows Main Out's whether Speaker B and Link are on or off. Link must do something else; that it ties the two outputs' volumes together is an inference.
+- Send knobs leave out Main Out B in every case, as they do now.
+- A surface showing Main Out B's submix hears about changes made through Main Out, since TotalMix reports them.
