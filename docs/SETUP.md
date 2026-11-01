@@ -31,7 +31,8 @@ or TotalMix FX not running, never opens it. Once a connection has worked, a faul
 on the menu-bar icon, so a window never takes the focus during a performance. The dot is for faults:
 the port in use, TotalMix FX running but silent for 10 seconds, or the Roto-Control plugged in but
 not connected for 10 seconds. TotalMix FX closed, or the Roto-Control unplugged, is idle and leaves
-no dot, so the app can run all the time.
+no dot, so the app can run all the time. The icon is dimmed whenever TotalMix FX or the Roto-Control
+isn't connected, and drawn normally when both are; a fault shows the red dot on the dimmed icon.
 
 ## Step 1: Turn on Global OSC in TotalMix FX
 
