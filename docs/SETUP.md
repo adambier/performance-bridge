@@ -130,7 +130,7 @@ Choose **Settings…** from the menu, and open the **Channel Layout** tab.
 
 - The **Sources** and **Outputs** buttons switch between the two views.
 - Drag a channel to change its place on the hardware controllers. In the Outputs view, the **Control Room** outputs (those
-  assigned in TotalMix FX's control room: Main Out, Phones, and so on) and the **Sends** are ordered in their
+  assigned in TotalMix FX's control room: Main Out, Phones, and so on) and the **Hardware Outputs** are ordered in their
   own sections, since control room outputs always come first.
 - **Restore TotalMix FX Order** puts the view back in TotalMix FX's order.
 - To take a channel off the hardware controllers, hide it in TotalMix (Step 2). The layout has no hide setting of its own.
@@ -146,7 +146,7 @@ menu, under **Mix Output**.
 
 - Main Out is the default. Choosing Main Out's output saves "follow Main Out", so the mix output moves when
   Main Out is reassigned in TotalMix.
-- Any other output is in the **Other Outputs** submenu of the same menu.
+- Any other output is in the **Hardware Outputs** submenu of the same menu.
 
 ## If something does not work
 

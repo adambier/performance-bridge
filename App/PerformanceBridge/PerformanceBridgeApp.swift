@@ -376,7 +376,7 @@ struct MenuContent: View {
             // Every other output TotalMix shows, always offered in a submenu (Adam, 2026-10-31).
             if !model.status.otherOutputs.isEmpty {
                 Divider()
-                Menu("Other Outputs") {
+                Menu("Hardware Outputs") {   // TotalMix FX's name for these outputs (Adam, 2026-10-31)
                     ForEach(model.status.otherOutputs, id: \.output) { choice in
                         Button(label(for: choice)) { model.setHomeSubmix(choice.output) }
                     }
