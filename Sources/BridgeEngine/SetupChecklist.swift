@@ -113,7 +113,7 @@ public enum SetupChecklist {
     static func versionStep(status: BridgeStatus, running: Bool, version: String?) -> SetupStep {
         // An answer from TotalMix proves it runs, whatever the list of running apps says.
         let running = running || status.totalMixAnswering
-        let needs = "Performance Bridge needs TotalMix FX 2.1 or later (release candidates are fine): earlier versions don’t have Global OSC."
+        let needs = "Performance Bridge requires TotalMix FX 2.1 or later."
         guard running else {
             return SetupStep(id: "version", title: "TotalMix FX isn’t running", state: .waiting,
                              detail: "Open TotalMix FX. " + needs)
