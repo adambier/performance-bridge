@@ -284,6 +284,13 @@ if [ "$NOTARIZE" -eq 1 ]; then
     spctl --assess --type execute --verbose=2 "$APP"
 fi
 
+# A copy already running would only be brought forward by `open`, so quit it: then `open` starts
+# the build just made (Adam, 2026-10-31).
+if pgrep -x "$EXECUTABLE" >/dev/null 2>&1; then
+    pkill -x "$EXECUTABLE" || true
+    echo "Quit the running copy of Performance Bridge."
+fi
+
 echo
 echo "Built $APP ($(lipo -archs "$APP/Contents/MacOS/$EXECUTABLE" 2>/dev/null || echo "$ARCH"), version $VERSION, build $BUILD_NUMBER)"
 echo "Run it with:  open \"$APP\""

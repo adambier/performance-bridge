@@ -75,7 +75,8 @@ enum Brand {
     /// Whether the user's accent color (System Settings → Appearance → Accent color) is
     /// Multicolor, the one choice that lets an app use its own accent color (Apple's HIG, Color).
     /// macOS keeps the choice in the global defaults' `AppleAccentColor`, which is absent for
-    /// Multicolor (inference from macOS's behavior; not checked on Adam's Mac). Read only: the app
+    /// Multicolor (observed on Adam's Mac with Multicolor chosen, 2026-10-31: `defaults read -g
+    /// AppleAccentColor` finds no such key; that another choice sets it is inferred). Read only: the app
     /// never writes another app's or the system's preferences.
     static var userChoseMulticolor: Bool {
         UserDefaults.standard.persistentDomain(forName: UserDefaults.globalDomain)?["AppleAccentColor"] == nil
