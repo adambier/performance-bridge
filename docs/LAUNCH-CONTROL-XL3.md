@@ -207,7 +207,9 @@ Each is resolved here as stated, until the device settles it.
    a Default mode in the sixteenth slot.
 3. **Which button chooses which DAW mode.** The user guide says Mode plus Mute/Select is DAW Mixer
    and Solo/Arm is DAW Control six times, in the Ableton Live, Logic Pro, Cubase, and Bitwig
-   Studio chapters. Twice, in the DAW Control tips, it says the reverse.
+   Studio chapters. Twice, in the DAW Control tips, it says the reverse. Test 6: Mode plus
+   Solo/Arm shows "DAW Control" on the screen, so the six are right; but the device doesn't
+   switch by itself (test 6).
 4. **Display targets for names.** The programmer's reference guide's note on arrangements mentions
    targets that only set names, 22h–28h (34–40), a range that overlaps encoder targets (34–36) and
    button numbers (37–40). The target list gives no such range.
@@ -229,7 +231,7 @@ port names.
 2. **DAW mode.** Does the device show DAW mode on entering, and return to standalone on `quit`? With firmware 1.2's "DAW Connection" set to Switch (the default), does entering DAW mode move it to DAW Mixer? With "Connect Only", does it stay in its Custom Mode, and does `mode mixer` then move it?
 3. **The control map.** Done (test 1). Move every control and check its name and value against section 4,
    including Track < and > (103, 102) and the Novation button. What do buttons send: 127 and 0?
-4. **Modes.** Mode plus Mute/Select, then plus Solo/Arm: which reports 1 and which 2 (section 7,
+4. **Modes.** Done (test 6). Mode plus Mute/Select, then plus Solo/Arm: which reports 1 and which 2 (section 7,
    item 3)? Does `mode control` switch the device?
 5. **Touch.** Done (test 1): movement, not a sensor. With `touch on`: touch a fader and an encoder without moving them, then move each
    with Shift held. Which sends channel 15 reports?
@@ -379,3 +381,17 @@ Everything in this section is inference, for discussion with Adam before the dri
 - The driver sends each strip's name and a value text of its own (e.g., in dB) as the strip's level changes, since the device shows the text it was given, not the fader's value. That this is fast enough to follow a fader is an inference to check when the driver runs.
 - Names on the two- and three-line displays can be about 13 capitals long (more in lowercase), and at most 20 characters. In arrangement 3's columns they fit in about four capitals, so the driver needs short names there, and a space of its own between columns.
 - Quiet makes a control send without covering the stationary display, if a strip should not show a display.
+
+### Test 6 (2026-11-01): DAW Mixer and DAW Control
+
+**Setup.** As test 1. `sbdev lcxl`; `query 30` asks for the current mode (`B7 1E 00`), and `mode control` and `mode mixer` select one (`B6 1E 02`, `B6 1E 01`).
+
+**Findings:**
+- **On the device.** Mode, then Solo/Arm, showed "DAW Control" on the screen (the label for Mute/Select was "DAW Mixer"). But the device sent only the button's own press and release (Solo/Arm on CC 65, Mute/Select on CC 66), with no mode report, and `query 30` answered DAW Mixer before and after each press.
+- **From the host.** `mode control` was answered with a report of DAW Control, and `mode mixer` with DAW Mixer.
+- **Encoders.** Encoder 1 sent the same control number (13) in both modes, and its value carried on from one mode to the other.
+
+**Consequences.**
+- In DAW mode the device leaves the choice between DAW Mixer and DAW Control to the host: it names the mode on the screen and passes the press on. That the host is meant to answer with a mode message is an inference.
+- The two modes change nothing the device sends, so the driver can ignore them, or treat Solo/Arm and Mute/Select as buttons of its own (e.g., to switch what the encoders control) and send a mode message only to keep the device's screen in step.
+- Custom Modes chosen on the device do switch it, and are reported (test 1).
