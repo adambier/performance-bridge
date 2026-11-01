@@ -70,14 +70,14 @@ public enum SetupChecklist {
             Each controller needs its own ports. If TotalMix FX uses other ports, set the same ones in Performance Bridge’s Settings.
             """
         if status.totalMixAnswering {
-            steps.append(SetupStep(id: "totalmix", title: "TotalMix FX answers", state: .done, detail: ""))
+            steps.append(SetupStep(id: "totalmix", title: "TotalMix FX responded", state: .done, detail: ""))
         } else {
             steps.append(SetupStep(id: "totalmix", title: "TotalMix FX hasn’t answered yet",
                                    state: status.listening ? .waiting : .problem, detail: oscSetup))
         }
 
         if status.channelCount > 0 {
-            steps.append(SetupStep(id: "channels", title: "TotalMix FX sent its channels", state: .done,
+            steps.append(SetupStep(id: "channels", title: "TotalMix FX channels received", state: .done,
                                    detail: "\(status.channelCount) channels."))
         } else {
             steps.append(SetupStep(id: "channels", title: "TotalMix FX hasn’t sent its channels yet",
@@ -88,7 +88,7 @@ public enum SetupChecklist {
         }
 
         steps.append(status.levelsSeen
-            ? SetupStep(id: "meters", title: "Meters arrive", state: .done, detail: "")
+            ? SetupStep(id: "meters", title: "Receiving meter levels", state: .done, detail: "")
             : SetupStep(id: "meters", title: "No meters yet", state: .optional,
                         detail: "For meters on the hardware controllers: in TotalMix FX, Options → Mixer Settings… (F3) → OSC, check “Send Level Data” for the controller. TotalMix FX sends levels only when they change, so play something to see them."))
 
