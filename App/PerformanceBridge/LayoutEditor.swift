@@ -76,16 +76,13 @@ struct LayoutView: View {
                         }))
                 }
                 Spacer()
-                // Hidden while there is nothing to restore (Adam, 2026-10-31); kept in the layout,
-                // so nothing moves when it appears.
+                // Dimmed while there is nothing to restore (Adam, 2026-10-31).
                 Button("Restore TotalMix FX Order") {
                     // An empty order is TotalMix's own (PerformanceLayout.withOrder).
                     model.engine.setLayout(model.engine.layout.withOrder(view, []))
                     reload()
                 }
-                .opacity(isTotalMixOrder ? 0 : 1)
                 .disabled(isTotalMixOrder)
-                .accessibilityHidden(isTotalMixOrder)
             }
 
             VStack(alignment: .leading, spacing: 6) {

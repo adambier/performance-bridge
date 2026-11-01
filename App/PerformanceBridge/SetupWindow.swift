@@ -186,7 +186,7 @@ struct SetupView: View {
             Image(systemName: "minus.circle").foregroundStyle(.secondary)
                 .accessibilityLabel("Optional")
         case .instruction:
-            Image(systemName: "info.circle").foregroundStyle(Brand.amber)
+            Image(systemName: "info.circle").foregroundStyle(Brand.accent)
                 .accessibilityLabel("Instruction")
         }
     }
