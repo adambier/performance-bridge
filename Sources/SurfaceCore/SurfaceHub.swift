@@ -53,14 +53,23 @@ public struct SurfaceHub: Sendable {
     /// The app's choice, or else the control room's Main Out; `nil` before TotalMix has sent it.
     public var homeSubmix: Int? { homeChoice ?? mirror.mainOut }
 
-    /// The outputs the send knobs reach, in order: the outputs view's channels, minus the
-    /// monitoring outputs (Main Out, Main Out B, Phones 1–4, and cue, as the control room assigns
-    /// them) and the home submix. These are the feeds to other hardware. `send(0)` is the first.
+    /// The outputs the send knobs reach, in order: the outputs view's channels (control room
+    /// outputs first), minus the home submix, Main Out B, and the cue output. `send(0)` is the
+    /// first.
+    ///
+    /// Main Out and Phones 1–4 are included (Adam, 2026-10-31): headphone mixes are the ones most
+    /// often changed during a performance. Main Out B is left out because, with Speaker B on, it
+    /// keeps the same submix as Main Out (docs/TOTALMIX-OSC.md, test 10), so its knob would only
+    /// move Main Out's levels under another name. The cue output is left out because PFL takes it
+    /// over (inference: its own submix may not be heard while PFL is in use; untested). An output
+    /// that also holds Main Out or a Phones role is included.
     public var sendTargets: [Int] {
         let home = homeSubmix
-        let monitoring = mirror.monitoringOutputs
+        let sendable: Set<MonitoringRole> = [.mainOut, .phones1, .phones2, .phones3, .phones4]
+        let included = Set(mirror.monitoring.filter { sendable.contains($0.key) }.values)
+        let excluded = mirror.monitoringOutputs.subtracting(included)
         return layout.channels(.outputs, in: mirror).map(\.channel)
-            .filter { $0 != home && !monitoring.contains($0) }
+            .filter { $0 != home && !excluded.contains($0) }
     }
 
     /// The surfaces, in the order they were added.
