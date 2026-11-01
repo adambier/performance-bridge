@@ -342,8 +342,8 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 **Setup.** TotalMix FX "2.10 (1)" with a Digiface AES, controller 4. In the control room section, assign → Main Out B → ADAT 5/6 (address 12, monitor output 13; Adam has named it "Speaker B"). Speaker B (the "speaker B" button in the control room's column of buttons) was off. The Main Out B strip has a LINK button where other strips have CUE; it was lit (Adam's screenshot).
 
 **Findings** (Adam, 2026-11-01):
-- **Speaker B off, Link on.** `/mix/in/2/0/faderlin 0.5` (Sonos into Main Out) was sent, and a `/sendall` then reported Sonos at 0.5 (−12.13 dB) in both output 1 (Main Out) and output 13 (Main Out B). TotalMix's window, showing Main Out B's submix, read −12.1 for Sonos.
-- **Speaker B off, Link off** (LINK unlit). `/mix/in/2/0/faderlin 0.4` was sent. TotalMix at once reported `mix input 3 → output 13 faderlin = 0.4`, 2 ms later. A `/sendall` reported 0.4 (−18.91 dB) in both submixes.
+- **Speaker B off, Link on.** After `/mix/in/2/0/faderlin 0.5` (Sonos into Main Out), TotalMix's window, showing Main Out B's submix with LINK lit, read −12.1 for Sonos (Adam's screenshot).
+- **Speaker B off, Link off** (LINK unlit). A `/sendall` reported Sonos at 0.5 (−12.13 dB) in both output 1 (Main Out) and output 13 (Main Out B). Then `/mix/in/2/0/faderlin 0.4` was sent. TotalMix at once reported `mix input 3 → output 13 faderlin = 0.4`, 2 ms later. A `/sendall` reported 0.4 (−18.91 dB) in both submixes.
 - **A changed copy is reported.** TotalMix doesn't echo the address a client sent (test 5). It does send the change it made to Main Out B's submix as a result. With the value already at 0.5, the first command changed nothing, and nothing was sent.
 - Afterward Sonos was set back to −8.2 dB (`faderlin` 0.576931) and Main Out B to None.
 
