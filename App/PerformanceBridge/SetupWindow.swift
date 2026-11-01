@@ -48,12 +48,8 @@ struct SetupView: View {
             }
 
             HStack {
-                Button("Settings…") {
-                    Windows.show("settings", title: "Performance Bridge Settings") { SettingsView(model: model) }
-                }
-                Button("Channel Layout…") {
-                    Windows.show("layout", title: "Performance Bridge Channel Layout") { LayoutView(model: model) }
-                }
+                Button("Connections…") { model.showSettings(.connections) }
+                Button("Channel Layout…") { model.showSettings(.channelLayout) }
                 Spacer()
                 Button("Done") { Windows.close("setup") }
                     .keyboardShortcut(.defaultAction)

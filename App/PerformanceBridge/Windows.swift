@@ -67,7 +67,43 @@ struct AboutView: View {
     }
 }
 
-/// The Settings window: where to find TotalMix FX and the Roto-Control. Apply saves the settings
+/// The Settings window's tabs.
+enum SettingsTab: Hashable {
+    /// Where to find TotalMix FX and the Roto-Control.
+    case connections
+    /// The order of the channels on the surfaces.
+    case channelLayout
+}
+
+/// The Settings window: Connections and Channel Layout, in tabs (Adam, 2026-10-31).
+struct SettingsWindowView: View {
+    @ObservedObject var model: BridgeModel
+    @State var tab: SettingsTab
+
+    var body: some View {
+        TabView(selection: $tab) {
+            SettingsView(model: model)
+                .tabItem { Text("Connections") }
+                .tag(SettingsTab.connections)
+            LayoutView(model: model)
+                .tabItem { Text("Channel Layout") }
+                .tag(SettingsTab.channelLayout)
+        }
+        .padding(.top, 8)
+        .frame(width: 480)
+    }
+}
+
+extension BridgeModel {
+    /// Opens the Settings window on `tab`.
+    func showSettings(_ tab: SettingsTab = .connections) {
+        Windows.show("settings", title: "Performance Bridge Settings") {
+            SettingsWindowView(model: self, tab: tab)
+        }
+    }
+}
+
+/// The Connections tab: where to find TotalMix FX and the Roto-Control. Apply saves the settings
 /// and restarts the connections.
 struct SettingsView: View {
     @ObservedObject var model: BridgeModel
@@ -129,7 +165,6 @@ struct SettingsView: View {
             .padding(.top, 8)
         }
         .padding(20)
-        .frame(width: 440)
         .fixedSize(horizontal: false, vertical: true)
     }
 

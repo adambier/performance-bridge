@@ -51,7 +51,7 @@ title is not in the screenshot, so the top-level menu is not checked.
    "Remote Controller Address", "Host" is the computer the app runs on, and "Port (outgoing)" is where TotalMix
    sends to the app. These are per controller slot. On controller 4 the screenshot shows incoming 7004, host
    127.0.0.1, and outgoing 9004. On controller 1 the screenshot shows 7001 and 9001, and host localhost.
-   The app's defaults are 7001 and 9001, so for controller 4 set the app's ports to 7004 and 9004 in Settings
+   The app's defaults are 7001 and 9001, so for controller 4 set the app's ports to 7004 and 9004 in Settings (Connections tab)
    (or start it with `--in-port 7004 --out-port 9004`). The app sends to 127.0.0.1 or localhost; both reach
    the same Mac, and the app's Settings take the host name.
 6. Under "Options", the screenshot shows "Send Level Data" on, "Peak Hold" off, and "Lock Remote to Submix" off.
@@ -90,7 +90,7 @@ channels change the channel numbers the app receives: the test run showed no ren
 
 1. Connect the Roto-Control to the Mac by USB. It can be connected before or after the app starts.
 2. The app finds the Roto-Control by the name of its MIDI port. The default, "Roto", matches the port
-   named "Roto-Control". To choose another port, open Settings and pick it from the MIDI port menu under
+   named "Roto-Control". To choose another port, open Settings (Connections tab) and pick it from the MIDI port menu under
    Roto-Control; the menu lists the ports connected when Settings opens.
 
 ## Step 4: Start the app
@@ -117,11 +117,11 @@ The menu-bar icon shows two status lines:
 
 The full reason for any state goes to the log in the Terminal the app was started from.
 
-If TotalMix does not show its state, choose **Ask TotalMix FX for its state** from the menu.
+If TotalMix does not show its state, choose **Ask TotalMix FX for Its State** from the menu.
 
 ## Step 5: Set the layout
 
-Choose **Channel Layout…** from the menu.
+Choose **Settings…** from the menu, and open the **Channel Layout** tab.
 
 - The **Sources** and **Outputs** buttons switch between the two views.
 - Drag a channel to change its place on the surfaces. TotalMix cannot reorder its channels; the app can.
@@ -134,17 +134,17 @@ Choose **Channel Layout…** from the menu.
 ## Step 6: Choose the home submix
 
 The home submix is the output the surfaces' levels and pans go into. Choose it from the menu, under
-**Home submix**.
+**Home Submix**.
 
 - Main Out is the default. Choosing Main Out's output saves "follow Main Out", so the home moves when Main Out
   is reassigned in TotalMix. The menu says so.
-- To choose any output, turn on **Show all outputs** in the same menu.
+- Any other output is in the **Other Outputs** submenu of the same menu.
 
 ## If something does not work
 
 - **TotalMix FX: port N in use.** Another program has the port. Quit `sbdev` or any other OSC remote.
 - **TotalMix FX: no answer.** Check that Global OSC is on and that the ports in Settings match TotalMix's
-  (Step 1). Then choose **Ask TotalMix FX for its state**.
+  (Step 1). Then choose **Ask TotalMix FX for Its State**.
 - **Roto-Control: not found.** Check the cable, and the MIDI port in Settings (Step 3).
 - **A channel is missing from the surfaces.** Check whether TotalMix hides it from the OSC controller the app uses
   (Step 2).

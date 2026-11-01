@@ -58,7 +58,7 @@ struct LayoutView: View {
             .fixedSize(horizontal: false, vertical: true)
         }
         .padding(20)
-        .frame(width: 380, height: 490)
+        .frame(height: 490)
         .onAppear { reload() }
         .onChange(of: model.status) { _ in reload() }
     }

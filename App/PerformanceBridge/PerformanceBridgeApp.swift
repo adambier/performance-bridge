@@ -309,9 +309,6 @@ final class BridgeModel: ObservableObject {
 
 struct MenuContent: View {
     @ObservedObject var model: BridgeModel
-    /// Whether the home submix menu offers every output, not only the monitoring outputs.
-    @AppStorage("showAllOutputs") private var showAllOutputs = false
-    /// Whether the first playback starts a new page on the surfaces.
 
     private var totalMixState: String {
         let status = model.status
@@ -333,45 +330,46 @@ struct MenuContent: View {
         Button("TotalMix FX: " + totalMixState) { model.showSetup() }
         Button("Roto-Control: " + rotoState) { model.showSetup() }
         Divider()
-        Menu("Home submix") {
+        Menu("Home Submix") {
             ForEach(model.status.monitoringOutputs, id: \.output) { choice in
                 Button(label(for: choice)) { model.setHomeSubmix(choice.output) }
             }
             if model.status.monitoringOutputs.isEmpty {
                 Text("No monitoring outputs yet")
             }
-            if showAllOutputs && !model.status.otherOutputs.isEmpty {
+            // Every other output TotalMix shows, always offered in a submenu (Adam, 2026-10-31).
+            if !model.status.otherOutputs.isEmpty {
                 Divider()
-                Menu("Other outputs") {
+                Menu("Other Outputs") {
                     ForEach(model.status.otherOutputs, id: \.output) { choice in
                         Button(label(for: choice)) { model.setHomeSubmix(choice.output) }
                     }
                 }
             }
             Divider()
-            Toggle("Show all outputs", isOn: $showAllOutputs)
-            Divider()
             // Choosing Main Out's output saves "follow Main Out" (BridgeModel.setHomeSubmix), so
             // the home moves when Main Out is reassigned in TotalMix. Said here so it isn't
             // mistaken for a bug.
-            Text("Main Out follows TotalMix's assignment")
+            Text("Main Out Follows TotalMix FX’s Assignment")
         }
-        Button("Ask TotalMix FX for its state") { model.engine.refresh() }
+        // Order (Apple's HIG, Menus): what is used most first, related items grouped and separated;
+        // then the app's own items in the order of a Mac app menu: About and Check for Updates,
+        // Settings, Quit. Labels in title-style capitalization, with an ellipsis where a window
+        // asks for more.
         Divider()
-        Button("Channel Layout…") {
-            Windows.show("layout", title: "Performance Bridge Channel Layout") { LayoutView(model: model) }
-        }
         Button("Setup Guide…") { model.showSetup() }
+        Button("Ask TotalMix FX for Its State") { model.engine.refresh() }
+        Divider()
         Button("About Performance Bridge") {
             Windows.show("about", title: "About Performance Bridge") { AboutView() }
         }
         #if canImport(Sparkle)
         Button("Check for Updates…") { AppUpdates.checkNow() }
         #endif
-        Button("Settings…") {
-            Windows.show("settings", title: "Performance Bridge Settings") { SettingsView(model: model) }
-        }
-        .keyboardShortcut(",")
+        Divider()
+        Button("Settings…") { model.showSettings() }
+            .keyboardShortcut(",")
+        Divider()
         Button("Quit Performance Bridge") {
             model.engine.stop()
             NSApplication.shared.terminate(nil)
