@@ -122,6 +122,15 @@ final class LayoutTests: XCTestCase {
         XCTAssertEqual(base.withOrder(.outputs, [ChannelRef(.output, 2)]).outputOrder, [ChannelRef(.output, 2)])
     }
 
+    func testAnEmptyOrderRestoresTotalMixsOrder() {
+        let hub = loadedHub(mode: .strips(view: .sources, first: 0, knob: .level, switch: .mute))
+        let totalMixOrder = PerformanceLayout().channels(.sources, in: hub.mirror)
+        let reordered = PerformanceLayout().withOrder(.sources, totalMixOrder.reversed())
+        XCTAssertNotEqual(reordered.channels(.sources, in: hub.mirror), totalMixOrder)
+        XCTAssertEqual(reordered.withOrder(.sources, []).channels(.sources, in: hub.mirror), totalMixOrder,
+                       "Restore TotalMix FX Order clears the view's order")
+    }
+
     func testChannelsHiddenInTotalMixStayOutEvenWhenOrdered() {
         var mirror = MixerMirror()
         for event in setupEvents() { mirror.apply(event) }
