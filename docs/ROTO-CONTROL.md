@@ -174,7 +174,7 @@ with type `03` PLUGIN mode never settled (test 3).
 - **Learning.** Turning a knob in learn mode showed LEARNING on the first slight turn (knobs 4 and 5), and eight touches without turning did not (seen); a knob turned with a rubber eraser, so not touched, showed LEARNING at once (seen). In learn mode the Roto-Control sent nothing at all while knobs were turned, and nothing says which control shows LEARNING: LEARN PARAM goes to whichever does. Leaving learn mode with a control still showing LEARNING sent nothing about it. CONTROL LEARNED came 40–92 ms after LEARN PARAM. During learning the whole screen belongs to the knob (top half LEARNED, bottom half the parameter name; seen).
 - **A knob on a stepped parameter.** Mapped to a parameter with three steps, the knob moved in three haptic steps (seen) and sent only 0, 8191, and 16383. No step names showed, on the knob or, as in test 2, on a switch (seen).
 - **SET PLUGIN MODE's data byte** was `00` in all 300 SET PLUGIN MODE messages in the eleven logs of tests 2 and 3, with either of two plugins selected. Its meaning is still unknown.
-- **Type `03`.** Claiming Logic, the Roto-Control sent SET PLUGIN MODE 292 times in 61 seconds, every 185–281 ms (median 207 ms), each time after `sbdev`'s plugin page, and never sent CONTROL MAPPED; the screens flickered between the MENU window and screens 1–3 (seen). The inference is that it waits for something Logic's integration sends, such as the undocumented `0B 1E` (section 7).
+- **Type `03`.** Claiming Logic, the Roto-Control sent SET PLUGIN MODE 292 times in 61 seconds, every 185–281 ms (median 207 ms), each time after `sbdev`'s plugin page, and never sent CONTROL MAPPED; the screens flickered between the MENU window and screens 1–3 (seen). The inference was that it waits for something Logic's integration sends. Reading that integration (section 8, item 2) shows its answers go through Logic itself, so `sbdev` can't imitate them.
 
 **What PLUGIN mode lacks.** The meter CCs are listed for MIX mode only, and the per-track screens
 and track paging are MIX-mode features. [SysEx doc]
@@ -239,7 +239,7 @@ Noted so that nobody builds on them:
 - The overview gives ROTO SELECT PLUGIN (`0B 07`) as sent to the Roto-Control, though its name says the Roto-Control selected the plugin; the Roto-Control does send it. [test 2]
 - Appendix A writes one green value as "BO" (letter O), presumably `B0`.
 - Appendix B's Logic formula for a mapped parameter's CC number divides where Logic's code takes the remainder. [SysEx doc, Logic] PLUGIN mode only.
-- In PLUGIN mode, the overview also gives the wrong direction for SET PLUGIN LEARN (`0B 09`) and FIRST PLUGIN (`0B 03`), and 3.26 calls both halves of the sweep value "LSB". Logic's code uses a PLUGIN command, `0B 1E`, that the SysEx doc does not list. [SysEx doc, Logic]
+- In PLUGIN mode, the overview also gives the wrong direction for SET PLUGIN LEARN (`0B 09`) and FIRST PLUGIN (`0B 03`), and 3.26 calls both halves of the sweep value "LSB". Logic's code uses a PLUGIN command, `0B 1E`, that the SysEx doc does not list; it comes from the Roto-Control, with a switch index ("request switch parameter value" in Logic's code). [SysEx doc, Logic]
 
 ## 8. Open questions
 
@@ -250,8 +250,8 @@ the 0 dB indent with type `01`; the ends of the knob's range (as an inferred rul
 mode, unmapped controls, learning and relearning, stored mappings, UNMAP CONTROL, detents, steps,
 and step names.
 
-1. **SET PLUGIN MODE's data byte.** It has always been `00`. Does it change with more than eight plugins (a page number, perhaps)?
-2. **Type `03`.** What does the Roto-Control wait for in PLUGIN mode when the host claims Logic, and does SET PLUGIN CONTROL DETAILS work then?
+1. **SET PLUGIN MODE's data byte.** Answered by Logic's integration, not a test: `00` is PLUGIN mode and `01` Logic's Smart Controls mode, not a page number. With `02` it has always been `00` (tests 2–3), which fits. [Logic, `process_sysex_command`]
+2. **Type `03`.** Left open on purpose. Logic's integration runs inside Logic's control-surface layer: it answers SET PLUGIN MODE with commands to Logic, and the Roto-Control's plugin details follow from what Logic then reports. So `sbdev` can't stand in for it without imitating Logic. Performance Bridge claims `02`, so this isn't needed. [Logic, reading of `config.lua`, 2026-11-01] The undocumented `0B 1E` turns out to go from the Roto-Control to the host (named "request switch parameter value" there, with a switch index), not the other way. [Logic]
 3. **The 0 dB indent.** Settled for `02` by test 5: level knobs at 13004, send knobs none. Still open: do send knobs get one with `01`, as the 3.1.0 release notes say? Does `03` get one?
 4. **The hold rule.** A power cycle clears it (test 6). Still open: does switching to PLUGIN mode and back clear it? Is the release always about 3,300–3,700 counts in?
 5. **The FX label.** Settled by test 7: it labels the send-mode switch, shown only while the host reports sends.
