@@ -252,8 +252,8 @@ and step names.
 
 1. **SET PLUGIN MODE's data byte.** Answered by Logic's integration, not a test: `00` is PLUGIN mode and `01` Logic's Smart Controls mode, not a page number. With `02` it has always been `00` (tests 2–3), which fits. [Logic, `process_sysex_command`]
 2. **Type `03`.** Left open on purpose. Logic's integration runs inside Logic's control-surface layer: it answers SET PLUGIN MODE with commands to Logic, and the Roto-Control's plugin details follow from what Logic then reports. So `sbdev` can't stand in for it without imitating Logic. Performance Bridge claims `02`, so this isn't needed. [Logic, reading of `config.lua`, 2026-11-01] The undocumented `0B 1E` turns out to go from the Roto-Control to the host (named "request switch parameter value" there, with a switch index), not the other way. [Logic]
-3. **The 0 dB indent.** Settled for `02` by test 5: level knobs at 13004, send knobs none. Still open: do send knobs get one with `01`, as the 3.1.0 release notes say? Does `03` get one?
-4. **The hold rule.** A power cycle clears it (test 6). Still open: does switching to PLUGIN mode and back clear it? Is the release always about 3,300–3,700 counts in?
+3. **The 0 dB indent.** Settled by tests 5 and 8: with `02`, level knobs at 13004 and send knobs none; with `01`, send knobs none either. Still open: does `03` have one? (Not needed: Performance Bridge claims `02`.)
+4. **The hold rule.** A power cycle clears it (test 6), and so does switching to PLUGIN mode and back (test 8). Still open: is the release always about 3,300–3,700 counts in?
 5. **The FX label.** Settled by test 7: it labels the send-mode switch, shown only while the host reports sends.
 
 ## 9. Tests
@@ -501,3 +501,16 @@ marked "seen".
 - `sends 16` put the sends back.
 
 **Consequence.** "FX" is only the label of the send-mode switch, and the screen above it names the selected send. The switch exists only while the host reports at least one send, and the Roto-Control leaves send mode when the host reports none. With no outputs to send to, `RotoDriver` should report no sends (inference; it reports one per send output now).
+
+### Test 8 (2026-11-01): send knobs with `01`, and the hold after PLUGIN mode
+
+**Setup.** Firmware 3.3.0, `sbdev roto --type ableton` (claiming `01`), knobs in send mode. With `01` the send switch (SEL held, third screen) reads "SEND A" on top and "assign A…P" below, where `02` shows the send's name and "FX" (test 7). PLUGIN mode is reached with MODE, then PLUGIN (seen).
+
+**Findings** (Adam, 2026-11-01):
+- **The hold after PLUGIN mode.** After `knob 1 0.5`, the Roto-Control was switched to PLUGIN mode and back to MIX (the knobs stayed in send mode). Turned up past the top, knob 1 turned freely, and its values went 16383 → 0 twice: a wrap. In PLUGIN mode `sbdev` had also sent LEARN PARAM positions for knob 1's mapped parameter.
+- **The baseline.** Later in the same session, `knob 1 0.5` moved knob 1 to dead center (with `02`, test 6, it had stopped a little left of center; seen). Turned up past the top, it **held** at about 5 o'clock (felt; the log shows 16383 and then silence).
+- **Send knobs.** In three slow passes from about 0.5 to 0.93 of the range (8067–8399 up to 15135–15374), knob 1 showed no common stopping place. One pass paused 0.33 s at 13317 and another 0.43 s at 15281; the third had no pause over 0.08 s.
+
+**Consequences.**
+- Switching to PLUGIN mode and back clears the hold, as a change of knob mode does (section 6's rule). After such a switch `RotoDriver` should send the knob positions again (inference: it already does on every mode report).
+- Send knobs have no indent with `01` either. The 3.1.0 release notes' send indents aren't seen on 3.3.0 with `01` or `02`.
