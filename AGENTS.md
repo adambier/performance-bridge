@@ -119,6 +119,7 @@ Do:
 Don't:
 
 - Don't commit vendor documents (RME's protocol document, Melbourne Instruments' or Novation's PDFs) or text copied from them. Describe what this project relies on in its own words, and link the source.
+  Screenshots of TotalMix FX's windows are the exception (Adam, 2026-10-31): they may be published. They live in `App/PerformanceBridge/Resources/` (`totalmix-*.png`, Retina captures), where the Setup Guide shows them and `docs/SETUP.md` links to them. Take them from TotalMix itself, controller 1 with ports 7001 and 9001, and replace personal details such as the Mac's name ("your-mac.local").
 - Don't paste vendor code. Melbourne Instruments' integrations are MIT-licensed, so anything adapted from them keeps their copyright notice in the file.
 - Don't add dependencies to the libraries.
 - Don't use "TotalMix", "RME", "Roto-Control", or "Launch Control" in the app's name. Use them only to describe what it works with.
