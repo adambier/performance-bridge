@@ -36,7 +36,9 @@ struct PerformanceBridgeApp: App {
             MenuContent(model: model)
                 .tint(Brand.amber)
         } label: {
+            // The attention image is drawn in color, so it must not be rendered as a template.
             Image(nsImage: model.needsAttention ? Brand.menuBarAttentionImage : Brand.menuBarImage)
+                .renderingMode(model.needsAttention ? .original : .template)
                 .accessibilityLabel(model.needsAttention ? "Performance Bridge, needs attention" : "Performance Bridge")
         }
     }
@@ -77,22 +79,28 @@ enum Brand {
         return image
     }()
 
-    /// The menu-bar glyph with a dot at its lower right, cut free of the glyph, for a connection
-    /// that needs attention (SetupWatch.needsAttention).
+    /// The menu-bar glyph with a red dot at its lower right, cut free of the glyph, for a
+    /// connection that needs attention (SetupWatch.needsAttention). A template image is one color,
+    /// so this one is not a template: the glyph is drawn in the label color and the dot in the
+    /// system red, both resolved for the appearance it is drawn in (light or dark menu bar).
+    /// (Adam, 2026-10-31: red, since it reads as a problem, and amber is close to macOS's orange
+    /// microphone dot.)
     static let menuBarAttentionImage: NSImage = {
         let base = menuBarImage
         let image = NSImage(size: base.size, flipped: false) { rect in
             base.draw(in: rect)
+            NSColor.labelColor.setFill()
+            rect.fill(using: .sourceAtop)   // the glyph's shape, in the menu bar's text color
             let diameter = (min(rect.width, rect.height) * 0.4).rounded()
             let dot = NSRect(x: rect.maxX - diameter, y: rect.minY, width: diameter, height: diameter)
             NSGraphicsContext.current?.compositingOperation = .clear
             NSBezierPath(ovalIn: dot.insetBy(dx: -1.5, dy: -1.5)).fill()
             NSGraphicsContext.current?.compositingOperation = .sourceOver
-            NSColor.black.setFill()
+            NSColor.systemRed.setFill()
             NSBezierPath(ovalIn: dot).fill()
             return true
         }
-        image.isTemplate = true
+        image.isTemplate = false
         return image
     }()
 }

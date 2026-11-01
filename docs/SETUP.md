@@ -27,7 +27,7 @@ Roto-Control is connected. It opens by itself the first time the app runs; after
 The window also opens by itself, at most once per launch, for a problem that has never worked with
 the current settings: the port in use; TotalMix FX running but not answering for 30 seconds; or the
 Roto-Control plugged in but not connected after 15 seconds. A Roto-Control that isn't plugged in,
-or TotalMix FX not running, never opens it. Once a connection has worked, losing it only puts a dot
+or TotalMix FX not running, never opens it. Once a connection has worked, losing it only puts a red dot
 on the menu-bar icon, so a window never takes the focus during a performance.
 
 ## Step 1: Turn on Global OSC in TotalMix FX
