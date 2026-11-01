@@ -355,13 +355,12 @@ struct MenuContent: View {
             // the note wasn't actionable (Adam, 2026-10-31); the setup guide (docs/SETUP.md) does.
         }
         // Order (Apple's HIG, Menus): what is used most first, related items grouped and separated;
-        // then the app's own items in the order of a Mac app menu: About and Check for Updates,
-        // Settings, Quit. Labels in title-style capitalization, with an ellipsis where a window
-        // asks for more.
-        Divider()
-        Button("Setup Guide…") { model.showSetup() }
+        // then the rarely used items in the order of a Mac app menu: the Setup Guide (mostly at
+        // first launch, Adam, 2026-10-31), About and Check for Updates, Settings, Quit. Labels in
+        // title-style capitalization, with an ellipsis where a window asks for more.
         Button("Refresh Channels from TotalMix FX") { model.engine.refresh() }
         Divider()
+        Button("Setup Guide…") { model.showSetup() }
         Button("About Performance Bridge") {
             Windows.show("about", title: "About Performance Bridge") { AboutView() }
         }

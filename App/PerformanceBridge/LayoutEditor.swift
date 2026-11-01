@@ -37,9 +37,9 @@ struct LayoutView: View {
             .labelsHidden()
             .onChange(of: view) { _ in reload() }
 
-            // Above the list, in body size, so it reads before the list does (Adam, 2026-10-31).
-            Text("Drag to Reorder")
-                .font(.headline)
+            // Above the list, as an instruction rather than a heading (Adam, 2026-10-31).
+            Text("Drag to reorder.")
+                .foregroundStyle(.secondary)
 
             List {
                 if view == .outputs {
