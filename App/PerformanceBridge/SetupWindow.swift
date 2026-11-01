@@ -13,7 +13,8 @@ struct SetupView: View {
     @ObservedObject var model: BridgeModel
 
     private var steps: [SetupStep] {
-        SetupChecklist.steps(status: model.status, settings: model.engine.settings)
+        SetupChecklist.steps(status: model.status, settings: model.engine.settings,
+                             totalMixRunning: model.totalMixRunning, totalMixVersion: model.totalMixVersion)
     }
 
     var body: some View {

@@ -15,7 +15,7 @@ notes and has not been seen in TotalMix, the step says so.
 ## What you need
 
 - A Mac running macOS 13 or later.
-- TotalMix FX 2.1 or later, on a supported RME interface. The project has tested a Digiface AES only.
+- TotalMix FX 2.1 or later (release candidates are fine), on a supported RME interface. Earlier versions don't have Global OSC; the setup window checks the version. The project has tested a Digiface AES only.
 - A Roto-Control, connected to the Mac by USB. The project has tested firmware 3.3.0.
 - The Swift toolchain (Xcode, or the Command Line Tools with Swift 5.9 or later), to run the app from source.
 

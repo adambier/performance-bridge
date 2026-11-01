@@ -25,7 +25,7 @@ statement there carries its evidence.
 | Path | What |
 |---|---|
 | `Sources/OSCCodec/` | OSC 1.0 packets: `OSCArgument`, `OSCMessage`, `OSCBundle`, `OSCPacket`, encoding and decoding |
-| `Sources/TotalMixOSC/` | Global OSC: `TotalMixBus`, `TotalMixCommand` (messages to send), `TotalMixEvent` (messages received), `TotalMixEndpoint` (host and ports), `TotalMixGroupFlags`, `FaderCurve` |
+| `Sources/TotalMixOSC/` | Global OSC: `TotalMixBus`, `TotalMixCommand` (messages to send), `TotalMixEvent` (messages received), `TotalMixEndpoint` (host and ports), `TotalMixGroupFlags`, `FaderCurve`, `TotalMixVersion` (RME's version numbers; Global OSC needs 2.1 or later) |
 | `Sources/RotoControl/` | Roto-Control protocol: `RotoSysEx` (framing, 14-bit numbers, names), `RotoIncoming` and `RotoOutgoing` (SysEx messages), `RotoMIDIParser`, `RotoControlDecoder` and `RotoFeedback` (CCs and 14-bit knobs), `RotoHandshake`, `RotoInputDecoder`; PLUGIN mode in `RotoPlugin.swift` (`RotoHash`, `RotoPluginDetails`, `RotoParameterDetails`, `RotoControlMapping`) |
 | `Sources/MIDITransport/` | `MIDIConnection`: a CoreMIDI connection on macOS, a placeholder that throws elsewhere; `UniversalPackets`: MIDI 1.0 bytes to and from CoreMIDI's UMP words (Foundation only, tested everywhere) |
 | `Sources/SurfaceCore/` | The surface-neutral core: `SurfaceHub` (the engine: strips, paging, the home submix, holds, pickup, thinning, meters), `MixerMirror` (TotalMix's state), `PerformanceLayout` and `ViewKind`, `SurfaceCapabilities` and `SurfaceMode`, `SurfaceUpdate` and `CoreOutput`, `MeterScale` and `ValueText` |

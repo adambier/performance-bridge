@@ -142,6 +142,10 @@ final class BridgeModel: ObservableObject {
     @Published var status = BridgeStatus()
     /// Whether the menu-bar icon shows its warning mark.
     @Published private(set) var needsAttention = false
+    /// Whether TotalMix FX is among the running apps, and its version from its app bundle, for the
+    /// setup window.
+    @Published private(set) var totalMixRunning = false
+    @Published private(set) var totalMixVersion: String?
     /// When the setup window opens by itself (SetupWatch in BridgeEngine).
     private var watch = SetupWatch(totalMixWorked: false, rotoWorked: false)
     private var watchTimer: Timer?
@@ -193,8 +197,14 @@ final class BridgeModel: ObservableObject {
     /// Once a second: opens the setup window when SetupWatch says to, remembers what has worked,
     /// and sets the menu-bar icon's mark.
     private func checkSetup() {
-        let running = Self.totalMixIsRunning()
-        let reason = watch.update(status: status, totalMixRunning: running, now: Date().timeIntervalSinceReferenceDate)
+        let app = Self.runningTotalMix()
+        let running = app != nil
+        let version = app.flatMap(Self.version(of:))
+        if running != totalMixRunning { totalMixRunning = running }
+        if version != totalMixVersion { totalMixVersion = version }
+        let tooOld = version.flatMap(TotalMixVersion.init).map { !$0.supportsGlobalOSC } ?? false
+        let reason = watch.update(status: status, totalMixRunning: running, now: Date().timeIntervalSinceReferenceDate,
+                                  totalMixTooOld: tooOld)
         if watch.totalMixWorked { UserDefaults.standard.set(true, forKey: totalMixWorkedKey) }
         if watch.rotoWorked { UserDefaults.standard.set(true, forKey: rotoWorkedKey) }
         let attention = watch.needsAttention(status: status, totalMixRunning: running)
@@ -204,20 +214,31 @@ final class BridgeModel: ObservableObject {
             case .portInUse: print("Opening setup: port \(engine.settings.endpoint.outgoingPort) is in use")
             case .totalMixNotAnswering: print("Opening setup: TotalMix FX is running but hasn't answered")
             case .rotoHandshake: print("Opening setup: the Roto-Control hasn't finished connecting")
+            case .totalMixTooOld: print("Opening setup: TotalMix FX \(version ?? "") is older than 2.1")
             }
             fflush(stdout)
             showSetup()
         }
     }
 
-    /// Whether TotalMix FX is running, from the list of running apps (nothing of TotalMix's is read
-    /// or written). Matched by name, since its bundle identifier hasn't been checked on a Mac
-    /// (inference: it contains "TotalMix").
-    private static func totalMixIsRunning() -> Bool {
-        NSWorkspace.shared.runningApplications.contains { app in
+    /// TotalMix FX among the running apps, if it is running. Matched by name, since its bundle
+    /// identifier hasn't been checked on a Mac (inference: it contains "TotalMix").
+    private static func runningTotalMix() -> NSRunningApplication? {
+        NSWorkspace.shared.runningApplications.first { app in
             let names = [app.bundleIdentifier, app.localizedName].compactMap { $0?.lowercased() }
             return names.contains { $0.contains("totalmix") }
         }
+    }
+
+    /// A running app's version, read from its app bundle's Info.plist (read only; nothing of
+    /// TotalMix's is written). Which key holds TotalMix's "2.10" hasn't been checked on a Mac, so
+    /// the short version string is preferred and the build version is the fallback.
+    private static func version(of app: NSRunningApplication) -> String? {
+        guard let url = app.bundleURL, let info = Bundle(url: url)?.infoDictionary else { return nil }
+        for key in ["CFBundleShortVersionString", "CFBundleVersion"] {
+            if let text = info[key] as? String, TotalMixVersion(text) != nil { return text }
+        }
+        return nil
     }
 
     /// Opens the setup window.

@@ -42,8 +42,11 @@ public struct SetupStep: Equatable, Sendable, Identifiable {
 /// can't. Every TotalMix location is given in full, with the labels TotalMix shows; they were
 /// checked on screen with TotalMix FX "2.10 (1)" (docs/SETUP.md).
 public enum SetupChecklist {
-    /// The steps for a status and the settings the engine runs with.
-    public static func steps(status: BridgeStatus, settings: BridgeSettings) -> [SetupStep] {
+    /// The steps for a status and the settings the engine runs with. `totalMixRunning` says whether
+    /// TotalMix FX is among the running apps, and `totalMixVersion` is its version as its app bundle
+    /// gives it (`nil` when not running or not read).
+    public static func steps(status: BridgeStatus, settings: BridgeSettings, totalMixRunning: Bool = false,
+                             totalMixVersion: String? = nil) -> [SetupStep] {
         let incoming = settings.endpoint.incomingPort
         let outgoing = settings.endpoint.outgoingPort
         var steps: [SetupStep] = []
@@ -54,6 +57,8 @@ public enum SetupChecklist {
             : SetupStep(id: "port", title: "Port \(outgoing) is in use",
                         state: .problem,
                         detail: "Another program is using port \(outgoing), the port TotalMix FX sends to. Quit it (for example, sbdev or another OSC remote). Performance Bridge keeps trying."))
+
+        steps.append(versionStep(status: status, running: totalMixRunning, version: totalMixVersion))
 
         let oscSetup = """
             In TotalMix FX:
@@ -102,6 +107,26 @@ public enum SetupChecklist {
         steps.append(SetupStep(id: "order", title: "The order of the channels", state: .instruction,
                                detail: "TotalMix FX can’t reorder its channels; Performance Bridge can. Choose Layout… from the menu, and drag."))
         return steps
+    }
+
+    /// TotalMix FX's version: Global OSC needs 2.1 or later; release candidates count.
+    static func versionStep(status: BridgeStatus, running: Bool, version: String?) -> SetupStep {
+        // An answer from TotalMix proves it runs, whatever the list of running apps says.
+        let running = running || status.totalMixAnswering
+        let needs = "Performance Bridge needs TotalMix FX 2.1 or later (release candidates are fine): earlier versions don’t have Global OSC."
+        guard running else {
+            return SetupStep(id: "version", title: "TotalMix FX isn’t running", state: .waiting,
+                             detail: "Open TotalMix FX. " + needs)
+        }
+        guard let text = version, let parsed = TotalMixVersion(text) else {
+            return SetupStep(id: "version", title: "TotalMix FX’s version", state: .instruction,
+                             detail: "Performance Bridge couldn’t read it. " + needs)
+        }
+        if parsed.supportsGlobalOSC {
+            return SetupStep(id: "version", title: "TotalMix FX \(text) has Global OSC", state: .done, detail: "")
+        }
+        return SetupStep(id: "version", title: "TotalMix FX \(text) is too old", state: .problem,
+                         detail: needs + " Update it from RME’s website.")
     }
 
     /// Whether every step the surfaces need is done: TotalMix answering with its channels, and the

@@ -273,4 +273,27 @@ final class BridgeEngineTests: XCTestCase {
         _ = watch.update(status: status(answering: true), totalMixRunning: true, now: 5)
         XCTAssertTrue(watch.needsAttention(status: status(answering: true), totalMixRunning: true))
     }
+
+    func testSetupWatchOpensAtOnceForATotalMixTooOld() {
+        var watch = SetupWatch(totalMixWorked: true, rotoWorked: true)
+        XCTAssertNil(watch.update(status: status(), totalMixRunning: false, now: 0, totalMixTooOld: true))
+        XCTAssertEqual(watch.update(status: status(), totalMixRunning: true, now: 1, totalMixTooOld: true), .totalMixTooOld)
+    }
+
+    func testSetupChecklistVersionStep() {
+        func version(running: Bool, _ text: String?, answering: Bool = false) -> SetupStep {
+            var status = BridgeStatus()
+            status.listening = true
+            status.totalMixAnswering = answering
+            return SetupChecklist.steps(status: status, settings: BridgeSettings(), totalMixRunning: running,
+                                        totalMixVersion: text).first { $0.id == "version" }!
+        }
+        XCTAssertEqual(version(running: false, nil).state, .waiting)
+        XCTAssertEqual(version(running: true, nil).state, .instruction)
+        XCTAssertEqual(version(running: true, "2.10 (1)").state, .done)
+        XCTAssertEqual(version(running: true, "2.10 (1)").title, "TotalMix FX 2.10 (1) has Global OSC")
+        XCTAssertEqual(version(running: true, "2.1 RC1").state, .done)
+        XCTAssertEqual(version(running: true, "1.96").state, .problem)
+        XCTAssertEqual(version(running: false, "2.10", answering: true).state, .done, "an answer means it runs")
+    }
 }

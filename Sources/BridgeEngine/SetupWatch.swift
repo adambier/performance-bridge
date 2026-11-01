@@ -14,6 +14,7 @@ import Foundation
 /// - The Roto-Control found but its handshake not finished after `rotoDelay` seconds, when it has
 ///   never connected with this port name: the window opens. (Inference: another program, such as a
 ///   DAW's Roto-Control integration, has it.)
+/// - TotalMix FX older than 2.1 (no Global OSC): the window opens at once, whatever worked before.
 /// - A Roto-Control that isn't plugged in never opens the window.
 ///
 /// Pure: the app passes the time, the engine's status, and whether TotalMix is running, and keeps
@@ -27,6 +28,8 @@ public struct SetupWatch: Sendable {
         case totalMixNotAnswering
         /// The Roto-Control is plugged in but has not finished its handshake.
         case rotoHandshake
+        /// TotalMix is older than 2.1, which has no Global OSC.
+        case totalMixTooOld
     }
 
     /// How long TotalMix may run without answering before the window opens, in seconds.
@@ -54,7 +57,8 @@ public struct SetupWatch: Sendable {
 
     /// Takes the latest status and returns a reason when the setup window should open now; at most
     /// once for the life of the watch.
-    public mutating func update(status: BridgeStatus, totalMixRunning: Bool, now: Double) -> Reason? {
+    public mutating func update(status: BridgeStatus, totalMixRunning: Bool, now: Double,
+                                totalMixTooOld: Bool = false) -> Reason? {
         guard status.running else { return nil }
         if status.listening { listenedThisLaunch = true }
         if status.totalMixAnswering {
@@ -78,7 +82,9 @@ public struct SetupWatch: Sendable {
 
         guard !opened else { return nil }
         var reason: Reason?
-        if !status.listening, !listenedThisLaunch {
+        if totalMixRunning, totalMixTooOld {
+            reason = .totalMixTooOld
+        } else if !status.listening, !listenedThisLaunch {
             reason = .portInUse
         } else if let since = silentSince, !totalMixWorked, now - since >= Self.totalMixDelay {
             reason = .totalMixNotAnswering
