@@ -12,6 +12,13 @@ import BridgeEngine
 struct SetupView: View {
     @ObservedObject var model: BridgeModel
 
+    /// The steps that are notes, not checks: shown apart, without a mark, so they don't read as
+    /// to-dos (Adam, 2026-10-31).
+    private static let noteIDs: Set<String> = ["hide", "order"]
+
+    private var checks: [SetupStep] { steps.filter { !Self.noteIDs.contains($0.id) } }
+    private var notes: [SetupStep] { steps.filter { Self.noteIDs.contains($0.id) } }
+
     private var steps: [SetupStep] {
         SetupChecklist.steps(status: model.status, settings: model.engine.settings,
                              totalMixRunning: model.totalMixRunning, totalMixVersion: model.totalMixVersion)
@@ -29,7 +36,7 @@ struct SetupView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            ForEach(steps) { step in
+            ForEach(checks) { step in
                 HStack(alignment: .firstTextBaseline, spacing: 10) {
                     icon(step.state)
                         .frame(width: 18)
@@ -43,6 +50,24 @@ struct SetupView: View {
                                 .fixedSize(horizontal: false, vertical: true)
                                 .textSelection(.enabled)
                         }
+                    }
+                }
+            }
+
+            Divider()
+
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Good to Know")
+                    .font(.headline)
+                ForEach(notes) { note in
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(note.title)
+                            .fontWeight(.medium)
+                        Text(note.detail)
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .textSelection(.enabled)
                     }
                 }
             }
