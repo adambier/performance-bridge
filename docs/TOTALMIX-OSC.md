@@ -351,3 +351,14 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 - While Main Out B is assigned, its submix follows Main Out's whether Speaker B and Link are on or off. Link must do something else; that it ties the two outputs' volumes together is an inference.
 - Send knobs leave out Main Out B in every case, as they do now.
 - A surface showing Main Out B's submix hears about changes made through Main Out, since TotalMix reports them.
+
+### Test 15 (2026-11-01): playback names
+
+**Setup.** TotalMix FX "2.10 (1)" with a Digiface AES, controller 4. In Options → Channel Layout…, Playbacks tab, the first pair's "Name (User)" was set to "Mac" (Adam).
+
+**Findings** (Adam, 2026-11-01):
+- A `/sendall` reported `playback 1 name = "Mac"`. So a playback can be renamed in TotalMix, and Global OSC sends the name.
+- Unnamed playbacks send their output's hardware name, not the name the user gave that output. Playback 3 sent "SPDIF" while output 3 is named "ADI-2 3/4". Playback 5 sent "Analog 1/2" while output 5 is named "ADI-2 +6dB".
+- TotalMix's settings file stores an empty `Name NN` for unnamed playbacks (Adam's copy, 2026-10-31), so the file can tell a given name from the default; OSC can't.
+
+**Consequence.** Over OSC, a name the user gave a playback can't be told apart from a hardware name for certain. For example, "Analog 1/2" could be either. How Performance Bridge names playbacks is a decision for Adam.
