@@ -32,7 +32,7 @@ on the menu-bar icon, so a window never takes the focus during a performance. Th
 the port in use, TotalMix FX running but silent for 10 seconds, or the Roto-Control plugged in but
 not connected for 10 seconds. TotalMix FX closed, or the Roto-Control unplugged, is idle and leaves
 no dot, so the app can run all the time. The icon is dimmed whenever TotalMix FX or the Roto-Control
-isn't connected, and drawn normally when both are; a fault shows the red dot on the dimmed icon.
+isn't connected and drawn normally when both are; a fault shows the red dot on the dimmed icon.
 
 ## Step 1: Turn on Global OSC in TotalMix FX
 
@@ -45,10 +45,9 @@ Checked on screen with TotalMix FX "2.10 (1)" on a Mac (Adam, 2026-10-31); the s
    <img src="../App/PerformanceBridge/Resources/totalmix-options-menu.png" width="300" alt="TotalMix FX's Options menu, with Enable OSC Control checked">
 
 2. Choose **Options → Mixer Settings…** (shortcut F3) and open the **OSC** tab.
-3. Under **Select Controller**, choose a controller (1–4) for Performance Bridge, and check **In Use**.
+3. Under **Select Controller**, choose a controller (1–4) for Performance Bridge and check **In Use**.
    - Each program or device that connects to TotalMix FX over OSC (Performance Bridge, a tablet app, another
-     remote) needs its own controller, and each controller needs its own ports: no two controllers may share
-     one (Adam, 2026-10-31).
+     remote) needs its own controller and its own ports (Adam, 2026-10-31).
    - Controller 1 is shown below, with incoming 7001 and outgoing 9001. If another program already uses
      controller 1, choose another controller and give it ports no other controller uses (for example, 7002 and
      9002).
@@ -64,7 +63,7 @@ Checked on screen with TotalMix FX "2.10 (1)" on a Mac (Adam, 2026-10-31); the s
 
    <img src="../App/PerformanceBridge/Resources/totalmix-osc-tab.png" width="380" alt="Mixer Settings, OSC tab: controller 1 in use, ports 7001 and 9001, host localhost, Global OSC">
 
-6. Under **Options**, check **Send Level Data** for meters on the hardware controllers, and leave **Lock Remote
+6. Under **Options**, check **Send Level Data** for meters on the hardware controllers and leave **Lock Remote
    to Submix** off (Performance Bridge chooses submixes itself). The effect of **Number of faders per bank** on
    the app has not been tested.
 7. Click **Details**, which opens "Gobal OSC - Detailed Settings" (TotalMix's spelling), and check **Send
@@ -84,7 +83,7 @@ Checked on screen with TotalMix FX "2.10 (1)" on a Mac (Adam, 2026-10-31); the s
 
 ## Step 2: Choose which channels the hardware controllers show
 
-Channels are hidden only in TotalMix FX; Performance Bridge has no setting for hiding. A channel that TotalMix
+Hide and show channels in TotalMix FX; Performance Bridge has no setting for hiding. A channel that TotalMix
 hides from an OSC Controller is not shown on the hardware controllers connected through it, and the app does
 not show it greyed out. Checked on screen (Adam, 2026-10-31) unless marked otherwise.
 
@@ -93,8 +92,8 @@ not show it greyed out. Checked on screen (Adam, 2026-10-31) unless marked other
 2. Select the channel's row. Under **Hide Channel in**, check the **OSC Controller** box for the controller
    Performance Bridge uses (OSC Controller 1 for controller 1). Hiding from one controller doesn't affect the
    others, or Mixer/Matrix.
-3. The **Color** column, and **Color (Name)** below the boxes, set the channel's color, which the
-   Roto-Control shows too.
+3. Channel colors can be set in the same window, in the **Color** column or with **Color (Name)** below the
+   boxes. The Roto-Control shows them too.
 
    <img src="../App/PerformanceBridge/Resources/totalmix-channel-layout.png" width="560" alt="TotalMix FX's Channel Layout window, Inputs tab, with the Hide Channel in boxes">
 
@@ -145,7 +144,7 @@ going quiet.
 
 ## Step 5: Set the layout
 
-Choose **Settings…** from the menu, and open the **Channel Layout** tab.
+Choose **Settings…** from the menu and open the **Channel Layout** tab.
 
 - The **Sources** and **Outputs** buttons switch between the two views.
 - Drag a channel to change its place on the hardware controllers. In the Outputs view, the **Control Room** outputs (those
@@ -153,7 +152,7 @@ Choose **Settings…** from the menu, and open the **Channel Layout** tab.
   own sections, since control room outputs always come first.
 - **Restore TotalMix FX Order** puts the view back in TotalMix FX's order.
 - To take a channel off the hardware controllers, hide it in TotalMix (Step 2). The layout has no hide setting of its own.
-- Channel colors are set in TotalMix FX's own Channel Layout window (the Color column, and the Color (Name) menu for the selected channel). Checked on screen (Adam, 2026-10-31).
+- Channel colors can be set in TotalMix FX's own Channel Layout window (the Color column and the Color (Name) menu for the selected channel). Checked on screen (Adam, 2026-10-31).
 - The note at the bottom repeats the rule for channels hidden in TotalMix.
 - **Playbacks start on a new page**, under the Sources list, puts the first playback at the start of a new
   page of strips, after blank strips that fill the inputs' last page.
@@ -172,7 +171,7 @@ menu, under **Mix Output**.
 - **TotalMix FX: Port N in Use.** Another program has the port. Quit `sbdev` or any other OSC remote.
 - **TotalMix FX: No Answer.** Check that Global OSC is on and that the ports in Settings match TotalMix's
   (Step 1). Then choose **Refresh Channels from TotalMix FX**.
-- **Roto-Control: Not Found.** Check the cable, and the MIDI port in Settings (Step 3).
+- **Roto-Control: Not Found.** Check the cable and the MIDI port in Settings (Step 3).
 - **A channel is missing from the hardware controllers.** Check whether TotalMix hides it from the OSC controller the app uses
   (Step 2).
 

@@ -34,6 +34,16 @@ struct SetupView: View {
                              totalMixRunning: model.totalMixRunning, totalMixVersion: model.totalMixVersion)
     }
 
+    /// The height of the steps and notes, measured, so the window fits them until it would be
+    /// taller than the screen, and scrolls them after that.
+    @State private var contentHeight: CGFloat = 400
+
+    /// The most the scrolling part may take: the screen's height, less room for the title, the
+    /// header, the buttons, and the Dock.
+    private var maxScrollHeight: CGFloat {
+        ((NSScreen.main?.visibleFrame.height ?? 800) - 220).clamped(to: 240...2000)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
@@ -46,6 +56,33 @@ struct SetupView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
+            ScrollView(.vertical) {
+                stepsAndNotes
+                    .padding(.trailing, 12)
+                    .background(GeometryReader { geometry in
+                        Color.clear.preference(key: SetupContentHeightKey.self, value: geometry.size.height)
+                    })
+            }
+            .frame(height: min(contentHeight, maxScrollHeight))
+            .onPreferenceChange(SetupContentHeightKey.self) { contentHeight = $0 }
+
+            HStack {
+                Button("Connections…") { model.showSettings(.connections) }
+                Button("Channel Layout…") { model.showSettings(.channelLayout) }
+                Spacer()
+                Button("Done") { Windows.close("setup") }
+                    .keyboardShortcut(.defaultAction)
+            }
+            .padding(.top, 4)
+        }
+        .padding(20)
+        .frame(width: 532)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    /// The checks, then the notes under "Good to Know".
+    private var stepsAndNotes: some View {
+        VStack(alignment: .leading, spacing: 16) {
             ForEach(checks) { step in
                 HStack(alignment: .firstTextBaseline, spacing: 10) {
                     icon(step.state)
@@ -83,23 +120,13 @@ struct SetupView: View {
                     }
                 }
             }
-
-            HStack {
-                Button("Connections…") { model.showSettings(.connections) }
-                Button("Channel Layout…") { model.showSettings(.channelLayout) }
-                Spacer()
-                Button("Done") { Windows.close("setup") }
-                    .keyboardShortcut(.defaultAction)
-            }
-            .padding(.top, 4)
         }
-        .padding(20)
-        .frame(width: 520)
-        .fixedSize(horizontal: false, vertical: true)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    /// A step's screenshots, folded away until asked for, each at most its own size (they are
-    /// Retina captures, so half their pixels) and no wider than the window allows.
+    /// A step's screenshots, folded away until asked for. Each is shown at its own size (they are
+    /// Retina captures, so half their pixels), no wider than 400 points, with an exact height so
+    /// no space is left around it.
     @ViewBuilder
     private func screenshots(for step: SetupStep) -> some View {
         let images = (Self.screenshots[step.id] ?? []).compactMap { Brand.resources.image(forResource: $0) }
@@ -108,11 +135,12 @@ struct SetupView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     ForEach(images.indices, id: \.self) { index in
                         let image = images[index]
+                        let pixels = pixelSize(image)
+                        let width = min(pixels.width / 2, 400)
                         Image(nsImage: image)
                             .resizable()
                             .interpolation(.high)
-                            .aspectRatio(contentMode: .fit)
-                            .frame(maxWidth: min(screenshotPoints(image), 440), alignment: .leading)
+                            .frame(width: width, height: width * pixels.height / max(pixels.width, 1))
                             .accessibilityLabel("Screenshot of TotalMix FX")
                     }
                 }
@@ -122,10 +150,10 @@ struct SetupView: View {
         }
     }
 
-    /// A screenshot's width in points: half its pixels, since they were taken on a Retina display.
-    private func screenshotPoints(_ image: NSImage) -> CGFloat {
-        let pixels = image.representations.first.map { CGFloat($0.pixelsWide) } ?? image.size.width
-        return pixels / 2
+    /// An image's size in pixels, from its first representation.
+    private func pixelSize(_ image: NSImage) -> CGSize {
+        guard let rep = image.representations.first, rep.pixelsWide > 0 else { return image.size }
+        return CGSize(width: rep.pixelsWide, height: rep.pixelsHigh)
     }
 
     /// The mark for a step's state: a check when done, a clock while waiting, a warning for a
@@ -149,5 +177,20 @@ struct SetupView: View {
             Image(systemName: "info.circle").foregroundStyle(Brand.amber)
                 .accessibilityLabel("Instruction")
         }
+    }
+}
+
+/// The measured height of the setup window's scrolling part.
+private struct SetupContentHeightKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
+private extension CGFloat {
+    /// The value, kept within `range`.
+    func clamped(to range: ClosedRange<CGFloat>) -> CGFloat {
+        Swift.min(Swift.max(self, range.lowerBound), range.upperBound)
     }
 }
