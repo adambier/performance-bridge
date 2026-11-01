@@ -32,6 +32,11 @@ enum Windows {
         window.makeKeyAndOrderFront(nil)
     }
 
+    /// Sets the title of the window named `id`, if it is open.
+    static func setTitle(_ id: String, _ title: String) {
+        open[id]?.title = title
+    }
+
     /// Closes the window named `id`, if it is open.
     static func close(_ id: String) {
         open[id]?.close()
@@ -68,36 +73,76 @@ struct AboutView: View {
 }
 
 /// The Settings window's tabs.
-enum SettingsTab: Hashable {
+enum SettingsTab: String, Hashable {
     /// Where to find TotalMix FX and the Roto-Control.
     case connections
     /// The order of the channels on the surfaces.
     case channelLayout
+
+    /// The tab's name, also the window's title while it shows (Apple's HIG, Settings: the title
+    /// names the pane that is showing).
+    var title: String {
+        switch self {
+        case .connections: return "Connections"
+        case .channelLayout: return "Channel Layout"
+        }
+    }
+
+    /// The tab shown last, which Settings… opens on (Apple's HIG, Settings: restore the pane
+    /// viewed most recently).
+    static var lastShown: SettingsTab {
+        get { UserDefaults.standard.string(forKey: "settingsTab").flatMap(SettingsTab.init(rawValue:)) ?? .connections }
+        set { UserDefaults.standard.set(newValue.rawValue, forKey: "settingsTab") }
+    }
 }
 
-/// The Settings window: Connections and Channel Layout, in tabs (Adam, 2026-10-31).
+/// The Settings window: Connections and Channel Layout, in tabs (Adam, 2026-10-31). The window
+/// fits the tab that is showing, as macOS settings windows do, rather than the taller of the two
+/// (Adam, 2026-10-31): only that tab's content is built, and the other is empty, since a tab view
+/// otherwise takes the size of its largest tab.
 struct SettingsWindowView: View {
     @ObservedObject var model: BridgeModel
     @State var tab: SettingsTab
+    /// The Connections tab's edits, kept here so they survive a visit to the other tab.
+    @State private var edited = SavedSettings.load()
 
     var body: some View {
         TabView(selection: $tab) {
-            SettingsView(model: model)
-                .tabItem { Text("Connections") }
+            pane(.connections) { SettingsView(model: model, edited: $edited) }
+                .tabItem { Text(SettingsTab.connections.title) }
                 .tag(SettingsTab.connections)
-            LayoutView(model: model)
-                .tabItem { Text("Channel Layout") }
+            pane(.channelLayout) { LayoutView(model: model) }
+                .tabItem { Text(SettingsTab.channelLayout.title) }
                 .tag(SettingsTab.channelLayout)
         }
         .padding(.top, 8)
         .frame(width: 480)
+        .onAppear { show(tab) }
+        .onChange(of: tab) { show($0) }
+    }
+
+    /// A tab's content while it shows, and nothing otherwise.
+    @ViewBuilder
+    private func pane<Content: View>(_ which: SettingsTab, @ViewBuilder _ content: () -> Content) -> some View {
+        if tab == which {
+            content()
+        } else {
+            Color.clear.frame(width: 0, height: 0)
+        }
+    }
+
+    /// Names the window after the tab, and remembers it for the next Settings….
+    private func show(_ tab: SettingsTab) {
+        Windows.setTitle("settings", tab.title)
+        SettingsTab.lastShown = tab
     }
 }
 
 extension BridgeModel {
-    /// Opens the Settings window on `tab`.
-    func showSettings(_ tab: SettingsTab = .connections) {
-        Windows.show("settings", title: "Performance Bridge Settings") {
+    /// Opens the Settings window on `tab`, or on the tab shown last.
+    func showSettings(_ tab: SettingsTab? = nil) {
+        let tab = tab ?? SettingsTab.lastShown
+        Windows.show("settings", title: tab.title) {
             SettingsWindowView(model: self, tab: tab)
         }
     }
@@ -107,7 +152,8 @@ extension BridgeModel {
 /// and restarts the connections.
 struct SettingsView: View {
     @ObservedObject var model: BridgeModel
-    @State private var edited = SavedSettings.load()
+    /// The edits, held by the Settings window so they survive switching tabs.
+    @Binding var edited: SavedSettings
 
     private let saved = SavedSettings.load()
 
