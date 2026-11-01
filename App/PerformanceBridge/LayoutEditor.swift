@@ -15,6 +15,8 @@ struct LayoutView: View {
     @ObservedObject var model: BridgeModel
     @State private var view: ViewKind = .sources
     @State private var items: [LayoutItem] = []
+    /// Whether the view is in TotalMix's own order, so Restore TotalMix FX Order has nothing to do.
+    @State private var isTotalMixOrder = true
     @AppStorage("playbacksOnNewPage") private var playbacksOnNewPage = false
 
     /// The monitoring outputs (Main Out, Phones, and so on), which always come first in the
@@ -74,17 +76,19 @@ struct LayoutView: View {
                         }))
                 }
                 Spacer()
+                // Hidden while there is nothing to restore (Adam, 2026-10-31); kept in the layout,
+                // so nothing moves when it appears.
                 Button("Restore TotalMix FX Order") {
                     // An empty order is TotalMix's own (PerformanceLayout.withOrder).
                     model.engine.setLayout(model.engine.layout.withOrder(view, []))
                     reload()
                 }
+                .opacity(isTotalMixOrder ? 0 : 1)
+                .disabled(isTotalMixOrder)
+                .accessibilityHidden(isTotalMixOrder)
             }
 
             VStack(alignment: .leading, spacing: 6) {
-                if view == .outputs {
-                    Text("Control room outputs (Main Out, Phones, and so on) always come first.")
-                }
                 Text("Hide and show channels in TotalMix FX’s own Channel Layout window: right-click the channel, choose Change Channel Layout, and check or uncheck the OSC Controller box under \u{201C}Hide Channel in.\u{201D} Channel colors can be set in the same window. Channels that TotalMix hides from an OSC Controller are not shown on the hardware controllers connected through it.")
             }
             .font(.caption)
@@ -140,11 +144,13 @@ struct LayoutView: View {
         else { rest.move(fromOffsets: source, toOffset: destination) }
         items = first + rest
         model.engine.setLayout(model.engine.layout.withOrder(view, items.map(\.channel)))
+        isTotalMixOrder = model.engine.isTotalMixOrder(view)
     }
 
     /// Reads the view's channels again, after a change in the app or in TotalMix.
     private func reload() {
         items = model.engine.layoutItems(view)
+        isTotalMixOrder = model.engine.isTotalMixOrder(view)
     }
 }
 

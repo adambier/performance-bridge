@@ -169,6 +169,15 @@ final class LayoutTests: XCTestCase {
                        "Restore TotalMix FX Order clears the view's order")
     }
 
+    func testTotalMixOrderIsRecognizedEvenWhenSetExplicitly() {
+        let hub = loadedHub(mode: .strips(view: .sources, first: 0, knob: .level, switch: .mute))
+        let totalMixOrder = PerformanceLayout().channels(.sources, in: hub.mirror)
+        XCTAssertTrue(PerformanceLayout().isTotalMixOrder(.sources, in: hub.mirror))
+        XCTAssertFalse(PerformanceLayout().withOrder(.sources, totalMixOrder.reversed()).isTotalMixOrder(.sources, in: hub.mirror))
+        XCTAssertTrue(PerformanceLayout().withOrder(.sources, totalMixOrder).isTotalMixOrder(.sources, in: hub.mirror),
+                      "dragging channels back into TotalMix's order counts as TotalMix's order")
+    }
+
     func testChannelsHiddenInTotalMixStayOutEvenWhenOrdered() {
         var mirror = MixerMirror()
         for event in setupEvents() { mirror.apply(event) }

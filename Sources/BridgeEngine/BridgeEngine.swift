@@ -354,6 +354,15 @@ public final class BridgeEngine: @unchecked Sendable {
         }
     }
 
+    /// Whether a view shows its channels in TotalMix's own order
+    /// (`PerformanceLayout.isTotalMixOrder`), for hiding Restore TotalMix FX Order when there is
+    /// nothing to restore.
+    public func isTotalMixOrder(_ view: ViewKind) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return hub.layout.isTotalMixOrder(view, in: hub.mirror)
+    }
+
     /// Refreshes the channels from TotalMix (`SurfaceHub.refreshChannels`): asks for its whole
     /// state again and drops channels its answer leaves out, so channels hidden or shown in
     /// TotalMix since the last refresh leave or join the surfaces.
