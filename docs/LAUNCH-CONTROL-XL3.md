@@ -4,7 +4,8 @@ This is the authority, for this project, on Novation's Launch Control XL 3 in DA
 `TOTALMIX-OSC.md` is for TotalMix FX and `ROTO-CONTROL.md` for the Roto-Control. Every statement
 carries its evidence.
 
-**Status (2026-10-31).** Everything here comes from Novation's documents. None of it has been
+**Status (2026-11-01).** Tested on the device from 2026-11-01 (firmware 1.2); results are in
+section 8 as they come. **Before that (2026-10-31):** Everything here comes from Novation's documents. None of it has been
 checked on the device yet. The `LaunchControlXL3` library and `sbdev lcxl` are built from these
 documents, and their tests check them against the documents, not against the device. Section 8
 lists the tests that will check them.
@@ -41,7 +42,29 @@ Bracketed tags below name the source. "Inference" marks anything the sources don
   DAW In". [Bitwig setup, page 2] Bitwig may show names that differ from CoreMIDI's (inference),
   so `sbdev lcxl` matches by part of the name, "LCXL3 1 DAW", which picks one source and one
   destination if the CoreMIDI names follow the same pattern.
+- **Seen on macOS** (Adam's Mac, firmware 1.2, 2026-11-01): CoreMIDI lists the sources "LCXL3 1
+  MIDI Out" and "LCXL3 1 DAW Out", and the destinations "LCXL3 1 MIDI In", "LCXL3 1 DAW In",
+  "LCXL3 1 To DIN Out", and "LCXL3 1 To DIN Out 2". So "LCXL3 1 DAW" picks the DAW pair.
 - In DAW mode the DIN outputs send nothing. [Programmer's reference guide, "DAW mode"]
+
+## 2a. Firmware
+
+Adam's unit was updated to firmware **1.2** on 2026-11-01, through Novation Components. Novation's
+release notes for 1.2 (shown by Components; Adam's screenshot) add, among other things:
+
+- **A "DAW Connection" setting.** "Switch", the default and the earlier behavior, lets a DAW
+  connecting move the device into DAW Mixer mode. "Connect Only" leaves the device in its Custom
+  Mode, with the DAW modes still available to choose. Where the setting lives on the device isn't
+  given in the notes.
+- **Relative encoders in Custom Modes.** This doesn't touch DAW mode, which already had relative
+  rows (section 4).
+- **A higher fader scan rate,** so that fast moves are captured better.
+- **Fixes:** Play not lit or not sending while Shift was held; the Easy Start prompt.
+
+The programmer's reference guide still at Novation's address is version 1.0, with no mention of
+any of this (checked 2026-11-01). So the guide predates 1.2 (inference). With "Connect Only", a
+host that enters DAW mode may also have to select a DAW mode itself (feature control 30), or leave
+the choice to the user; test 2 checks both settings.
 
 ## 3. DAW mode
 
@@ -202,7 +225,7 @@ Run with `swift run sbdev lcxl` (macOS; `sbdev lcxl --help`). First, `sbdev lcxl
 port names.
 
 1. **Ports.** The macOS names of the DAW ports. Does `--port "LCXL3 1 DAW"` connect?
-2. **DAW mode.** Does the device show DAW mode on entering, and return to standalone on `quit`?
+2. **DAW mode.** Does the device show DAW mode on entering, and return to standalone on `quit`? With firmware 1.2's "DAW Connection" set to Switch (the default), does entering DAW mode move it to DAW Mixer? With "Connect Only", does it stay in its Custom Mode, and does `mode mixer` then move it?
 3. **The control map.** Move every control and check its name and value against section 4,
    including Track < and > (103, 102) and the Novation button. What do buttons send: 127 and 0?
 4. **Modes.** Mode plus Mute/Select, then plus Solo/Arm: which reports 1 and which 2 (section 7,
