@@ -37,6 +37,10 @@ struct LayoutView: View {
             .labelsHidden()
             .onChange(of: view) { _ in reload() }
 
+            // Above the list, in body size, so it reads before the list does (Adam, 2026-10-31).
+            Text("Drag to Reorder")
+                .font(.headline)
+
             List {
                 if view == .outputs {
                     // Two sections, each reordered on its own, so a monitoring output can't be
@@ -77,9 +81,9 @@ struct LayoutView: View {
             }
 
             VStack(alignment: .leading, spacing: 6) {
-                Text(view == .outputs
-                     ? "Drag to change the order. Control room outputs (Main Out, Phones, and so on) always come first."
-                     : "Drag to change the order.")
+                if view == .outputs {
+                    Text("Control room outputs (Main Out, Phones, and so on) always come first.")
+                }
                 Text("Channel colors are set in TotalMix FX’s own Channel Layout window, and channels are hidden there too: right-click the channel, choose Change Channel Layout, and check the OSC Controller box under \u{201C}Hide Channel in.\u{201D} Channels that TotalMix hides from an OSC Controller are not shown on any surface that uses that controller.")
             }
             .font(.caption)
