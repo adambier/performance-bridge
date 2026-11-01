@@ -36,8 +36,8 @@ struct PerformanceBridgeApp: App {
             MenuContent(model: model)
                 .tint(Brand.amber)
         } label: {
-            Image(nsImage: Brand.menuBarImage)
-                .accessibilityLabel("Performance Bridge")
+            Image(nsImage: model.needsAttention ? Brand.menuBarAttentionImage : Brand.menuBarImage)
+                .accessibilityLabel(model.needsAttention ? "Performance Bridge, needs attention" : "Performance Bridge")
         }
     }
 }
@@ -73,6 +73,25 @@ enum Brand {
         let image = resources.image(forResource: "MenuBarIcon")
             ?? NSImage(systemSymbolName: "slider.horizontal.3", accessibilityDescription: "Performance Bridge")
             ?? NSImage()
+        image.isTemplate = true
+        return image
+    }()
+
+    /// The menu-bar glyph with a dot at its lower right, cut free of the glyph, for a connection
+    /// that needs attention (SetupWatch.needsAttention).
+    static let menuBarAttentionImage: NSImage = {
+        let base = menuBarImage
+        let image = NSImage(size: base.size, flipped: false) { rect in
+            base.draw(in: rect)
+            let diameter = (min(rect.width, rect.height) * 0.4).rounded()
+            let dot = NSRect(x: rect.maxX - diameter, y: rect.minY, width: diameter, height: diameter)
+            NSGraphicsContext.current?.compositingOperation = .clear
+            NSBezierPath(ovalIn: dot.insetBy(dx: -1.5, dy: -1.5)).fill()
+            NSGraphicsContext.current?.compositingOperation = .sourceOver
+            NSColor.black.setFill()
+            NSBezierPath(ovalIn: dot).fill()
+            return true
+        }
         image.isTemplate = true
         return image
     }()
@@ -121,6 +140,11 @@ struct SavedSettings: Equatable {
 @MainActor
 final class BridgeModel: ObservableObject {
     @Published var status = BridgeStatus()
+    /// Whether the menu-bar icon shows its warning mark.
+    @Published private(set) var needsAttention = false
+    /// When the setup window opens by itself (SetupWatch in BridgeEngine).
+    private var watch = SetupWatch(totalMixWorked: false, rotoWorked: false)
+    private var watchTimer: Timer?
     @Published private(set) var engine: BridgeEngine
     /// Ports given on the command line (`--in-port`, `--out-port`), which win over the saved ones.
     let portOverrides: (incoming: UInt16?, outgoing: UInt16?)
@@ -135,7 +159,11 @@ final class BridgeModel: ObservableObject {
         }
         portOverrides = (port("--in-port"), port("--out-port"))
         engine = BridgeEngine(settings: Self.settings(SavedSettings.load(), overrides: portOverrides))
+        watch = makeWatch()
         start()
+        watchTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            Task { @MainActor in self?.checkSetup() }
+        }
         // The setup window opens by itself the first time the app runs; later, from the menu.
         if !UserDefaults.standard.bool(forKey: Self.setupShownKey) {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
@@ -147,6 +175,50 @@ final class BridgeModel: ObservableObject {
     }
 
     private static let setupShownKey = "setupShown"
+
+    /// The keys under which "worked with these settings" is kept: TotalMix's host and ports, and the
+    /// Roto-Control's port name, as the engine uses them.
+    private var totalMixWorkedKey: String {
+        let endpoint = engine.settings.endpoint
+        return "totalMixWorked \(endpoint.host) \(endpoint.incomingPort) \(endpoint.outgoingPort)"
+    }
+    private var rotoWorkedKey: String { "rotoWorked \(engine.settings.rotoPortName)" }
+
+    /// A new watch for the engine's settings, with what has worked with them before.
+    private func makeWatch() -> SetupWatch {
+        SetupWatch(totalMixWorked: UserDefaults.standard.bool(forKey: totalMixWorkedKey),
+                   rotoWorked: UserDefaults.standard.bool(forKey: rotoWorkedKey))
+    }
+
+    /// Once a second: opens the setup window when SetupWatch says to, remembers what has worked,
+    /// and sets the menu-bar icon's mark.
+    private func checkSetup() {
+        let running = Self.totalMixIsRunning()
+        let reason = watch.update(status: status, totalMixRunning: running, now: Date().timeIntervalSinceReferenceDate)
+        if watch.totalMixWorked { UserDefaults.standard.set(true, forKey: totalMixWorkedKey) }
+        if watch.rotoWorked { UserDefaults.standard.set(true, forKey: rotoWorkedKey) }
+        let attention = watch.needsAttention(status: status, totalMixRunning: running)
+        if attention != needsAttention { needsAttention = attention }
+        if let reason {
+            switch reason {
+            case .portInUse: print("Opening setup: port \(engine.settings.endpoint.outgoingPort) is in use")
+            case .totalMixNotAnswering: print("Opening setup: TotalMix FX is running but hasn't answered")
+            case .rotoHandshake: print("Opening setup: the Roto-Control hasn't finished connecting")
+            }
+            fflush(stdout)
+            showSetup()
+        }
+    }
+
+    /// Whether TotalMix FX is running, from the list of running apps (nothing of TotalMix's is read
+    /// or written). Matched by name, since its bundle identifier hasn't been checked on a Mac
+    /// (inference: it contains "TotalMix").
+    private static func totalMixIsRunning() -> Bool {
+        NSWorkspace.shared.runningApplications.contains { app in
+            let names = [app.bundleIdentifier, app.localizedName].compactMap { $0?.lowercased() }
+            return names.contains { $0.contains("totalmix") }
+        }
+    }
 
     /// Opens the setup window.
     func showSetup() {
@@ -188,6 +260,7 @@ final class BridgeModel: ObservableObject {
         engine.stop()
         engine = BridgeEngine(settings: Self.settings(saved, overrides: portOverrides))
         status = BridgeStatus()
+        watch = makeWatch()
         start()
     }
 

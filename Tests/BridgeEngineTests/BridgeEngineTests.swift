@@ -178,4 +178,99 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertTrue(engine.status.totalMixAnswering)
         #endif
     }
+
+    // MARK: When the setup window opens by itself
+
+    private func status(listening: Bool = true, answering: Bool = false, found: Bool = false,
+                        connected: Bool = false) -> BridgeStatus {
+        var status = BridgeStatus()
+        status.running = true
+        status.listening = listening
+        status.totalMixAnswering = answering
+        status.rotoFound = found
+        status.rotoConnected = connected
+        return status
+    }
+
+    func testSetupWatchOpensAtOnceForAPortInUseAtLaunch() {
+        var watch = SetupWatch(totalMixWorked: true, rotoWorked: true)
+        XCTAssertEqual(watch.update(status: status(listening: false), totalMixRunning: false, now: 0), .portInUse)
+        XCTAssertNil(watch.update(status: status(listening: false), totalMixRunning: false, now: 1), "only once")
+        XCTAssertTrue(watch.needsAttention(status: status(listening: false), totalMixRunning: false))
+    }
+
+    func testSetupWatchIgnoresTheStatusBeforeTheEngineRuns() {
+        var watch = SetupWatch(totalMixWorked: false, rotoWorked: false)
+        XCTAssertNil(watch.update(status: BridgeStatus(), totalMixRunning: true, now: 0))
+        XCTAssertFalse(watch.needsAttention(status: BridgeStatus(), totalMixRunning: true))
+    }
+
+    func testSetupWatchWaitsQuietlyWhileTotalMixIsNotRunning() {
+        var watch = SetupWatch(totalMixWorked: false, rotoWorked: false)
+        for second in 0...120 {
+            XCTAssertNil(watch.update(status: status(), totalMixRunning: false, now: Double(second)))
+        }
+        XCTAssertFalse(watch.needsAttention(status: status(), totalMixRunning: false))
+    }
+
+    func testSetupWatchOpensWhenTotalMixRunsButHasNeverAnswered() {
+        var watch = SetupWatch(totalMixWorked: false, rotoWorked: false)
+        XCTAssertNil(watch.update(status: status(), totalMixRunning: false, now: 0))
+        XCTAssertNil(watch.update(status: status(), totalMixRunning: true, now: 10))   // TotalMix started
+        XCTAssertNil(watch.update(status: status(), totalMixRunning: true, now: 39))
+        XCTAssertEqual(watch.update(status: status(), totalMixRunning: true, now: 40), .totalMixNotAnswering)
+        XCTAssertTrue(watch.needsAttention(status: status(), totalMixRunning: true))
+    }
+
+    func testSetupWatchStaysClosedOnceTotalMixHasWorkedWithTheseSettings() {
+        var watch = SetupWatch(totalMixWorked: true, rotoWorked: false)
+        for second in 0...120 {
+            XCTAssertNil(watch.update(status: status(), totalMixRunning: true, now: Double(second)))
+        }
+        XCTAssertTrue(watch.needsAttention(status: status(), totalMixRunning: true), "the mark still shows")
+
+        var fresh = SetupWatch(totalMixWorked: false, rotoWorked: false)
+        XCTAssertNil(fresh.update(status: status(answering: true), totalMixRunning: true, now: 0))
+        XCTAssertTrue(fresh.totalMixWorked)
+        for second in 1...120 {
+            XCTAssertNil(fresh.update(status: status(), totalMixRunning: true, now: Double(second)))
+        }
+    }
+
+    func testSetupWatchMarksTotalMixLostAfterItAnsweredEvenIfItQuit() {
+        var watch = SetupWatch(totalMixWorked: true, rotoWorked: true)
+        _ = watch.update(status: status(answering: true), totalMixRunning: true, now: 0)
+        XCTAssertFalse(watch.needsAttention(status: status(answering: true), totalMixRunning: true))
+        _ = watch.update(status: status(), totalMixRunning: false, now: 10)
+        XCTAssertTrue(watch.needsAttention(status: status(), totalMixRunning: false))
+    }
+
+    func testSetupWatchOpensForAStuckRotoHandshakeOnlyIfItNeverConnected() {
+        var watch = SetupWatch(totalMixWorked: true, rotoWorked: false)
+        XCTAssertNil(watch.update(status: status(answering: true, found: true), totalMixRunning: true, now: 0))
+        XCTAssertNil(watch.update(status: status(answering: true, found: true), totalMixRunning: true, now: 14))
+        XCTAssertEqual(watch.update(status: status(answering: true, found: true), totalMixRunning: true, now: 15),
+                       .rotoHandshake)
+
+        var worked = SetupWatch(totalMixWorked: true, rotoWorked: true)
+        for second in 0...60 {
+            XCTAssertNil(worked.update(status: status(answering: true, found: true), totalMixRunning: true,
+                                       now: Double(second)))
+        }
+    }
+
+    func testSetupWatchNeverOpensForAnUnpluggedRotoControl() {
+        var watch = SetupWatch(totalMixWorked: true, rotoWorked: false)
+        for second in 0...120 {
+            XCTAssertNil(watch.update(status: status(answering: true), totalMixRunning: true, now: Double(second)))
+        }
+        XCTAssertFalse(watch.needsAttention(status: status(answering: true), totalMixRunning: true))
+    }
+
+    func testSetupWatchMarksARotoControlLostAfterItConnected() {
+        var watch = SetupWatch(totalMixWorked: true, rotoWorked: true)
+        _ = watch.update(status: status(answering: true, found: true, connected: true), totalMixRunning: true, now: 0)
+        _ = watch.update(status: status(answering: true), totalMixRunning: true, now: 5)
+        XCTAssertTrue(watch.needsAttention(status: status(answering: true), totalMixRunning: true))
+    }
 }
