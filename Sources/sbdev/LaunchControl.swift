@@ -14,8 +14,8 @@ let lcxlUsage = """
           reports (unless --no-touch), and prints everything it sends, with the time since
           starting. Then reads commands from the keyboard (type `help`). Leaving with `quit`
           returns it to standalone mode.
-          --port matches a source and a destination by name (default "LCXL3 1 DAW", a guess
-          from Novation's Linux port names; an exact name, or a part that matches only one port).
+          --port matches a source and a destination by name (default "LCXL3 1 DAW", from the
+          names in Bitwig's setup guide; an exact name, or a part that matches only one port).
           --raw also prints the bytes of every message in both directions.
     """
 
@@ -132,7 +132,7 @@ final class LaunchControlSession: @unchecked Sendable {
                 let index = command == "off" ? 0 : (first + offset) % 128
                 if let bytes = LaunchControlOutgoing.color(element, UInt8(index)) { try? connection?.send(bytes) }
             }
-            print(stamp() + "-> " + (command == "off" ? "lights off" : "palette from \(first): buttons row 1 \(first)…, encoders after the buttons"))
+            print(stamp() + "-> " + (command == "off" ? "lights off" : "palette from \(first): encoders \(first)–\((first + 23) % 128), then buttons \((first + 24) % 128)–\((first + 39) % 128)"))
         case "pos":
             guard let element = rest.first.flatMap(parseLaunchControlElement), let value = number(1) else { print("pos C V"); break }
             send(LaunchControlOutgoing.position(element, UInt8(value)), "position \(rest[0]) \(value)")

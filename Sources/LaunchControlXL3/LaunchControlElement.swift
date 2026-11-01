@@ -8,7 +8,7 @@ import Foundation
 /// A control on the Launch Control XL 3, as DAW mode reports it. Rows and columns count from 0:
 /// the encoder rows from the top, the button rows from the top, and the columns from the left.
 public enum LaunchControlElement: Hashable, Sendable {
-    /// One of the eight faders (0–7). Not motorized, no LED.
+    /// One of the eight faders (0–7). Not motorized; no LED in the guide's pictures.
     case fader(Int)
     /// One of the 24 endless encoders: row 0–2, column 0–7. Each has an LED under it.
     case encoder(row: Int, column: Int)
@@ -19,8 +19,8 @@ public enum LaunchControlElement: Hashable, Sendable {
     case soloArm
     /// The Mute/Select button, left of the bottom button row.
     case muteSelect
-    /// The button with Novation's logo, between Mute/Select and the button rows ("nothing… yet",
-    /// says the user guide).
+    /// The button with Novation's logo, in the top button row between Solo/Arm and button 1 (the
+    /// control map). "Nothing… yet", says the user guide.
     case novation
     /// Page up, the left button of the Page pair.
     case pageUp
@@ -96,9 +96,8 @@ public enum LaunchControlElement: Hashable, Sendable {
         }
     }
 
-    /// Whether the control can be given a color. Faders have no LED, and Shift's light belongs to
-    /// its feature control. That the Novation button has no LED either is an inference from the
-    /// guide's pictures.
+    /// Whether the control can be given a color. Shift's light belongs to its feature control. That
+    /// faders and the Novation button have no LED is an inference from the guide's pictures.
     public var hasLight: Bool {
         switch self {
         case .fader, .shift, .novation: return false
@@ -140,7 +139,8 @@ public enum LaunchControlMode: Equatable, Sendable {
     /// DAW Control (value 2).
     case dawControl
     /// A Custom Mode, 1–16 (values 6–9 for 1–4 and 18–29 for 5–16, per the guide's feature
-    /// control table; its prose lists the ranges inconsistently, docs/LAUNCH-CONTROL-XL3.md).
+    /// control table; its prose has the same values but labels them inconsistently,
+    /// docs/LAUNCH-CONTROL-XL3.md).
     case custom(Int)
 
     /// The mode a reported value stands for, if any.

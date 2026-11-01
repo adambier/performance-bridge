@@ -14,14 +14,16 @@ public enum LaunchControlEvent: Equatable, Sendable {
     /// A button was pressed (`true`) or released (`false`). That a button sends 127 when pressed
     /// and 0 when released is an inference; the guide gives no values.
     case button(LaunchControlElement, pressed: Bool)
-    /// A fader or an encoder was touched (`true`) or let go (`false`), with touch reports on
-    /// (channel 15).
+    /// A "touch" began (`true`) or ended (`false`), with touch reports on (channel 15). The guide's
+    /// example is a fader; whether encoders report it, and whether it is a touch sensor or Shift
+    /// held while moving the control, is open.
     case touch(LaunchControlElement, touched: Bool)
     /// The surface mode changed, by the user or on request (channel 7, Control Change 30).
     case mode(LaunchControlMode)
     /// Any other feature control's reply (channel 7).
     case feature(number: UInt8, value: UInt8)
-    /// The device is ready for the next bitmap (SysEx 09h 7Fh).
+    /// The device is ready for the next bitmap (SysEx 09h, with or without a 7Fh before F7h; the
+    /// guide's version of it is misprinted, docs/LAUNCH-CONTROL-XL3.md).
     case bitmapReady
     /// A message this library doesn't read, with its bytes.
     case unknown([UInt8])
@@ -72,8 +74,8 @@ public enum LaunchControlEvent: Equatable, Sendable {
     /// What a whole SysEx message (F0h to F7h) reports.
     public init(sysEx bytes: [UInt8]) {
         let header = LaunchControlOutgoing.sysExHeader
-        if bytes.count >= header.count + 2, Array(bytes.prefix(header.count)) == header,
-           bytes[header.count] == 0x09, bytes[header.count + 1] == 0x7F {
+        let body = Array(bytes.dropFirst(header.count))
+        if Array(bytes.prefix(header.count)) == header, body == [0x09, 0x7F, 0xF7] || body == [0x09, 0xF7] {
             self = .bitmapReady
         } else {
             self = .unknown(bytes)
