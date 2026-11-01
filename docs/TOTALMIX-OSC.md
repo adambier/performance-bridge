@@ -362,3 +362,23 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 - TotalMix's settings file stores an empty `Name NN` for unnamed playbacks (Adam's copy, 2026-10-31), so the file can tell a given name from the default; OSC can't.
 
 **Consequence.** Over OSC, a name the user gave a playback can't be told apart from a hardware name for certain. For example, "Analog 1/2" could be either. How Performance Bridge names playbacks is a decision for Adam.
+
+### Test 16 (2026-11-01): the ARC USB's keys and wheel over MIDI
+
+**Setup.** RME's ARC USB, connected to Adam's Mac, with TotalMix FX "2.10 (1)" running. Its MIDI port is named "RME ARC" (source and destination). `sbdev midi "RME ARC"` printed what it sends. Each of the 15 keys was pressed once, left to right, and the wheel turned a few clicks clockwise, then anticlockwise.
+
+**Findings** (Adam, 2026-11-01):
+- **One message for everything.** The ARC sends one SysEx message, `F0 00 20 0D 70 50 a b c F7`, for keys and wheel alike. CoreMIDI may deliver it in pieces.
+- **Keys.** `a`, `b`, and `c` hold the keys as bits, one per key, set while the key is down:
+  - keys 1–7 are `a`'s bits 01 to 40;
+  - keys 8–14 are `b`'s bits 01 to 40;
+  - key 15 is `c`'s bit 10.
+
+  On release the bit clears (all zeros).
+- **Wheel.** One click sends `c` = 01 clockwise or 0F (−1 in four bits) anticlockwise, then all zeros 20 ms later. Turns of several clicks in quick succession still came one step per message.
+- **Idle.** With nothing pressed, the all-zeros message repeats about once a second.
+- **Sharing.** The keys kept working in TotalMix while `sbdev midi` was listening. Reading the port doesn't take the ARC from TotalMix.
+
+**Inferences.** `00 20 0D` is RME's manufacturer ID. The other bits of `c` may hold the footswitch; not tested. A fast turn may send larger steps (02, 0E, …); not seen.
+
+**Consequence.** Performance Bridge could use the ARC alongside TotalMix, e.g. its keys for paging, without taking it away from TotalMix.
