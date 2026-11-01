@@ -253,7 +253,7 @@ and step names.
 1. **SET PLUGIN MODE's data byte.** Answered by Logic's integration, not a test: `00` is PLUGIN mode and `01` Logic's Smart Controls mode, not a page number. With `02` it has always been `00` (tests 2–3), which fits. [Logic, `process_sysex_command`]
 2. **Type `03`.** Left open on purpose. Logic's integration runs inside Logic's control-surface layer: it answers SET PLUGIN MODE with commands to Logic, and the Roto-Control's plugin details follow from what Logic then reports. So `sbdev` can't stand in for it without imitating Logic. Performance Bridge claims `02`, so this isn't needed. [Logic, reading of `config.lua`, 2026-11-01] The undocumented `0B 1E` turns out to go from the Roto-Control to the host (named "request switch parameter value" there, with a switch index), not the other way. [Logic]
 3. **The 0 dB indent.** Settled by tests 5 and 8: with `02`, level knobs at 13004 and send knobs none; with `01`, send knobs none either. Still open: does `03` have one? (Not needed: Performance Bridge claims `02`.)
-4. **The hold rule.** A power cycle clears it (test 6), and so does switching to PLUGIN mode and back (test 8). Still open: is the release always about 3,300–3,700 counts in?
+4. **The hold rule.** Settled by tests 6, 8, and 9: a power cycle or a trip through PLUGIN mode clears it; a forced release doesn't; from 0 the knob lets go at the indent (13004), from 16383 at about 3,250–3,700.
 5. **The FX label.** Settled by test 7: it labels the send-mode switch, shown only while the host reports sends.
 
 ## 9. Tests
@@ -514,3 +514,24 @@ marked "seen".
 **Consequences.**
 - Switching to PLUGIN mode and back clears the hold, as a change of knob mode does (section 6's rule). After such a switch `RotoDriver` should send the knob positions again (inference: it already does on every mode report).
 - Send knobs have no indent with `01` either. The 3.1.0 release notes' send indents aren't seen on 3.3.0 with `01` or `02`.
+
+### Test 9 (2026-11-01): where a held knob lets go
+
+**Setup.** Firmware 3.3.0, `sbdev roto` claiming Bitwig (`02`), knobs in level mode. One `knob 1 0.5` was sent before the clockwise passes and one before the anticlockwise passes. Knob 1 was turned past the end each time until it held, then forced on until it gave way (Adam, 2026-11-01; log kept).
+
+**Findings:**
+
+| Pass | Held at | Silent for | Let go at |
+|---|---|---|---|
+| Clockwise 1 | 16383 | 2.2 s | 3524 |
+| Clockwise 2 | 16383 | 4.0 s | 3256 |
+| Clockwise 3 | 16383 | 2.7 s | 3264 |
+| Anticlockwise 1 | 0 | 1.5 s | 13004 |
+| Anticlockwise 2 | 0 | 2.5 s | 13004 |
+| Anticlockwise 3 | 0 | 1.8 s | 13004 |
+
+- The second and third passes in each direction held although no position had been sent since the first: **a forced release doesn't clear the hold.**
+- From 0 the knob let go at exactly **13004**, the `02` indent (test 5), all three times. From 16383 it let go between **3256 and 3524**, scattered around 3379 (16383 − 13004, the indent's mirror image; inference that this is related).
+- Earlier tests found 13004–13078 from 0 and 3325–3693 from 16383 (section 6), so from the top the range across all tests is 3256–3693.
+
+**Consequences.** Section 6's hold rule stands, with two additions: a forced release leaves the hold in place, and a knob forced on from 0 lands in the indent. A knob forced past either end in Performance Bridge therefore jumps to near 0 dB (from the bottom) or to about −37 dB (from the top). `SurfaceHub`'s guard against sudden jumps of more than 8,000 counts (`jumpGuard`) catches both (inference from its setting).
