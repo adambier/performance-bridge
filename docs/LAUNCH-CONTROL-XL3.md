@@ -234,7 +234,7 @@ port names.
    with Shift held. Which sends channel 15 reports?
 6. **Encoder position.** Done (test 2): taken. `pos e11 0`, then turn the encoder one step: does it continue from 0
    (taken) or from where it was (not)? The same with `pos e11 127`.
-7. **Fader pickup.** Done (test 2): not seen. `pickup on`, `pos f1 64`, then move fader 1 from the bottom. Does it send
+7. **Fader pickup.** Done (tests 2 and 3): the device's pickup works; one unexplained run in test 2. `pickup on`, `pos f1 64`, then move fader 1 from the bottom. Does it send
    nothing until it passes the middle?
 8. **Relative encoders.** Done (test 2): as the guide says. `relative 1 on`: do encoders 1–8 report 77–84 with 65 and 63 for single
    steps?
@@ -317,8 +317,28 @@ Everything in this section is inference, for discussion with Adam before the dri
 - **Encoder positions.** After `pos e11 100` (`BF 0D 64`: the encoder's own Control Change on channel 16), turning the top-left encoder clockwise reported 101, 102, … 107. The screen showed the same. So an absolute encoder takes the position the host sends it in this message, which the guide didn't name (section 4).
 - **A change of direction.** The first move after turning the other way sent touch on and off with no value, in both absolute and relative mode (seen three times). The device seems to drop the first step after reversing.
 - **Relative mode.** After `relative 1 on`, the top-left encoder sent Control Change 77 (`4D`) on channel 16, with 65 clockwise and 63 anticlockwise, one step at a time when turned slowly. Its touch reports used 77 too (`BE 4D 7F` and `00`), not 13. The library now reads both.
-- **Fader pickup.** After `pickup on` (`B6 46 7F`) and `pos f1 64`, fader 1 was moved from 53 down to 0, then from 0 up to 127. Every value was sent, all the way, with no gap below or at 64. So whatever "DAW Fader Pickup" does, it didn't hold back fader 1's values around a position sent this way. Either faders don't take this message, or the feature works some other way (inference either way).
+- **Fader pickup, first run.** After `pickup on` (`B6 46 7F`) and `pos f1 64`, fader 1 was moved from 53 down to 0, then from 0 up to 127. Every value was sent, all the way. Test 3 found pickup working; why it didn't here is unknown (seen once).
 
 **Consequences.**
 - Encoders can stay in absolute mode, with the host sending positions, as the Roto-Control's knobs are driven (section 9). Relative mode works too, as a fallback.
-- Pickup for the faders has to be SurfaceCore's own, which it already does for surfaces whose controls need it.
+- Pickup: see test 3.
+
+### Test 3 (2026-11-01): fader pickup
+
+**Setup.** As test 1. `sbdev lcxl`, then `pickup on` (feature 70), then a position for fader 1 with `pos f1 N` (`BF 05 N`) before each case. Adam watched the screen; log kept.
+
+**Findings:**
+
+| Case | Fader started | Target | Moved | Screen | First value sent |
+|---|---|---|---|---|---|
+| A | top (127) | 64 | down | showed 64, then counted down once past halfway | 63, 2.4 s after the movement began |
+| B | about 31 | 64 | up | showed 64, then counted up once past halfway | 65, 1.7 s after the movement began |
+| C | about 63 | 100 | down | showed 100 throughout | none |
+
+- While a fader was held back, it still sent movement reports (touch on and off, channel 15) but no values.
+- Once it had passed the target, every value came through, and later moves were unaffected until a new position was sent.
+
+**Consequences.**
+- With feature 70 on, the device does pickup itself. It holds back a fader's values until the fader passes the position the host sent, and shows that position on the screen meanwhile.
+- That suits the driver better than SurfaceCore's own pickup, since the user sees the target. The driver can turn feature 70 on and send each fader's position, and give SurfaceCore a fader that "follows" (inference, to settle when the driver is written).
+- Test 2's run, where nothing was held back, stays unexplained.
