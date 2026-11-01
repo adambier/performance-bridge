@@ -134,7 +134,7 @@ known.
 
 **Findings:**
 
-- **Status.** With "Send status" on, TotalMix cycles through `/status/dsp`, `/status/device`, and `/status/connection`, one message about every second; the cycle repeats every 3.2 seconds. Example values: `dsp` = 9, `device` = "Digiface AES (52103031)", `connection` = 1. The number in parentheses is the interface's ID, the same one TotalMix's window title shows ("RME TotalMix FX: Digiface AES (52103031) - 48.0k", Adam's screenshot, 2026-10-31), so the app can tell interfaces apart over OSC.
+- **Status.** With "Send status" on, TotalMix cycles through `/status/dsp`, `/status/device`, and `/status/connection`, one message about every second; the cycle repeats every 3.2 seconds. Example values: `dsp` = 9, `device` = "Digiface AES (52103031)", `connection` = 1. The number in parentheses is the interface's ID, the same one TotalMix's window title shows ("RME TotalMix FX: Digiface AES (52103031) - 48.0k", Adam's screenshot, 2026-10-31), so the app can tell interfaces apart over OSC. The ID sent over OSC is the authority on which interface the app is talking to (Adam, 2026-10-31); nothing else, such as TotalMix's settings files, overrides it.
   - The inference is that the number in parentheses is the unit's serial number, and that `dsp` is a percentage.
   - No DURec or FX messages were sent. The inference is that this interface has neither.
 - **The `/sendall` reply.** The reply arrived within 83 ms of the request: 962 messages.
