@@ -42,8 +42,8 @@ This project is in early development. There is no released app yet, only a first
 
 ## Trying `sbdev` with TotalMix
 
-In TotalMix's preferences, turn on Global OSC and note the incoming and outgoing ports. The defaults
-are 7001 and 9001. Then, from this folder:
+In TotalMix's preferences, turn on Global OSC and note the incoming and outgoing ports. RME's manual
+gives 7001 and 9001 as typical values, and they are Performance Bridge's defaults. Then, from this folder:
 
 ```
 swift run sbdev monitor --sendall

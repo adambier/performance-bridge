@@ -15,9 +15,23 @@ notes and has not been seen in TotalMix, the step says so.
 ## What you need
 
 - A Mac running macOS 13 or later.
-- TotalMix FX 2.1 or later, on a supported RME interface. The project has tested a Digiface AES only.
+- TotalMix FX 2.1 or later (release candidates are fine), on a supported RME interface. Earlier versions don't have Global OSC; the setup window checks the version. The project has tested a Digiface AES only.
 - A Roto-Control, connected to the Mac by USB. The project has tested firmware 3.3.0.
 - The Swift toolchain (Xcode, or the Command Line Tools with Swift 5.9 or later), to run the app from source.
+
+The app has a setup window that follows these steps and checks each one live where it can: whether
+TotalMix FX answers, whether it has sent its channels, whether meters arrive, and whether the
+Roto-Control is connected. It opens by itself the first time the app runs; after that, choose
+**Setup Guide…** from the menu.
+
+The window also opens by itself, at most once per launch, for a problem that has never worked with
+the current settings: the port in use; TotalMix FX running but not answering for 30 seconds; or the
+Roto-Control plugged in but not connected after 15 seconds. A Roto-Control that isn't plugged in,
+or TotalMix FX not running, never opens it. Once a connection has worked, a fault only puts a red dot
+on the menu-bar icon, so a window never takes the focus during a performance. The dot is for faults:
+the port in use, TotalMix FX running but silent for 10 seconds, or the Roto-Control plugged in but
+not connected for 10 seconds. TotalMix FX closed, or the Roto-Control unplugged, is idle and leaves
+no dot, so the app can run all the time.
 
 ## Step 1: Turn on Global OSC in TotalMix FX
 
@@ -37,7 +51,7 @@ title is not in the screenshot, so the top-level menu is not checked.
    "Remote Controller Address", "Host" is the computer the app runs on, and "Port (outgoing)" is where TotalMix
    sends to the app. These are per controller slot. On controller 4 the screenshot shows incoming 7004, host
    127.0.0.1, and outgoing 9004. On controller 1 the screenshot shows 7001 and 9001, and host localhost.
-   The app's defaults are 7001 and 9001, so for controller 4 set the app's ports to 7004 and 9004 in Settings
+   The app's defaults are 7001 and 9001, so for controller 4 set the app's ports to 7004 and 9004 in Settings (Connections tab)
    (or start it with `--in-port 7004 --out-port 9004`). The app sends to 127.0.0.1 or localhost; both reach
    the same Mac, and the app's Settings take the host name.
 6. Under "Options", the screenshot shows "Send Level Data" on, "Peak Hold" off, and "Lock Remote to Submix" off.
@@ -76,7 +90,7 @@ channels change the channel numbers the app receives: the test run showed no ren
 
 1. Connect the Roto-Control to the Mac by USB. It can be connected before or after the app starts.
 2. The app finds the Roto-Control by the name of its MIDI port. The default, "Roto", matches the port
-   named "Roto-Control". To choose another port, open Settings and pick it from the MIDI port menu under
+   named "Roto-Control". To choose another port, open Settings (Connections tab) and pick it from the MIDI port menu under
    Roto-Control; the menu lists the ports connected when Settings opens.
 
 ## Step 4: Start the app
@@ -93,26 +107,27 @@ To use ports other than the saved ones, add them to the command line:
 swift run PerformanceBridge --in-port 7004 --out-port 9004
 ```
 
-The menu-bar icon shows two status lines:
+The menu-bar icon's menu starts with two status lines, dimmed because they only report. The app keeps
+retrying in every state:
 
-- **TotalMix FX: connected** means TotalMix has answered. **No answer** means it has not yet; the app asks
-  again every 3 seconds. **Port N in use, retrying** means another program has the port the app sends from,
-  so quit that program, such as `sbdev`.
-- **Roto-Control: connected** means the handshake is complete. **Connecting** means the device was found and
-  the handshake is under way. **Not found, retrying** means no port matches the name in Settings.
+- **TotalMix FX: Connected** means TotalMix has answered. **No Answer** means it has not yet; the app asks
+  again every 3 seconds. **Port N in Use** means another program has the port the app sends from, so quit
+  that program, such as `sbdev`.
+- **Roto-Control: Connected** means the handshake is complete. **Connecting** means the device was found and
+  the handshake is under way. **Not Found** means no MIDI port matches the one in Settings.
 
 The full reason for any state goes to the log in the Terminal the app was started from.
 
-If TotalMix does not show its state, choose **Ask TotalMix FX for its state** from the menu.
+If TotalMix does not show its state, choose **Ask TotalMix FX for Its State** from the menu.
 
 ## Step 5: Set the layout
 
-Choose **Layout…** from the menu.
+Choose **Settings…** from the menu, and open the **Channel Layout** tab.
 
 - The **Sources** and **Outputs** buttons switch between the two views.
 - Drag a channel to change its place on the surfaces. TotalMix cannot reorder its channels; the app can.
 - To take a channel off the surfaces, hide it in TotalMix (Step 2). The layout has no hide setting of its own.
-- Channel colors are set in TotalMix FX, in Channel Layout (the Color column, and the Color (Name) menu for the selected channel). Checked on screen (Adam, 2026-10-31).
+- Channel colors are set in TotalMix FX's own Channel Layout window (the Color column, and the Color (Name) menu for the selected channel). Checked on screen (Adam, 2026-10-31).
 - The note at the bottom repeats the rule for channels hidden in TotalMix.
 - **Playbacks start on a new page**, under the Sources list, puts the first playback at the start of a new
   page of strips, after blank strips that fill the inputs' last page.
@@ -120,18 +135,18 @@ Choose **Layout…** from the menu.
 ## Step 6: Choose the home submix
 
 The home submix is the output the surfaces' levels and pans go into. Choose it from the menu, under
-**Home submix**.
+**Home Submix**.
 
 - Main Out is the default. Choosing Main Out's output saves "follow Main Out", so the home moves when Main Out
   is reassigned in TotalMix. The menu says so.
-- To choose any output, turn on **Show all outputs** in the same menu.
+- Any other output is in the **Other Outputs** submenu of the same menu.
 
 ## If something does not work
 
-- **TotalMix FX: port N in use.** Another program has the port. Quit `sbdev` or any other OSC remote.
-- **TotalMix FX: no answer.** Check that Global OSC is on and that the ports in Settings match TotalMix's
-  (Step 1). Then choose **Ask TotalMix FX for its state**.
-- **Roto-Control: not found.** Check the cable, and the MIDI port in Settings (Step 3).
+- **TotalMix FX: Port N in Use.** Another program has the port. Quit `sbdev` or any other OSC remote.
+- **TotalMix FX: No Answer.** Check that Global OSC is on and that the ports in Settings match TotalMix's
+  (Step 1). Then choose **Ask TotalMix FX for Its State**.
+- **Roto-Control: Not Found.** Check the cable, and the MIDI port in Settings (Step 3).
 - **A channel is missing from the surfaces.** Check whether TotalMix hides it from the OSC controller the app uses
   (Step 2).
 

@@ -67,7 +67,43 @@ struct AboutView: View {
     }
 }
 
-/// The Settings window: where to find TotalMix FX and the Roto-Control. Apply saves the settings
+/// The Settings window's tabs.
+enum SettingsTab: Hashable {
+    /// Where to find TotalMix FX and the Roto-Control.
+    case connections
+    /// The order of the channels on the surfaces.
+    case channelLayout
+}
+
+/// The Settings window: Connections and Channel Layout, in tabs (Adam, 2026-10-31).
+struct SettingsWindowView: View {
+    @ObservedObject var model: BridgeModel
+    @State var tab: SettingsTab
+
+    var body: some View {
+        TabView(selection: $tab) {
+            SettingsView(model: model)
+                .tabItem { Text("Connections") }
+                .tag(SettingsTab.connections)
+            LayoutView(model: model)
+                .tabItem { Text("Channel Layout") }
+                .tag(SettingsTab.channelLayout)
+        }
+        .padding(.top, 8)
+        .frame(width: 480)
+    }
+}
+
+extension BridgeModel {
+    /// Opens the Settings window on `tab`.
+    func showSettings(_ tab: SettingsTab = .connections) {
+        Windows.show("settings", title: "Performance Bridge Settings") {
+            SettingsWindowView(model: self, tab: tab)
+        }
+    }
+}
+
+/// The Connections tab: where to find TotalMix FX and the Roto-Control. Apply saves the settings
 /// and restarts the connections.
 struct SettingsView: View {
     @ObservedObject var model: BridgeModel
@@ -88,7 +124,7 @@ struct SettingsView: View {
                 portRow("Incoming port", value: $edited.incomingPort, override: model.portOverrides.incoming)
                 portRow("Outgoing port", value: $edited.outgoingPort, override: model.portOverrides.outgoing)
             }
-            note("The computer that runs TotalMix FX, and the ports of the OSC controller set up for Performance Bridge in TotalMix FX: Options → Mixer Settings… → OSC, “Port (incoming)” and “Port (outgoing)”, with “Global OSC” chosen. TotalMix FX’s ports for controller 1 are 7001 and 9001.")
+            note("The computer that runs TotalMix FX, and the ports of the OSC controller set up for Performance Bridge in TotalMix FX: Options → Mixer Settings… → OSC, “Port (incoming)” and “Port (outgoing)”, with “Global OSC” chosen.")
 
             Divider()
                 .padding(.vertical, 4)
@@ -129,7 +165,6 @@ struct SettingsView: View {
             .padding(.top, 8)
         }
         .padding(20)
-        .frame(width: 440)
         .fixedSize(horizontal: false, vertical: true)
     }
 
