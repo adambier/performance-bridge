@@ -25,7 +25,8 @@ public struct SetupStep: Equatable, Sendable, Identifiable {
     public var title: String
     /// Where it stands.
     public var state: State
-    /// What to do, or what was seen. Empty when there is nothing to add.
+    /// What to do, or what was seen. Empty when there is nothing to add. Each line is shown on
+    /// its own (e.g., a numbered step), and a blank line starts a new paragraph.
     public var detail: String
 
     /// Makes a step.
@@ -56,17 +57,22 @@ public enum SetupChecklist {
                         state: .done, detail: "")
             : SetupStep(id: "port", title: "Port \(outgoing) is in use",
                         state: .problem,
-                        detail: "Another program is using port \(outgoing), the port TotalMix FX sends to. Quit it (for example, sbdev or another OSC remote). Performance Bridge keeps trying."))
+                        detail: "Another program is using port \(outgoing), the port TotalMix FX sends to. Quit it (for example, sbdev or another OSC remote).\n\nPerformance Bridge keeps trying."))
 
         steps.append(versionStep(status: status, running: totalMixRunning, version: totalMixVersion))
 
+        // Lines are list items; a blank line starts a new paragraph (SetupView spaces them).
         let oscSetup = """
             In TotalMix FX:
             1. Options → Enable OSC Control: checked.
-            2. Options → Mixer Settings… (F3) → OSC. Under “Select Controller”, choose a controller that no other program or device uses and check “In Use”.
-            3. “Compatibility (Mode)”: Global OSC.
-            4. “Port (incoming)”: \(incoming). Under “Remote Controller Address”, “Port (outgoing)”: \(outgoing) and “Host”: localhost (if Performance Bridge runs on this Mac).
-            5. Click Details and check “Send changes” and “Send status”.
+            2. Options → Mixer Settings… (F3) → OSC.
+            3. “Select Controller”: a controller no other program or device uses. Check “In Use”.
+            4. “Compatibility (Mode)”: Global OSC.
+            5. “Port (incoming)”: \(incoming).
+            6. Under “Remote Controller Address”, “Port (outgoing)”: \(outgoing).
+            7. “Host”: localhost (if Performance Bridge runs on this Mac).
+            8. Click Details and check “Send changes” and “Send status”.
+
             Each controller needs its own ports. If TotalMix FX uses other ports, set the same ones in Performance Bridge’s Settings.
             """
         if status.totalMixAnswering {
@@ -83,14 +89,14 @@ public enum SetupChecklist {
             steps.append(SetupStep(id: "channels", title: "TotalMix FX hasn’t sent its channels yet",
                                    state: .waiting,
                                    detail: status.totalMixAnswering
-                                       ? "TotalMix FX answered with its status only. Performance Bridge keeps asking; if this stays, choose Refresh Channels from TotalMix FX from the menu."
+                                       ? "TotalMix FX answered with its status only. Performance Bridge keeps asking.\n\nIf this stays, choose Refresh Channels from TotalMix FX from the menu."
                                        : ""))
         }
 
         steps.append(status.levelsSeen
             ? SetupStep(id: "meters", title: "Receiving meter levels", state: .done, detail: "")
             : SetupStep(id: "meters", title: "No meters yet", state: .optional,
-                        detail: "For meters on the hardware controllers: in TotalMix FX, Options → Mixer Settings… (F3) → OSC, check “Send Level Data” for the controller. TotalMix FX sends levels only when they change, so play something to see them."))
+                        detail: "For meters on the hardware controllers: in TotalMix FX, Options → Mixer Settings… (F3) → OSC, check “Send Level Data” for the controller.\n\nTotalMix FX sends levels only when they change, so play something to see them."))
 
         if status.rotoConnected {
             steps.append(SetupStep(id: "roto", title: "Roto-Control connected", state: .done, detail: ""))
@@ -103,7 +109,7 @@ public enum SetupChecklist {
         }
 
         steps.append(SetupStep(id: "hide", title: "Channels the hardware controllers don’t show", state: .instruction,
-                               detail: "Hide and show channels in TotalMix FX: right-click the channel, choose Change Channel Layout, and under “Hide Channel in” check or uncheck the OSC Controller box for the controller Performance Bridge uses. Channel colors can be set in the same window."))
+                               detail: "Hide and show channels in TotalMix FX: right-click the channel, choose Change Channel Layout, and under “Hide Channel in” check or uncheck the OSC Controller box for the controller Performance Bridge uses.\n\nChannel colors can be set in the same window."))
         steps.append(SetupStep(id: "order", title: "The order of the channels", state: .instruction,
                                detail: "Channel order on the hardware controllers can be set under Settings… from the menu."))
         return steps

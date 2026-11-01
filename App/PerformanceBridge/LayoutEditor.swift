@@ -89,9 +89,12 @@ struct LayoutView: View {
             }
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("Hide and show channels in TotalMix FX’s own Channel Layout window: right-click the channel, choose Change Channel Layout, and check or uncheck the OSC Controller box under \u{201C}Hide Channel in.\u{201D} Channel colors can be set in the same window. Channels that TotalMix hides from an OSC Controller are not shown on the hardware controllers connected through it.")
+                // One short paragraph each, in callout size, for legibility (Adam, 2026-10-31).
+                Text("Hide and show channels in TotalMix FX’s own Channel Layout window: right-click the channel, choose Change Channel Layout, and check or uncheck the OSC Controller box under \u{201C}Hide Channel in.\u{201D}")
+                Text("Channel colors can be set in the same window.")
+                Text("Channels that TotalMix hides from an OSC Controller are not shown on the hardware controllers connected through it.")
             }
-            .font(.caption)
+            .font(.callout)
             .foregroundStyle(.secondary)
             .fixedSize(horizontal: false, vertical: true)
         }

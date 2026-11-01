@@ -91,11 +91,7 @@ struct SetupView: View {
                         Text(step.title)
                             .fontWeight(.medium)
                         if !step.detail.isEmpty {
-                            Text(step.detail)
-                                .font(.callout)
-                                .foregroundStyle(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .textSelection(.enabled)
+                            detailText(step.detail)
                             screenshots(for: step)
                         }
                     }
@@ -111,17 +107,33 @@ struct SetupView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(note.title)
                             .fontWeight(.medium)
-                        Text(note.detail)
-                            .font(.callout)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .textSelection(.enabled)
+                        detailText(note.detail)
                         screenshots(for: note)
                     }
                 }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// A step's detail, broken up for legibility (Adam, 2026-10-31): each line on its own with a
+    /// little space between (e.g., numbered steps), and more space between paragraphs, which a
+    /// blank line separates.
+    private func detailText(_ detail: String) -> some View {
+        let paragraphs = detail.components(separatedBy: "\n\n").map { $0.components(separatedBy: "\n") }
+        return VStack(alignment: .leading, spacing: 8) {
+            ForEach(paragraphs.indices, id: \.self) { p in
+                VStack(alignment: .leading, spacing: 3) {
+                    ForEach(paragraphs[p].indices, id: \.self) { l in
+                        Text(paragraphs[p][l])
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
+        }
+        .font(.callout)
+        .foregroundStyle(.secondary)
+        .textSelection(.enabled)
     }
 
     /// A step's screenshots, folded away until asked for. Each is shown at its own size (they are
