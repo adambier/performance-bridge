@@ -242,7 +242,7 @@ port names.
 9. **Colors.** Done (test 4) for indices 0–39 and RGB; 40–127 not yet seen. `palette 0`, `palette 40`, and `palette 80`. Compare with the guide's palette. Is 0
    off? Then `rgb b11 127 0 0`, and check the Track, Page, Record, Play, and Novation buttons for
    lights.
-10. **Screen.** `display f1 2`, then `text f1 0 Mix`, `text f1 1 ADI-2`, `text f1 2 -6.0 dB`, and
+10. **Screen.** Done (test 5). `display f1 2`, then `text f1 0 Mix`, `text f1 1 ADI-2`, `text f1 2 -6.0 dB`, and
     move fader 1. How many characters fit per field? Then `display stationary 3` with eight names,
     and the `quiet` option (no display on change).
 11. **Bitmap targets** (section 7, item 5), only if a bitmap is wanted later.
@@ -358,3 +358,24 @@ Everything in this section is inference, for discussion with Adam before the dri
 **Consequences.**
 - The driver can use palette indices for the strips' colors and RGB where a palette color is too far off, e.g., to match TotalMix's eight colors.
 - Page, Track, Record, Play, and Solo/Arm can show state, e.g., whether another page exists.
+
+### Test 5 (2026-11-01): the screen
+
+**Setup.** As test 1. `sbdev lcxl`, then the commands below; Adam watched the screen and took photos (not committed).
+
+**Findings:**
+- **Arrangement 2 on a fader** (`display f1 2`, then `text f1 0 Mix`, `text f1 1 ADI-2`, `text f1 2 -6.0 dB`). Moving fader 1 showed three centered lines, "Mix", "ADI-2", and "-6.0 dB", in place of the number. The text stayed for the rest of the session (about 12 minutes) and came up on every move of fader 1; the device doesn't change it as the fader moves.
+- **Line length.** `text f1 1` with the 26 capitals showed "A" to "M" and half of "N", cut off at the screen's edge with no scrolling. With 30 lowercase "i"s it showed 20, centered, in less than half the width.
+  - The font is proportional.
+  - A field keeps at most 20 characters. This is an inference from the "i"s: the line had room for more, and none showed.
+- **Arrangement 3 on the stationary display** (`display stationary 3`, title "Page 1", names "Mic 1" in field 1, "Mic 2" in field 2, and "ABCDEFGHIJ" in field 8, then `show stationary on`).
+  - The title was centered on the top line.
+  - The names were in two rows of four columns: fields 1–4 in the first row and 5–8 in the second, so field 8 was bottom right.
+  - Each column is a quarter of the width. "Mic 1" filled its column, so "Mic 1Mic 2" ran together, with no gap added. Field 8 showed "ABCD", cut off at the column's edge.
+- **Back to the stationary display.** After fader 1's display timed out, the screen went back to the stationary display.
+- **Quiet** (`display f2 4 quiet`, which clears bits 6 and 5). Moving fader 2 all the way up and down left the stationary display on the screen. Fader 2's values were still sent.
+
+**Consequences.**
+- The driver sends each strip's name and a value text of its own (e.g., in dB) as the strip's level changes, since the device shows the text it was given, not the fader's value. That this is fast enough to follow a fader is an inference to check when the driver runs.
+- Names on the two- and three-line displays can be about 13 capitals long (more in lowercase), and at most 20 characters. In arrangement 3's columns they fit in about four capitals, so the driver needs short names there, and a space of its own between columns.
+- Quiet makes a control send without covering the stationary display, if a strip should not show a display.
