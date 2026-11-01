@@ -348,11 +348,9 @@ struct MenuContent: View {
                     }
                 }
             }
-            Divider()
             // Choosing Main Out's output saves "follow Main Out" (BridgeModel.setHomeSubmix), so
-            // the home moves when Main Out is reassigned in TotalMix. Said here so it isn't
-            // mistaken for a bug.
-            Text("Main Out Follows TotalMix FX’s Assignment")
+            // the home moves when Main Out is reassigned in TotalMix. The menu no longer says so:
+            // the note wasn't actionable (Adam, 2026-10-31); the setup guide (docs/SETUP.md) does.
         }
         // Order (Apple's HIG, Menus): what is used most first, related items grouped and separated;
         // then the app's own items in the order of a Mac app menu: About and Check for Updates,

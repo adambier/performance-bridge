@@ -41,16 +41,23 @@ struct LayoutView: View {
                 if view == .outputs {
                     // Two sections, each reordered on its own, so a monitoring output can't be
                     // dragged among the sends (Adam, 2026-10-31).
-                    Section("Monitoring") {
-                        ForEach(monitoringItems, id: \.channel) { Text($0.name) }
+                    // Each group carries a colored bracket, in the colors the Roto-Control gives
+                    // outputs left white in TotalMix: monitoring green, sends blue (Adam,
+                    // 2026-10-31). The section titles say the same in words.
+                    Section {
+                        rows(monitoringItems, color: .green)
                             .onMove { move($0, $1, monitoring: true) }
+                    } header: {
+                        Text("Monitoring").foregroundStyle(.green)
                     }
-                    Section("Sends") {
-                        ForEach(otherItems, id: \.channel) { Text($0.name) }
+                    Section {
+                        rows(otherItems, color: .blue)
                             .onMove { move($0, $1, monitoring: false) }
+                    } header: {
+                        Text("Sends").foregroundStyle(.blue)
                     }
                 } else {
-                    ForEach(otherItems, id: \.channel) { Text($0.name) }
+                    rows(otherItems, color: nil)
                         .onMove { move($0, $1, monitoring: false) }
                 }
             }
@@ -89,6 +96,26 @@ struct LayoutView: View {
         .onChange(of: model.status) { _ in reload() }
     }
 
+    /// A group's rows: a drag handle, the channel's name, and, when `color` is given, the group's
+    /// bracket down the left side.
+    private func rows(_ group: [LayoutItem], color: Color?) -> some DynamicViewContent {
+        ForEach(Array(group.enumerated()), id: \.element.channel) { index, item in
+            HStack(spacing: 8) {
+                if let color {
+                    GroupBracket(part: .init(index: index, count: group.count), color: color)
+                        .frame(width: 7)
+                }
+                Image(systemName: "line.3.horizontal")
+                    .foregroundStyle(.tertiary)
+                    .accessibilityHidden(true)
+                Text(item.name)
+                Spacer()
+            }
+            .frame(minHeight: 24)
+            .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
+        }
+    }
+
     /// Moves channels within one group (all sources, the monitoring outputs, or the sends) and
     /// saves the view's order: monitoring outputs first, then the rest.
     private func move(_ source: IndexSet, _ destination: Int, monitoring isMonitoring: Bool) {
@@ -103,5 +130,48 @@ struct LayoutView: View {
     /// Reads the view's channels again, after a change in the app or in TotalMix.
     private func reload() {
         items = model.engine.layoutItems(view)
+    }
+}
+
+/// One row's part of a group's bracket ("[" shape) down the left side of a list: the top row draws
+/// the top tick, the bottom row the bottom tick, and every row the line between.
+struct GroupBracket: View {
+    /// Where a row sits in its group.
+    enum Part {
+        case only, first, middle, last
+
+        init(index: Int, count: Int) {
+            if count <= 1 { self = .only }
+            else if index == 0 { self = .first }
+            else if index == count - 1 { self = .last }
+            else { self = .middle }
+        }
+    }
+
+    var part: Part
+    var color: Color
+
+    var body: some View {
+        GeometryReader { geometry in
+            let width = geometry.size.width
+            let height = geometry.size.height
+            let inset: CGFloat = 4
+            Path { path in
+                let top = (part == .first || part == .only) ? inset : 0
+                let bottom = (part == .last || part == .only) ? height - inset : height
+                path.move(to: CGPoint(x: 1, y: top))
+                path.addLine(to: CGPoint(x: 1, y: bottom))
+                if part == .first || part == .only {
+                    path.move(to: CGPoint(x: 1, y: top))
+                    path.addLine(to: CGPoint(x: width, y: top))
+                }
+                if part == .last || part == .only {
+                    path.move(to: CGPoint(x: 1, y: bottom))
+                    path.addLine(to: CGPoint(x: width, y: bottom))
+                }
+            }
+            .stroke(color, style: StrokeStyle(lineWidth: 2, lineCap: .round))
+        }
+        .accessibilityHidden(true)
     }
 }
