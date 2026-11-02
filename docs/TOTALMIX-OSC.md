@@ -472,16 +472,17 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 **Setup.** TotalMix FX "2.10 (1)" with a Digiface AES, controller 1 (ports 7001 and 9001).
 `sbdev monitor --sendall`, log `monitor-mutemaster-1102.log`. After the `/sendall` answer, Adam
 turned Mute Master (the M button in the Control Strip) off and on, switched the stereo input "ADAT
-7/8" (monitor input 13) to mono and back, recolored it and put the color back, and renamed it and
-named it back, pausing a few seconds between steps.
+7/8" (monitor inputs 13 and 14) to mono and back, then, with it a stereo pair again, recolored it
+and put the color back, and renamed it and named it back, pausing a few seconds between steps. A
+mono channel's color and name changes were not tried.
 
 **Findings:**
 - **Mute Master.** `globalmute = 0`, then `globalmute = 1`, each as it was clicked.
 - **Stereo to mono.** `stereo = 0` for monitor inputs 13 and 14 in the same millisecond, and
   nothing else: no name or color for input 14, the half split off.
 - **Mono to stereo.** `stereo = 1` for input 13 only.
-- **Recolor.** `color = 4`, then `color = 1`, for input 13.
-- **Rename.** `name` with the new name, then with "ADAT 7/8", for input 13.
+- **Recolor** (the stereo pair). `color = 4`, then `color = 1`, for input 13, its left channel.
+- **Rename** (the stereo pair). `name` with the new name, then with "ADAT 7/8", for input 13.
 
 **Consequences.**
 - TotalMix sends `stereo`, `color`, `name`, and `globalmute` on its own when they change in its
