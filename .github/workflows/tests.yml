@@ -1,13 +1,24 @@
-# Runs the libraries' tests on Linux, macOS, and Windows on every push and pull request, so that the
-# Foundation-only libraries keep building everywhere Swift runs. The macOS app is built and
+# Runs the libraries' tests on Linux, macOS, and Windows for pull requests and for pushes to main, so
+# that the Foundation-only libraries keep building everywhere Swift runs. The macOS app is built and
 # released separately with make-app.sh; the macOS job type-checks that build.
+#
+# To keep the wait short (Adam, 2026-11-02): a branch with a pull request runs once, not once for the
+# push and once for the pull request; a newer push cancels a run still going for the same branch; and
+# changes only to Markdown, docs/, or Design/ don't run the tests, since nothing they touch is built.
 
 name: Tests
 
 on:
   push:
+    branches: [main]
+    paths-ignore: ["**.md", "docs/**", "Design/**"]
   pull_request:
+    paths-ignore: ["**.md", "docs/**", "Design/**"]
   workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
