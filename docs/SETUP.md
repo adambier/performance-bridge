@@ -201,7 +201,7 @@ can feed are the ones in Settings → Channel Layout → Outputs, in that order,
 | **Shift + turn an encoder** | Reset it: a pan to the center, a send to −oo. |
 
 - The two send rows never feed the same output: stepping one skips the output the other has.
-- The screen shows the channels on the page and where each send row goes (e.g., "Channels 1-8", "Top > Phones 1",
+- The screen shows the channels on the page and where each send row goes (e.g., "Inputs 1-7", "Top > Phones 1",
   "Mid > Phones 2"). Moving a control shows its channel, what it does, and its value. After each Page press the
   screen names the row and its new output, and each send row's lights take the color of the output it feeds.
 - Page and Track are lit where they can move, and dark at the ends. While Shift is held, Page lights for the middle

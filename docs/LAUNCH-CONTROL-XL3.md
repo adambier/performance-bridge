@@ -333,7 +333,8 @@ and intuitiveness to be assessed).
 - **Screen.** Each fader and encoder has a three-line display (arrangement 2): the channel's name,
   what the control does ("Level", "Pan", "> Phones 1"), and the value in dB or as a pan, sent by
   the driver (test 5). The stationary display, the home screen, has three lines (arrangement 2): the
-  channels on the page ("Channels 1-8") and where each send row goes ("Top > Phones 1", "Mid >
+  channels on the page, each kind counted on its own ("Inputs 1-7", then "Playbacks 1-8"; "In 6-7, PB
+  1-6" for a page with both; Adam, 2026-11-01), and where each send row goes ("Top > Phones 1", "Mid >
   Phones 2"), which nothing else on the device shows (Adam, 2026-11-01). The eight names packed to
   four characters (arrangement 3, e.g., "ADI2SonoM1/2Tonv") were tried first and were unreadable
   (Adam, 2026-11-01); each strip's name shows on its control's display when the control moves.
