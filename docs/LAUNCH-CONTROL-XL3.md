@@ -262,6 +262,10 @@ and intuitiveness to be assessed).
   shows the target meanwhile (test 3). SurfaceCore's own pickup stays on behind it, with a window
   of 12 steps for the first value after the device lets go, in case the device doesn't hold (as in
   one run of test 2).
+- **Fader scale.** The nine ticks printed beside each fader read, top to bottom, +6, +3, 0, −6,
+  −10, −20, −40, −60, and off: TotalMix FX's own fader marks (`TOTALMIX-OSC.md`, test 18), placed
+  at the fader values measured at each tick (test 7). Between ticks the gain moves evenly in dB
+  (Adam, 2026-11-01). The encoders keep TotalMix's own fader curve: they have no printed scale.
 - **Encoder rows.** Each row is Pan or Send, set in the app (default Pan, Send, Send). Send rows
   take consecutive send targets (control room outputs first), and Track < and > step them
   together. Gain is left out for now: TotalMix sends it only for inputs with a preamp, which the
@@ -406,3 +410,26 @@ and intuitiveness to be assessed).
 - In DAW mode the device leaves the choice between DAW Mixer and DAW Control to the host: it names the mode on the screen and passes the press on. That the host is meant to answer with a mode message is an inference.
 - The two modes change nothing the device sends, so the driver can ignore them, or treat Solo/Arm and Mute/Select as buttons of its own (e.g., to switch what the encoders control) and send a mode message only to keep the device's screen in step.
 - Custom Modes chosen on the device do switch it, and are reported (test 1).
+
+### Test 7 (2026-11-01): the fader values at the printed ticks
+
+**Setup.** `sbdev lcxl`. Adam pushed fader 1 to the top, then brought it down, stopping with the white line on its cap level with each of the nine ticks printed beside it; log kept. He wasn't highly confident of hitting each tick exactly. With the fader all the way up the line is level with the top tick, and all the way down with the bottom tick (seen).
+
+**Findings:**
+
+| Tick (from the top) | Stopped at | Straight line through ticks 2–8 |
+|---|---|---|
+| 1 | 127 (the top of the travel) | — |
+| 2 | 120 | 120.0 |
+| 3 | 102 (101 for a moment) | 101.7 |
+| 4 | 84 | 83.5 |
+| 5 | 66 | 65.2 |
+| 6 | 45 (47 to 48 on the way) | 47.0 |
+| 7 | 29 | 28.7 |
+| 8 | 11 | 10.5 |
+| 9 | 0 (the bottom) | — |
+
+- The ticks are evenly spaced on the panel (measured in a photo: 133–135 pixels apart). Between ticks 2 and 8 the fader sends about 18 values per tick, but only 7 between ticks 1 and 2 and 11 between ticks 8 and 9. So the fader's values are not linear in its travel near the ends (inference: Novation's firmware shapes them, or the ends have dead zones).
+- An earlier reading of the top three ticks as 127, 117, and 107 (from gains Adam read) does not fit and is set aside.
+
+**Consequences.** The driver takes the ticks at 127, 120, 102, 84, 66, 46, 29, 11, and 0 (`LaunchControlDriver.faderTicks`), so each lands on its label whatever the fader does between them.

@@ -245,7 +245,8 @@ public struct LaunchControlDriver: Sendable {
             // be sent, so the driver's record of what it sent follows the device.
             sentPositions[element.controlNumber] = value
             guard let (layer, strip) = control(for: element) else { return }
-            take(hub.controlMoved(id(layer), strip: strip, to: Self.position(value), now: now), hub: hub, into: &step)
+            let position = usesFaderScale(layer) ? Self.faderPosition(value) : Self.position(value)
+            take(hub.controlMoved(id(layer), strip: strip, to: position, now: now), hub: hub, into: &step)
         case .touch(let element, let touched):
             guard let (layer, strip) = control(for: element) else { return }
             take(hub.touched(id(layer), strip: strip, touched, now: now), hub: hub, into: &step)
@@ -437,6 +438,51 @@ public struct LaunchControlDriver: Sendable {
         }
     }
 
+    /// Whether a layer's controls are the XL 3's faders, which use the printed scale
+    /// (`faderTicks`).
+    private func usesFaderScale(_ layer: Layer) -> Bool { layout == .xl3 && device == .xl3 && layer == .faders }
+
+    /// The XL 3's fader scale (Adam, 2026-11-01): the gain at each of the nine ticks printed beside
+    /// each fader, top to bottom, with the fader value measured at each tick
+    /// (docs/LAUNCH-CONTROL-XL3.md, test 7). The labels are TotalMix FX's own fader marks: +6 (the
+    /// top), +3, 0, −6, −10, −20, −40, −60 (docs/TOTALMIX-OSC.md, test 18); the bottom tick, value 0,
+    /// is off. Between ticks the gain moves evenly in dB; below −60 it follows TotalMix's fader
+    /// position down to off.
+    public static let faderTicks: [(value: Double, gainDB: Double)] = [
+        (127, 6), (120, 3), (102, 0), (84, -6), (66, -10), (46, -20), (29, -40), (11, -60),
+    ]
+
+    /// TotalMix's fader position (0…1) for an XL 3 fader value, on the printed scale.
+    public static func faderPosition(_ value: UInt8) -> Double {
+        let value = Double(min(value, 127))
+        guard let lowest = faderTicks.last else { return value / 127 }
+        if value <= lowest.value {
+            return value / lowest.value * FaderCurve.position(gainDB: lowest.gainDB)
+        }
+        for (upper, lower) in zip(faderTicks, faderTicks.dropFirst()) where value >= lower.value {
+            let fraction = (value - lower.value) / (upper.value - lower.value)
+            return FaderCurve.position(gainDB: lower.gainDB + fraction * (upper.gainDB - lower.gainDB))
+        }
+        return 1
+    }
+
+    /// The XL 3 fader value for TotalMix's fader position (0…1): the inverse of
+    /// `faderPosition(_:)`, rounded.
+    public static func faderValue(_ position: Double) -> UInt8 {
+        let position = min(max(position.isFinite ? position : 0, 0), 1)
+        guard let lowest = faderTicks.last else { return UInt8((position * 127).rounded()) }
+        let lowestPosition = FaderCurve.position(gainDB: lowest.gainDB)
+        if position <= lowestPosition {
+            return UInt8((position / lowestPosition * lowest.value).rounded())
+        }
+        guard let gain = FaderCurve.gainDB(position: position) else { return 0 }
+        for (upper, lower) in zip(faderTicks, faderTicks.dropFirst()) where gain >= lower.gainDB {
+            let fraction = min((gain - lower.gainDB) / (upper.gainDB - lower.gainDB), 1)
+            return UInt8(min(max((lower.value + fraction * (upper.value - lower.value)).rounded(), 0), 127))
+        }
+        return 127
+    }
+
     /// A position (0…1) for a 7-bit value, with 64 as the exact middle, so that a pan can be
     /// centered: 0–64 map to 0–0.5 and 64–127 to 0.5–1.
     public static func position(_ value: UInt8) -> Double {
@@ -506,7 +552,7 @@ public struct LaunchControlDriver: Sendable {
                     touched.insert(index)
                     if let value {
                         let control = self.element(layer, index)
-                        let position = Self.value(value)
+                        let position = usesFaderScale(layer) ? Self.faderValue(value) : Self.value(value)
                         if sentPositions[control.controlNumber] != position {
                             sentPositions[control.controlNumber] = position
                             bytes += LaunchControlOutgoing.position(control, position) ?? []

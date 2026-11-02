@@ -79,7 +79,8 @@ final class LaunchControlDriverTests: XCTestCase {
         let answer = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 4)
         XCTAssertTrue(driver.isConnected)
         XCTAssertTrue(answer.midi.contains([0xB6, 0x1E, 0x01]), "DAW Mixer selected, for the Connect Only setting")
-        XCTAssertTrue(answer.midi.contains([0xBF, 0x05, 64]), "fader 1 told its level, for the device's pickup")
+        XCTAssertTrue(answer.midi.contains([0xBF, 0x05, LaunchControlDriver.faderValue(0.5)]),
+                      "fader 1 told its level, on the printed scale, for the device's pickup")
         XCTAssertTrue(answer.midi.contains([0xBF, 0x0D, 64]), "encoder 1 (pan) told the middle")
         XCTAssertTrue(answer.midi.contains([0xB0, 0x0D, 5]), "Keys is red in TotalMix")
         XCTAssertTrue(answer.midi.contains([0xB0, 0x0E, 3]), "Vox is white")
@@ -106,8 +107,10 @@ final class LaunchControlDriverTests: XCTestCase {
 
     func testXL3ControlsReachTotalMix() {
         var (driver, hub, _) = connected(layout: .xl3)
-        let fader = driver.receive([0xBF, 0x05, 64], hub: &hub, now: 1)
-        XCTAssertEqual(fader.core.messages, [TotalMixCommand.setMix(from: .input, 0, to: 0, "faderlin", 0.5)],
+        let sent = LaunchControlDriver.faderValue(0.5)
+        let fader = driver.receive([0xBF, 0x05, sent], hub: &hub, now: 1)
+        XCTAssertEqual(fader.core.messages,
+                       [TotalMixCommand.setMix(from: .input, 0, to: 0, "faderlin", Float(LaunchControlDriver.faderPosition(sent)))],
                        "fader 1 at the level it was sent is caught")
 
         let pan = driver.receive([0xBF, 0x0D, 127], hub: &hub, now: 2)
@@ -204,7 +207,7 @@ final class LaunchControlDriverTests: XCTestCase {
         let change = hub.handle(.mix(bus: .input, channel: 0, output: 0, parameter: "faderlin", value: .number(0.25)), now: 2)
         XCTAssertTrue(driver.take(change, hub: &hub, now: 2).midi.isEmpty, "nothing drawn in a Custom Mode")
         let back = driver.receive([0xB6, 0x1E, 0x01], hub: &hub, now: 3)
-        XCTAssertTrue(back.midi.contains([0xBF, 0x05, LaunchControlDriver.value(0.25)]), "everything sent again")
+        XCTAssertTrue(back.midi.contains([0xBF, 0x05, LaunchControlDriver.faderValue(0.25)]), "everything sent again")
     }
 
     func testStopLeavesDAWModeAndTheHub() {
@@ -287,5 +290,32 @@ final class LaunchControlDriverTests: XCTestCase {
         let main = driver.take(hub.setHomeSubmix(nil, now: 3), hub: &hub, now: 3)
         XCTAssertEqual(driver.sendStep, 0)
         XCTAssertNotNil(main)
+    }
+
+    func testTheFaderScaleMatchesTheTicks() {
+        for tick in LaunchControlDriver.faderTicks {
+            let position = LaunchControlDriver.faderPosition(UInt8(tick.value))
+            XCTAssertEqual(FaderCurve.gainDB(position: position) ?? -999, tick.gainDB, accuracy: 0.01, "tick \(tick.value)")
+        }
+        XCTAssertNil(FaderCurve.gainDB(position: LaunchControlDriver.faderPosition(0)), "the bottom is off")
+        XCTAssertEqual(LaunchControlDriver.faderPosition(127), 1, accuracy: 1e-9)
+        var previous = -1.0
+        for value in UInt8(0)...127 {
+            let position = LaunchControlDriver.faderPosition(value)
+            XCTAssertGreaterThan(position, previous, "rising at \(value)")
+            previous = position
+            XCTAssertEqual(LaunchControlDriver.faderValue(position), value, "round trip at \(value)")
+        }
+        XCTAssertEqual(LaunchControlDriver.faderValue(FaderCurve.unityPosition), 102, "0 dB sits on the third tick")
+    }
+
+    func testFadersUseTheScaleAndEncodersDoNot() {
+        var (driver, hub, midi) = connected(layout: .xl3)
+        XCTAssertTrue(midi.contains([0xBF, 0x05, LaunchControlDriver.faderValue(0.5)]), "fader 1 told its level on the scale")
+        XCTAssertTrue(midi.contains([0xBF, 0x0D, 64]), "encoders keep the plain scale")
+        let unity = driver.receive([0xBF, 0x05, LaunchControlDriver.faderValue(0.5)], hub: &hub, now: 1)
+        XCTAssertEqual(unity.core.messages.count, 1)
+        let top = driver.receive([0xBF, 0x05, 102], hub: &hub, now: 2)
+        XCTAssertEqual(top.core.messages, [TotalMixCommand.setMix(from: .input, 0, to: 0, "faderlin", Float(FaderCurve.unityPosition))])
     }
 }

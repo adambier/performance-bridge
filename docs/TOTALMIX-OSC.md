@@ -395,3 +395,14 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 - Bit 12 is fader group 1, as section 2 reads RME's document.
 - A `groupflags` bit is membership, whether or not the group is on. `/fadergroup/N` says whether group N is on, and TotalMix announces it when it changes.
 - A surface moving a grouped output's fader moves only that one over OSC. Whether TotalMix moves the others when the group is on and the command comes over OSC is untested ("Set all faders in group", in Global OSC's Details window, may decide it; inference).
+
+### Test 18 (2026-11-01): the marks on TotalMix's faders
+
+**Setup.** TotalMix FX "2.10 (1)" with a Digiface AES. Adam's screenshot of the whole mixer window, and two of one playback fader set to +3.0 and −3.0 (not committed). The marks' positions were measured against faders whose readouts were known (0.0, −13.1, and −oo in the same row), taking TotalMix's fader graphic to be linear in fader position, as `FaderCurve` reads it (the −13.1 fader sat within 2 pixels of where that reading predicts).
+
+**Findings:**
+- The scale beside each fader is labeled 0, 6, 10, 20, 40, and 60, and they measure as 0, −6, −10, −20, −40, and −60 dB (each within about 0.5 dB). The top of the travel is +6.
+- Unlabeled marks: a red tick at +3 and a green one at −3 (seen: a fader at +3.0 and at −3.0 sits on them, Adam's screenshots); dots at about −25, −30, and −50; and one below −60.
+- So TotalMix's fader scale reads +6, +3, 0, −3, −6, −10, −20, −25, −30, −40, −50, −60, and off.
+
+**Consequences.** The Launch Control XL 3's printed fader ticks are given TotalMix's marks (`LaunchControlDriver.faderTicks`; docs/LAUNCH-CONTROL-XL3.md, test 7).
