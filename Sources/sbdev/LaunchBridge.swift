@@ -31,7 +31,7 @@ let lcBridgeUsage = """
       sources, with Page down the outputs; Track < and > step the sends. XL 3: faders are
       level, top buttons PFL, bottom buttons mute. Launch Control 3 (or lc3-sim): the bottom
       encoder row is level, the top row pan or a send (Track < >), the buttons mute, and
-      Function (Solo/Arm on an XL 3) switches them to PFL.
+      Function (Mute/Select on an XL 3) switches them to PFL.
     """
 
 let lcBridgeCommandHelp = """

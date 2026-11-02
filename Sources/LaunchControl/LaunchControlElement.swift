@@ -16,10 +16,10 @@ public enum LaunchControlElement: Hashable, Sendable {
     /// One of the 16 buttons under the faders: row 0 (Novation's "Solo/Arm" row) or 1 ("Mute/Select"
     /// row), column 0–7.
     case button(row: Int, column: Int)
-    /// The Solo/Arm button, left of the top button row. On the Launch Control 3, the Function
-    /// button in the same place (`LaunchControlModel.has(_:)`).
+    /// The Solo/Arm button, left of the top button row.
     case soloArm
-    /// The Mute/Select button, left of the bottom button row.
+    /// The Mute/Select button, left of the bottom button row. On the Launch Control 3, the Function
+    /// button, by its number (`LaunchControlModel.has(_:)`).
     case muteSelect
     /// The button with Novation's logo, in the top button row between Solo/Arm and button 1 (the
     /// control map). "Nothing… yet", says the user guide.

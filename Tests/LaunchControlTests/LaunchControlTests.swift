@@ -134,13 +134,14 @@ final class LaunchControlTests: XCTestCase {
         XCTAssertEqual(LaunchControlModel.xl3.sysExHeader, [0xF0, 0x00, 0x20, 0x29, 0x02, 0x15])
         XCTAssertEqual(LaunchControlModel.lc3.sysExHeader, [0xF0, 0x00, 0x20, 0x29, 0x02, 0x16])
         XCTAssertEqual(LaunchControlModel.xl3.elements.count, LaunchControlElement.all.count)
-        // 16 encoders, 8 buttons, Function (Solo/Arm's place), Novation, Page and Track pairs, Shift.
+        // 16 encoders, 8 buttons, Function (Mute/Select's number), Novation, Page and Track pairs, Shift.
         XCTAssertEqual(LaunchControlModel.lc3.elements.count, 16 + 8 + 7)
         XCTAssertFalse(LaunchControlModel.lc3.has(.fader(0)))
         XCTAssertFalse(LaunchControlModel.lc3.has(.encoder(row: 2, column: 0)))
         XCTAssertFalse(LaunchControlModel.lc3.has(.button(row: 1, column: 0)))
         XCTAssertFalse(LaunchControlModel.lc3.has(.record))
-        XCTAssertTrue(LaunchControlModel.lc3.has(.soloArm))
+        XCTAssertTrue(LaunchControlModel.lc3.has(.muteSelect))
+        XCTAssertFalse(LaunchControlModel.lc3.has(.soloArm))
         XCTAssertEqual(LaunchControlModel(sysEx: [0xF0, 0x00, 0x20, 0x29, 0x02, 0x16, 0x09, 0xF7]), .lc3)
         XCTAssertNil(LaunchControlModel(sysEx: [0xF0, 0x00, 0x20, 0x29, 0x02, 0x14, 0x09, 0xF7]))
     }

@@ -163,7 +163,7 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertEqual(hub.strips(of: driver.id(.row0))?[0].knobTarget, .pan(keys, submix: 0), "top row: pan")
         XCTAssertTrue(midi.contains([0xF0, 0x00, 0x20, 0x29, 0x02, 0x16]), "the Launch Control 3's header")
         XCTAssertFalse(midi.contains([0xB6, 0x46]), "no fader pickup on a device without faders")
-        XCTAssertTrue(midi.contains([0xB0, 0x41, LaunchControlDriver.functionIdle]))
+        XCTAssertTrue(midi.contains([0xB0, 0x42, LaunchControlDriver.functionIdle]))
 
         let track = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(hub.strips(of: driver.id(.row0))?[0].knobTarget, .level(keys, submix: 2), "Track >: send 1")
@@ -172,10 +172,10 @@ final class LaunchControlDriverTests: XCTestCase {
         _ = driver.receive([0xB0, 0x67, 0x7F], hub: &hub, now: 3)
         XCTAssertEqual(hub.strips(of: driver.id(.row0))?[0].knobTarget, .pan(keys, submix: 0), "Track <: back to pan")
 
-        let function = driver.receive([0xB0, 0x41, 0x7F], hub: &hub, now: 4)
+        let function = driver.receive([0xB0, 0x42, 0x7F], hub: &hub, now: 4)
         XCTAssertTrue(driver.buttonsArePFL)
         XCTAssertEqual(hub.strips(of: driver.id(.row1))?[0].switchTarget, .pfl(keys))
-        XCTAssertTrue(function.midi.contains([0xB0, 0x41, LaunchControlDriver.pflOn]), "Function lit yellow")
+        XCTAssertTrue(function.midi.contains([0xB0, 0x42, LaunchControlDriver.pflOn]), "Function lit yellow")
         XCTAssertTrue(function.midi.contains([0xB0, 0x25, LaunchControlDriver.pflOff]), "buttons dark yellow")
         XCTAssertEqual(driver.receive([0xB0, 0x25, 0x7F], hub: &hub, now: 5).core.messages,
                        [TotalMixCommand.set(.input, 0, "pfl", 1)])
@@ -193,7 +193,9 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertEqual(driver.receive([0xBF, 0x05, 64], hub: &hub, now: 1).core.messages, [], "faders do nothing")
         XCTAssertEqual(driver.receive([0xB0, 0x2D, 0x7F], hub: &hub, now: 1).core.messages, [], "bottom buttons do nothing")
         _ = driver.receive([0xB0, 0x41, 0x7F], hub: &hub, now: 2)
-        XCTAssertTrue(driver.buttonsArePFL, "Solo/Arm stands in for Function")
+        XCTAssertFalse(driver.buttonsArePFL, "Solo/Arm does nothing")
+        _ = driver.receive([0xB0, 0x42, 0x7F], hub: &hub, now: 2)
+        XCTAssertTrue(driver.buttonsArePFL, "Mute/Select is Function (66)")
     }
 
     func testACustomModeStopsDrawingAndDAWMixerDrawsAgain() {

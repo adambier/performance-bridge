@@ -54,8 +54,8 @@ public struct LaunchControlStep: Equatable, Sendable {
 /// shows the sources and with Page down the outputs; Track < and > step the sends.
 ///
 /// **Simulation.** With `layout` `.lc3` and `device` `.xl3`, the Launch Control 3's layout runs on
-/// an XL 3: its top two encoder rows, top button row, Page, Track, Shift, and Solo/Arm in place of
-/// Function. The XL 3's other controls stay dark and do nothing.
+/// an XL 3: its top two encoder rows, top button row, Page, Track, Shift, and Mute/Select as
+/// Function, which has its number (66). The XL 3's other controls stay dark and do nothing.
 public struct LaunchControlDriver: Sendable {
     /// The hub surface for each layer of controls.
     public enum Layer: String, Sendable, CaseIterable {
@@ -115,6 +115,9 @@ public struct LaunchControlDriver: Sendable {
     public static let restartInterval: Double = 3
     /// The strips shown at once.
     public static let stripCount = 8
+    /// The Launch Control 3's Function button, as the library names its number (66, the XL 3's
+    /// Mute/Select; `LaunchControlModel.has(_:)`).
+    public static let functionButton = LaunchControlElement.muteSelect
 
     /// A driver for one device. `name` starts the hub surfaces' names; `layout` is the model whose
     /// layout runs and `device` the model connected (by default the same).
@@ -279,7 +282,7 @@ public struct LaunchControlDriver: Sendable {
             }
         case .trackLeft, .trackRight:
             stepSends(by: element == .trackLeft ? -1 : 1, hub: &hub, now: now, into: &step)
-        case .soloArm where layout == .lc3:
+        case Self.functionButton where layout == .lc3:
             buttonsArePFL.toggle()
             setModes(first: page.first, hub: &hub, now: now, into: &step)
             step.midi += overlay("Buttons", buttonsArePFL ? "PFL" : "Mute")
@@ -605,7 +608,7 @@ public struct LaunchControlDriver: Sendable {
         let steps = layout == .lc3 || rowFunctions.contains(.send)
         bytes += color(.trackLeft, steps && sendStep > range.lowerBound ? Self.navigationOn : 0)
         bytes += color(.trackRight, steps && sendStep < range.upperBound ? Self.navigationOn : 0)
-        if layout == .lc3 { bytes += color(.soloArm, buttonsArePFL ? Self.pflOn : Self.functionIdle) }
+        if layout == .lc3 { bytes += color(Self.functionButton, buttonsArePFL ? Self.pflOn : Self.functionIdle) }
         return bytes
     }
 
