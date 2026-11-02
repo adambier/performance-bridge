@@ -45,7 +45,9 @@ LARGE_SHIFT = -50     # the large icon raises the bridge 50 units, for the refle
 CLEARANCE = 55        # the deck stands this far above the water, on the tower and two piers (Adam,
                       # 2026-11-02: a deck at the waterline is a strange choice for a bridge)
 WATER_LINE = DECK_LINE + CLEARANCE
-PIERS = (205, 825)    # x of the piers near each end of the deck
+PIERS = (ANCHOR_L, ANCHOR_R)  # under the cable anchors: in a self-anchored span the deck ends carry
+                      # the cables' pull, so the end piers stand there (inference from how such
+                      # bridges are built, e.g., the Bay Bridge's east span; Adam, 2026-11-02)
 
 # Fader caps for each rendition: (x, cap top y); hanger tops follow from the cable.
 CAPS_LARGE = [(365, 565), (425, 547), (485, 512), (545, 416), (605, 377), (700, 439), (750, 550)]
@@ -80,7 +82,7 @@ def tower(k, base=612):
 
 
 def piers(deck_color):
-    """Two piers from the deck down to the water, near the deck's ends (the large icon only)."""
+    """Two piers from the deck down to the water, under the cable anchors (the large icon only)."""
     return '<g stroke="%s" stroke-width="18">' % deck_color + "".join(
         '<line x1="%d" y1="%d" x2="%d" y2="%d"></line>' % (x, DECK_LINE, x, WATER_LINE) for x in PIERS) + "</g>"
 
