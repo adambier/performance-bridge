@@ -320,11 +320,16 @@ final class BridgeModel: ObservableObject {
         return "totalMixWorked \(endpoint.host) \(endpoint.incomingPort) \(endpoint.outgoingPort)"
     }
     private var rotoWorkedKey: String { "rotoWorked \(engine.settings.rotoPortName)" }
+    private var launchControlWorkedKey: String {
+        let setting = engine.settings.launchControl
+        return "launchControlWorked \(setting?.name ?? "") \(setting?.portName ?? "")"
+    }
 
     /// A new watch for the engine's settings, with what has worked with them before.
     private func makeWatch() -> SetupWatch {
         SetupWatch(totalMixWorked: UserDefaults.standard.bool(forKey: totalMixWorkedKey),
-                   rotoWorked: UserDefaults.standard.bool(forKey: rotoWorkedKey))
+                   rotoWorked: UserDefaults.standard.bool(forKey: rotoWorkedKey),
+                   launchControlWorked: UserDefaults.standard.bool(forKey: launchControlWorkedKey))
     }
 
     /// Once a second: opens the setup window when SetupWatch says to, remembers what has worked,
@@ -340,6 +345,9 @@ final class BridgeModel: ObservableObject {
         let reason = watch.update(status: status, totalMixRunning: running, now: now, totalMixTooOld: tooOld)
         if watch.totalMixWorked { UserDefaults.standard.set(true, forKey: totalMixWorkedKey) }
         if watch.rotoWorked { UserDefaults.standard.set(true, forKey: rotoWorkedKey) }
+        if watch.launchControlWorked, engine.settings.launchControl != nil {
+            UserDefaults.standard.set(true, forKey: launchControlWorkedKey)
+        }
         let attention = watch.needsAttention(status: status, now: now)
         if attention != needsAttention { needsAttention = attention }
         if let reason {
@@ -347,6 +355,7 @@ final class BridgeModel: ObservableObject {
             case .portInUse: print("Opening setup: port \(engine.settings.endpoint.outgoingPort) is in use")
             case .totalMixNotAnswering: print("Opening setup: TotalMix FX is running but hasn't answered")
             case .rotoHandshake: print("Opening setup: the Roto-Control hasn't finished connecting")
+            case .launchControlNotConnecting: print("Opening setup: the Launch Control hasn't entered DAW mode")
             case .totalMixTooOld: print("Opening setup: TotalMix FX \(version ?? "") is older than 2.1")
             }
             fflush(stdout)
