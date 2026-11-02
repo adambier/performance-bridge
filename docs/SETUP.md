@@ -1,25 +1,14 @@
 # Setting up Performance Bridge
 
-This guide sets up Performance Bridge with TotalMix FX and a hardware controller: a Roto-Control, a
-Launch Control XL 3, or a Launch Control 3. There is no released app yet:
-the app runs from source, with `swift run PerformanceBridge`, or is built with `./make-app.sh`
-(README, "Trying the app"). The steps below mark what has been checked on a Mac and what has not.
-
-**Checked.** The settings in each step were used in the tests in `docs/TOTALMIX-OSC.md` (section 6) and
-`docs/ROTO-CONTROL.md` (section 9), and `docs/LAUNCH-CONTROL-XL3.md` (section 10), with the versions
-named there: TotalMix FX "2.10 (1)" with a Digiface AES, a Roto-Control on firmware 3.3.0, and a Launch
-Control XL 3 on firmware 1.2. No Launch Control 3 has been tried.
-
-**Not checked on screen.** Where a menu path or a label below comes from RME's manual or the project's
-notes and has not been seen in TotalMix FX, the step says so.
-
 ## What you need
 
 - A Mac running macOS 13 or later.
 - TotalMix FX 2.1 or later (release candidates included), on a supported RME interface. Earlier versions don't have Global OSC; the setup window checks the version. The project has tested only a Digiface AES.
 - A hardware controller, connected to the Mac by USB: a Roto-Control (tested with firmware 3.3.0), a Launch
   Control XL 3 (tested with firmware 1.2), or a Launch Control 3 (not yet tried on a device).
-- The Swift toolchain (Xcode, or the Command Line Tools with Swift 5.9 or later), to run the app from source.
+- Performance Bridge 1.0.0 or later, from the [latest release](https://github.com/adambier/performance-bridge/releases/latest),
+  moved to the Applications folder. (To run it from source instead, see the README, "Running the app
+  from source".)
 
 The app has a setup window that follows these steps and checks each one live where it can: whether
 TotalMix FX answers, whether it has sent its channels, whether meters arrive, and whether the
@@ -152,17 +141,7 @@ change takes effect at once (Step 6).
 
 ## Step 4: Start the app
 
-From the package folder:
-
-```
-swift run PerformanceBridge
-```
-
-To use ports other than the saved ones, add them to the command line:
-
-```
-swift run PerformanceBridge --in-port 7004 --out-port 9004
-```
+Open **Performance Bridge** from the Applications folder. It runs in the menu bar, with no Dock icon.
 
 The menu-bar icon's menu starts with two status lines, dimmed because they only report. The app keeps
 retrying in every state:
@@ -178,7 +157,12 @@ retrying in every state:
 
 One more line appears only while TotalMix FX's Mute Master is off (Step 1, item 9): **Mute Master: Off**.
 
-The full reason for any state goes to the log in the Terminal the app was started from.
+The app also writes the full reason for any state to a log. To see it, quit the app and start it from
+Terminal instead:
+
+```
+"/Applications/Performance Bridge.app/Contents/MacOS/PerformanceBridge"
+```
 
 After hiding or showing channels in TotalMix FX's own Channel Layout window, choose **Refresh Channels from
 TotalMix FX** from the menu (Step 2).
@@ -280,4 +264,5 @@ the same channels.
 
 ## Reporting a problem
 
-Send the Terminal's log with the report: the app writes every connection event to it.
+Report problems as [issues on GitHub](https://github.com/adambier/performance-bridge/issues). Start the app
+from Terminal (Step 4 shows how) and include its log: the app writes every connection event to it.

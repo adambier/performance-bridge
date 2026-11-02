@@ -12,7 +12,7 @@ statement there carries its evidence.
 | Item | Value |
 |---|---|
 | Repository | `adambier/performance-bridge` (GitHub), Swift package `performance-bridge` |
-| What it is | Performance Bridge, a macOS menu-bar app (working, in testing, not yet released) that connects hardware control surfaces to RME TotalMix FX through its Global OSC interface, plus the libraries and developer tool behind it |
+| What it is | Performance Bridge, a macOS menu-bar app (1.0.0, released from GitHub Releases) that connects hardware control surfaces to RME TotalMix FX through its Global OSC interface, plus the libraries and developer tool behind it |
 | Surfaces | Melbourne Instruments Roto-Control first; Novation Launch Control XL 3 and Launch Control 3 second; Mackie Control (MCU) surfaces possibly later |
 | License | MIT (`LICENSE`); not affiliated with or endorsed by RME, Melbourne Instruments, or Novation |
 | Language, tooling | Swift, `swift-tools-version:5.9`; CI uses the `swift:6.0-noble` image on Linux, Swift 6.2 on Windows, and the runner's Xcode on macOS; XCTest |
@@ -170,7 +170,7 @@ Don't:
 
 ## 6. House style for text (README, docs, DocC, app strings)
 
-- **Names.** "TotalMix FX" always, never the short "TotalMix" (Adam, 2026-11-02), except in code identifiers (e.g., `TotalMixOSC`) and in TotalMix FX's own labels that use it (e.g., its "TotalMix 1.96" compatibility mode). "RME", "Melbourne Instruments", and "Novation" in full. "Roto-Control" and "Launch Control XL 3" as the makers write them.
+- **Names.** "TotalMix FX" always, never the short "TotalMix FX" (Adam, 2026-11-02), except in code identifiers (e.g., `TotalMixOSC`) and in TotalMix FX's own labels that use it (e.g., its "TotalMix 1.96" compatibility mode). "RME", "Melbourne Instruments", and "Novation" in full. "Roto-Control" and "Launch Control XL 3" as the makers write them.
 - **Claims.** Standing behavior in the present tense. Single observations as "has been observed to …". Inferences said to be inferences. Never claim more than the evidence supports.
 - **Spelling and punctuation.** The serial (Oxford) comma. "e.g.," or "for example" before parenthetical examples. American spelling throughout, in code comments and identifiers too.
 - **Words.** Plain, short words, and one term for one thing: channel, submix, mixer node, fader position, gain, strip, surface, driver.
