@@ -542,4 +542,4 @@ marked "seen".
 
 **Findings:** the Roto-Control sent SET ALL TRACKS MODE with the master and return tracks (`0C 05 01`), and its screen named the set "MIX-RTN" (seen).
 
-**Consequences.** The driver shows the channels on both track sets (Adam, 2026-11-01); the outputs are no longer shown on any hardware controller.
+**Consequences.** The driver shows the channels on both track sets (Adam, 2026-11-01); the outputs are no longer shown on any hardware controller. The second set has no TotalMix FX job of its own: TotalMix has no return tracks, and its FX returns (reverb and echo) aren't used here (Adam, 2026-11-01). Mirroring the first set makes an accidental press harmless. No host command sets or locks the track set (SET ALL TRACKS MODE goes only from the Roto-Control to the host), so the switch can't be turned off; this is a feature request.
