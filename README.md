@@ -4,28 +4,28 @@
 through TotalMix's Global OSC interface. With it, the knobs, faders, buttons, and displays of a
 hardware controller show and control TotalMix's mixer, in both directions.
 
-Its aim is TotalMix FX as a performance mixer: for mixing live, in practice or on stage, with the
+Its aim is TotalMix as a performance mixer: for mixing live, in practice or on stage, with the
 hands on the hardware controller rather than the mouse.
 
-The repository also holds the Swift libraries behind the app, and a developer tool for checking
+The repository also holds the Swift libraries behind the app and a developer tool for checking
 them against TotalMix. The libraries depend only on Foundation, and they build on macOS, Linux, and
 Windows.
 
-Not affiliated with or endorsed by RME, Melbourne Instruments, or Novation.
+Performance Bridge is not affiliated with or endorsed by RME, Melbourne Instruments, or Novation.
 
 ## Status
 
-This project is in early development. There is no released app yet, only a first look at it, run from source. What exists:
+This project is in early development. There is no released app yet, only an early version that runs from source. What exists so far:
 
 - **`OSCCodec`**: OSC 1.0 messages and bundles, encoded and decoded.
 - **`TotalMixOSC`**: TotalMix's Global OSC addresses, the values TotalMix sends and accepts, and the curve between a fader's position and its gain.
 - **`RotoControl`**: the Roto-Control's MIDI protocol: its SysEx messages, its knobs, switches, and meters, and the handshake that connects it to a host. Tested against a Roto-Control (`docs/ROTO-CONTROL.md`, section 9).
 - **`LaunchControl`**: the DAW mode protocol of Novation's Launch Control XL 3 and Launch Control 3 (their controls, colors, screen, and settings), from Novation's programmer's reference guides. Tested against a Launch Control XL 3 (`docs/LAUNCH-CONTROL-XL3.md`, section 10); the Launch Control 3 has not been tried on a device (`docs/LAUNCH-CONTROL-3.md`).
-- **`SurfaceCore`**: the surface-neutral core. It keeps a copy of TotalMix's state and maps it onto any surface's strips: sources (inputs and playbacks) or outputs, levels into a chosen home submix, pans, sends, mute, PFL, and meters, with paging and a single-channel focus mode. It keeps TotalMix from moving a control in the user's hand, and makes faders without motors pick up. Tested on its own.
-- **`RotoDriver`**: the Roto-Control's driver on top of `SurfaceCore`, for its MIX mode: inputs and playbacks on the main track set and outputs on the second (monitoring outputs, such as Main Out and the phones, first, then sends), level, pan, and send knob modes, mute, PFL (on the solo switches), single-track pages, names, TotalMix's colors (outputs left white show green for monitoring and blue for sends), lights, and meters. Tried on the hardware through `sbdev bridge`.
-- **`LaunchControlDriver`**: the driver for both Launch Control models on top of `SurfaceCore`. On the XL 3: faders for level, an encoder row each for pan or a send, PFL and mute buttons, and the screen. On the Launch Control 3: level and pan or a send on the encoders, and mute or PFL on the buttons. It can run the Launch Control 3's layout on an XL 3. In the app, chosen in Settings → Connections; also tried through `sbdev lcbridge`.
-- **`BridgeEngine`**: TotalMix and a Roto-Control connected through the core and the driver: the socket, the MIDI ports, and a clock. Each side connects on its own and is tried again every 3 seconds, so either can be started, quit, or unplugged at any time.
-- **The app, a first look**: a menu-bar app (macOS 13 or later) that runs `BridgeEngine`, with the connection states, a Setup Guide, About, and Settings for TotalMix's host and ports, the hardware controller (one at a time) and its MIDI port, and the channel order and labels.
+- **`SurfaceCore`**: the surface-neutral core. It keeps a copy of TotalMix's state and maps it onto any surface's strips: sources (inputs and playbacks) or outputs, levels into a chosen home submix, pans, sends, mute, PFL, and meters, with paging and a single-channel focus mode. It keeps TotalMix from moving a control in the user's hand and makes faders without motors pick up. Tested on its own.
+- **`RotoDriver`**: the Roto-Control's driver on top of `SurfaceCore`, for its MIX mode: inputs and playbacks on both track sets, level, pan, and send knob modes, mute, PFL (on the solo switches), single-track pages, names, TotalMix's colors, lights, and meters. Tried on the hardware through `sbdev bridge`.
+- **`LaunchControlDriver`**: the driver for both Launch Control models on top of `SurfaceCore`. On the XL 3: faders for level, two encoder rows for sends and one for pan, PFL and mute buttons, and the screen. On the Launch Control 3: level and pan or a send on the encoders, and mute or PFL on the buttons. It can run the Launch Control 3's layout on an XL 3. In the app it is chosen in Settings → Connections; it has also been tried through `sbdev lcbridge`.
+- **`BridgeEngine`**: TotalMix and a hardware controller (a Roto-Control or a Launch Control) connected through the core and the drivers: the socket, the MIDI ports, and a clock. Each side connects on its own and is tried again every 3 seconds, so either can be started, quit, or unplugged at any time.
+- **The app, an early version**: a menu-bar app (macOS 13 or later) that runs `BridgeEngine`, with the connection states, a Setup Guide, About, and Settings for TotalMix's host and ports, the hardware controller (one at a time) and its MIDI port, and the channel order and labels.
 - **`MIDITransport`**: a MIDI connection through CoreMIDI, on macOS.
 - **`UDPTransport`**: a small UDP socket, on macOS and Linux.
 - **`sbdev`**: a developer tool that prints what TotalMix sends and sends single messages to it, talks to a Roto-Control or (`sbdev lcxl`) a Launch Control XL 3, and runs the core and a driver between TotalMix and a Roto-Control (`sbdev bridge`) or a Launch Control (`sbdev lcbridge`).
@@ -39,20 +39,21 @@ This project is in early development. There is no released app yet, only a first
 
 ## Requirements
 
-- **TotalMix FX 2.1 or later**, with Global OSC turned on in TotalMix's preferences. Development uses the 2.1 beta.
+- **TotalMix FX 2.1 or later**, with Global OSC turned on. Development uses TotalMix FX "2.10 (1)" with a Digiface AES.
 - **Swift 5.9 or later** for the libraries and `sbdev`.
 
 ## Trying `sbdev` with TotalMix
 
-In TotalMix's preferences, turn on Global OSC and note the incoming and outgoing ports. RME's manual
+In TotalMix, turn on Global OSC (Options → Mixer Settings… → OSC, "Compatibility (Mode)" set to "Global
+OSC"; `docs/SETUP.md`, Step 1, has every setting) and note the incoming and outgoing ports. RME's manual
 gives 7001 and 9001 as typical values, and they are Performance Bridge's defaults. Then, from this folder:
 
 ```
 swift run sbdev monitor --sendall
 ```
 
-That prints every message TotalMix sends, after asking TotalMix for its whole state. Other ports are
-given with `--in-port` and `--out-port`, and another computer with `--host`.
+That prints every message TotalMix sends, after asking TotalMix for its whole state. Give other ports
+with `--in-port` and `--out-port` and another computer with `--host`.
 
 ```
 swift run sbdev send /input/0/mute 1
@@ -89,6 +90,7 @@ The setup guide, [`docs/SETUP.md`](docs/SETUP.md), goes through each step and wh
 - **[`docs/TOTALMIX-OSC.md`](docs/TOTALMIX-OSC.md)**: what this project relies on in TotalMix's Global OSC, the evidence for each statement, and the questions still to settle by testing.
 - **[`docs/SETUP.md`](docs/SETUP.md)**: setting up Performance Bridge with TotalMix FX and a Roto-Control, step by step, with what has and has not been checked on screen.
 - **[`docs/ROTO-CONTROL.md`](docs/ROTO-CONTROL.md)**: what this project relies on in the Roto-Control's protocol, the evidence for each statement, and the questions still to settle by testing.
+- **[`docs/LAUNCH-CONTROL-XL3.md`](docs/LAUNCH-CONTROL-XL3.md)** and **[`docs/LAUNCH-CONTROL-3.md`](docs/LAUNCH-CONTROL-3.md)**: the same for the Launch Control XL 3 and the Launch Control 3.
 - **[`AGENTS.md`](AGENTS.md)**: an orientation for AI coding tools and for anyone working on the code.
 
 ## License

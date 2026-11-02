@@ -76,7 +76,7 @@ public enum SetupChecklist {
             Each controller needs its own ports. If TotalMix FX uses other ports, set the same ones in Performance Bridge’s Settings.
             """
         if status.totalMixAnswering {
-            steps.append(SetupStep(id: "totalmix", title: "TotalMix FX responded", state: .done, detail: ""))
+            steps.append(SetupStep(id: "totalmix", title: "TotalMix FX answered", state: .done, detail: ""))
         } else {
             steps.append(SetupStep(id: "totalmix", title: "TotalMix FX hasn’t answered yet",
                                    state: status.listening ? .waiting : .problem, detail: oscSetup))
@@ -89,7 +89,7 @@ public enum SetupChecklist {
             steps.append(SetupStep(id: "channels", title: "TotalMix FX hasn’t sent its channels yet",
                                    state: .waiting,
                                    detail: status.totalMixAnswering
-                                       ? "TotalMix FX answered with its status only. Performance Bridge keeps asking.\n\nIf this stays, choose Refresh Channels from TotalMix FX from the menu."
+                                       ? "TotalMix FX answered with its status only. Performance Bridge keeps asking.\n\nIf this doesn’t change, choose Refresh Channels from TotalMix FX from the menu."
                                        : ""))
         }
 

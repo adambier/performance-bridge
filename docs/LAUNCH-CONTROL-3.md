@@ -8,10 +8,11 @@ Control 3. Everything comes from Novation's documents and Bitwig's extension for
 inferences marked. The two programmer's reference guides differ only in the SysEx header byte,
 the version, the bootloader's buttons, the controls the Launch Control 3 lacks (faders, the third
 encoder row, the second button row, and their feature controls 70 and 73), the fader touch
-example, the mode list's prose, and the display-target note (compared by text, 2026-11-01). The
-XL 3 has been tested,[^xl3-tests] so where the guides agree, the XL 3's
-tests are good evidence for the Launch Control 3 too; that is still an inference until a unit is
-tried. The driver's Launch Control 3 layout can be tried on an XL 3 (section 9).
+example, the mode list's prose, and the display-target note (compared by text, 2026-11-01).
+
+The XL 3 has been tested,[^xl3-tests] so where the guides agree, the XL 3's tests are good
+evidence for the Launch Control 3 too; that is still an inference until a unit is tried. The
+driver's Launch Control 3 layout can be tried on an XL 3 (section 9).
 
 ## 1. Sources
 
@@ -21,7 +22,7 @@ Novation's documents are linked, not committed (AGENTS.md, section 4).
   PDF dated March 3, 2026, 17 pages
   ([Novation's downloads page](https://downloads.novationmusic.com/novation/launch-control/launch-control-3);
   [PDF](https://fael-downloads-prod.focusrite.com/customer/prod/downloads/launch_control_3_programmer_s_reference_guide.pdf)).
-  The main source. Its control map (page 9) and palette (page 12) are pictures.
+  This is the main source. Its control map (page 9) and palette (page 12) are pictures.
 - **User guide.** "Launch Control 3 user guide", version 1.1, PDF dated March 3, 2026, 69 pages
   ([PDF](https://fael-downloads-prod.focusrite.com/customer/prod/downloads/launch_control_3_user_guide_v1.1_pdf_en.pdf)).
 - **Bitwig extension.** `LC3.bwextension`, in Novation's "Launch Control 3 Bitwig Integration"
@@ -156,7 +157,7 @@ reasoning that has not been checked, the text says so in words ("inference", "no
     host.[^xl3-test6] That the Launch Control 3 behaves the same is an inference.
 - **Relative encoders.** Feature controls 69 (top row) and 72 (bottom row), 127 on and 0 off. In
   relative mode the rows report 77–84 and 85–92, with 64 as no movement, 65 one step clockwise,
-  and 63 one step anticlockwise.[^prg-encoders]
+  and 63 one step counterclockwise.[^prg-encoders]
 - **Positions.** Absolute encoders take position information from the host.[^prg-encoders] On the
   XL 3 the message is the encoder's own Control Change sent back on channel 16;[^xl3-test2] the
   same here is an inference.
@@ -231,33 +232,33 @@ library's tests check it against the guide, not against a device.
 
 ## 9. How Performance Bridge uses it
 
-Decided with Adam, 2026-11-01. The layout gets a close look in the Tier 1 UI review and Adam's
-own (Adam asked for its efficiency and intuitiveness to be assessed).
+Decided with Adam, 2026-11-01. The layout is to be reviewed closely in the Tier 1 UI review and
+by Adam (Adam asked for its efficiency and intuitiveness to be assessed).
 
 - **Eight strips.** The bottom encoder row is each strip's level in the home submix (Main Out). The
   strips always show sources.
 - **Top encoder row.** Pan or a send, chosen on the device: Page up and down step it through Pan,
   then each send in order (control room outputs first), as Page does in Novation's own DAW
-  integrations.[^ug-daw-mixer] The screen names the
-  choice ("Pan", "> Phones 1"), and a send row lights in its output's color.
+  integrations.[^ug-daw-mixer] The screen names the choice ("Pan", "> Phones 1"), and a send row
+  lights in its output's color.
 - **Buttons.** Mute, switched to PFL by Function. The buttons are red for mute and yellow for PFL,
   Function is lit while they are on PFL (if it has an LED, section 4), and the screen names the
   change.
 - **Paging.** Track < and > move by eight strips, and with Shift to the first or last
   page.[^xl3-use] The strips always show the channels, never the outputs.
 - **Levels.** Level and send encoders use the ARC USB's scale, as on the XL 3 (about 0.2 dB a
-  value near 0 dB).[^xl3-use] `LAUNCH-CONTROL-XL3.md`, section 8,
-  item 12, tests whether relative mode is needed.
-- **Shift + turn.** As on the XL 3: resets the encoder (a level to 0 dB, a pan to the center, a
+  value near 0 dB).[^xl3-use] `LAUNCH-CONTROL-XL3.md`, section 8, item 12, tests whether relative
+  mode is needed.
+- **Shift + turn.** As on the XL 3, it resets the encoder (a level to 0 dB, a pan to the center, a
   send to −oo).
-- **Screen and colors.** As on the XL 3:[^xl3-use] each encoder's display
-  shows its channel, what it does, and the value; the encoders show their channel's color. The home
+- **Screen and colors.** As on the XL 3:[^xl3-use] each encoder's display shows its channel, what
+  it does, and the value; the encoders show their channel's color. The home
   screen shows the channels on the page, the top row's function ("Top: Pan" or "Top > Phones 1"),
   and the buttons' ("Buttons: Mute" or "Buttons: PFL").
 - **Simulation on an XL 3.** The driver can run the Launch Control 3's layout on an XL 3: the top
   two encoder rows, the top button row, Page, Track, Shift, and Mute/Select as Function (the same
   number, 66). The faders, the bottom encoder row, the bottom button row, Solo/Arm, Record, and
-  Play are left dark and do nothing. This tries the layout and the driver's logic with real hands;
+  Play are left dark and do nothing. This tests the layout and the driver's logic by hand;
   it cannot check the Launch Control 3's own messages (the 16h header, the port names, or the
   numbers in section 4 marked as inference).
 

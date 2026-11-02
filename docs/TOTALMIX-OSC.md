@@ -65,14 +65,14 @@ controllers copy.
 
 ## 1. Connection
 
-- **Version.** Global OSC needs TotalMix FX 2.1 or later; earlier versions don't have it, and release candidates of 2.1 or later are fine.[^adam-1031][^rme-doc] RME writes the version with a two-digit minor number ("1.96", "2.10"), so it reads as a decimal: "2.10 (1)" is version 2.1 (inference from the version strings seen). TotalMix doesn't send its version over Global OSC (`/status/device` gives the interface's name and ID, e.g., "Digiface AES (52103031)", but no version[^test-1][^test-9]), so the app reads it from TotalMix's app bundle (`Info.plist`; reading TotalMix's files is always fine, Adam, 2026-10-31; which key holds the version hasn't been checked on a Mac).
+- **Version.** Global OSC needs TotalMix FX 2.1 or later; earlier versions don't have it, and release candidates of 2.1 or later also work.[^adam-1031][^rme-doc] RME writes the version with a two-digit minor number ("1.96", "2.10"), so it reads as a decimal: "2.10 (1)" is version 2.1 (inference from the version strings seen). TotalMix doesn't send its version over Global OSC (`/status/device` gives the interface's name and ID, e.g., "Digiface AES (52103031)", but no version[^test-1][^test-9]), so the app reads it from TotalMix's app bundle (`Info.plist`; reading TotalMix's files is always allowed, Adam, 2026-10-31; which key holds the version hasn't been checked on a Mac).
 - TotalMix receives on its "incoming" port and sends to its "outgoing" port. Both ports, and the address of the computer that receives TotalMix's messages, are set in TotalMix's Mixer Settings window, on its OSC tab: Options → Mixer Settings… (shortcut F3).[^adam-screenshots] The Mixer Settings window's labels are "Port (incoming)" and "Port (outgoing)" under "TotalMix FX OSC Service" and "Remote Controller Address". Performance Bridge's defaults are localhost, incoming 7001, and outgoing 9001. RME's manual gives 7001 or 8000 (incoming) and 9001 or 9000 (outgoing) as typical values, not as defaults;[^rme-web-osc] TotalMix's own defaults haven't been checked. On Adam's Mac, controllers 1–4 are set to 7001/9001 through 7004/9004,[^settings-file] which are his choices, not evidence of a default.
 - **The OSC menu items** (Options menu; checked on screen[^adam-1031]). The menu lists "Enable MIDI Control", "Submix linked to MIDI Controller", "Enable OSC Control", and "Submix linked to OSC Controller" (a submenu with items 1, 2, 3, and 4, one per controller, all checked on this Mac[^adam-screenshots]). The RME manual names the item "Enable MIDI / OSC Control" and does not list the OSC submenu; the running TotalMix's labels are the ones used here.
   - "Enable OSC Control" was checked on Adam's Mac.
   - Mixer Settings' OSC tab has "Select Controller" 1–4 with an "In Use" box, the two address groups described above, "Send Level Data", "Peak Hold", "Lock Remote to Submix", "Number of faders per bank", "Compatibility (Mode)" (set to "Global OSC"), and a "Details" button.
   - The Details window is titled "Gobal OSC - Detailed Settings" (TotalMix's spelling). Its options are "Send changes", "Send all data on start (enable)", "Send status", "Receive to hidden channels", "Set all faders in group", "Send faders in linear scale", "Re-send received", "Re-send if different", and a bandwidth limit ("None", "500kByte/s", "200kByte/s").
   - On the setup machine, with controller 4, "Send changes", "Send status", and "Send faders in linear scale" were on; "Send all data on start", "Receive to hidden channels", and "Re-send received" were off; the bandwidth limit was 500kByte/s.[^adam-screenshots] Test 1 had "Send faders in linear scale" off, and test 2 had it on.
-- **TotalMix's settings files** (read only; Performance Bridge never writes them). On a Mac they are in `~/Library/Application Support/RME TotalMix FX`, one `last.<Model><ID>.xml` file per interface (e.g., `last.DigifaceAES52103031.xml`), next to `rme.totalmix.preferences.xml`, `rme.totalmix.presets.xml`, and workspaces (`.tmws`).[^settings-copy] macOS keeps that folder from this project's tools, so Adam copied it into the project folder. TotalMix writes an interface's file when it quits, and at some other moments, but not on every change.[^test-13] So the file can lag what TotalMix shows.
+- **TotalMix's settings files** (read only; Performance Bridge never writes them). On a Mac they are in `~/Library/Application Support/RME TotalMix FX`, one `last.<Model><ID>.xml` file per interface (e.g., `last.DigifaceAES52103031.xml`), next to `rme.totalmix.preferences.xml`, `rme.totalmix.presets.xml`, and workspaces (`.tmws`).[^settings-copy] macOS doesn't let this project's tools read that folder, so Adam copied it into the project folder. TotalMix writes an interface's file when it quits, and at some other moments, but not on every change.[^test-13] So the file can lag what TotalMix shows.
   - Each interface's file has four `OscRemote0` to `OscRemote3` groups, one per OSC controller, with `OSCRemoteInUse`, `OSCOwnPort` (TotalMix's incoming port), `OSCRemotePort` (its outgoing port), `OSCRemoteHost`, `OSCSendLevel`, `OSCChannelsPerBank`, and `OSCCompatibility`. On Adam's Mac the Digiface AES's four were 7001/9001 to 7004/9004. `OSCCompatibility` is 1 for "TotalMix 1.96" and 2 for "Global OSC" (the MADIface's controller 1 read 1 in the file and showed TotalMix 1.96 on screen; the Digiface's Global OSC controllers read 2).[^test-12]
   - Each channel (sections `Inputs`, `Playbacks`, and `Outputs`) has a `Hide State NN` entry and a `Remote Controls NN` entry, among many others. Most entries hold nine numbers; what the nine stand for is unknown (an inference is the current state and eight layouts or snapshots, since the file names eight of each).
   - **`Hide State`, first number: the channel's color, negated.** The playback pairs that test 7 gave the eight colors in menu order read −1, −2, … −8, pair by pair, matching the color indexes 1–8 that Global OSC sent.[^test-7] Changing an input pair from yellow to green changed it from −7 to −6.[^test-13] Hiding a channel from a remote didn't change it.[^test-13]
@@ -86,7 +86,7 @@ controllers copy.
 - The document does not say how many clients TotalMix serves.
 - The document says "Follow Submix" should be off when Global OSC is used.[^rme-doc]
   - TotalMix's Options menu has no item by that name. The closest is "Submix linked to MIDI / OSC controller (1-4)" (the manual's label; the running TotalMix shows "Submix linked to OSC Controller", a submenu of its Options menu[^adam-screenshots]): "The 8-channel group follows the currently selected submix", whether the submix is chosen on the remote or in TotalMix, and it "can be useful to deactivate this feature for specific windows".[^rme-manual]
-  - The inference is that this is the setting the document means. Test 1, with it on, showed no effect on what Global OSC sends.
+  - The inference is that this is the setting the document means. Test 1 ran with it on, and Global OSC sent everything it was asked for; no run with it off has been compared.
 - "Lock Remote to Submix", on the OSC tab of Options → Mixer Settings…[^adam-screenshots][^lock-remote-manual], lets a remote "only modify the submix selected from the drop-down list".[^rme-manual] It is left off: Performance Bridge chooses submixes itself.
 - The document says status is sent at about one parameter per second.[^rme-doc] It does not define "status"; the inference here is that it means the `/status/…` messages.
 
@@ -94,7 +94,10 @@ controllers copy.
 
 - Channels count from 0 in addresses: `/input/2/…` is input 3 in TotalMix's window. Snapshots, layouts, and groups count from 1.[^rme-doc] `sbdev monitor` prints channel numbers as TotalMix's window does, from 1 (its source adds 1 to each address). In this document, "input 1" or "monitor input 1" means that display number, and "address 0" means the number used in an OSC address.[^sbdev-code]
 - **Stereo channels.** A stereo channel is addressed by its left channel. A few parameters differ between left and right, and their right side is addressed as the left channel + 1.[^rme-doc] Those parameters are `phase`, `gain`, `delay`, and the Room EQ bands and types.
-- **Hidden channels.** Channel Layout can hide channels from each OSC remote.[^adam-screenshots] Its window is opened by right-clicking a channel strip and choosing "Change Channel Layout", or by Options → Channel Layout…. The group "Hide Channel in" lists "OSC Controller 1" to "OSC Controller 4" (on screen, and a checked box hides the channel from that controller[^adam-confirmed]); the manual's label "Hide Channel in OSC Remote 1-4" is not the label in the running TotalMix. Channels hidden in the mixer are also unavailable to OSC.[^rme-manual] With classic OSC, hidden channels are skipped within a block of faders.[^rme-manual] With Global OSC, the document says hidden channels "may be received by option" (TotalMix's "Receive to hidden channels").[^rme-doc] Hiding does not renumber the channels Global OSC sends (inference from one run; the same run's input 3 keeps its number, and the hidden input sends nothing).[^hide-log][^test-8] A hidden channel sends no messages, so the app cannot tell it apart from a channel the interface does not have: it cannot detect hidden channels from OSC.[^test-8] In test 1 nothing was hidden, and the channel numbers matched the Digiface AES's 14 inputs, 16 playbacks, and 16 outputs.[^rme-manual][^test-1]
+- **Hidden channels.** Channel Layout can hide channels from each OSC remote.[^adam-screenshots]
+  - **Where.** Its window is opened by right-clicking a channel strip and choosing "Change Channel Layout", or by Options → Channel Layout…. The group "Hide Channel in" lists "OSC Controller 1" to "OSC Controller 4" (on screen, and a checked box hides the channel from that controller[^adam-confirmed]); the manual's label "Hide Channel in OSC Remote 1-4" is not the label in the running TotalMix. Channels hidden in the mixer are also unavailable to OSC.[^rme-manual]
+  - **What OSC sends.** With classic OSC, hidden channels are skipped within a block of faders.[^rme-manual] With Global OSC, the document says hidden channels "may be received by option" (TotalMix's "Receive to hidden channels").[^rme-doc] Hiding does not renumber the channels Global OSC sends (inference from one run; the same run's input 3 keeps its number, and the hidden input sends nothing).[^hide-log][^test-8] A hidden channel sends no messages, so the app cannot tell it apart from a channel the interface does not have: it cannot detect hidden channels from OSC.[^test-8]
+  - **Test 1.** Nothing was hidden, and the channel numbers matched the Digiface AES's 14 inputs, 16 playbacks, and 16 outputs.[^rme-manual][^test-1]
 - **Index values.** List-box settings, such as `reflevel` and the EQ band types, are index values from 0. Their meaning depends on the device.[^rme-doc]
 - **Value types.** TotalMix accepts true/false and integers wherever it expects a float.[^rme-doc] `OSCArgument.numericValue` reads all of these forms.
 - **`groupflags`.** The bits count from 0. Outputs 3/4 and 7/8, members of mute group 1, report 4098 = 2¹² + 2¹. So bit 1 is mute group 1;[^test-1] had the bits counted from 1, mute group 1 would have been the value 1. The document's ranges, read from 0, then give:
@@ -199,7 +202,7 @@ known.
   - An output's fader sends `/output/<channel>/volume` in dB.
   - An input's or playback's fader sends `/mix/<in|pb>/<channel>/<output>/fader` in dB, for the submix selected in the window.
   - While a fader moves, updates arrive every 20 ms. Pauses come in multiples of 20 ms, so the inference is that TotalMix sends changes on a 20 ms cycle.
-  - Values from mouse moves in the upper part of the fader's travel are multiples of 3/28 dB, e.g. −0.107143, −0.214287, and 0.642857. The inference is that this is the resolution of the fader in TotalMix's window, not of Global OSC.
+  - Values from mouse moves in the upper part of the fader's travel are multiples of 3/28 dB, e.g., −0.107143, −0.214287, and 0.642857. The inference is that this is the resolution of the fader in TotalMix's window, not of Global OSC.
 - **Duplicates.** One message (`/mix/pb/10/12/groupflags`) was sent twice in the reply.
 
 ### Test 2 (2026-10-28): what TotalMix accepts
@@ -261,7 +264,6 @@ are changes made elsewhere, in TotalMix's window or from another client.
 must be answered, came back with output 9's settings: the first bundle after 21 ms and the last
 after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last command had set.
 
-
 ### Test 6 (2026-10-30): PFL and Live Mode
 
 **Setup.** TotalMix FX "2.10 (1)" with a Digiface AES, through `sbdev bridge` and `sbdev monitor
@@ -272,7 +274,6 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 - **PFL shows only in Live Mode.** `/input/<n>/pfl` 1 was sent and accepted, but the user found no sign of it in TotalMix's window until "Live Mode, PFL replaces Solo" (PFL Mode, in Settings) was turned on; then the channel's Solo/PFL button lit, and clicking it in TotalMix was sent back as `pfl` (seen).[^manual-live-mode]
 - **Live Mode cannot be read.** Turning Live Mode off and on sent nothing, and the reply to `/sendsettings` does not mention it. RME's document lists only the device name, the connection, and the DSP load as status.[^rme-doc]
 - **PFL goes to Main when Cue/PFL to is unassigned.** With `controlroom/cuechan` reported as −1, PFL on a silent input silenced Main, which had been playing another input (seen).[^manual-cue-pfl]
-
 
 ### Test 7 (2026-10-30): color indexes
 
@@ -320,7 +321,7 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 - `/input/0/mute 1` lit the ADI-2 input's M button (applied). `/input/0/mute 0` turned it off.
 - `/mix/in/0/8/faderlin 0.5` moved the ADI-2 input's fader in the ADAT 1/2 submix to −12.1 dB, which matches the spec's fader curve for position 0.5 (applied). `/mix/in/0/8/faderlin 0` returned it to the bottom.
 
-**Global mute.** The monitor reported `globalmute = 1` in the dumps before this recheck, and `globalmute = 0` after Adam turned it off with `/globalmute 0`. RME's manual calls this the Mute Master button in the Control Strip: it lights when any Mute button is pressed, and "all selected mutes can be switched off and on again" with it.[^rme-web-control-strip] With `globalmute = 0`, `/playback/0/mute 1` lit the AES M button only partially (Adam, screenshot 2026-10-31). Inference: a partial light shows a mute that is selected but switched off by the Mute Master, so the channel was probably not muted in the audio. Not checked by listening.
+**Global mute.** The monitor reported `globalmute = 1` in the dumps before this recheck, and `globalmute = 0` after Adam turned it off with `/globalmute 0`. RME's manual calls this the Mute Master button in the Control Strip: it lights when any Mute button is pressed, and "all selected mutes can be switched off and on again" with it.[^rme-web-control-strip] With `globalmute = 0`, `/playback/0/mute 1` lit the AES M button only partially (Adam, screenshot 2026-10-31). Inference: a partial light shows a mute that is selected but switched off by the Mute Master, so the channel was probably not muted in the audio. This was not checked by listening.
 
 **Not tested:** the other controllers, other interfaces, and the effect of the earlier sends on the channels at addresses 1 and 3.
 
@@ -406,11 +407,11 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 - Unnamed playbacks send their output's hardware name, not the name the user gave that output. Playback 3 sent "SPDIF" while output 3 is named "ADI-2 3/4". Playback 5 sent "Analog 1/2" while output 5 is named "ADI-2 +6dB".
 - TotalMix's settings file stores an empty `Name NN` for unnamed playbacks,[^settings-copy] so the file can tell a given name from the default; OSC can't.
 
-**Consequence.** Over OSC, a name the user gave a playback can't be told apart from a hardware name for certain. For example, "Analog 1/2" could be either. How Performance Bridge names playbacks is a decision for Adam.
+**Consequence.** Over OSC, a name the user gave a playback can't be told apart from a hardware name for certain. For example, "Analog 1/2" could be either. Performance Bridge names a playback without a label "PB 1/2" and so on, and lets the app give any channel a label (Adam, 2026-11-01; AGENTS.md, section 4).
 
 ### Test 16 (2026-11-01): the ARC USB's keys and wheel over MIDI
 
-**Setup.** RME's ARC USB, connected to Adam's Mac, with TotalMix FX "2.10 (1)" running. Its MIDI port is named "RME ARC" (source and destination). `sbdev midi "RME ARC"` printed what it sends. Each of the 15 keys was pressed once, left to right, and the wheel turned a few clicks clockwise, then anticlockwise.
+**Setup.** RME's ARC USB, connected to Adam's Mac, with TotalMix FX "2.10 (1)" running. Its MIDI port is named "RME ARC" (source and destination). `sbdev midi "RME ARC"` printed what it sends. Each of the 15 keys was pressed once, left to right, and the wheel turned a few clicks clockwise, then counterclockwise.
 
 **Findings** (Adam, 2026-11-01):
 - **One message for everything.** The ARC sends one SysEx message, `F0 00 20 0D 70 50 a b c F7`, for keys and wheel alike. CoreMIDI may deliver it in pieces.
@@ -420,13 +421,13 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
   - key 15 is `c`'s bit 10.
 
   On release the bit clears (all zeros).
-- **Wheel.** One click sends `c` = 01 clockwise or 0F (−1 in four bits) anticlockwise, then all zeros 20 ms later. Turns of several clicks in quick succession still came one step per message.
+- **Wheel.** One click sends `c` = 01 clockwise or 0F (−1 in four bits) counterclockwise, then all zeros 20 ms later. Turns of several clicks in quick succession still came one step per message.
 - **Idle.** With nothing pressed, the all-zeros message repeats about once a second.
 - **Sharing.** The keys kept working in TotalMix while `sbdev midi` was listening. Reading the port doesn't take the ARC from TotalMix.
 
-**Inferences.** `00 20 0D` is RME's manufacturer ID. The other bits of `c` may hold the footswitch; not tested. A fast turn may send larger steps (02, 0E, …); not seen.
+**Inferences.** `00 20 0D` is RME's manufacturer ID. The other bits of `c` may hold the footswitch; this is untested. A fast turn may send larger steps (02, 0E, …); none have been seen.
 
-**Consequence.** Performance Bridge could use the ARC alongside TotalMix, e.g. its keys for paging, without taking it away from TotalMix.
+**Consequence.** Performance Bridge could use the ARC alongside TotalMix, e.g., its keys for paging, without taking it away from TotalMix.
 
 ### Test 17 (2026-11-01): fader group 1
 

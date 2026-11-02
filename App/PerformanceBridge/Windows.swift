@@ -203,7 +203,7 @@ struct SettingsView: View {
                 portRow("Incoming port", value: $edited.incomingPort, override: model.portOverrides.incoming)
                 portRow("Outgoing port", value: $edited.outgoingPort, override: model.portOverrides.outgoing)
             }
-            note("The computer that runs TotalMix FX and the ports of the OSC controller set up for Performance Bridge.\n\nIn TotalMix FX: Options → Mixer Settings… → OSC, “Port (incoming)” and “Port (outgoing)”, with “Global OSC” selected by “Compatibility (Mode)”.")
+            note("The computer that runs TotalMix FX and the ports of the OSC controller set up for Performance Bridge.\n\nIn TotalMix FX: Options → Mixer Settings… → OSC, “Port (incoming)” and “Port (outgoing)”, with “Compatibility (Mode)” set to “Global OSC”.")
 
             Divider()
                 .padding(.vertical, 4)
@@ -232,7 +232,7 @@ struct SettingsView: View {
             }
             note(portNote)
             if model.launchControlFromCommandLine {
-                Text("A Launch Control from the command line is in use instead.")
+                Text("A Launch Control chosen on the command line is in use instead.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -402,7 +402,7 @@ struct LaunchControlSendRowsView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Text(chosen == .lc3
-                     ? "Page ▲ and ▼ on the Launch Control step the top row through Pan and the outputs too."
+                     ? "Page ▲ and ▼ on the Launch Control also step the top row through Pan and the outputs."
                      : "Page ▲ and ▼ on the Launch Control step the top row, and Shift + Page the middle row. The two rows never feed the same output.")
                     .fixedSize(horizontal: false, vertical: true)
                 Text("The outputs follow the order of the Outputs list on the Channel Layout tab.")
