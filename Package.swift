@@ -23,12 +23,13 @@ import Foundation
 //                  submix, and the rules between surfaces and TotalMix; Foundation only
 //   RotoDriver     the Roto-Control's driver: its MIX mode on top of SurfaceCore; Foundation only
 //   LaunchControlDriver  the Launch Controls' driver on top of SurfaceCore; Foundation only
-//   BridgeEngine   TotalMix and a Roto-Control connected through SurfaceCore and RotoDriver, with
-//                  the sockets, the MIDI ports, and a clock: what the app runs
+//   BridgeEngine   TotalMix and a Roto-Control (and, if set, a Launch Control) connected through
+//                  SurfaceCore and the drivers, with the sockets, the MIDI ports, and a clock: what
+//                  the app runs
 //   sbdev          developer tool for checking the libraries against TotalMix and the surfaces
 //
 // The PerformanceBridge app (SwiftUI, macOS only, built by make-app.sh) is added below on a Mac.
-// Planned: the Launch Controls in BridgeEngine and the app.
+// Planned: the Launch Controls in the app's Settings (for now, a command-line option).
 //
 // On a Mac the test targets are opt-in (PERFORMANCE_BRIDGE_TESTS=1), as in 3rd-wave-tools: with only
 // the Command Line Tools, SwiftPM fails while looking for XCTest even for a plain `swift build`.
@@ -53,7 +54,7 @@ var targets: [Target] = [
     .target(name: "RotoDriver", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "SurfaceCore"]),
     .target(name: "LaunchControlDriver", dependencies: ["OSCCodec", "TotalMixOSC", "LaunchControl", "SurfaceCore"]),
     .target(name: "BridgeEngine", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "MIDITransport", "UDPTransport",
-                                                 "SurfaceCore", "RotoDriver"]),
+                                                 "SurfaceCore", "RotoDriver", "LaunchControl", "LaunchControlDriver"]),
     .executableTarget(name: "sbdev", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "LaunchControl", "MIDITransport", "UDPTransport",
                                                    "SurfaceCore", "RotoDriver", "LaunchControlDriver"]),
 ]
@@ -85,7 +86,8 @@ if includeTests {
     targets.append(.testTarget(name: "MIDITransportTests", dependencies: ["MIDITransport", "RotoControl"]))
     targets.append(.testTarget(name: "UDPTransportTests", dependencies: ["UDPTransport"]))
     targets.append(.testTarget(name: "SurfaceCoreTests", dependencies: ["SurfaceCore", "TotalMixOSC", "OSCCodec"]))
-    targets.append(.testTarget(name: "BridgeEngineTests", dependencies: ["BridgeEngine", "SurfaceCore", "TotalMixOSC", "OSCCodec", "UDPTransport"]))
+    targets.append(.testTarget(name: "BridgeEngineTests", dependencies: ["BridgeEngine", "SurfaceCore", "TotalMixOSC", "OSCCodec", "UDPTransport",
+                                                                   "LaunchControl", "LaunchControlDriver"]))
     targets.append(.testTarget(name: "LaunchControlDriverTests", dependencies: ["LaunchControlDriver", "LaunchControl", "SurfaceCore", "TotalMixOSC", "OSCCodec"]))
     targets.append(.testTarget(name: "RotoDriverTests", dependencies: ["RotoDriver", "RotoControl", "SurfaceCore", "TotalMixOSC", "OSCCodec"]))
 }

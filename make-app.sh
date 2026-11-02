@@ -159,6 +159,8 @@ SOURCES=(
     Sources/UDPTransport/*.swift
     Sources/SurfaceCore/*.swift
     Sources/RotoDriver/*.swift
+    Sources/LaunchControl/*.swift
+    Sources/LaunchControlDriver/*.swift
     Sources/BridgeEngine/*.swift
     App/PerformanceBridge/*.swift
 )

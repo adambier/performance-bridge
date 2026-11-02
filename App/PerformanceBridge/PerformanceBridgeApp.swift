@@ -2,6 +2,8 @@
 // `swift run PerformanceBridge`, or `swift run PerformanceBridge --in-port 7004 --out-port 9004` to
 // override the ports saved in Settings; quit `sbdev bridge` first, since both need TotalMix's
 // outgoing port and the Roto-Control's MIDI ports. make-app.sh builds the app bundle, with Sparkle.
+// A Launch Control can be tried with `--launch-control xl3`, `lc3`, or `lc3-sim`
+// (`LaunchControlSetting(arguments:)`) until Settings has a place for it.
 
 import AppKit
 import SwiftUI
@@ -196,9 +198,12 @@ final class BridgeModel: ObservableObject {
     @Published var status = BridgeStatus()
     /// Whether the menu-bar icon shows its warning mark.
     @Published private(set) var needsAttention = false
-    /// Whether TotalMix FX and the Roto-Control are both connected (the menu-bar icon is dimmed
-    /// otherwise).
-    var allConnected: Bool { status.totalMixAnswering && status.rotoConnected }
+    /// Whether TotalMix FX and the Roto-Control (and a Launch Control, if one is set) are all
+    /// connected (the menu-bar icon is dimmed otherwise).
+    var allConnected: Bool {
+        status.totalMixAnswering && status.rotoConnected
+            && (status.launchControlName == nil || status.launchControlConnected)
+    }
     /// Whether TotalMix FX is among the running apps, and its version from its app bundle, for the
     /// setup window.
     @Published private(set) var totalMixRunning = false
@@ -313,6 +318,7 @@ final class BridgeModel: ObservableObject {
         settings.playbacksOnNewPage = UserDefaults.standard.bool(forKey: "playbacksOnNewPage")
         settings.layout = savedLayout()
         settings.homeSubmix = UserDefaults.standard.object(forKey: homeSubmixKey) as? Int
+        settings.launchControl = LaunchControlSetting(arguments: CommandLine.arguments)
         return settings
     }
 
@@ -390,11 +396,21 @@ struct MenuContent: View {
         return "Not Found"
     }
 
+    private var launchControlState: String {
+        let status = model.status
+        if status.launchControlConnected { return "Connected" }
+        if status.launchControlFound { return "Connecting" }
+        return "Not Found"
+    }
+
     var body: some View {
         // Status only, always dimmed (Adam, 2026-10-31), as macOS's own menu bar menus show status
         // lines. The full reasons go to the log; the Setup Guide says what to do.
         Text("TotalMix FX: " + totalMixState)
         Text("Roto-Control: " + rotoState)
+        if let name = model.status.launchControlName {
+            Text(name + ": " + launchControlState)
+        }
         Divider()
         // "Mix Output" (Adam, 2026-10-31): the output whose submix the level knobs and pans go into;
         // the code calls it the home submix.
