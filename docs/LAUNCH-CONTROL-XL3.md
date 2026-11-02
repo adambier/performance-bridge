@@ -290,7 +290,7 @@ port names.
    nothing until it passes the middle?
 8. **Relative encoders.** Run: they work as the guide says.[^test-2] `relative 1 on`: do encoders 1–8 report 77–84 with 65 and 63 for single
    steps?
-9. **Colors.** Run for indices 0–39 and RGB;[^test-4] 40–127 have not been seen yet. `palette 0`, `palette 40`, and `palette 80`. Compare with the guide's palette. Is 0
+9. **Colors.** Run for indices 0–39 and RGB;[^test-4] 33, 37, 45, 49, and 53 seen in test 17;[^test-17] the rest of 40–127 not yet. Still to check: purple and orange at their dimmest with level by brightness on (do they keep their hue?). `palette 0`, `palette 40`, and `palette 80`. Compare with the guide's palette. Is 0
    off? Then `rgb b11 127 0 0`, and check the Track, Page, Record, Play, and Novation buttons for
    lights.
 10. **Screen.** Run.[^test-5] `display f1 2`, then `text f1 0 Mix`, `text f1 1 ADI-2`, `text f1 2 -6.0 dB`, and
@@ -416,15 +416,25 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   Settings → Connections, off by default, dims each send encoder continuously with its level, so
   turning a control has a visible, proportional effect (it isn't meant for reading a level off the
   light; Adam, 2026-11-02). The light is the color's exact RGB (SysEx 01h 53h), which matched each
-  palette color tried,[^test-17] scaled so its brightness falls geometrically from full at the top
-  of the travel to a value of 5 at the bottom, and dark at −oo. In test 17, even steps of value
-  and a 2.2 gamma curve looked bunched at the top, values from about 80 up looked alike, and
-  geometric steps looked even;[^test-17] in test 18, 9, 7, and 5 dimmed in turn and 4 and below
-  looked dark, hence the floor at 5.[^test-18] Palette yellow (13) looks greener on the encoders
-  than on the buttons, so the encoders show yellow as 127, 85, 0, which matched the buttons'
-  yellow, with the setting on or off; palette orange matched as it is.[^test-18] Pan
-  encoders keep full brightness, and the faders, which carry the level, have no lights. Red's,
-  green's, and grey's exact colors are inference (read off the guide's picture; grey's a guess).
+  palette color compared on the encoders,[^test-17] scaled so its brightness falls geometrically
+  from full at the top of the travel to a value of 5 at the bottom, and dark at −oo.
+  - In test 17, even steps of value and a 2.2 gamma curve bunched at the top, values down to about
+    80 looked close to full (64 the first clearly dimmer), and a geometric run from 80 down looked
+    close to even, while one from 127 bunched its first two or three steps.[^test-17] The curve as
+    built, geometric from 127, was seen to dim and brighten predictably as an encoder
+    turned.[^test-18] By the curve, a send at 0 dB is at about 55% (70 of 127; computed).
+  - In test 18, 9, 7, and 5 dimmed in turn and 4 and below looked dark, hence the floor at
+    5.[^test-18] A color with two lit parts dims only until its smaller part reaches 5, so the part
+    doesn't go dark first and change the hue: purple (16, 0, 127) stops at 5/16 of full and orange
+    (127, 40, 0) at 5/40. That a part below 5 reads as dark on its own is an inference from red
+    alone; how purple and orange look at their dimmest has not been checked (section 8, item 9).
+  - Palette yellow (13) looks greener on the encoders than on the buttons, so the encoders show
+    yellow as 127, 85, 0, which matched the buttons' yellow best of those tried, with the setting on
+    or off. Palette orange (9) matched as it is; orange's exact color with the setting on (127, 40,
+    0) was matched on buttons only (test 13).[^test-18]
+  - Pan encoders keep full brightness, and the faders, which carry the level, have no lights. Red's,
+    green's, and grey's exact colors are inference (read off the guide's picture; grey's a guess),
+    and purple's (16, 0, 127) is inferred from 20 looking slightly redder; 16 itself was not lit.
 - **Screen.** Each fader and encoder has a three-line display (arrangement 2): the channel's name,
   what the control does ("Level", "Pan", "> Phones 1"), and the value in dB or as a pan, sent by
   the driver.[^test-5] The stationary display, the home screen, has three lines (arrangement 2): the
@@ -746,8 +756,9 @@ Seen by Adam.
   travel to 9 at its bottom (Adam, 2026-11-02: "the act of adjusting the fader [should] cause a
   predictable outcome"). The floor was set at 9, because 6 looked brighter than 9; test 18
   lowered it to 5.
-- Since values from about 80 up look alike, roughly the top 15% of the travel (above about +1 dB)
-  changes little. That share is computed from the curve, not seen.
+- Since values down to about 80 looked close to full, the top of the travel changes little:
+  computed for the floor of 9, about the top 17% (above about +0.3 dB); with test 18's floor of
+  5, about the top 14% (above about +1.3 dB). Not seen.
 - The palette and RGB messages replace each other, so the driver can use either for any state.
 
 ### Test 18 (2026-11-02): the 1.0.1 build in the app, and two adjustments

@@ -377,8 +377,8 @@ struct LaunchControlSendRowsView: View {
                 set: { model.setLevelBrightness($0) }))
                 .padding(.top, 6)
             Text(chosen == .lc3
-                 ? "The level and send encoders dim as you turn them down, and go dark at −oo. Pan keeps full brightness."
-                 : "The send encoders dim as you turn them down, and go dark at −oo. Pan keeps full brightness, and the faders have no lights.")
+                 ? "The level and send encoders dim with their levels and go dark at −oo. Pan keeps full brightness."
+                 : "The send encoders dim with their levels and go dark at −oo. Pan keeps full brightness, and the faders have no lights.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

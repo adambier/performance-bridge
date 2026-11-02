@@ -443,7 +443,14 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertEqual(D.shaded(21, position: 0), .palette(0), "−oo: dark")
         XCTAssertEqual(D.shaded(5, position: 1), .rgb(D.RGB(127, 0, 0)), "full: red's exact color")
         guard case .rgb(let low) = D.shaded(9, position: FaderCurve.position(gainDB: -64)) else { return XCTFail("orange") }
-        XCTAssertEqual(low, D.RGB(5, 2, 0), "orange at its dimmest keeps a little green")
+        XCTAssertEqual(low, D.RGB(16, 5, 0), "orange dims only until its green reaches the dimmest lit value, keeping its hue")
+        guard case .rgb(let purple) = D.shaded(49, position: FaderCurve.position(gainDB: -64)) else { return XCTFail("purple") }
+        XCTAssertEqual(purple, D.RGB(5, 0, 40), "purple keeps its red, so it doesn't turn blue")
+        guard case .rgb(let redLow) = D.shaded(5, position: FaderCurve.position(gainDB: -64)) else { return XCTFail("red") }
+        XCTAssertEqual(redLow, D.RGB(5, 0, 0), "red dims all the way to the dimmest lit value")
+        XCTAssertNil(D.brightness(position: .nan), "not a number: dark, not a crash")
+        XCTAssertEqual(D.shaded(5, position: .nan), .palette(0))
+        XCTAssertNil(TotalMixValue.number(.nan).number, "TotalMix FX's NaN is no number")
         XCTAssertEqual(D.RGB(1, 127, 0).scaled(0.08), D.RGB(1, 10, 0), "a lit part stays lit")
         for color in D.paletteForTotalMixColor.values.sorted() + D.sendRowHues {
             XCTAssertNotNil(D.paletteRGB[color], "every color the encoders use has its exact color: \(color)")
@@ -470,6 +477,12 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(midi.contains(LaunchControlOutgoing.rgb(.encoder(row: 2, column: 0), red: 127, green: 85, blue: 0) ?? [1]),
                       "a yellow channel's pan encoder, with the setting off: the matched yellow")
         XCTAssertFalse(midi.contains([0xB0, 0x1D, 13]), "not palette yellow")
+
+        // A send row whose output is yellow: the matched yellow too, with the setting off.
+        var (sendDriver, sendHub, _) = connected(layout: .xl3)
+        let yellow = sendHub.handle(.channel(bus: .output, channel: 2, parameter: "color", value: .number(7)), now: 1)
+        XCTAssertTrue(sendDriver.take(yellow, hub: &sendHub, now: 1).midi.contains(
+            LaunchControlOutgoing.rgb(.encoder(row: 0, column: 0), red: 127, green: 85, blue: 0) ?? [1]), "the top row, sending to yellow Phones")
     }
 
     /// Keys (input 1/2, red in TotalMix FX) to Main Out at `db`.
@@ -499,7 +512,7 @@ final class LaunchControlDriverTests: XCTestCase {
         var (driver, hub, _) = connected(layout: .lc3, device: .lc3)
         _ = driver.take(keysLevel(&hub, 0, now: 0.5), hub: &hub, now: 0.5)
         let on = driver.setLevelBrightness(true, hub: hub)
-        XCTAssertTrue(on.contains(red(0)), "Keys at 0 dB: red, nearly full")
+        XCTAssertTrue(on.contains(red(0)), "Keys at 0 dB: red at about 55% (70 of 127)")
         guard case .rgb(let vox) = LaunchControlDriver.shaded(3, position: 0.5) else { return XCTFail("white") }
         XCTAssertTrue(on.contains(LaunchControlOutgoing.rgb(.encoder(row: 1, column: 1), red: vox.red, green: vox.green, blue: vox.blue, model: .lc3) ?? [1]),
                       "Vox (white) at the test's 0.5: dimmed white")

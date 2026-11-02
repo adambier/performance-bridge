@@ -1212,9 +1212,9 @@ public struct LaunchControlDriver: Sendable {
     public static let functionIdle: UInt8 = 15
     /// The hue of a send row whose output is left white in TotalMix FX: teal (33) for the top row,
     /// magenta (53) for the XL 3's middle row; neither is one of TotalMix FX's eight colors (Adam,
-    /// 2026-11-02, from the Tier 3 review of that date). On the XL 3 both have been seen as
-    /// named and told apart from blue, purple, and green; cyan (37), tried first, looked too close
-    /// to blue (test 17).
+    /// 2026-11-02, from the Tier 3 review of that date). On the XL 3 both have been told apart from
+    /// blue, purple, and green (test 17); teal on its own was seen as cyan (test 18); cyan (37),
+    /// tried first, looked too close to blue (test 17).
     public static let sendRowHues: [UInt8] = [33, 53]
 
     /// A light's color: a palette index (CC on channel 1), or an exact color (SysEx 01h 53h).
@@ -1243,6 +1243,7 @@ public struct LaunchControlDriver: Sendable {
         /// lit kept at 1 or more, so the hue stays roughly the same (only roughly at small
         /// fractions, and a fraction of 0 is not dark: use `.palette(0)` for off).
         public func scaled(_ fraction: Double) -> RGB {
+            guard fraction.isFinite else { return self }
             func part(_ value: UInt8) -> UInt8 {
                 guard value > 0 else { return 0 }
                 return UInt8(min(max((Double(value) * fraction).rounded(), 1), 127))
@@ -1252,10 +1253,11 @@ public struct LaunchControlDriver: Sendable {
     }
 
     /// The exact color of each palette color the driver lights encoders with, for dimming. Orange
-    /// has been seen to match its palette color on buttons (test 13; yellow is set to match the
-    /// buttons' yellow as the encoders show it, test 18), and teal,
-    /// magenta, blue, purple, and white on encoders (test 17, purple after a correction); red and
-    /// green are read off the guide's palette picture (inference), and grey's is a guess.
+    /// has been seen to match its palette color on buttons (test 13; on encoders it has not been
+    /// compared, an inference); yellow is set to the value that matched the buttons' yellow best,
+    /// as the encoders show it (test 18); teal, magenta, blue, and white matched on encoders (test
+    /// 17); purple's 16, 0, 127 is inferred from 20 looking slightly redder (16 itself not lit);
+    /// red and green are read off the guide's palette picture (inference), and grey's is a guess.
     public static let paletteRGB: [UInt8: RGB] = [
         3: RGB(127, 127, 127),   // white
         1: RGB(40, 40, 40),      // grey (a guess)
@@ -1275,8 +1277,9 @@ public struct LaunchControlDriver: Sendable {
     public static let dimmestValue = 5.0
 
     /// Palette colors an encoder shows as an exact color instead, at full brightness: palette
-    /// yellow (13) has been seen to look greener on the encoders than on the buttons, and
-    /// 127, 85, 0 to match the buttons' yellow; palette orange (9) matched (test 18).
+    /// yellow (13) has been seen to look greener on the encoders than on the buttons, and 127, 85, 0
+    /// to match the buttons' yellow best of those tried; palette orange (9) matched (test 18). The
+    /// Launch Control 3 gets the same, an inference from the XL 3.
     public static let encoderExactColors: Set<UInt8> = [13]
 
     /// An encoder's light at full brightness for a palette color: the palette color, or its exact
@@ -1287,23 +1290,42 @@ public struct LaunchControlDriver: Sendable {
     }
 
     /// How bright a level or send encoder is, as a fraction of its color, for a fader position
-    /// (0…1), when `levelBrightness` is on; `nil` for dark (−oo). The brightness falls
-    /// geometrically from full at the top of the travel to `dimmestValue` at the bottom, so equal
-    /// turns look like equal steps: on the XL 3, values from about 80 up looked equally bright,
-    /// a straight line and a 2.2 gamma curve both bunched at the top, and geometric steps looked
-    /// even (test 17). The dimming is continuous, so turning a control has a visible, proportional
-    /// effect; it isn't meant for reading a level off the light (Adam, 2026-11-02).
-    public static func brightness(position: Double) -> Double? {
-        guard FaderCurve.gainDB(position: position) != nil else { return nil }
+    /// (0…1), when `levelBrightness` is on; `nil` for dark (−oo, or a position that isn't a
+    /// number). The brightness falls geometrically from full at the top of the travel to `floor`
+    /// at the bottom, so equal steps of fader travel give equal ratios of brightness (roughly
+    /// equal per encoder value on the ARC scale; computed). On the XL 3, even steps of value and a
+    /// 2.2 gamma curve bunched at the top, values down to about 80 looked close to full (64 the
+    /// first clearly dimmer), and a geometric run from 80 down looked close to even (test 17); the
+    /// curve as built was seen to dim and brighten predictably as an encoder turned (test 18). The
+    /// dimming is continuous, so turning a control has a visible, proportional effect; it isn't
+    /// meant for reading a level off the light (Adam, 2026-11-02).
+    public static func brightness(position: Double, floor: Double = dimmestValue / 127) -> Double? {
+        guard position.isFinite, FaderCurve.gainDB(position: position) != nil else { return nil }
         let position = min(max(position, 0), 1)
-        return dimmestValue * pow(127 / dimmestValue, position) / 127
+        let floor = min(max(floor, 1e-3), 1)
+        return floor * pow(1 / floor, position)
     }
 
-    /// A palette color dimmed for a fader position (`brightness(position:)`), as its exact RGB
-    /// (`paletteRGB`), or dark at −oo. A color without an exact one stays undimmed.
+    /// How far a color can dim and keep its hue: until its smallest lit part reaches
+    /// `dimmestValue`, the lowest value seen as lit (test 18). Purple (16, 0, 127) stops at
+    /// 5/16 of its brightness and orange (127, 40, 0) at 5/40, so their smaller parts don't go
+    /// dark first and leave blue or red; red, white, and the other one-part or even colors dim
+    /// all the way. That a part below 5 would read as dark on its own is an inference from red
+    /// alone (test 18).
+    public static func dimmestFraction(_ rgb: RGB) -> Double {
+        let lit = [rgb.red, rgb.green, rgb.blue].filter { $0 > 0 }
+        guard let smallest = lit.min() else { return 1 }
+        return min(dimmestValue / Double(smallest), 1)
+    }
+
+    /// A palette color dimmed for a fader position (`brightness(position:floor:)`, down to the
+    /// color's `dimmestFraction`), as its exact RGB (`paletteRGB`), or dark at −oo. A color
+    /// without an exact one stays undimmed.
     public static func shaded(_ color: UInt8, position: Double) -> LightColor {
-        guard let fraction = brightness(position: position) else { return .palette(0) }
-        guard let rgb = paletteRGB[color] else { return .palette(color) }
+        guard let rgb = paletteRGB[color] else {
+            return brightness(position: position) == nil ? .palette(0) : .palette(color)
+        }
+        guard let fraction = brightness(position: position, floor: dimmestFraction(rgb)) else { return .palette(0) }
         return .rgb(rgb.scaled(fraction))
     }
 

@@ -264,8 +264,8 @@ by Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   the level encoders, and the top row when it is a send, dim continuously with their level, from
   full at the top of the travel to dim at the bottom and dark at −oo; pan keeps full brightness.
   Here the level row has lights, so the levels themselves dim, which the XL 3's faders can't. The
-  curve was set on the XL 3 (its test 17); that the Launch Control 3's LEDs respond the same way is
-  an inference.
+  curve, the floor, and the encoders' yellow (127, 85, 0) were set on the XL 3 (its tests 17 and
+  18); that the Launch Control 3's LEDs need the same is an inference.
 - **Simulation on an XL 3.** The driver can run the Launch Control 3's layout on an XL 3: the top
   two encoder rows, the top button row, Page, Track, Shift, and Mute/Select as Function (the same
   number, 66). The faders, the bottom encoder row, the bottom button row, Solo/Arm, Record, and

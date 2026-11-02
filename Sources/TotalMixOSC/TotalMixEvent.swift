@@ -19,7 +19,9 @@ public enum TotalMixValue: Equatable, Sendable, CustomStringConvertible {
 
     /// The number, if the value is one.
     public var number: Double? {
-        if case .number(let value) = self { return value }
+        // A NaN or an infinity (e.g., a malformed float) is no number: the core clamps numbers,
+        // and NaN survives a clamp (review of 2026-11-02).
+        if case .number(let value) = self, value.isFinite { return value }
         return nil
     }
 
