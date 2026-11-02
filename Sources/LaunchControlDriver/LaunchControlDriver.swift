@@ -1056,8 +1056,8 @@ public struct LaunchControlDriver: Sendable {
     /// dimmest shade of its color, so the two rows can still be told apart (Adam, 2026-11-02).
     /// The palette's first 40 colors have been seen to run as the guide's picture does
     /// (docs/LAUNCH-CONTROL-XL3.md, test 4), each hue a run of four from bright to dim: 5 red and
-    /// 7 a darker red, 13 yellow and 15 a darker yellow, 3 white and 1 a dim grey. 9 orange and
-    /// 11 its dimmest follow the same pattern (inference; not yet seen on the device).
+    /// 7 a darker red, 13 yellow and 15 a darker yellow, 3 white and 1 a dim grey; 9 orange and 11
+    /// its dimmest (test 13).
     public static let muteOn: UInt8 = 9
     /// A mute button that is off: the dimmest orange.
     public static let muteOff: UInt8 = 11

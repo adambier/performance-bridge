@@ -73,6 +73,7 @@ seen").
     [10](#test-10-2026-11-01-turning-a-relative-encoder-with-shift-held).
 [^test-11]: Test 11 (2026-11-01), section
     [10](#test-11-2026-11-01-the-home-screen-shift--turn-pan-steps-and-the-arc-scale).
+[^test-13]: Test 13 (2026-11-02), section [10](#test-13-2026-11-02-button-shades-and-brightness).
 
 ## 2. MIDI ports
 
@@ -368,8 +369,8 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
 - **Buttons.** The top row is PFL (yellow) and the bottom row mute (orange), the colors the
   Roto-Control's firmware gives solo and mute, so every hardware controller shows them alike (Adam,
   2026-11-02). A button that is off shows the dimmest shade of its color, so the two rows stay
-  recognizable (Adam, 2026-11-02). Orange's dimmest shade (index 11) is an inference from the
-  palette's pattern (test 4 saw red's and yellow's). Solo/Arm and Mute/Select do nothing for now: in DAW mode
+  recognizable (Adam, 2026-11-02). Orange's dimmest shade is index 11.[^test-13] The bright shades are
+  at full brightness; more contrast is left to the device's own LED brightness setting.[^test-13] Solo/Arm and Mute/Select do nothing for now: in DAW mode
   the device leaves them to the host.[^test-6]
 - **Paging and views.** Track < and > move by eight strips, as the panel's labels say, and with
   Shift to the first or last page. (Novation's integrations move one track, and eight with Shift.
@@ -604,3 +605,25 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
 **Consequences.**
 - Inference: the device echoes the DAW mode note only when the mode changes, so a host asking a device already in DAW mode gets no answer. The driver therefore leaves DAW mode and enters it again when it starts (`startBytes`), which makes a change either way, and it takes only a control moved or pressed as a sign of presence, not the feature replies sent on the way out.
 - Still to run, to settle the inference: `sbdev lcxl --raw`, enter DAW mode, ask again, and note whether `9F 0C 7F` comes back; then the same for leaving.
+
+### Test 13 (2026-11-02): button shades and brightness
+
+**Setup.** Adam's Launch Control XL 3, firmware 1.2. The app (commit `6914def`) with the buttons in
+orange for mute and yellow for PFL, bright when on and the dimmest shade when off; then `sbdev lcxl`
+with `color b11 9`, `rgb b12 127 40 0`, `color b13 13`, and `rgb b14 127 127 0`. Seen by Adam.
+
+**Findings:**
+- Index 11 shows as a dim orange, easily told from dark, and the dim orange and dim yellow rows are
+  easily told apart.
+- Mute and PFL lit and cleared as pressed. A mute took effect in TotalMix only with its Mute Master
+  on (as in TOTALMIX-OSC.md, the global mute recheck of 2026-10-31).
+- Bright and dim could use more contrast. Palette 9 looked the same as RGB 127, 40, 0, and palette 13
+  the same as RGB 127, 127, 0, so the palette's bright shades are already at full brightness as far
+  as the eye can tell.
+
+**Consequences.**
+- The palette's runs of four (bright to dim) hold for orange as for red and yellow; index 11 is
+  orange's dimmest.
+- More contrast can come only from the device's own LED brightness (its Settings page, 1–10, 8 by
+  default, per Novation's user guide), which is the user's setting and left to the user.
+
