@@ -469,3 +469,15 @@ and intuitiveness to be assessed).
 **Findings** (Adam, from the bottom tick up): −oo, −60, −40, −19.5, −10.5, −6.2, −0.7, +2.7, +6.0, against labels of −∞, −60, −40, −20, −10, −6, 0, +3, and +6.
 
 **Consequences.** Each reading, through the slope of its stretch of the scale, places its tick a little off test 7's value: 0 dB at about 99.9 (not 102), +3 at 118.2 (not 120), −6 at 83.1, −10 at 65, −20 at 46.4. Neither pass is exact (Adam's alignment by eye), so the driver takes the mean of the two: 127, 119, 101, 83.5, 65.5, 46, 29, 11, and 0. Readings still off by a few tenths of a dB at a tick are within how exactly a tick can be hit by eye. Off now shows as "-oo" on the hardware controllers' displays, as TotalMix FX shows it (Adam, 2026-11-01).
+
+### Test 9 (2026-11-01): turning an encoder with Shift held
+
+**Setup.** `sbdev lcxl` (absolute mode, touch reports on). Adam held Shift, turned encoder 1 several clicks clockwise and anticlockwise, released Shift, and turned it again; log kept.
+
+**Findings:**
+- Shift sent its press and release (channel 7, CC 63).
+- With Shift held, the encoder sent only touch reports, on and off about 80 ms apart for each burst of movement (30 pairs over 6 seconds), and no values. The touch reports carry no direction.
+- After Shift was released, the encoder carried on from 62, next to where it had been, so the turns with Shift held had not changed the device's own value (as the user guide's Shift "preview" says).
+
+**Consequences.** In absolute mode the host can't tell which way an encoder turned with Shift held, so Shift can't make coarse steps there. It can still act on "turned with Shift held" (e.g., reset a pan to the center). Whether relative mode sends steps with Shift held is untested.
+
