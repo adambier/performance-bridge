@@ -822,15 +822,15 @@ public struct LaunchControlDriver: Sendable {
         return ValueText.level(position: value)
     }
 
-    /// The stationary display (the home screen): the channels on the page, then what isn't shown
+    /// The stationary display (the home screen): what is on the page (`pageTitle`), then what isn't shown
     /// anywhere else on the device (Adam, 2026-11-01). XL 3: where each send row goes ("Top >
     /// Phones 1", "Mid > ADI-2 3/4"). Launch Control 3: the top row ("Top: Pan" or "Top > Phones 1")
     /// and the buttons ("Buttons: Mute" or "Buttons: PFL"). Each strip's own name shows on its
     /// control's display when the control moves. (Four-letter names in two rows of four were tried
     /// first and were unreadable; docs/LAUNCH-CONTROL-XL3.md, test 5.)
     func stationaryLines(hub: SurfaceHub) -> [String] {
-        let shown = (infos[layers[0]] ?? []).filter { $0 != nil }.count
-        let title = shown == 0 ? "Channels" : "Channels \(page.first + 1)-\(page.first + shown)"
+        let title = Self.pageTitle((infos[layers[0]] ?? []).compactMap { $0?.channel },
+                                   order: hub.layout.channels(.sources, in: hub.mirror))
         func row(_ prefix: String, _ index: Int?, none: String) -> String {
             guard let index, hub.sendTargets.indices.contains(index) else { return prefix + ": " + none }
             return prefix + " " + Self.sendLabel(sendName(index, hub: hub))
@@ -840,6 +840,26 @@ public struct LaunchControlDriver: Sendable {
             return [title, row("Top", send(0), none: "none"), row("Mid", send(1), none: "none")]
         }
         return [title, row("Top", send(0), none: "Pan"), "Buttons: " + (buttonsArePFL ? "PFL" : "Mute")]
+    }
+
+    /// The home screen's first line: what is on the page, each kind counted on its own in the
+    /// channel order (Adam, 2026-11-01), e.g., "Inputs 1-7", then "Playbacks 1-8" on the next page,
+    /// or "In 6-7, PB 1-6" for a page with both. Counting strips instead would count the blanks
+    /// left before the playbacks when they start a new page.
+    static func pageTitle(_ shown: [ChannelRef], order: [ChannelRef]) -> String {
+        func range(_ bus: TotalMixBus) -> (Int, Int)? {
+            let ofKind = order.filter { $0.bus == bus }
+            let numbers = shown.filter { $0.bus == bus }.compactMap { ref in ofKind.firstIndex(of: ref).map { $0 + 1 } }
+            guard let low = numbers.min(), let high = numbers.max() else { return nil }
+            return (low, high)
+        }
+        func text(_ range: (Int, Int)) -> String { range.0 == range.1 ? "\(range.0)" : "\(range.0)-\(range.1)" }
+        switch (range(.input), range(.playback)) {
+        case let (inputs?, playbacks?): return "In \(text(inputs)), PB \(text(playbacks))"
+        case let (inputs?, nil): return (inputs.0 == inputs.1 ? "Input " : "Inputs ") + text(inputs)
+        case let (nil, playbacks?): return (playbacks.0 == playbacks.1 ? "Playback " : "Playbacks ") + text(playbacks)
+        case (nil, nil): return "No channels"
+        }
     }
 
     private mutating func drawStationary(hub: SurfaceHub) -> [UInt8] {

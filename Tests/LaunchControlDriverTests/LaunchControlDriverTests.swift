@@ -98,7 +98,7 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(answer.midi.contains([0xB0, 0x21, 0]), "a blank strip's encoder is dark")
         XCTAssertTrue(answer.midi.contains([0xB0, 0x0D, 45]),
                       "the top row sends to Phones, a white output that isn't in the control room: blue")
-        XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.stationary, field: 0, "Channels 1-4") ?? []))
+        XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.stationary, field: 0, "In 1-3, PB 1") ?? []))
         XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.control(.fader(0)), field: 0, "Keys") ?? []))
         XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.control(.fader(0)), field: 1, "Level") ?? []))
         XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.control(.encoder(row: 0, column: 0)), field: 1, "> Phones") ?? []))
@@ -313,6 +313,27 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(right.midi.contains(LaunchControlOutgoing.text(.control(.encoder(row: 2, column: 0)), field: 2, "R2") ?? []))
     }
 
+    func testTheHomeScreenTitleCountsEachKind() {
+        let order = [ChannelRef(.input, 0), ChannelRef(.input, 2), ChannelRef(.input, 3),
+                     ChannelRef(.playback, 0), ChannelRef(.playback, 2)]
+        XCTAssertEqual(LaunchControlDriver.pageTitle(Array(order[0...2]), order: order), "Inputs 1-3")
+        XCTAssertEqual(LaunchControlDriver.pageTitle(Array(order[3...4]), order: order), "Playbacks 1-2")
+        XCTAssertEqual(LaunchControlDriver.pageTitle([order[4]], order: order), "Playback 2")
+        XCTAssertEqual(LaunchControlDriver.pageTitle(Array(order[1...3]), order: order), "In 2-3, PB 1")
+        XCTAssertEqual(LaunchControlDriver.pageTitle([], order: order), "No channels")
+
+        var hub = loadedHub()
+        var layout = hub.layout
+        layout.playbacksOnNewPage = true  // inputs 1-3, five blanks, then the playback
+        _ = hub.setLayout(layout, now: 0)
+        var driver = LaunchControlDriver(name: "lc", layout: .xl3)
+        _ = driver.start(hub: &hub, now: 0)
+        _ = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0)
+        XCTAssertEqual(driver.stationaryLines(hub: hub)[0], "Inputs 1-3")
+        _ = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 1)
+        XCTAssertEqual(driver.stationaryLines(hub: hub)[0], "Playback 1", "not 'Channels 9-9'")
+    }
+
     func testTheAppCanSetASendRow() {
         var (driver, hub, _) = connected(layout: .xl3, outputs: [(4, "ADAT 1/2"), (6, "ADAT 3/4")])
         XCTAssertEqual(driver.currentSendOutputs(hub: hub), [2, 4])
@@ -334,7 +355,7 @@ final class LaunchControlDriverTests: XCTestCase {
 
     func testTheHomeScreenShowsWhereTheRowsGo() {
         var (driver, hub, midi) = connected(layout: .xl3, outputs: [(4, "ADAT 1/2"), (6, "ADAT 3/4")])
-        XCTAssertEqual(driver.stationaryLines(hub: hub), ["Channels 1-4", "Top > Phones", "Mid > ADAT 1/2"])
+        XCTAssertEqual(driver.stationaryLines(hub: hub), ["In 1-3, PB 1", "Top > Phones", "Mid > ADAT 1/2"])
         XCTAssertTrue(midi.contains(LaunchControlOutgoing.text(.stationary, field: 1, "Top > Phones") ?? []))
         _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 1)
         let shiftPage = driver.receive([0xB0, 0x6B, 0x7F], hub: &hub, now: 1)
@@ -343,10 +364,10 @@ final class LaunchControlDriverTests: XCTestCase {
                       "the home screen follows the row")
 
         var (lc3, lc3Hub, _) = connected(layout: .lc3)
-        XCTAssertEqual(lc3.stationaryLines(hub: lc3Hub), ["Channels 1-4", "Top: Pan", "Buttons: Mute"])
+        XCTAssertEqual(lc3.stationaryLines(hub: lc3Hub), ["In 1-3, PB 1", "Top: Pan", "Buttons: Mute"])
         _ = lc3.receive([0xB0, 0x6B, 0x7F], hub: &lc3Hub, now: 1)
         let function = lc3.receive([0xB0, 0x42, 0x7F], hub: &lc3Hub, now: 2)
-        XCTAssertEqual(lc3.stationaryLines(hub: lc3Hub), ["Channels 1-4", "Top > Phones", "Buttons: PFL"])
+        XCTAssertEqual(lc3.stationaryLines(hub: lc3Hub), ["In 1-3, PB 1", "Top > Phones", "Buttons: PFL"])
         XCTAssertTrue(function.midi.contains(LaunchControlOutgoing.text(.stationary, field: 2, "Buttons: PFL", model: .lc3) ?? []))
     }
 
