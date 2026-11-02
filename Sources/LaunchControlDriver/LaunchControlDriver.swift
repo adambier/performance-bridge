@@ -514,14 +514,14 @@ public struct LaunchControlDriver: Sendable {
     /// bottom, then 2.5, 2, 1.5, and 1 dB, and 0.5 dB from −5 to +5 dB. Level and send encoders use
     /// this scale, as volume controls (Adam, 2026-11-01).
     public static let arcDetents: [Double] = [
-        -62, -59, -56, -53, -50, -47, -44, -41.5, -39, -36.5, -34, -32, -30, -28, -26, -24, -22.5, -21,
-        -19.5, -18, -16.5, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4.5, -4, -3.5, -3, -2.5,
-        -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 6,
+        -63.5, -60.5, -57.5, -54.5, -51.5, -48.5, -45.5, -43, -40.5, -38, -35.5, -33.5, -31.5, -29.5,
+        -27.5, -25.5, -24, -22.5, -21, -19.5, -18, -16.5, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6,
+        -5, -4.5, -4, -3.5, -3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 6,
     ]
 
     /// The encoder value at 0 dB on the ARC scale: 101, as on the XL 3's faders (`faderTicks`).
-    /// Values 1–101 spread the detents from −62 to 0 dB evenly, and 101–127 those from 0 to +6 dB
-    /// (about 0.41 and 0.42 detents a value: 0.2 dB a value near 0 dB, 1.2 dB at the bottom).
+    /// Values 1–101 spread the detents from −63.5 to 0 dB evenly, and 101–127 those from 0 to +6 dB
+    /// (about 0.42 detents a value either side: 0.2 dB a value near 0 dB, 1.3 dB at the bottom).
     /// Value 0 is off.
     public static let encoderUnityValue = 101
 
