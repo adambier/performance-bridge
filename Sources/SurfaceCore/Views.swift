@@ -53,7 +53,6 @@ public struct PerformanceLayout: Hashable, Codable, Sendable {
     }
 
     /// Reads a saved layout; a missing field is empty, so layouts saved by older versions still load.
-
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         sourceOrder = try container.decodeIfPresent([ChannelRef].self, forKey: .sourceOrder) ?? []

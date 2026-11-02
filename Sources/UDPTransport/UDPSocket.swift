@@ -18,6 +18,7 @@ public enum UDPError: Error, Equatable, CustomStringConvertible {
     /// UDP is not implemented on this platform yet.
     case unsupportedPlatform
 
+    /// The error in words, for a log.
     public var description: String {
         switch self {
         case .socketFailed(let code): return "Could not open a UDP socket (\(UDPError.message(code)))."
@@ -196,10 +197,15 @@ public final class UDPSocket {
 
 /// Placeholder until UDP is implemented on this platform: every call throws.
 public final class UDPSocket {
+    /// Always 0: nothing is opened.
     public let localPort: UInt16 = 0
+    /// Throws `UDPError.unsupportedPlatform`.
     public init(listeningOn port: UInt16, localOnly: Bool = false) throws { throw UDPError.unsupportedPlatform }
+    /// Throws `UDPError.unsupportedPlatform`.
     public func send(_ bytes: [UInt8], to host: String, port: UInt16) throws { throw UDPError.unsupportedPlatform }
+    /// Does nothing.
     public func startReceiving(_ handler: @escaping (_ bytes: [UInt8], _ sender: String) -> Void) {}
+    /// Does nothing.
     public func stop() {}
 }
 

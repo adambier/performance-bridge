@@ -43,8 +43,9 @@ public struct RotoStep: Equatable, Sendable {
 /// The driver claims to be Bitwig (`02`), as test 3 recommends: no 0 dB indent at the wrong
 /// place, and switches that send only presses.
 public struct RotoDriver: Sendable {
-    /// What the Roto-Control has, for `SurfaceHub.addSurface`. The jump guard is 8,000 of the
-    /// knob's 16,384 counts. In the kept logs of tests 2 and 3, counted by script, every end event
+    /// What the Roto-Control has, for `SurfaceHub.addSurface`. The jump guard is 8,000/16,383 of
+    /// the range, compared after the 0 dB indent's bend, where it is 0.43–0.50 of TotalMix's fader
+    /// travel (review of 2026-11-02). In the kept logs of tests 2 and 3, counted by script, every end event
     /// in MIX mode jumped at least 12,690 counts, and no other report in MIX mode differed from the
     /// knob's last by more than 2,942 (docs/ROTO-CONTROL.md, section 6).
     public static let capabilities = SurfaceCapabilities(stripCount: RotoCC.controlCount, feel: .follows,

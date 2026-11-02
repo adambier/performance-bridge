@@ -23,6 +23,7 @@ public enum TotalMixValue: Equatable, Sendable, CustomStringConvertible {
         return nil
     }
 
+    /// The event in words, for a log.
     public var description: String {
         switch self {
         case .number(let value): return String(format: "%g", value)

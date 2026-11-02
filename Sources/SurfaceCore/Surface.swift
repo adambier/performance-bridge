@@ -14,6 +14,7 @@ public struct SurfaceID: Hashable, Sendable, CustomStringConvertible {
     /// A surface's name.
     public init(_ rawValue: String) { self.rawValue = rawValue }
 
+    /// The surface's name.
     public var description: String { rawValue }
 }
 

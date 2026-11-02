@@ -234,8 +234,8 @@ library's tests check it against the guide, not against a device.
 Decided with Adam, 2026-11-01. The layout gets a close look in the Tier 1 UI review and Adam's
 own (Adam asked for its efficiency and intuitiveness to be assessed).
 
-- **Eight strips.** The bottom encoder row is each strip's level, into the mix output (the home
-  submix) for sources and the output's own level in the outputs view.
+- **Eight strips.** The bottom encoder row is each strip's level in the home submix (Main Out). The
+  strips always show sources.
 - **Top encoder row.** Pan or a send, chosen on the device: Page up and down step it through Pan,
   then each send in order (control room outputs first), as Page does in Novation's own DAW
   integrations.[^ug-daw-mixer] The screen names the
@@ -273,6 +273,9 @@ When a unit is available:
    numbers do they send (expected 106, 107, 103, 102, 66, and 104)?
 4. **Function and Mode.** Does Function alone send a press, and does Mode with Function change
    the reported mode? Do mode reports come with Control Change 31, as on the XL 3?[^xl3-test1]
+   Does Mode + Function also send Function's own press (66)? On the XL 3, Mode + Solo/Arm passed
+   the button's press on,[^xl3-test6] and if the Launch Control 3 does the same, choosing a DAW mode
+   on the device would also switch the buttons between mute and PFL (review of 2026-11-02).
 5. **Positions and encoders.** Does an encoder continue from a position the host sends? Is the
    first step after a change of direction dropped, as on the XL 3?[^xl3-test2]
 6. **Screen and colors.** As the XL 3's tests 4 and 5. Do Function and the Novation button have

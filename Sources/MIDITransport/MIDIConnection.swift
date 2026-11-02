@@ -36,6 +36,7 @@ public enum MIDIConnectionError: Error, Equatable, CustomStringConvertible {
     /// MIDI is not implemented on this platform.
     case unsupportedPlatform
 
+    /// The error in words, for a log.
     public var description: String {
         switch self {
         case .coreMIDI(let call, let status): return "\(call) failed with status \(status)."

@@ -20,6 +20,7 @@ public struct ChannelRef: Hashable, Codable, Sendable, CustomStringConvertible {
     /// Whether this is an input or a playback, whose level is a mixer node into a submix.
     public var isSource: Bool { bus != .output }
 
+    /// The channel in words, counting from 1, e.g., "input 3".
     public var description: String { "\(bus.settingsName) \(channel + 1)" }
 }
 

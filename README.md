@@ -23,9 +23,9 @@ This project is in early development. There is no released app yet, only a first
 - **`LaunchControl`**: the DAW mode protocol of Novation's Launch Control XL 3 and Launch Control 3 (their controls, colors, screen, and settings), from Novation's programmer's reference guides. Tested against a Launch Control XL 3 (`docs/LAUNCH-CONTROL-XL3.md`, section 10); the Launch Control 3 has not been tried on a device (`docs/LAUNCH-CONTROL-3.md`).
 - **`SurfaceCore`**: the surface-neutral core. It keeps a copy of TotalMix's state and maps it onto any surface's strips: sources (inputs and playbacks) or outputs, levels into a chosen home submix, pans, sends, mute, PFL, and meters, with paging and a single-channel focus mode. It keeps TotalMix from moving a control in the user's hand, and makes faders without motors pick up. Tested on its own.
 - **`RotoDriver`**: the Roto-Control's driver on top of `SurfaceCore`, for its MIX mode: inputs and playbacks on the main track set and outputs on the second (monitoring outputs, such as Main Out and the phones, first, then sends), level, pan, and send knob modes, mute, PFL (on the solo switches), single-track pages, names, TotalMix's colors (outputs left white show green for monitoring and blue for sends), lights, and meters. Tried on the hardware through `sbdev bridge`.
-- **`LaunchControlDriver`**: the driver for both Launch Control models on top of `SurfaceCore`. On the XL 3: faders for level, an encoder row each for pan or a send, PFL and mute buttons, and the screen. On the Launch Control 3: level and pan or a send on the encoders, and mute or PFL on the buttons. It can run the Launch Control 3's layout on an XL 3. Not yet in the app; tried through `sbdev lcbridge`.
+- **`LaunchControlDriver`**: the driver for both Launch Control models on top of `SurfaceCore`. On the XL 3: faders for level, an encoder row each for pan or a send, PFL and mute buttons, and the screen. On the Launch Control 3: level and pan or a send on the encoders, and mute or PFL on the buttons. It can run the Launch Control 3's layout on an XL 3. In the app, chosen in Settings → Connections; also tried through `sbdev lcbridge`.
 - **`BridgeEngine`**: TotalMix and a Roto-Control connected through the core and the driver: the socket, the MIDI ports, and a clock. Each side connects on its own and is tried again every 3 seconds, so either can be started, quit, or unplugged at any time.
-- **The app, a first look**: a menu-bar app (macOS 13 or later) that runs `BridgeEngine`, with the connection states, the home submix, an option to start the playbacks on a new page, About, and Settings for TotalMix's host and ports.
+- **The app, a first look**: a menu-bar app (macOS 13 or later) that runs `BridgeEngine`, with the connection states, a Setup Guide, About, and Settings for TotalMix's host and ports, the hardware controller (one at a time) and its MIDI port, and the channel order and labels.
 - **`MIDITransport`**: a MIDI connection through CoreMIDI, on macOS.
 - **`UDPTransport`**: a small UDP socket, on macOS and Linux.
 - **`sbdev`**: a developer tool that prints what TotalMix sends and sends single messages to it, talks to a Roto-Control or (`sbdev lcxl`) a Launch Control XL 3, and runs the core and a driver between TotalMix and a Roto-Control (`sbdev bridge`) or a Launch Control (`sbdev lcbridge`).
@@ -69,14 +69,14 @@ On a Mac, quit `sbdev` first (both need TotalMix's outgoing port), then:
 swift run PerformanceBridge
 ```
 
-The app appears in the menu bar. Set TotalMix's host and ports in Settings, or give the ports on
-the command line with `--in-port` and `--out-port`. The connection log goes to the Terminal.
+The app appears in the menu bar. Set TotalMix's host and ports and the hardware controller in
+Settings, or give the ports on the command line with `--in-port` and `--out-port`. The connection
+log goes to the Terminal.
 
-A Launch Control can be tried alongside the Roto-Control before Settings has a place for it:
-`--launch-control xl3` for a Launch Control XL 3, `lc3` for a Launch Control 3, or `lc3-sim` for
-the Launch Control 3's layout on an XL 3, and `--launch-control-port NAME` for another MIDI port.
-The menu then shows a third
-status line.
+On the command line, `--launch-control xl3` (a Launch Control XL 3), `lc3` (a Launch Control 3), or
+`lc3-sim` (the Launch Control 3's layout on an XL 3) overrides the hardware controller chosen in
+Settings, and the Roto-Control is then not used; `--launch-control-port NAME` names another MIDI
+port.
 
 To build the app itself, `./make-app.sh` makes "Performance Bridge.app" in the package folder (the
 Command Line Tools are enough; the first build downloads Sparkle). Open it with
