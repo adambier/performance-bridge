@@ -672,3 +672,17 @@ leaving DAW mode and entering it again (`startBytes`), is what makes the device 
   the driver (`LaunchControlDriver.blinkPeriod`).
 - In DAW mode, both Track buttons together are free for the app.
 
+### Test 16 (2026-11-02): the Launch Control 3's layout, Function held
+
+**Setup.** Adam's Launch Control XL 3 with the app and `--launch-control lc3-sim` (the Launch Control
+3's layout, Mute/Select standing in for Function). Log `app-lc3sim-1102.log`. Seen by Adam.
+
+**Findings.** All as intended: at rest Mute/Select was dim yellow and the top buttons dim orange
+(mute); while it was held, it lit bright yellow, the buttons turned dim yellow (PFL), and the screen
+showed "Buttons / PFL"; a button pressed then turned PFL on in TotalMix and lit bright yellow; on
+release the buttons went back to mute and the screen showed "Buttons / Mute"; holding it again and
+pressing the button turned the PFL off. No blue at start.
+
+**Consequence.** Function held for PFL works in the driver; on a Launch Control 3 it also needs
+Function to send its release (an inference, docs/LAUNCH-CONTROL-3.md).
+
