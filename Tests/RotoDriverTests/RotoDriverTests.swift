@@ -337,6 +337,23 @@ final class RotoDriverTests: XCTestCase {
         XCTAssertTrue(step.midi.contains(RotoOutgoing.trackCount(4).bytes), "the four channels")
     }
 
+    func testSwitchingTrackSetsKeepsTheSelectedTrack() {
+        var (driver, hub, _) = connected()
+        _ = driver.receive(sysEx(.general, 0x09, RotoSysEx.encode14(1)), hub: &hub, now: 1)  // Vox selected
+        let step = driver.receive(sysEx(.mix, 0x05, [0x01]), hub: &hub, now: 2)
+        XCTAssertTrue(step.midi.contains(RotoOutgoing.trackCount(4).bytes), "the page is drawn again for the new set")
+        _ = driver.receive(sysEx(.mix, 0x02, [0x00]), hub: &hub, now: 3)
+        XCTAssertEqual(hub.mode(of: rotoID), .focus(channel: ChannelRef(.input, 2), first: 0),
+                       "single-track mode still focuses the track selected before the switch")
+    }
+
+    func testSendNamesUseTheAppsLabels() {
+        var (driver, hub, _) = connected()
+        _ = hub.setLayout(hub.layout.withLabel("Cans", for: ChannelRef(.output, 2)), now: 1)
+        let step = driver.receive(sysEx(.mix, 0x02, [0x00]), hub: &hub, now: 2)
+        XCTAssertTrue(step.midi.contains(RotoOutgoing.sendNames(start: 0, names: ["> Cans"]).bytes))
+    }
+
     func testSingleTrackModeFocusesTheSelectedTrack() {
         var (driver, hub, _) = connected()
         _ = driver.receive(sysEx(.general, 0x09, RotoSysEx.encode14(1)), hub: &hub, now: 1)
@@ -473,5 +490,27 @@ final class RotoDriverTests: XCTestCase {
         XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: 99), 27, "unknown is white")
         XCTAssertEqual(Set(RotoDriver.schemeForTotalMixColor.keys), Set(1...8))
         XCTAssertTrue(RotoDriver.schemeForTotalMixColor.values.allSatisfy { $0 <= 82 })
+    }
+
+    func testPageDrawsAreCoalesced() {
+        var (driver, hub, midi) = connected()
+        XCTAssertTrue(midi.contains(RotoOutgoing.trackDetailsEnd.bytes), "the first draw goes at once")
+        let end = RotoOutgoing.trackDetailsEnd.bytes
+        // TotalMix renames and recolors channels just after the connection, as its /sendall answer does.
+        var sent: [UInt8] = []
+        for (step, name) in ["Vox", "Vox 2", "Vox 3"].enumerated() {
+            let now = 0.02 * Double(step + 1)
+            let output = hub.handle(.channel(bus: .input, channel: 0, parameter: "name", value: .text(name)), now: now)
+            sent += driver.render(output.updates[rotoID] ?? [], hub: hub, now: now)
+            sent += driver.tick(now: now, hub: hub)
+        }
+        XCTAssertEqual(sent.occurrences(end), 0, "held back within 100 ms of the last draw")
+        let due = driver.tick(now: 0.1, hub: hub)
+        XCTAssertEqual(due.occurrences(end), 1, "drawn once when due")
+        XCTAssertTrue(due.contains(Array("Vox 3".utf8)), "with the latest name")
+        XCTAssertTrue(driver.tick(now: 0.5, hub: hub).isEmpty, "nothing more to draw")
+        let later = hub.handle(.channel(bus: .input, channel: 0, parameter: "name", value: .text("Lead")), now: 1)
+        XCTAssertEqual(driver.render(later.updates[rotoID] ?? [], hub: hub, now: 1).occurrences(end), 1,
+                       "a change after a quiet spell is drawn at once")
     }
 }

@@ -37,8 +37,8 @@ public struct LaunchControlStep: Equatable, Sendable {
 /// surface per layer of controls, all paged together:
 /// - XL 3: the faders (level) with the top buttons (PFL); the top encoder row (a send) with the
 ///   bottom buttons (mute); the middle encoder row (another send); the bottom encoder row (pan).
-/// - Launch Control 3: the bottom encoder row (level) with the buttons (mute, or PFL after
-///   Function); the top encoder row (pan or a send, stepped by Page up and down).
+/// - Launch Control 3: the bottom encoder row (level) with the buttons (mute, or PFL while
+///   Function is held); the top encoder row (pan or a send, stepped by Page up and down).
 ///
 /// **Controls** (decided with Adam, 2026-11-01; docs/LAUNCH-CONTROL-XL3.md, section 9, and
 /// docs/LAUNCH-CONTROL-3.md, section 9), following the labels and Novation's own DAW integrations:
@@ -70,14 +70,13 @@ public struct LaunchControlDriver: Sendable {
     /// The start of the hub surfaces' names; each layer adds its own (e.g., "lcxl-1.faders").
     public let name: String
 
-    /// The output each send row sends to, by output channel (0-based), as the user last chose it
-    /// with Page (top row) and Shift + Page (middle row): XL 3, two entries, top row first; Launch
-    /// Control 3, one entry, the top row, where `nil` means pan. On the XL 3 `nil` means "the first
-    /// send target the other row isn't using". A choice that isn't a send target now (e.g., hidden
-    /// in TotalMix) is kept, and the row uses another until it comes back. The app can save these
-    /// and pass them back to `init`.
-    public private(set) var sendOutputs: [Int?]
-    /// Launch Control 3: whether the buttons are PFL (`true`) or mute.
+    /// The send rows' chosen outputs (`LaunchControlSendRows`), as the user last chose them with
+    /// Page (top row) and Shift + Page (middle row) or in the app.
+    public private(set) var sendRows: LaunchControlSendRows
+    /// The output each send row was chosen to send to (`LaunchControlSendRows.choices`). The app
+    /// can save these and pass them back to `init`.
+    public var sendOutputs: [Int?] { sendRows.choices }
+    /// Launch Control 3: whether the buttons are PFL (`true`, while Function is held) or mute.
     public private(set) var buttonsArePFL = false
     /// The send target (an index into `SurfaceHub.sendTargets`) each send row uses now, from
     /// `sendOutputs` (`resolveSends(_:)`); `nil` for none, or pan on the Launch Control 3.
@@ -86,7 +85,38 @@ public struct LaunchControlDriver: Sendable {
     private var connected = false
     private var inCustomMode = false
     private var lastStart: Double?
+    /// When the device last sent anything, and when the driver last asked it for its surface mode,
+    /// for the presence check (`presenceInterval`).
+    private var lastHeard: Double?
+    /// Whether flashing buttons are in their bright half now (`blinkPeriod`).
+    private var blinkLit = true
+    private var lastQuery: Double?
+    private var awaitingModeReply = false
+
+    /// How long the device may stay silent before the driver asks for its surface mode (feature
+    /// control 30, which the XL 3 has answered: docs/LAUNCH-CONTROL-XL3.md, test 6), in seconds.
+    /// With no answer to two questions, or an answer of a Custom Mode the device never announced,
+    /// the driver takes it that the device restarted and lost DAW mode, and enters DAW mode
+    /// again, which draws everything (Adam, 2026-11-02, from the review of that date). That a
+    /// device restarted without its port going away answers this way is an inference.
+    public static let presenceInterval: Double = 5
     private var shiftHeld = false
+    private var trackLeftHeld = false
+    private var trackRightHeld = false
+    /// When Shift went down, and whether Page or Track has been pressed since, for the reset's
+    /// guard (`resetAllowed`).
+    private var shiftDownAt: Double?
+    private var shiftUsedForNavigation = false
+    /// The encoders reset during this hold of Shift: each resets once per hold, since one turn can
+    /// send several touch reports.
+    private var resetThisShift: Set<UInt8> = []
+    /// A send's position before Shift + turn took it to −oo, so the next Shift + turn restores it.
+    private var sendsBeforeReset: [ControlTarget: Double] = [:]
+
+    /// How long Shift must be held, with no Page or Track press, before Shift + turn resets: so a
+    /// hand reaching for Shift + Page or Shift + Track that brushes an encoder changes nothing
+    /// (Adam, 2026-11-02, from the review of that date).
+    public static let resetHold: Double = 0.3
     private var parser = LaunchControlParser()
     private var page = (first: 0, count: 0)
     private var infos: [Layer: [StripInfo?]] = [:]
@@ -98,7 +128,8 @@ public struct LaunchControlDriver: Sendable {
     private var sentConfig: [UInt8: UInt8] = [:]  // target byte → arrangement and flags
 
     /// How close to the level a fader's first value must be for the hub's pickup to take it, as a
-    /// fraction of the range: 12 steps of 127. The device holds a fader back until it crosses the
+    /// fraction of TotalMix's fader travel (0…1): 12/127 of it, which on the printed scale is 7 to
+    /// 18 of the fader's values depending on where the fader is (review of 2026-11-02). The device holds a fader back until it crosses the
     /// level, and then sends its first value just past it (one step past in test 3's slow moves),
     /// but the hub has no earlier position to see the crossing with; a fast move may land a few
     /// steps further (inference), and the window has to take it. If the device didn't hold the
@@ -119,8 +150,7 @@ public struct LaunchControlDriver: Sendable {
         self.name = name
         self.layout = layout
         self.device = device ?? layout
-        let rows = layout == .xl3 ? 2 : 1
-        self.sendOutputs = (0..<rows).map { sendOutputs.indices.contains($0) ? sendOutputs[$0] : nil }
+        self.sendRows = LaunchControlSendRows(layout: layout, choices: sendOutputs)
     }
 
     /// Whether the device has answered.
@@ -178,7 +208,7 @@ public struct LaunchControlDriver: Sendable {
     /// Leaves DAW mode and enters it again, so the device answers with its echo even when a host
     /// that quit without leaving (e.g., stopped with Control-C) left it in DAW mode: started after
     /// such a host, the app was seen stuck on "Connecting", and connected at once after a host that
-    /// left properly (Adam, 2026-11-01). That the device echoes only a change is an inference.
+    /// left properly (Adam, 2026-11-01). The device echoes only a change (docs/LAUNCH-CONTROL-XL3.md, test 14).
     private func startBytes() -> [UInt8] {
         var bytes = LaunchControlOutgoing.dawMode(false) + LaunchControlOutgoing.dawMode(true)
             + LaunchControlOutgoing.touchEvents(true)
@@ -197,7 +227,31 @@ public struct LaunchControlDriver: Sendable {
             self.lastStart = now
             step.midi += startBytes()
         }
+        // Mutes selected while Mute Master is off flash; the lights are sent only when they change.
+        let lit = Int((now / Self.blinkPeriod).rounded(.down)) % 2 == 0
+        if connected, !inCustomMode, lit != blinkLit, hub.mirror.muteMaster == false {
+            blinkLit = lit
+            step.midi += drawButtons(hub: hub)
+        }
+        if connected, let heard = lastHeard, now - heard >= Self.presenceInterval {
+            if now - heard >= 2 * Self.presenceInterval + 1 {
+                restart(now: now, into: &step)   // two questions unanswered
+            } else if now - (lastQuery ?? -Double.infinity) >= Self.presenceInterval {
+                lastQuery = now
+                awaitingModeReply = true
+                step.midi += LaunchControlOutgoing.queryFeature(0x1E)
+            }
+        }
         return step
+    }
+
+    /// Takes the device as no longer in DAW mode, and asks for it again; the echo draws everything.
+    private mutating func restart(now: Double, into step: inout LaunchControlStep) {
+        connected = false
+        inCustomMode = false
+        awaitingModeReply = false
+        lastStart = now
+        step.midi += startBytes()
     }
 
     // MARK: - From the device
@@ -212,6 +266,7 @@ public struct LaunchControlDriver: Sendable {
 
     private mutating func handle(_ event: LaunchControlEvent, hub: inout SurfaceHub, now: Double,
                                  into step: inout LaunchControlStep) {
+        lastHeard = now
         if case .dawMode(let on) = event {
             if on {
                 if !connected { connect(hub: &hub, now: now, into: &step) }
@@ -224,7 +279,13 @@ public struct LaunchControlDriver: Sendable {
             return
         }
         if case .mode(let mode) = event {
+            let answer = awaitingModeReply
+            awaitingModeReply = false
             switch mode {
+            case .custom where answer && connected && !inCustomMode:
+                // A Custom Mode chosen on the device is announced when chosen (test 1); one that
+                // shows up only in an answer means the device restarted (inference).
+                restart(now: now, into: &step)
             case .custom:
                 inCustomMode = true
             case .dawMixer, .dawControl:
@@ -235,9 +296,17 @@ public struct LaunchControlDriver: Sendable {
             }
             return
         }
-        // Anything else from the device also shows that it is there: the Launch Control 3's echo
-        // of the DAW mode note is an inference (docs/LAUNCH-CONTROL-3.md).
-        if !connected { connect(hub: &hub, now: now, into: &step) }
+        // A control moved or pressed also shows that the device is there in DAW mode (the Launch
+        // Control 3's echo of the DAW mode note is an inference, docs/LAUNCH-CONTROL-3.md). Feature
+        // replies don't: leaving DAW mode, the device sends CC 30 and 31 before its 9F 0C 00, and
+        // taking those as presence drew everything on a device on its way out (review of
+        // 2026-11-02; docs/LAUNCH-CONTROL-XL3.md, test 12).
+        switch event {
+        case .moved, .turned, .touch, .button:
+            if !connected { connect(hub: &hub, now: now, into: &step) }
+        default:
+            return
+        }
         guard !inCustomMode else { return }
 
         switch event {
@@ -250,14 +319,29 @@ public struct LaunchControlDriver: Sendable {
             take(hub.controlMoved(id(layer), strip: strip, to: position, now: now), hub: hub, into: &step)
         case .touch(let element, let touched):
             guard let (layer, strip) = control(for: element) else { return }
-            if touched, shiftHeld, case .encoder = element {
+            if touched, shiftHeld, case .encoder = element, resetAllowed(now: now),
+               resetThisShift.insert(element.controlNumber).inserted {
                 reset(element, layer: layer, strip: strip, hub: &hub, now: now, into: &step)
             }
             take(hub.touched(id(layer), strip: strip, touched, now: now), hub: hub, into: &step)
         case .button(.shift, let pressed):
             shiftHeld = pressed
+            shiftDownAt = pressed ? now : nil
+            shiftUsedForNavigation = false
+            resetThisShift = []
             // Page and Track light for what they do with Shift held, and back on release.
             step.midi += drawNavigation(hub: hub)
+        case .button(Self.functionButton, let pressed) where layout == .lc3:
+            // PFL only while Function is held, so the buttons can't be left on PFL by mistake on
+            // stage (Adam, 2026-11-02, from the review of that date; it was a toggle). Buttons send
+            // 0 on release (XL 3, test 1).
+            guard pressed != buttonsArePFL else { return }
+            buttonsArePFL = pressed
+            setModes(first: page.first, hub: &hub, now: now, into: &step)
+            step.midi += overlay("Buttons", buttonsArePFL ? "PFL" : "Mute")
+        case .button(let element, let isPressed) where element == .trackLeft || element == .trackRight:
+            if element == .trackLeft { trackLeftHeld = isPressed } else { trackRightHeld = isPressed }
+            if isPressed { pressed(element, hub: &hub, now: now, into: &step) }
         case .button(let element, pressed: true):
             pressed(element, hub: &hub, now: now, into: &step)
         default:
@@ -271,57 +355,57 @@ public struct LaunchControlDriver: Sendable {
         case .button:
             guard let (layer, strip) = switchControl(for: element) else { return }
             take(hub.switchPressed(id(layer), strip: strip, now: now), hub: hub, into: &step)
+            // A mute does nothing in the audio while TotalMix's Mute Master is off: say so where
+            // the eyes are (Adam, 2026-11-02).
+            if hub.mirror.muteMaster == false, !isPFLLayer(layer, hub: hub), infos[layer]?[strip] ?? nil != nil {
+                step.midi += overlay("Mute Master off", "in TotalMix FX")
+            }
         case .pageUp, .pageDown:
+            if shiftHeld { shiftUsedForNavigation = true }
             // Page steps the top send row's output; on the XL 3, Shift + Page the middle row's
             // (Adam, 2026-11-01).
             let row = shiftHeld && layout == .xl3 ? 1 : 0
             guard !shiftHeld || layout == .xl3 else { return }
             stepSend(row: row, by: element == .pageUp ? -1 : 1, hub: &hub, now: now, into: &step)
         case .trackLeft, .trackRight:
+            if shiftHeld { shiftUsedForNavigation = true }
             // Eight strips a press; with Shift, the first or the last page. Pages always start at
             // a multiple of eight, as on the Roto-Control: the order is set in the app, so there is
             // nothing to gain from moving one strip (Adam, 2026-11-01).
+            // Both Track buttons together go to the first page (Adam, 2026-11-02; the Novation button
+            // was tried for this the same day and dropped as hard to find).
             let direction = element == .trackLeft ? -1 : 1
-            let primary = id(layers[0])
-            var output: CoreOutput
-            if shiftHeld {
-                // Past the end, the hub goes to the start of the last page.
-                output = hub.setMode(primary, mode(for: layers[0], first: direction < 0 ? 0 : Int(Int32.max)), now: now)
-            } else {
-                output = hub.page(primary, by: direction, now: now)
-            }
-            if case .strips(_, let first, _, _)? = hub.mode(of: primary) {
-                for layer in layers.dropFirst() {
-                    output.append(hub.setMode(id(layer), mode(for: layer, first: first), now: now))
-                }
-            }
-            take(output, hub: hub, into: &step)
-        case Self.functionButton where layout == .lc3:
-            buttonsArePFL.toggle()
-            setModes(first: page.first, hub: &hub, now: now, into: &step)
-            step.midi += overlay("Buttons", buttonsArePFL ? "PFL" : "Mute")
+            let bothHeld = trackLeftHeld && trackRightHeld
+            goToPage(bothHeld ? .first : shiftHeld ? (direction < 0 ? .first : .last) : .by(direction),
+                     hub: &hub, now: now, into: &step)
         default:
             break
         }
     }
 
-    /// Resolves `sendOutputs` against the send targets now: a row's chosen output if it is a
-    /// target and the other row isn't using it, else (XL 3) the first target the other row isn't
-    /// using; on the Launch Control 3, pan if its choice isn't a target.
-    private mutating func resolveSends(_ hub: SurfaceHub) {
-        let targets = hub.sendTargets
-        var used = Set<Int>()
-        var indices: [Int?] = []
-        for choice in sendOutputs {
-            var index = choice.flatMap { targets.firstIndex(of: $0) }
-            if let found = index, used.contains(found) { index = nil }
-            if index == nil, layout == .xl3 {
-                index = targets.indices.first { !used.contains($0) }
-            }
-            if let index { used.insert(index) }
-            indices.append(index)
+    private enum PageMove { case first, last, by(Int) }
+
+    /// Moves every layer to another page: the first, the last (past the end, the hub goes to the
+    /// start of the last page), or by eight strips either way.
+    private mutating func goToPage(_ move: PageMove, hub: inout SurfaceHub, now: Double, into step: inout LaunchControlStep) {
+        let primary = id(layers[0])
+        var output: CoreOutput
+        switch move {
+        case .first: output = hub.setMode(primary, mode(for: layers[0], first: 0), now: now)
+        case .last: output = hub.setMode(primary, mode(for: layers[0], first: Int(Int32.max)), now: now)
+        case .by(let direction): output = hub.page(primary, by: direction, now: now)
         }
-        sendIndices = indices
+        if case .strips(_, let first, _, _)? = hub.mode(of: primary) {
+            for layer in layers.dropFirst() {
+                output.append(hub.setMode(id(layer), mode(for: layer, first: first), now: now))
+            }
+        }
+        take(output, hub: hub, into: &step)
+    }
+
+    /// Resolves the send rows against the send targets now (`LaunchControlSendRows.indices`).
+    private mutating func resolveSends(_ hub: SurfaceHub) {
+        sendIndices = sendRows.indices(targets: hub.sendTargets)
     }
 
     /// The next send target from `index` in direction `delta` (±1), skipping the other row's;
@@ -339,13 +423,8 @@ public struct LaunchControlDriver: Sendable {
     private mutating func stepSend(row: Int, by delta: Int, hub: inout SurfaceHub, now: Double,
                                    into step: inout LaunchControlStep) {
         guard sendOutputs.indices.contains(row), let next = nextSend(row: row, by: delta, hub: hub) else { return }
-        // The other rows keep the outputs they show now, so that one row moving never moves
-        // another (a row left to choose for itself would otherwise take the freed output).
         let targets = hub.sendTargets
-        for (index, resolved) in sendIndices.enumerated() where layout == .xl3 && sendOutputs[index] == nil {
-            sendOutputs[index] = resolved.map { targets[$0] }
-        }
-        sendOutputs[row] = next.map { targets[$0] }
+        guard sendRows.set(row: row, to: next.map { targets[$0] }, targets: targets) else { return }
         resolveSends(hub)
         setModes(first: page.first, hub: &hub, now: now, into: &step)
         let label = next.map { Self.sendLabel(sendName($0, hub: hub)) } ?? "Pan"
@@ -365,16 +444,8 @@ public struct LaunchControlDriver: Sendable {
     public mutating func setSendOutput(row: Int, to output: Int?, hub: inout SurfaceHub, now: Double) -> LaunchControlStep {
         var step = LaunchControlStep()
         let targets = hub.sendTargets
-        guard sendOutputs.indices.contains(row) else { return step }
         let index = output.flatMap { targets.firstIndex(of: $0) }
-        if output != nil && index == nil { return step }
-        if output == nil && layout == .xl3 { return step }
-        let others = Set(sendIndices.enumerated().filter { $0.offset != row }.compactMap(\.element))
-        if let index, others.contains(index) { return step }
-        for (other, resolved) in sendIndices.enumerated() where layout == .xl3 && sendOutputs[other] == nil {
-            sendOutputs[other] = resolved.map { targets[$0] }
-        }
-        sendOutputs[row] = output
+        guard sendRows.set(row: row, to: output, targets: targets) else { return step }
         resolveSends(hub)
         setModes(first: page.first, hub: &hub, now: now, into: &step)
         let label = index.map { Self.sendLabel(sendName($0, hub: hub)) } ?? "Pan"
@@ -391,7 +462,11 @@ public struct LaunchControlDriver: Sendable {
 
     private mutating func connect(hub: inout SurfaceHub, now: Double, into step: inout LaunchControlStep) {
         connected = true
+        inCustomMode = false
         lastStart = nil
+        lastHeard = now
+        lastQuery = nil
+        awaitingModeReply = false
         sentPositions = [:]
         sentColors = [:]
         sentTexts = [:]
@@ -443,22 +518,47 @@ public struct LaunchControlDriver: Sendable {
 
     private mutating func setModes(first: Int, hub: inout SurfaceHub, now: Double, into step: inout LaunchControlStep) {
         var output = CoreOutput()
-        for layer in layers { output.append(hub.setMode(id(layer), mode(for: layer, first: first), now: now)) }
+        // Only the layers whose mode changes: setting a mode redraws the layer and resets its
+        // holds and pickup, which a Page press has no reason to do to the faders (review of
+        // 2026-11-02).
+        for layer in layers {
+            let mode = mode(for: layer, first: first)
+            if hub.mode(of: id(layer)) != mode { output.append(hub.setMode(id(layer), mode, now: now)) }
+        }
         take(output, hub: hub, into: &step)
     }
 
     // MARK: - Controls
 
-    /// Where Shift + turn puts an encoder: a pan at the center, a level at 0 dB, a send at −oo
-    /// (Adam, 2026-11-01). With Shift held the device reports only that an encoder turned, not
-    /// which way, in absolute and relative mode alike (docs/LAUNCH-CONTROL-XL3.md, tests 9 and 10),
-    /// so a reset is all Shift + turn can do; `nil` for a layer that controls nothing.
-    func resetPosition(_ layer: Layer) -> Double? {
+    /// Whether Shift + turn may reset now: Shift held at least `resetHold`, with no Page or Track
+    /// press since it went down.
+    private func resetAllowed(now: Double) -> Bool {
+        guard let down = shiftDownAt else { return false }
+        return now - down >= Self.resetHold && !shiftUsedForNavigation
+    }
+
+    /// Where Shift + turn puts an encoder, from where it is now (`current`, the hub position), or
+    /// `nil` to leave it (Adam, 2026-11-02, after the review of that date: a brushed encoder must
+    /// never make anything louder):
+    /// - a pan goes to the center;
+    /// - a level above 0 dB comes down to 0 dB, and one at or below 0 dB stays;
+    /// - a send goes to −oo, and a send at −oo goes back to where the last reset took it from
+    ///   (`previous`).
+    /// With Shift held the device reports only that an encoder turned, not which way, in absolute
+    /// and relative mode alike (docs/LAUNCH-CONTROL-XL3.md, tests 9 and 10), so a reset is all
+    /// Shift + turn can do.
+    func resetPosition(_ layer: Layer, current: Double?, previous: Double?) -> Double? {
         guard case .strips(_, _, let knob, _) = mode(for: layer, first: 0) else { return nil }
         switch knob {
-        case .pan: return 0.5
-        case .level: return FaderCurve.position(gainDB: 0)
-        case .send(let index): return index == Int.max ? nil : 0
+        case .pan:
+            return 0.5
+        case .level:
+            let unity = FaderCurve.position(gainDB: 0)
+            return (current ?? 0) > unity ? unity : nil
+        case .send(let index):
+            guard index != Int.max else { return nil }
+            if (current ?? 0) > 0 { return 0 }
+            return previous
         }
     }
 
@@ -467,9 +567,15 @@ public struct LaunchControlDriver: Sendable {
     /// reset.
     private mutating func reset(_ element: LaunchControlElement, layer: Layer, strip: Int,
                                 hub: inout SurfaceHub, now: Double, into step: inout LaunchControlStep) {
-        guard let position = resetPosition(layer),
-              hub.strips(of: id(layer))?.indices.contains(strip) == true,
-              hub.strips(of: id(layer))?[strip].knobTarget != nil else { return }
+        guard let strips = hub.strips(of: id(layer)), strips.indices.contains(strip),
+              let target = strips[strip].knobTarget else { return }
+        let stored = hub.mirror.value(of: target)
+        // The hub keeps a pan as −1…+1 and positions as 0…1.
+        let current: Double? = { if case .pan = target { return stored.map { ($0 + 1) / 2 } }; return stored }()
+        guard let position = resetPosition(layer, current: current, previous: sendsBeforeReset[target]) else { return }
+        if case .strips(_, _, .send, _) = mode(for: layer, first: 0) {
+            if position == 0 { sendsBeforeReset[target] = current } else { sendsBeforeReset[target] = nil }
+        }
         take(hub.controlMoved(id(layer), strip: strip, to: position, now: now), hub: hub, into: &step)
         let value = deviceValue(layer, position)
         guard connected, !inCustomMode, sentPositions[element.controlNumber] != value else { return }
@@ -698,8 +804,28 @@ public struct LaunchControlDriver: Sendable {
         let before = sendIndices
         resolveSends(hub)
         if sendIndices != before { setModes(first: page.first, hub: &hub, now: now, into: &step) }
-        if connected && !inCustomMode { step.midi += drawNavigation(hub: hub) }
+        // Each time, since they depend on the outputs, not on this surface's strips: a send row's
+        // color and the home screen follow an output recolored or renamed in TotalMix (review of
+        // 2026-11-02). All three send only what changed.
+        if connected && !inCustomMode {
+            step.midi += drawNavigation(hub: hub) + drawSendColors(hub: hub) + drawStationary(hub: hub)
+                + drawButtons(hub: hub)
+        }
         return step
+    }
+
+    /// The send rows' lights, in their outputs' colors, for the strips that show a channel.
+    private mutating func drawSendColors(hub: SurfaceHub) -> [UInt8] {
+        var bytes: [UInt8] = []
+        for layer in layers {
+            guard let color = sendColor(layer, hub: hub) else { continue }
+            for index in 0..<Self.stripCount {
+                let element = self.element(layer, index)
+                let active = (infos[layer]?[index] ?? nil) != nil && (knobOn[layer]?[index] ?? false)
+                if element.hasLight, active { bytes += self.color(element, color) }
+            }
+        }
+        return bytes
     }
 
     private mutating func take(_ output: CoreOutput, hub: SurfaceHub, into step: inout LaunchControlStep) {
@@ -786,12 +912,41 @@ public struct LaunchControlDriver: Sendable {
         if element.hasLight {
             bytes += color(element, active ? (sendColor(layer, hub: hub) ?? Self.color(for: info)) : 0)
         }
-        if let button = button(layer, index) {
-            let on = switchOn[layer]?[index] ?? false
-            let isPFL: Bool
-            if case .strips(_, _, _, .pfl)? = hub.mode(of: id(layer)) { isPFL = true } else { isPFL = false }
-            let colorIndex: UInt8 = info == nil ? 0 : isPFL ? (on ? Self.pflOn : Self.pflOff) : (on ? Self.muteOn : Self.muteOff)
-            bytes += color(button, colorIndex)
+        bytes += drawButton(layer, index, hub: hub)
+        return bytes
+    }
+
+    /// A strip button's light: bright when on, the dimmest shade when off; a mute that is on while
+    /// TotalMix's Mute Master is off (selected but not silencing) in the medium shade, as TotalMix
+    /// draws its M button partly lit (Adam, 2026-11-02).
+    private mutating func drawButton(_ layer: Layer, _ index: Int, hub: SurfaceHub) -> [UInt8] {
+        guard let button = button(layer, index) else { return [] }
+        let info = infos[layer]?[index] ?? nil
+        let on = switchOn[layer]?[index] ?? false
+        let colorIndex: UInt8
+        if info == nil {
+            colorIndex = 0
+        } else if isPFLLayer(layer, hub: hub) {
+            colorIndex = on ? Self.pflOn : Self.pflOff
+        } else if on {
+            colorIndex = hub.mirror.muteMaster == false && !blinkLit ? Self.muteOff : Self.muteOn
+        } else {
+            colorIndex = Self.muteOff
+        }
+        return color(button, colorIndex)
+    }
+
+    private func isPFLLayer(_ layer: Layer, hub: SurfaceHub) -> Bool {
+        if case .strips(_, _, _, .pfl)? = hub.mode(of: id(layer)) { return true }
+        return false
+    }
+
+    /// Every strip button's light again; only changed ones are sent. For a change of Mute Master,
+    /// which changes no strip.
+    private mutating func drawButtons(hub: SurfaceHub) -> [UInt8] {
+        var bytes: [UInt8] = []
+        for layer in layers {
+            for index in 0..<Self.stripCount { bytes += drawButton(layer, index, hub: hub) }
         }
         return bytes
     }
@@ -939,21 +1094,31 @@ public struct LaunchControlDriver: Sendable {
     /// The label for a send: "> " and the output's name (AGENTS.md, house style).
     public static func sendLabel(_ name: String) -> String { "> " + name }
 
-    /// Palette colors for the buttons and the navigation lights. The palette's first 40 colors
-    /// have been seen to run as the guide's picture does (docs/LAUNCH-CONTROL-XL3.md, test 4):
-    /// 5 red and 7 a darker red, 13 yellow and 15 a darker yellow, 3 white and 1 a dim grey. That
-    /// the darker ones read as "off" next to the bright ones is an inference, for Adam to judge.
-    public static let muteOn: UInt8 = 5
-    /// A mute button that is off: dark red.
-    public static let muteOff: UInt8 = 7
+    /// Palette colors for the buttons and the navigation lights. Mute is orange and PFL yellow on
+    /// every hardware controller, since the Roto-Control's firmware fixes those two and a host can
+    /// only turn them on or off (docs/ROTO-CONTROL.md, section 3); a button that is off shows the
+    /// dimmest shade of its color, so the two rows can still be told apart (Adam, 2026-11-02).
+    /// The palette's first 40 colors have been seen to run as the guide's picture does
+    /// (docs/LAUNCH-CONTROL-XL3.md, test 4), each hue a run of four from bright to dim: 5 red and
+    /// 7 a darker red, 13 yellow and 15 a darker yellow, 3 white and 1 a dim grey; 9 orange and 11
+    /// its dimmest (test 13).
+    public static let muteOn: UInt8 = 9
+    /// A mute button that is off: the dimmest orange.
+    public static let muteOff: UInt8 = 11
+    /// How a mute that is on while TotalMix's Mute Master is off shows: it flashes between bright
+    /// and dim orange, `blinkPeriod` seconds each, drawn by the driver. The medium shade (10) was
+    /// tried and was too close to the others to read, and the device has no flashing of its own
+    /// (docs/LAUNCH-CONTROL-XL3.md, test 15; Adam, 2026-11-02).
+    public static let blinkPeriod: Double = 0.4
     /// A PFL button that is on: yellow.
     public static let pflOn: UInt8 = 13
-    /// A PFL button that is off: dark yellow.
+    /// A PFL button that is off: the dimmest yellow.
     public static let pflOff: UInt8 = 15
     /// Page and Track where they would move: white.
     public static let navigationOn: UInt8 = 3
-    /// The Function button while the buttons are mute: dim grey.
-    public static let functionIdle: UInt8 = 1
+    /// The Function button while the buttons are mute: the dimmest yellow, PFL's color when off,
+    /// as for any button that is off (Adam, 2026-11-02).
+    public static let functionIdle: UInt8 = 15
 
     /// The palette color for each of TotalMix's eight colors (1 white, 2 grey, 3 orange, 4 red,
     /// 5 blue, 6 green, 7 yellow, 8 pink; docs/TOTALMIX-OSC.md, test 7). White, grey, orange, red,

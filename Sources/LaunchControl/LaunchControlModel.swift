@@ -52,6 +52,31 @@ public enum LaunchControlModel: String, Hashable, Sendable, CaseIterable {
         }
     }
 
+    /// The start of the model's port names, before the device ID: "LCXL3" or "LC3".
+    public var portPrefix: String {
+        switch self {
+        case .xl3: return "LCXL3"
+        case .lc3: return "LC3"
+        }
+    }
+
+    /// The DAW port to use among MIDI endpoint names (e.g., CoreMIDI's sources): the part of the
+    /// name the DAW ports share, "LCXL3 n DAW" or "LC3 n DAW", for the lowest device ID n found; or
+    /// `nil` if there is none. Port names include the device ID (1–8, set in the device's
+    /// bootloader), so one unit per ID can be connected (docs/LAUNCH-CONTROL-XL3.md, section 2).
+    /// Matches the macOS names seen ("LCXL3 1 DAW Out") and the Linux names in Bitwig's guide
+    /// ("LCXL3 1 LCXL3 1 DAW Out").
+    public func dawPort(among names: [String]) -> String? {
+        let words = names.map { $0.split(separator: " ").map(String.init) }
+        var ids: [Int] = []
+        for name in words {
+            for index in name.indices.dropLast(2) where name[index] == portPrefix && name[index + 2] == "DAW" {
+                if let id = Int(name[index + 1]) { ids.append(id) }
+            }
+        }
+        return ids.min().map { "\(portPrefix) \($0) DAW" }
+    }
+
     /// How many rows of encoders the model has: 3 or 2.
     public var encoderRows: Int { self == .xl3 ? 3 : 2 }
 

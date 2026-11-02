@@ -65,6 +65,8 @@ public enum MirrorChange: Hashable, Sendable {
     case meter(ChannelRef)
     /// A control-room assignment (Main Out, Phones, and the others in `MonitoringRole`).
     case controlRoom
+    /// TotalMix's Mute Master (`/globalmute`).
+    case muteMaster
 }
 
 /// The control-room assignments that make an output a monitoring output rather than a send:
@@ -83,9 +85,9 @@ public enum MonitoringRole: String, CaseIterable, Hashable, Sendable {
     case phones3
     /// Phones 4 (`phones4`).
     case phones4
-    /// The output that cue and PFL go to (`cuechan`). That this is what `cuechan` names is an
-    /// inference from its name; only `mainout`, `phones1`, and `phones2` have been seen to match
-    /// TotalMix's window.
+    /// `cuechan`. It does not report TotalMix's "Cue/PFL to": it stayed −1 with that set to Phones 1,
+    /// and changing it sent nothing (docs/TOTALMIX-OSC.md, test 21). What it does report is not known;
+    /// the inference is an output whose CUE button is on.
     case cue = "cuechan"
 }
 
@@ -101,6 +103,13 @@ public struct MixerMirror: Sendable {
     public private(set) var meters: [ChannelRef: Double] = [:]
     /// The output channel (its left channel) assigned to each monitoring role in the control room.
     public private(set) var monitoring: [MonitoringRole: Int] = [:]
+    /// The monitoring roles TotalMix has reported, assigned or not (−1, none): a role missing from
+    /// `monitoring` but here is known to be unassigned.
+    public private(set) var reportedRoles: Set<MonitoringRole> = []
+    /// TotalMix's Mute Master (`/globalmute`), or `nil` until TotalMix has reported it. While it is
+    /// off, a channel's mute is only selected and doesn't silence it (docs/TOTALMIX-OSC.md, the
+    /// global mute recheck of 2026-10-31, and Adam, 2026-11-02).
+    public private(set) var muteMaster: Bool?
     private var visible: [TotalMixBus: [ChannelRef]] = [:]
 
     /// An empty mirror.
@@ -120,12 +129,19 @@ public struct MixerMirror: Sendable {
             if meters[ref] == peakDB { return nil }
             meters[ref] = peakDB
             return .meter(ref)
+        case .other("globalmute", let value):
+            guard let number = value.number else { return nil }
+            let on = number >= 0.5
+            if muteMaster == on { return nil }
+            muteMaster = on
+            return .muteMaster
         case .other(let path, let value):
             guard path.hasPrefix("controlroom/"),
                   let role = MonitoringRole(rawValue: String(path.dropFirst("controlroom/".count))),
                   let number = value.number else { return nil }
             let assigned = number < 0 ? nil : Int(number.rounded())
-            if monitoring[role] == assigned { return nil }
+            let firstReport = reportedRoles.insert(role).inserted
+            if monitoring[role] == assigned { return firstReport ? .controlRoom : nil }
             monitoring[role] = assigned
             return .controlRoom
         case .snapshot:

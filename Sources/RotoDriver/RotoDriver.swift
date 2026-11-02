@@ -43,8 +43,9 @@ public struct RotoStep: Equatable, Sendable {
 /// The driver claims to be Bitwig (`02`), as test 3 recommends: no 0 dB indent at the wrong
 /// place, and switches that send only presses.
 public struct RotoDriver: Sendable {
-    /// What the Roto-Control has, for `SurfaceHub.addSurface`. The jump guard is 8,000 of the
-    /// knob's 16,384 counts. In the kept logs of tests 2 and 3, counted by script, every end event
+    /// What the Roto-Control has, for `SurfaceHub.addSurface`. The jump guard is 8,000/16,383 of
+    /// the range, compared after the 0 dB indent's bend, where it is 0.43–0.50 of TotalMix's fader
+    /// travel (review of 2026-11-02). In the kept logs of tests 2 and 3, counted by script, every end event
     /// in MIX mode jumped at least 12,690 counts, and no other report in MIX mode differed from the
     /// knob's last by more than 2,942 (docs/ROTO-CONTROL.md, section 6).
     public static let capabilities = SurfaceCapabilities(stripCount: RotoCC.controlCount, feel: .follows,
@@ -218,18 +219,47 @@ public struct RotoDriver: Sendable {
 
     private var lastStart: Double?
 
+    /// The shortest time between two page draws, in seconds. A page changed again sooner is drawn
+    /// once, `pageDrawInterval` after the last draw, by `tick(now:hub:)`: at every connection
+    /// TotalMix's answer to `/sendall` changed the page about 33 times in 0.35 s (about 440 SysEx
+    /// messages; review of 2026-11-02), and the Roto-Control has frozen under bursts of SysEx
+    /// before (docs/ROTO-CONTROL.md, test 4, runs 17–20). That the burst could freeze it is an
+    /// inference; Adam chose to coalesce (2026-11-02). Knobs, lights, meters, and value text are not
+    /// held back, so while a draw waits they may change before their page's names (also an
+    /// inference that this is harmless: a knob's position doesn't depend on its strip's details).
+    public static let pageDrawInterval: Double = 0.1
+
+    private var lastPageDraw: Double?
+    private var pageDrawPending = false
+
     /// Starts, or restarts, the handshake: the bytes to send now. `tick(now:)` sends DAW STARTED
     /// again every `restartInterval` until the Roto-Control connects.
     public mutating func start(now: Double = 0) -> [UInt8] {
         lastStart = now
+        lastPageDraw = nil
+        pageDrawPending = false
         return handshake.start().flatMap(\.bytes)
     }
 
     /// The bytes to send as time passes: DAW STARTED again, if the handshake was started and has
-    /// not completed within `restartInterval`. The app calls this regularly, with the current time.
-    public mutating func tick(now: Double) -> [UInt8] {
-        guard !handshake.isConnected, let lastStart, now - lastStart >= Self.restartInterval else { return [] }
+    /// not completed within `restartInterval`; and, with `hub`, a page draw held back by
+    /// `pageDrawInterval` once it is due. The app calls this regularly (every 10 ms), with the
+    /// current time.
+    public mutating func tick(now: Double, hub: SurfaceHub? = nil) -> [UInt8] {
+        if handshake.isConnected {
+            guard pageDrawPending, let hub, !inPluginMode,
+                  now - (lastPageDraw ?? -Double.infinity) >= Self.pageDrawInterval else { return [] }
+            return drawPage(hub: hub, now: now)
+        }
+        guard let lastStart, now - lastStart >= Self.restartInterval else { return [] }
         return start(now: now)
+    }
+
+    /// The bytes that draw the current page now, noting the time for `pageDrawInterval`.
+    private mutating func drawPage(hub: SurfaceHub, now: Double) -> [UInt8] {
+        lastPageDraw = now
+        pageDrawPending = false
+        return pageMessages(hub: hub).flatMap(\.bytes)
     }
 
     // MARK: - From the Roto-Control
@@ -276,9 +306,13 @@ public struct RotoDriver: Sendable {
             take(hub.setMode(id, next, now: now), hub: hub, now: now, into: &step)
         case .trackSet(let set):
             trackSet = set
-            selectedTrack = 0
-            guard case .strips(_, _, let knob, let switchFunction)? = hub.mode(of: id) else { return }
-            take(hub.setMode(id, .strips(view: Self.view(set), first: 0, knob: knob, switch: switchFunction), now: now),
+            guard case .strips(let view, let first, let knob, let switchFunction)? = hub.mode(of: id) else { return }
+            // Both sets show the channels, so a switch keeps the page and the selected track: an
+            // accidental press of both arrows changes nothing (review of 2026-11-02).
+            let same = view == Self.view(set)
+            if !same { selectedTrack = 0 }
+            take(hub.setMode(id, .strips(view: Self.view(set), first: same ? first : 0, knob: knob, switch: switchFunction),
+                             now: now),
                  hub: hub, now: now, into: &step)
         case .setFirstTrack(let first):
             guard case .strips(let view, _, let knob, let switchFunction)? = hub.mode(of: id) else { return }
@@ -368,7 +402,11 @@ public struct RotoDriver: Sendable {
             }
         }
         guard pageChanged else { return controls }
-        return pageMessages(hub: hub).flatMap(\.bytes) + controls
+        if let last = lastPageDraw, now - last < Self.pageDrawInterval {
+            pageDrawPending = true
+            return controls
+        }
+        return drawPage(hub: hub, now: now) + controls
     }
 
     /// The messages that draw the current page: in all-tracks mode the send names and the eight
@@ -412,7 +450,8 @@ public struct RotoDriver: Sendable {
         let targets = hub.sendTargets
         let names = (start..<max(start, min(start + 8, targets.count))).map { index -> String in
             let ref = ChannelRef(.output, targets[index])
-            return Self.sendLabel(hub.mirror.channels[ref]?.name ?? ref.description)
+            // The app's label first, as on every hardware controller (AGENTS.md, section 4: Labels).
+            return Self.sendLabel(hub.layout.label(for: ref) ?? hub.mirror.channels[ref]?.name ?? ref.description)
         }
         return .sendNames(start: start, names: names)
     }

@@ -18,6 +18,7 @@ public enum UDPError: Error, Equatable, CustomStringConvertible {
     /// UDP is not implemented on this platform yet.
     case unsupportedPlatform
 
+    /// The error in words, for a log.
     public var description: String {
         switch self {
         case .socketFailed(let code): return "Could not open a UDP socket (\(UDPError.message(code)))."
@@ -48,6 +49,10 @@ public final class UDPSocket {
     private let lock = NSLock()
     private var running = false
     private var thread: Thread?
+    /// Signaled when the receive thread has left its loop, so that `stop()` can wait for it and the
+    /// descriptor is never closed while the thread may still read it: a new socket can be given the
+    /// same number at once, and the old thread would take its datagrams (review of 2026-11-02).
+    private var threadDone: DispatchSemaphore?
 
     /// The port the socket listens on (useful when it was opened with port 0).
     public let localPort: UInt16
@@ -118,7 +123,10 @@ public final class UDPSocket {
         guard !running else { return }
         running = true
         let fd = descriptor
+        let done = DispatchSemaphore(value: 0)
+        threadDone = done
         let thread = Thread { [weak self] in
+            defer { done.signal() }
             var buffer = [UInt8](repeating: 0, count: 65_536)
             while self?.isRunning == true {
                 var poller = pollfd(fd: fd, events: Int16(POLLIN), revents: 0)
@@ -142,11 +150,18 @@ public final class UDPSocket {
         thread.start()
     }
 
-    /// Stops receiving. The socket stays open for sending.
+    /// Stops receiving, and waits (up to about 200 ms) for the receive thread to finish, unless
+    /// called from that thread. The socket stays open for sending.
     public func stop() {
         lock.lock()
         running = false
+        let done = threadDone
+        threadDone = nil
+        let receiver = thread
+        thread = nil
         lock.unlock()
+        // A poll lasts at most 200 ms; the timeout only guards against a handler that never returns.
+        if let done, Thread.current !== receiver { _ = done.wait(timeout: .now() + 1) }
     }
 
     private var isRunning: Bool {
@@ -183,10 +198,15 @@ public final class UDPSocket {
 
 /// Placeholder until UDP is implemented on this platform: every call throws.
 public final class UDPSocket {
+    /// Always 0: nothing is opened.
     public let localPort: UInt16 = 0
+    /// Throws `UDPError.unsupportedPlatform`.
     public init(listeningOn port: UInt16, localOnly: Bool = false) throws { throw UDPError.unsupportedPlatform }
+    /// Throws `UDPError.unsupportedPlatform`.
     public func send(_ bytes: [UInt8], to host: String, port: UInt16) throws { throw UDPError.unsupportedPlatform }
+    /// Does nothing.
     public func startReceiving(_ handler: @escaping (_ bytes: [UInt8], _ sender: String) -> Void) {}
+    /// Does nothing.
     public func stop() {}
 }
 

@@ -76,7 +76,7 @@ public enum SetupChecklist {
             Each controller needs its own ports. If TotalMix FX uses other ports, set the same ones in Performance Bridge’s Settings.
             """
         if status.totalMixAnswering {
-            steps.append(SetupStep(id: "totalmix", title: "TotalMix FX responded", state: .done, detail: ""))
+            steps.append(SetupStep(id: "totalmix", title: "TotalMix FX answered", state: .done, detail: ""))
         } else {
             steps.append(SetupStep(id: "totalmix", title: "TotalMix FX hasn’t answered yet",
                                    state: status.listening ? .waiting : .problem, detail: oscSetup))
@@ -89,7 +89,7 @@ public enum SetupChecklist {
             steps.append(SetupStep(id: "channels", title: "TotalMix FX hasn’t sent its channels yet",
                                    state: .waiting,
                                    detail: status.totalMixAnswering
-                                       ? "TotalMix FX answered with its status only. Performance Bridge keeps asking.\n\nIf this stays, choose Refresh Channels from TotalMix FX from the menu."
+                                       ? "TotalMix FX answered with its status only. Performance Bridge keeps asking.\n\nIf this doesn’t change, choose Refresh Channels from TotalMix FX from the menu."
                                        : ""))
         }
 
@@ -97,6 +97,18 @@ public enum SetupChecklist {
             ? SetupStep(id: "meters", title: "Receiving meter levels", state: .done, detail: "")
             : SetupStep(id: "meters", title: "No meters yet", state: .optional,
                         detail: "For meters on the hardware controllers: in TotalMix FX, Options → Mixer Settings… (F3) → OSC, check “Send Level Data” for the controller.\n\nTotalMix FX sends levels only when they change, so play something to see them."))
+
+        if status.muteMasterOff {
+            steps.append(SetupStep(id: "mutemaster", title: "Mute Master is off in TotalMix FX", state: .problem,
+                                   detail: "While it’s off, mutes from the hardware controller only select a channel’s mute and don’t silence it.\n\nIn TotalMix FX, turn on the “M” (Mute Master) button in the Control Strip, below the interface’s name and “undo”."))
+        }
+
+        // Neither Live mode nor "Cue/PFL to" can be read over OSC (docs/TOTALMIX-OSC.md, tests 6
+        // and 21), so they are notes.
+        steps.append(SetupStep(id: "livemode", title: "PFL needs Live mode", state: .instruction,
+                               detail: "The hardware controllers’ PFL buttons work only with TotalMix FX in Live mode, which Performance Bridge can’t check. With Live mode on, the channels’ buttons read PFL instead of S.\n\nIn TotalMix FX’s Control Strip, click “options” and, under “solo/pfl mode”, choose “live”."))
+        steps.append(SetupStep(id: "cue", title: "Send PFL to your headphones", state: .instruction,
+                               detail: "TotalMix FX sends PFL to Main by default, so PFL from a hardware controller replaces what Main Out plays: on stage, the audience hears only the channel being checked. Performance Bridge can’t check this setting.\n\nIn TotalMix FX’s Control Room section, click “assign”, then “Cue/PFL to”, and choose a headphone output (e.g., “Phones 1”)."))
 
         if !status.rotoEnabled {
             // Another hardware controller is in use.
@@ -107,7 +119,7 @@ public enum SetupChecklist {
                                    detail: "If it stays here, quit any other program that talks to the Roto-Control, such as a DAW with its Roto-Control integration."))
         } else {
             steps.append(SetupStep(id: "roto", title: "Roto-Control not found", state: .waiting,
-                                   detail: "Connect the Roto-Control by USB. If it’s connected, choose its MIDI port in Performance Bridge’s Settings."))
+                                   detail: "Connect the Roto-Control by USB. If it’s connected, try another cable or USB port."))
         }
 
         if let name = status.launchControlName {
@@ -118,7 +130,7 @@ public enum SetupChecklist {
                                        detail: "If it stays here, quit any other program that uses its DAW ports, such as a DAW with its Launch Control integration."))
             } else {
                 steps.append(SetupStep(id: "launchcontrol", title: "\(name) not found", state: .waiting,
-                                       detail: "Connect the Launch Control by USB. If it’s connected, check its MIDI port in Performance Bridge’s Settings, on the Launch Control tab."))
+                                       detail: "Connect the Launch Control by USB. If it’s connected, check that the model chosen in Performance Bridge’s Settings, on the Connections tab, is the one connected, then try another cable or USB port."))
             }
         }
 

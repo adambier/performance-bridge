@@ -15,7 +15,7 @@ struct SetupView: View {
 
     /// The steps that are notes, not checks: shown apart, without a mark, so they don't read as
     /// to-dos (Adam, 2026-10-31).
-    private static let noteIDs: Set<String> = ["hide", "order"]
+    private static let noteIDs: Set<String> = ["hide", "order", "livemode", "cue"]
 
     /// Screenshots of TotalMix FX for a step, shown under "Show in TotalMix FX" while the step
     /// needs doing. They are from TotalMix FX "2.10 (1)" on a Mac (Adam, 2026-10-31), published
@@ -24,6 +24,9 @@ struct SetupView: View {
         "totalmix": ["totalmix-options-menu", "totalmix-osc-tab", "totalmix-osc-details"],
         "meters": ["totalmix-osc-tab"],
         "hide": ["totalmix-channel-layout"],
+        "mutemaster": ["totalmix-control-strip"],
+        "livemode": ["totalmix-control-strip"],
+        "cue": ["totalmix-cue-pfl-to"],
     ]
 
     private var checks: [SetupStep] { steps.filter { !Self.noteIDs.contains($0.id) } }

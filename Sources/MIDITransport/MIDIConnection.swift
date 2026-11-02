@@ -36,10 +36,11 @@ public enum MIDIConnectionError: Error, Equatable, CustomStringConvertible {
     /// MIDI is not implemented on this platform.
     case unsupportedPlatform
 
+    /// The error in words, for a log.
     public var description: String {
         switch self {
         case .coreMIDI(let call, let status): return "\(call) failed with status \(status)."
-        case .endpointNotFound(let name): return "No single MIDI port matches \"\(name)\". Run `sbdev roto ports` to list them."
+        case .endpointNotFound(let name): return "No single MIDI port matches \"\(name)\". `sbdev lcxl ports` lists every MIDI port."
         case .unsupportedPlatform: return "MIDI is only implemented on macOS."
         }
     }

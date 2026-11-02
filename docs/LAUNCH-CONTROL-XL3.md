@@ -4,8 +4,8 @@ This is the authority, for this project, on Novation's Launch Control XL 3 in DA
 `TOTALMIX-OSC.md` is for TotalMix FX and `ROTO-CONTROL.md` for the Roto-Control. Every statement
 carries its evidence.
 
-**Status (2026-11-01).** Tested on the device on 2026-11-01 (firmware 1.2): every test the driver
-needs is done (section 8), and the records are in section 10. Where a record differs from what
+**Status (2026-11-01).** The device was tested on 2026-11-01 (firmware 1.2): every test the driver
+needs has been run (section 8), and the records are in section 10. Where a record differs from what
 sections 2–7 take from Novation's documents, the record rules. The `LaunchControl` library (which also covers the Launch
 Control 3, `LAUNCH-CONTROL-3.md`), `sbdev lcxl`, and the driver (`LaunchControlDriver`, section 9)
 are built on them.
@@ -15,37 +15,85 @@ are built on them.
 Novation's documents are linked, not committed (AGENTS.md, section 4). Adam has local copies in
 the project folder (`Novation Docs/`).
 
-- **[Programmer's reference guide]** "Launch Control XL 3 programmer's reference guide", version
+- **Programmer's reference guide.** "Launch Control XL 3 programmer's reference guide", version
   1.0, PDF dated April 17, 2026, 17 pages
   ([Novation](https://userguides.novationmusic.com/hc/en-gb/articles/27840466285586-About-the-Launch-Control-XL-3-programmer-s-reference-guide)).
   This is the main source. Its control map (page 9) and color palette (page 12) are pictures,
   read from the PDF.
-- **[User guide]** "Launch Control XL 3 user guide" (PDF, English). It describes the controls and
+- **User guide.** "Launch Control XL 3 user guide" (PDF, English). It describes the controls and
   the DAW modes as a user sees them.
-- **[Bitwig setup]** "Launch Control XL Mk3, Bitwig Studio controller extension, setup": Bitwig's
+- **Bitwig setup.** "Launch Control XL Mk3, Bitwig Studio controller extension, setup": Bitwig's
   PDF (its branding), shipped with the Bitwig extension for the device. It gives the DAW port
   names on macOS (in a screenshot), Windows, and Linux.
 
-Bracketed tags below name the source. "Inference" marks anything the sources don't say outright.
+**How sure each statement is.** A plain statement describes what was found, in Novation's
+documents or on the device. A statement that rests on a source has a footnote saying where it
+comes from: one of the documents above, with its section or page, or a test on the device, whose
+record is in section [10](#10-test-records). "Inference" marks anything the sources don't say
+outright, and anything not yet checked on the device is said in words ("untested", "not yet
+seen").
+
+[^prg]: Novation's "Launch Control XL 3 programmer's reference guide", version 1.0.
+[^prg-midi]: The programmer's reference guide (version 1.0), "MIDI on Launch Control XL 3".
+[^prg-bootloader]: The programmer's reference guide (version 1.0), "Entering … bootloader".
+[^prg-daw-mode]: The programmer's reference guide (version 1.0), "DAW mode".
+[^prg-daw-mode-control]: The programmer's reference guide (version 1.0), "DAW mode control".
+[^prg-sysex]: The programmer's reference guide (version 1.0), "SysEx message format".
+[^prg-map]: The programmer's reference guide (version 1.0), page 9, the decimal picture.
+[^prg-encoder-modes]: The programmer's reference guide (version 1.0), "Absolute and relative
+    encoder modes".
+[^prg-touch]: The programmer's reference guide (version 1.0), "Continuous control touch events".
+[^prg-coloring]: The programmer's reference guide (version 1.0), "Colouring the surface".
+[^prg-rgb]: The programmer's reference guide (version 1.0), "RGB Colour".
+[^prg-displays]: The programmer's reference guide (version 1.0), "Configure displays".
+[^prg-text]: The programmer's reference guide (version 1.0), "Setting text".
+[^prg-bitmap]: The programmer's reference guide (version 1.0), "Bitmap".
+[^prg-features]: The programmer's reference guide (version 1.0), "Launch Control XL 3 feature
+    Controls".
+[^prg-feature-table]: The programmer's reference guide (version 1.0), the feature control table.
+[^ug]: Novation's "Launch Control XL 3 user guide" (PDF, English).
+[^ug-daw-chapters]: The user guide, the chapters for each DAW.
+[^ug-pickup]: The user guide, "Fader pickup" and Settings.
+[^bitwig]: Bitwig's "Launch Control XL Mk3, Bitwig Studio controller extension, setup" (PDF,
+    shipped with the Bitwig extension for the device).
+[^bitwig-p2]: Bitwig's setup PDF for the device, page 2.
+[^test-1]: Test 1 (2026-11-01), section
+    [10](#test-1-2026-11-01-ports-daw-mode-and-the-control-map).
+[^test-2]: Test 2 (2026-11-01), section
+    [10](#test-2-2026-11-01-encoder-positions-relative-mode-and-fader-pickup).
+[^test-3]: Test 3 (2026-11-01), section [10](#test-3-2026-11-01-fader-pickup).
+[^test-4]: Test 4 (2026-11-01), section [10](#test-4-2026-11-01-colors).
+[^test-5]: Test 5 (2026-11-01), section [10](#test-5-2026-11-01-the-screen).
+[^test-6]: Test 6 (2026-11-01), section [10](#test-6-2026-11-01-daw-mixer-and-daw-control).
+[^test-7]: Test 7 (2026-11-01), section
+    [10](#test-7-2026-11-01-the-fader-values-at-the-printed-ticks).
+[^test-9]: Test 9 (2026-11-01), section
+    [10](#test-9-2026-11-01-turning-an-encoder-with-shift-held).
+[^test-10]: Test 10 (2026-11-01), section
+    [10](#test-10-2026-11-01-turning-a-relative-encoder-with-shift-held).
+[^test-11]: Test 11 (2026-11-01), section
+    [10](#test-11-2026-11-01-the-home-screen-shift--turn-pan-steps-and-the-arc-scale).
+[^test-13]: Test 13 (2026-11-02), section [10](#test-13-2026-11-02-button-shades-and-brightness).
+[^test-14]: Test 14 (2026-11-02), section [10](#test-14-2026-11-02-asking-for-daw-mode-twice).
+[^test-15]: Test 15 (2026-11-02), section [10](#test-15-2026-11-02-mute-master-shades-and-flashing).
 
 ## 2. MIDI ports
 
 - Over USB the device has a MIDI port pair, a DAW port pair, and two "To DIN" outputs. A host
-  that uses DAW mode talks to the DAW pair. [Programmer's reference guide, "MIDI on Launch
-  Control XL 3"]
+  that uses DAW mode talks to the DAW pair.[^prg-midi]
 - Port names include the device ID (1–8, set in the bootloader), so several units can be told
-  apart. [Programmer's reference guide, "Entering … bootloader"]
+  apart.[^prg-bootloader]
 - On Linux the DAW ports are "LCXL3 1 LCXL3 1 DAW Out" (the device's output, the host's input)
   and "LCXL3 1 LCXL3 1 DAW In". On Windows they are "MIDIIN2 (LCXL3 1 MIDI)" and "MIDIOUT2
-  (LCXL3 1 MIDI)". [Bitwig setup]
+  (LCXL3 1 MIDI)".[^bitwig]
 - On macOS, Bitwig's screenshot shows the input as "LCXL3 1 DAW Out" and the output as "LCXL3 1
-  DAW In". [Bitwig setup, page 2] Bitwig may show names that differ from CoreMIDI's (inference),
+  DAW In".[^bitwig-p2] Bitwig may show names that differ from CoreMIDI's (inference),
   so `sbdev lcxl` matches by part of the name, "LCXL3 1 DAW", which picks one source and one
   destination if the CoreMIDI names follow the same pattern.
 - **Seen on macOS** (Adam's Mac, firmware 1.2, 2026-11-01): CoreMIDI lists the sources "LCXL3 1
   MIDI Out" and "LCXL3 1 DAW Out", and the destinations "LCXL3 1 MIDI In", "LCXL3 1 DAW In",
   "LCXL3 1 To DIN Out", and "LCXL3 1 To DIN Out 2". So "LCXL3 1 DAW" picks the DAW pair.
-- In DAW mode the DIN outputs send nothing. [Programmer's reference guide, "DAW mode"]
+- In DAW mode the DIN outputs send nothing.[^prg-daw-mode]
 
 ## 2a. Firmware
 
@@ -70,28 +118,29 @@ the choice to the user; test 2 checks both settings.
 
 - **Entering and leaving.** A host enters DAW mode on connecting and leaves it on quitting, which
   returns the device to standalone mode. Either form works: note 12 on channel 16 (velocity 127
-  to enter, 0 to leave), or SysEx command 02h with 7Fh or 00h. [Programmer's reference guide,
-  "DAW mode control"]
+  to enter, 0 to leave), or SysEx command 02h with 7Fh or 00h.[^prg-daw-mode-control] The device
+  echoes the note when the mode changes, and only then: asked for DAW mode while already in it, it
+  sends nothing.[^test-1][^test-14]
 - **SysEx header.** Every SysEx message starts F0h 00h 20h 29h 02h 15h, in both directions, then
-  a command byte. [Programmer's reference guide, "SysEx message format"]
+  a command byte.[^prg-sysex]
 - **Modes.** DAW mode offers two surface modes, DAW Mixer and DAW Control. The device reports a
   mode change on channel 7, Control Change 30, and a host can select a mode the same way. Values:
   - 1 is DAW Mixer and 2 is DAW Control;
   - 6–9 are Custom Modes 1–4;
   - 18–29 are Custom Modes 5–16.
 
-  [Programmer's reference guide, feature control table; its prose differs, section 7]
+  From the feature control table; its prose differs (section 7).[^prg-feature-table]
 - **What the modes change.** On the device, Mode plus Mute/Select or Solo/Arm chooses between
   them. The user guide gives the pairing both ways round (section 7). For Ableton Live, Logic
   Pro, Cubase, and Bitwig Studio the faders and buttons stay the same, and only what the encoders
-  control changes; in FL Studio the modes change the buttons too. [User guide, the chapters for
-  each DAW] So, for Performance Bridge, the two modes are two encoder pages
-  that the device switches for us (inference).
+  control changes; in FL Studio the modes change the buttons too.[^ug-daw-chapters] In DAW mode
+  the device doesn't switch them by itself: it names the mode and passes the press on, and the
+  host decides.[^test-6]
 
 ## 4. The controls
 
-From the control map. [Programmer's reference guide, page 9, the decimal picture] Faders and
-encoders report on channel 16, buttons on channel 1, and Shift on channel 7.
+From the control map.[^prg-map] Faders and encoders report on channel 16, buttons on channel 1,
+and Shift on channel 7.
 
 | Control | Control Change | Notes |
 |---|---|---|
@@ -103,7 +152,7 @@ encoders report on channel 16, buttons on channel 1, and Shift on channel 7.
 | Buttons, bottom row 1–8 | 45–52 | Novation's Mute or Select row |
 | Solo/Arm | 65 | left of the top row |
 | Mute/Select | 66 | left of the bottom row |
-| Novation logo button | 104 | "nothing… yet" [User guide] |
+| Novation logo button | 104 | "nothing… yet"[^ug] |
 | Page up, Page down | 106, 107 | |
 | Track <, Track > | 103, 102 | the left button has the higher number |
 | Record | 118 | |
@@ -114,43 +163,41 @@ encoders report on channel 16, buttons on channel 1, and Shift on channel 7.
 - **Button values.** The guide doesn't say what a button sends. The library reads 64 or more as
   pressed and less as released (inference: 127 and 0, as is usual).
 - **Encoders, absolute.** By default an encoder sends 0–127, and takes on any position a host
-  sends it. [Programmer's reference guide, "Absolute and relative encoder modes"] The guide doesn't say in which message; the encoder's own Control
-  Change back on channel 16 works (test 2).
+  sends it.[^prg-encoder-modes] The guide doesn't say in which message; the encoder's own Control
+  Change back on channel 16 works.[^test-2]
 - **Encoders, relative.** Each row can be switched to relative output separately, with feature
   controls 69, 72, and 73 for rows 1–3. A relative row then reports Control Changes 64 higher
   (77–84, 85–92, and 93–100). The value is 64 for no movement, above 64 for clockwise steps, and
-  below 64 for anticlockwise. [Programmer's reference guide]
+  below 64 for counterclockwise.[^prg]
 - **Touch.** With touch reports on (feature control 71), a "touch" sends the control's Control
   Change on channel 15, with 127 for touch on and 0 for off. The guide's only example is a fader:
-  BEh 05h 7Fh for the leftmost. [Programmer's reference guide, "Continuous control touch events"]
-  - What a touch is remains open. The guide describes the display's touch setting as "this is
-    the Shift + rotate" (section 5), and the user guide never mentions touch sensing. So a
-    "touch" may be moving a control with Shift held, not a touch sensor (inference).
-  - It matters for SurfaceCore, which holds a control while it is touched. Test 5 checks both.
-  - Whether encoders report touch too is also open.
+  BEh 05h 7Fh for the leftmost.[^prg-touch]
+  - A "touch" is movement, not a touch sensor, for faders and encoders alike: each burst of
+    movement sends touch on and, about 80 ms after it stops, touch off.[^test-1] (The guide
+    describes the display's touch setting as the Shift + rotate, section 5; with Shift held,
+    an encoder sends only these reports, tests 9 and 10.)
+  - So SurfaceCore can't use a touch as a hand resting on a control, only as a sign of movement.
 - **Fader pickup.** The programmer's reference guide lists feature control 70 as "DAW Fader
-  Pickup", on or off, with no description. [Programmer's reference guide, feature controls]
+  Pickup", on or off, with no description.[^prg-features]
   - The user guide's pickup, where a moved fader takes over only once it reaches the parameter's
-    value, is the Settings menu's, which leaves DAW modes alone. [User guide, "Fader pickup" and
-    Settings]
-  - That feature 70 works the same way in DAW mode is an inference. So is that the device learns
-    the parameter's value from the position message above. Test 7 checks both.
+    value, is the Settings menu's, which leaves DAW modes alone.[^ug-pickup]
+  - That feature 70 works the same way in DAW mode, learning the value from the position message
+    above, was an inference that test 3 confirmed.[^test-3]
 
 ## 5. Lights and the screen
 
 - **Palette colors.** A Control Change on channel 1, with the control's own number, lights it in
-  one of 128 palette colors. [Programmer's reference guide, "Colouring the surface"] The guide
-  says encoder LEDs use their absolute numbers even in relative mode, under "RGB Colour"; that the
-  same holds for palette colors is an inference. The palette is a picture in the guide
-  (page 12). Index 0 is off and 5 is red (test 4); indices 0–39 have been seen to match the picture's
-  run of colors, as far as a photo can show.
+  one of 128 palette colors.[^prg-coloring] The guide says encoder LEDs use their absolute
+  numbers even in relative mode, under "RGB Colour"; that the same holds for palette colors is an
+  inference. The palette is a picture in the guide (page 12). Index 0 is off and 5 is
+  red;[^test-4] indices 0–39 have been seen to match the picture's run of colors, as far as a
+  photo can show.
 - **RGB.** SysEx 01h 53h, then the control, red, green, and blue, lights a button or an encoder in
-  a color of its own. [Programmer's reference guide, "RGB Colour"] SysEx data bytes are 7-bit, so
-  each part is 0–127. That this covers the LED's full range is an inference.
-- **The screen** is 128 × 64 pixels. [Programmer's reference guide, "Bitmap"]
+  a color of its own.[^prg-rgb] SysEx data bytes are 7-bit, so each part is 0–127. That this
+  covers the LED's full range is an inference.
+- **The screen** is 128 × 64 pixels.[^prg-bitmap]
   - **Display targets.** Each fader and encoder has a temporary display (target = its Control
-    Change, 5–36). There is also a stationary display (53) and an overlay (54). [Programmer's
-    reference guide, "Configure displays"]
+    Change, 5–36). There is also a stationary display (53) and an overlay (54).[^prg-displays]
   - **Setting up a display.** SysEx 04h, then the target and a config byte, sets up a display:
     - bits 0–4 are the arrangement;
     - bit 6 lets the device bring it up by itself when the control changes;
@@ -163,20 +210,19 @@ encoders report on channel 16, buttons on channel 1, and Shift on channel 7.
     - 4: name and the device's own numeric value, the default.
   - **Text.** SysEx 06h, then the target, the field (from 0), and the text, fills one field.
     Text is ASCII 20h–7Eh, plus four symbols in place of control codes: 1Bh empty box, 1Ch filled
-    box, 1Dh flat sign, and 1Eh heart. [Programmer's reference guide, "Setting text"] How many
-    characters a field shows is not given.
+    box, 1Dh flat sign, and 1Eh heart.[^prg-text] How many characters a field shows is not
+    given.
   - **Bitmap.** SysEx 09h sends a whole picture: 64 rows of 19 bytes, 7 pixels per byte, highest
     bit leftmost. The device answers when it is ready for the next one. It holds one bitmap at a
-    time. [Programmer's reference guide, "Bitmap"]
+    time.[^prg-bitmap]
 
 ## 6. Feature controls
 
 Control Changes on channel 7 to the DAW port set them. The same Control Change on channel 8 asks
 for one, and replies come on channel 7. In DAW mode all of them listen, but only a few reply.
 Note 11 on channel 16 (velocity 127 or 0) enables every feature control, or goes back to DAW
-mode's own set. The inference is that this means their replies, since in DAW mode they all
-listen already.
-[Programmer's reference guide, "Launch Control XL 3 feature Controls"]
+mode's own set.[^prg-features] The inference is that this means their replies, since in DAW
+mode they all listen already.
 
 | CC | Feature | Values |
 |---|---|---|
@@ -207,9 +253,9 @@ Each is resolved here as stated, until the device settles it.
    a Default mode in the sixteenth slot.
 3. **Which button chooses which DAW mode.** The user guide says Mode plus Mute/Select is DAW Mixer
    and Solo/Arm is DAW Control six times, in the Ableton Live, Logic Pro, Cubase, and Bitwig
-   Studio chapters. Twice, in the DAW Control tips, it says the reverse. Test 6: Mode plus
-   Solo/Arm shows "DAW Control" on the screen, so the six are right; but the device doesn't
-   switch by itself (test 6).
+   Studio chapters. Twice, in the DAW Control tips, it says the reverse. Mode plus Solo/Arm
+   shows "DAW Control" on the screen, so the six are right; but the device doesn't switch by
+   itself.[^test-6]
 4. **Display targets for names.** The programmer's reference guide's note on arrangements mentions
    targets that only set names, 22h–28h (34–40), a range that overlaps encoder targets (34–36) and
    button numbers (37–40). The target list gives no such range.
@@ -227,36 +273,37 @@ Each is resolved here as stated, until the device settles it.
 Run with `swift run sbdev lcxl` (macOS; `sbdev lcxl --help`). First, `sbdev lcxl ports` lists the
 port names.
 
-1. **Ports.** Done (test 1). The macOS names of the DAW ports. Does `--port "LCXL3 1 DAW"` connect?
+1. **Ports.** Run.[^test-1] The macOS names of the DAW ports. Does `--port "LCXL3 1 DAW"` connect?
 2. **DAW mode.** Does the device show DAW mode on entering, and return to standalone on `quit`? With firmware 1.2's "DAW Connection" set to Switch (the default), does entering DAW mode move it to DAW Mixer? With "Connect Only", does it stay in its Custom Mode, and does `mode mixer` then move it?
-3. **The control map.** Done (test 1). Move every control and check its name and value against section 4,
+3. **The control map.** Run.[^test-1] Move every control and check its name and value against section 4,
    including Track < and > (103, 102) and the Novation button. What do buttons send: 127 and 0?
-4. **Modes.** Done (test 6). Mode plus Mute/Select, then plus Solo/Arm: which reports 1 and which 2 (section 7,
+4. **Modes.** Run.[^test-6] Mode plus Mute/Select, then plus Solo/Arm: which reports 1 and which 2 (section 7,
    item 3)? Does `mode control` switch the device?
-5. **Touch.** Done (test 1): movement, not a sensor. With `touch on`: touch a fader and an encoder without moving them, then move each
+5. **Touch.** Run: a touch report comes from movement, not a sensor.[^test-1] With `touch on`: touch a fader and an encoder without moving them, then move each
    with Shift held. Which sends channel 15 reports?
-6. **Encoder position.** Done (test 2): taken. `pos e11 0`, then turn the encoder one step: does it continue from 0
+6. **Encoder position.** Run: the encoder takes the position.[^test-2] `pos e11 0`, then turn the encoder one step: does it continue from 0
    (taken) or from where it was (not)? The same with `pos e11 127`.
-7. **Fader pickup.** Done (tests 2 and 3): the device's pickup works; one unexplained run in test 2. `pickup on`, `pos f1 64`, then move fader 1 from the bottom. Does it send
+7. **Fader pickup.** Run: the device's pickup works,[^test-3] with one unexplained run in test 2.[^test-2] `pickup on`, `pos f1 64`, then move fader 1 from the bottom. Does it send
    nothing until it passes the middle?
-8. **Relative encoders.** Done (test 2): as the guide says. `relative 1 on`: do encoders 1–8 report 77–84 with 65 and 63 for single
+8. **Relative encoders.** Run: they work as the guide says.[^test-2] `relative 1 on`: do encoders 1–8 report 77–84 with 65 and 63 for single
    steps?
-9. **Colors.** Done (test 4) for indices 0–39 and RGB; 40–127 not yet seen. `palette 0`, `palette 40`, and `palette 80`. Compare with the guide's palette. Is 0
+9. **Colors.** Run for indices 0–39 and RGB;[^test-4] 40–127 have not been seen yet. `palette 0`, `palette 40`, and `palette 80`. Compare with the guide's palette. Is 0
    off? Then `rgb b11 127 0 0`, and check the Track, Page, Record, Play, and Novation buttons for
    lights.
-10. **Screen.** Done (test 5). `display f1 2`, then `text f1 0 Mix`, `text f1 1 ADI-2`, `text f1 2 -6.0 dB`, and
+10. **Screen.** Run.[^test-5] `display f1 2`, then `text f1 0 Mix`, `text f1 1 ADI-2`, `text f1 2 -6.0 dB`, and
     move fader 1. How many characters fit per field? Then `display stationary 3` with eight names,
     and the `quiet` option (no display on change).
 11. **Bitmap targets** (section 7, item 5), only if a bitmap is wanted later.
 12. **Do level encoders need relative mode?** Part 1 run (2026-11-01, Launch Control 3 layout on
     the XL 3, TotalMix's curve): "pretty smooth". Adam then asked for the ARC USB's scale for volume
     encoders (section 9), which is finer near 0 dB. On it, a slow fade of a send from about −20 dB
-    to off sounded smooth (test 11). **Decided: absolute mode** (Adam, 2026-11-01); relative mode
-    would drop the first step after each reversal and gives nothing Shift could use (test 10).
-    The original test: The encoders send 128 values. With TotalMix's own
+    to off sounded smooth.[^test-11] **Decided: absolute mode** (Adam, 2026-11-01); relative mode
+    has been observed to drop the first step after a reversal and gives nothing Shift could
+    use.[^test-10]
+    The original test: the encoders send 128 values. With TotalMix's own
     curve that is about 0.26 dB a step from −6 to +6 dB, 0.3–0.6 from −20 to −6, 0.6–0.9 from −40
     to −20, and about 1 dB below that (computed from `FaderCurve`). Relative mode would allow finer
-    steps, but drops the first step after a change of direction (test 2). With music playing
+    steps, but has been observed to drop the first step after a change of direction.[^test-2] With music playing
     through one playback, and `sbdev lcbridge --layout lc3-sim --in-port 7004 --out-port 9004`
     (the bottom encoder row is level):
     1. **Trim.** Set the playback to about −10 dB, then turn up one step at a time to −5. Do the
@@ -273,26 +320,28 @@ port names.
 
 ## 9. How Performance Bridge uses it
 
-Decided with Adam, 2026-11-01, after the tests; built in `LaunchControlDriver`, not yet in the app.
-The layout gets a close look in the Tier 1 UI review and Adam's own (Adam asked for its efficiency
-and intuitiveness to be assessed).
+Decided with Adam, 2026-11-01, after the tests; built in `LaunchControlDriver`, and chosen in the
+app's Settings → Connections. The layout is to be reviewed closely in the Tier 1 UI review and by
+Adam (Adam asked for its efficiency and intuitiveness to be assessed).
 
-- **Eight strips.** Each fader is its strip's level: into the mix output (the home submix) for a
-  source, or the output's own level in the outputs view.
+- **Eight strips.** Each fader is its strip's level in the home submix (Main Out). The strips
+  always show sources.
 - **Fader pickup.** The driver turns on the device's pickup (feature 70) and sends each fader's
   level as a position, so the device holds a fader back until it reaches TotalMix's level and
-  shows the target meanwhile (test 3). SurfaceCore's own pickup stays on behind it, with a window
-  of 12 steps for the first value after the device lets go, in case the device doesn't hold (as in
-  one run of test 2).
+  shows the target meanwhile.[^test-3] SurfaceCore's own pickup stays on behind it, with a window
+  of 12/127 of TotalMix's fader travel for the first value after the device lets go (7 to 18 of
+  the fader's values, depending on where on the printed scale), in case the device doesn't hold
+  (as in one run of test 2).
 - **Fader scale.** The nine ticks printed beside each fader read, top to bottom, +6, +3, 0, −6,
-  −10, −20, −40, −60, and off: TotalMix FX's own fader marks (`TOTALMIX-OSC.md`, test 18), placed
-  at the fader values measured at each tick (test 7). Between ticks the gain moves evenly in dB
-  (Adam, 2026-11-01). Level and send encoders use the scale of RME's ARC USB volume wheel, as volume
+  −10, −20, −40, −60, and off: TotalMix's own fader marks (`TOTALMIX-OSC.md`, test 18), placed
+  at the fader values measured at each tick.[^test-7] Between ticks the gain moves evenly in dB
+  (Adam, 2026-11-01).
+- **Level and send encoders.** They use the scale of RME's ARC USB volume wheel, as volume
   controls (Adam, 2026-11-01): its 54 detents from −63.5 to +6 dB (docs/TOTALMIX-OSC.md, test 19),
   spread over the encoder's values so that 0 dB is at 101, as on the faders. That is about 0.2 dB a
   value from −5 to +5 dB, 0.4 dB from −15 to −5, and up to 1.3 dB at the bottom; value 0 is off.
-  Pan encoders are centered at 64 and land on TotalMix's whole pan steps (L100 to R100), about 1.6
-  steps a value, so they move in steps of 1 or 2. Each value is sent a quarter step to the right of
+- **Pan encoders.** They are centered at 64 and land on TotalMix's whole pan steps (L100 to
+  R100), about 1.6 steps a value, so they move in steps of 1 or 2. Each value is sent a quarter step to the right of
   its whole step, so that TotalMix's window shows the same step as the encoder's display. TotalMix
   has been observed to show the whole step below a fractional pan, toward L (Adam, 2026-11-01):
   with plain values, one value right of center (R1.6) showed R01 in TotalMix and R2 on the device;
@@ -300,39 +349,63 @@ and intuitiveness to be assessed).
   (L2.25 as L03, inference from "off by 1"). A quarter step to the right matches on both sides.
 - **Encoder rows.** Fixed (Adam, 2026-11-01): the top two rows are sends and the bottom row pan,
   the order of Novation's own DAW integrations (Live, Logic Pro, and Cubase in the user guide's "DAW
-  Mixer mode" sections), with pan just above the fader. Each send row feeds one output, chosen on
+  Mixer mode" sections), with pan directly above the fader. Each send row feeds one output, chosen on
   the device: Page up and down step the top row through the send targets (the Outputs list's order,
   control room outputs first), and Shift + Page the middle row, each skipping the other row's
   output, so the two never feed the same one. The overlay names the row and its output ("Top row" /
   "> Phones 2"). Page is lit where it would move for the top row, and for the middle row while
   Shift is held. The choices are remembered across launches. Gain is left out for now: TotalMix sends it only for inputs with a preamp, which the
-  project's interfaces don't have. The encoders take positions from the driver (test 2), so they
+  project's interfaces don't have. The encoders take positions from the driver,[^test-2] so they
   never jump.
-- **Shift + turn.** Resets the encoder: a pan to the center, a send to −oo (Adam, 2026-11-01). With
-  Shift held the device reports only that an encoder turned, not which way (tests 9 and 10), so a
-  reset is all it can do. The driver also sends the encoder its new position, since the turn with
-  Shift held left the device's own value where it was (test 9).
-- **Buttons.** The top row is PFL (yellow; dark yellow when off), as on the Roto-Control; the bottom
-  row is mute (red; dark red when off). Solo/Arm and Mute/Select do nothing for now: in DAW mode
-  the device leaves them to the host (test 6).
+- **Shift + turn.** Resets the encoder (Adam, 2026-11-01; made safer 2026-11-02 after the review
+  of that date, which found that a hand reaching for Shift + Page or Shift + Track could brush an
+  encoder and reset it):
+  - a pan goes to the center;
+  - a level (the Launch Control 3's) above 0 dB comes down to 0 dB, and one at or below 0 dB
+    stays: a reset never raises a level;
+  - a send goes to −oo, and a second Shift + turn brings it back to where it was;
+  - only once Shift has been held 0.3 s with no Page or Track press, and once per encoder per hold
+    of Shift.
+
+  With Shift held the device reports only that an encoder turned, not which way,[^test-9][^test-10]
+  so a reset is all it can do. The driver also sends the encoder its new position, since the turn
+  with Shift held left the device's own value where it was.[^test-9]
+- **Buttons.** The top row is PFL (yellow) and the bottom row mute (orange), the colors the
+  Roto-Control's firmware gives solo and mute, so every hardware controller shows them alike (Adam,
+  2026-11-02). A button that is off shows the dimmest shade of its color, so the two rows stay
+  recognizable (Adam, 2026-11-02). Orange's dimmest shade is index 11.[^test-13] The bright shades
+  have been observed to look as bright as full RGB values; more contrast is left to the device's own LED brightness setting.[^test-13] Solo/Arm and Mute/Select do nothing for now: in DAW mode
+  the device leaves them to the host.[^test-6]
 - **Paging and views.** Track < and > move by eight strips, as the panel's labels say, and with
   Shift to the first or last page. (Novation's integrations move one track, and eight with Shift.
   Here the order is set in the app, so moving one strip gains nothing, and pages stay on multiples
   of eight, as on the Roto-Control; Shift modifies Track rather than adding a new function; Adam,
   2026-11-01.) The strips always show the channels (inputs and playbacks), never the outputs: the
-  outputs are set up in TotalMix FX and left alone during a performance (Adam, 2026-11-01). Page
+  outputs are set up in TotalMix and left alone during a performance (Adam, 2026-11-01). Page
   and Track are lit where they would move.
 - **Free buttons.** Solo/Arm, Mute/Select, Record, Play, and the Novation button do nothing, so arm
-  and the transport stay free for a later connection to a DAW (Adam, 2026-11-01).
-- **Colors.** Level and pan encoders show their strip's TotalMix color from the palette (an output
-  left white: green for monitoring, blue for sends, as on the Roto-Control); a blank strip is dark.
-  A send row shows the color of the output it sends to, the same way, so each row reads as one
-  send, as Novation's integrations light send rows by send. Blue (45)
+  and the transport stay free for a later connection to a DAW (Adam, 2026-11-01). The Novation
+  button was tried as a one-press "first page" and dropped as hard to find (Adam, 2026-11-02).
+- **Both Track buttons together** go to the first page (Adam, 2026-11-02).
+- **Mute Master.** While TotalMix's Mute Master is off, a mute that is on flashes between bright
+  and dim orange (0.4 s each), and pressing a mute shows "Mute Master off / in TotalMix FX" on
+  the screen (Adam, 2026-11-02). The medium shade was too close to the others, and no way to make
+  the device flash a color by itself has been found, so the driver flashes it.[^test-15]
+- **Presence.** While connected, the driver asks for the surface mode (feature control 30) after
+  5 s with nothing from the device. If two questions go unanswered, or the answer is a Custom Mode
+  the device never announced, it assumes that the device restarted and lost DAW mode, and enters
+  DAW mode again (Adam, 2026-11-02, from the review of that date). That a restarted device whose
+  port stays open answers this way is an inference; a quick unplug and replug tests it.
+- **Colors.** Level and pan encoders show their strip's TotalMix color from the palette; a blank
+  strip is dark. A send row shows the color of the output it sends to (an output left white in
+  TotalMix: green for a control room output, blue for another), so each row reads as one send, as
+  Ableton Live's integration lights send rows in the send's color (Logic Pro's and Cubase's use a
+  fixed color per row).[^ug-daw-chapters] Blue (45)
   and purple (49) are past the part of the palette seen in test 4 (inference from the guide's
   picture).
 - **Screen.** Each fader and encoder has a three-line display (arrangement 2): the channel's name,
   what the control does ("Level", "Pan", "> Phones 1"), and the value in dB or as a pan, sent by
-  the driver (test 5). The stationary display, the home screen, has three lines (arrangement 2): the
+  the driver.[^test-5] The stationary display, the home screen, has three lines (arrangement 2): the
   channels on the page, each kind counted on its own ("Inputs 1-7", then "Playbacks 1-8"; "In 6-7, PB
   1-6" for a page with both; Adam, 2026-11-01), and where each send row goes ("Top > Phones 1", "Mid >
   Phones 2"), which nothing else on the device shows (Adam, 2026-11-01). The eight names packed to
@@ -359,8 +432,8 @@ and intuitiveness to be assessed).
   - Solo/Arm (65), Mute/Select (66), the Novation button (104), Page up and down (106, 107), Track < and > (103, 102), Record (118), and Play (116), all on channel 1;
   - Shift (63, channel 7).
 - **Buttons** send 127 when pressed and 0 when released, Shift included. The Novation button sends, though the user guide says it does nothing yet. Buttons don't light by themselves in DAW mode.
-- **Encoders** are smooth, with no detents. In absolute mode, values step by 1 when turned slowly. Faster turns skip values (1 → 3, 1 → 5 → 7), so the device accelerates (inference: the "Encoder Curve" feature, section 6). At 0, turning anticlockwise sends no value.
-- **"Touch" is movement, not a touch sensor.** With touch reports on, a fader or encoder sends touch on (channel 15, 127) just before its first value and touch off (0) about 80 ms (encoders) to 120–150 ms (faders) after its last. Turning an encoder at 0 anticlockwise sent touch on and off with no value between. Touching without moving wasn't tried; the inference is that it sends nothing.
+- **Encoders** are smooth, with no detents. In absolute mode, values step by 1 when turned slowly. Faster turns skip values (1 → 3, 1 → 5 → 7), so the device accelerates (inference: the "Encoder Curve" feature, section 6). At 0, turning counterclockwise sends no value.
+- **"Touch" is movement, not a touch sensor.** With touch reports on, a fader or encoder sends touch on (channel 15, 127) just before its first value and touch off (0) about 80 ms (encoders) to 120–150 ms (faders) after its last. Turning an encoder at 0 counterclockwise sent touch on and off with no value between. Touching without moving wasn't tried; the inference is that it sends nothing.
 - **Mode selection.** After Mode is pressed, the screen shows "Mode Select" and goes dark after a second or so. But the buttons stay mode selectors until a mode is chosen:
   - top-row button 1 chose Custom 1 (named "Tonverk Mixer" on Adam's unit);
   - bottom-row button 1 chose Custom 9 (the button is labeled 9 underneath);
@@ -378,7 +451,7 @@ and intuitiveness to be assessed).
   So CC 31 is not a copy of CC 30, and its meaning is unknown. Custom 9 as 22 fits the guide's feature table (section 7, item 1).
 - **The screen** showed a moved fader's or encoder's value for a moment, then went dark.
 
-**Consequences.** The library's control map, button values, and Shift are right. Its touch reports are really movement reports: SurfaceCore can't use them as a hand resting on a control, only as a sign of movement, which its holds already take from the values. The library should read the DAW mode echo (`9F 0C`), and CC 31, as their own events (inference: harmless either way).
+**Consequences.** The library's control map, button values, and Shift are right. Its touch reports are movement reports: SurfaceCore can't use them as a hand resting on a control, only as a sign of movement, which its holds already take from the values. The library should read the DAW mode echo (`9F 0C`), and CC 31, as their own events (inference: neither choice causes a problem).
 
 ### Test 2 (2026-11-01): encoder positions, relative mode, and fader pickup
 
@@ -386,8 +459,8 @@ and intuitiveness to be assessed).
 
 **Findings:**
 - **Encoder positions.** After `pos e11 100` (`BF 0D 64`: the encoder's own Control Change on channel 16), turning the top-left encoder clockwise reported 101, 102, … 107. The screen showed the same. So an absolute encoder takes the position the host sends it in this message, which the guide didn't name (section 4).
-- **A change of direction.** The first move after turning the other way sent touch on and off with no value, in both absolute and relative mode (seen three times). The device seems to drop the first step after reversing.
-- **Relative mode.** After `relative 1 on`, the top-left encoder sent Control Change 77 (`4D`) on channel 16, with 65 clockwise and 63 anticlockwise, one step at a time when turned slowly. Its touch reports used 77 too (`BE 4D 7F` and `00`), not 13. The library now reads both.
+- **A change of direction.** The first move after turning the other way sent touch on and off with no value, in both absolute and relative mode (seen three times). The device seems to drop the first step after reversing, though not every time: in a later log an absolute encoder reversed with a value at once (`lcxl-shift-relative.log`, e33 at 201.740 s; review of 2026-11-02).
+- **Relative mode.** After `relative 1 on`, the top-left encoder sent Control Change 77 (`4D`) on channel 16, with 65 clockwise and 63 counterclockwise, one step at a time when turned slowly. Its touch reports used 77 too (`BE 4D 7F` and `00`), not 13. The library now reads both.
 - **Fader pickup, first run.** After `pickup on` (`B6 46 7F`) and `pos f1 64`, fader 1 was moved from 53 down to 0, then from 0 up to 127. Every value was sent, all the way. Test 3 found pickup working; why it didn't here is unknown (seen once).
 
 **Consequences.**
@@ -411,7 +484,7 @@ and intuitiveness to be assessed).
 
 **Consequences.**
 - With feature 70 on, the device does pickup itself. It holds back a fader's values until the fader passes the position the host sent, and shows that position on the screen meanwhile.
-- That suits the driver better than SurfaceCore's own pickup, since the user sees the target. The driver can turn feature 70 on and send each fader's position, and give SurfaceCore a fader that "follows" (inference, to settle when the driver is written).
+- That suits the driver better than SurfaceCore's own pickup, since the user sees the target. The driver can turn feature 70 on and send each fader's position, and give SurfaceCore a fader that "follows" (inference at the time; the driver does this, section 9).
 - Test 2's run, where nothing was held back, stays unexplained.
 
 ### Test 4 (2026-11-01): colors
@@ -462,11 +535,11 @@ and intuitiveness to be assessed).
 **Consequences.**
 - In DAW mode the device leaves the choice between DAW Mixer and DAW Control to the host: it names the mode on the screen and passes the press on. That the host is meant to answer with a mode message is an inference.
 - The two modes change nothing the device sends, so the driver can ignore them, or treat Solo/Arm and Mute/Select as buttons of its own (e.g., to switch what the encoders control) and send a mode message only to keep the device's screen in step.
-- Custom Modes chosen on the device do switch it, and are reported (test 1).
+- Custom Modes chosen on the device do switch it, and are reported.[^test-1]
 
 ### Test 7 (2026-11-01): the fader values at the printed ticks
 
-**Setup.** `sbdev lcxl`. Adam pushed fader 1 to the top, then brought it down, stopping with the white line on its cap level with each of the nine ticks printed beside it; log kept. He wasn't highly confident of hitting each tick exactly. With the fader all the way up the line is level with the top tick, and all the way down with the bottom tick (seen).
+**Setup.** `sbdev lcxl`. Adam pushed fader 1 to the top, then brought it down, stopping with the white line on its cap level with each of the nine ticks printed beside it; log kept. He was not sure he hit each tick exactly. With the fader all the way up the line is level with the top tick, and all the way down with the bottom tick (seen).
 
 **Findings:**
 
@@ -485,7 +558,7 @@ and intuitiveness to be assessed).
 - The ticks are evenly spaced on the panel (measured in a photo: 133–135 pixels apart). Between ticks 2 and 8 the fader sends about 18 values per tick, but only 7 between ticks 1 and 2 and 11 between ticks 8 and 9. So the fader's values are not linear in its travel near the ends (inference: Novation's firmware shapes them, or the ends have dead zones).
 - An earlier reading of the top three ticks as 127, 117, and 107 (from gains Adam read) does not fit and is set aside.
 
-**Consequences.** The driver takes the ticks at 127, 120, 102, 84, 66, 46, 29, 11, and 0 (`LaunchControlDriver.faderTicks`), so each lands on its label whatever the fader does between them.
+**Consequences.** The driver first took the ticks at 127, 120, 102, 84, 66, 45, 29, 11, and 0; test 8 refined them, and `LaunchControlDriver.faderTicks` is the mean of the two passes (127, 119, 101, 83.5, 65.5, 46, 29, 11), so each tick lands on its label whatever the fader does between them.
 
 ### Test 8 (2026-11-01): the fader scale, read back
 
@@ -493,11 +566,11 @@ and intuitiveness to be assessed).
 
 **Findings** (Adam, from the bottom tick up): −oo, −60, −40, −19.5, −10.5, −6.2, −0.7, +2.7, +6.0, against labels of −∞, −60, −40, −20, −10, −6, 0, +3, and +6.
 
-**Consequences.** Each reading, through the slope of its stretch of the scale, places its tick a little off test 7's value: 0 dB at about 99.9 (not 102), +3 at 118.2 (not 120), −6 at 83.1, −10 at 65, −20 at 46.4. Neither pass is exact (Adam's alignment by eye), so the driver takes the mean of the two: 127, 119, 101, 83.5, 65.5, 46, 29, 11, and 0. Readings still off by a few tenths of a dB at a tick are within how exactly a tick can be hit by eye. Off now shows as "-oo" on the hardware controllers' displays, as TotalMix FX shows it (Adam, 2026-11-01).
+**Consequences.** Each reading, through the slope of its stretch of the scale, places its tick a little off test 7's value: 0 dB at about 99.9 (not 102), +3 at 118.2 (not 120), −6 at 83.1, −10 at 65, −20 at 46.4. Neither pass is exact (Adam's alignment by eye), so the driver takes the mean of the two: 127, 119, 101, 83.5, 65.5, 46, 29, 11, and 0. Readings still off by a few tenths of a dB at a tick are within the accuracy of setting a fader to a tick by eye. Off now shows as "-oo" on the hardware controllers' displays, as TotalMix shows it (Adam, 2026-11-01).
 
 ### Test 9 (2026-11-01): turning an encoder with Shift held
 
-**Setup.** `sbdev lcxl` (absolute mode, touch reports on). Adam held Shift, turned encoder 1 several clicks clockwise and anticlockwise, released Shift, and turned it again; log kept.
+**Setup.** `sbdev lcxl` (absolute mode, touch reports on). Adam held Shift, turned encoder 1 several clicks clockwise and counterclockwise, released Shift, and turned it again; log kept.
 
 **Findings:**
 - Shift sent its press and release (channel 7, CC 63).
@@ -512,7 +585,7 @@ and intuitiveness to be assessed).
 
 **Findings:**
 - Without Shift, each click sent a touch, a step of +1 or −1, and a release about 80 ms later. The first click after a change of direction sent a touch and a release with no step (as in test 2).
-- With Shift held, eleven bursts of turning over 4.5 s sent only touches and releases, with no steps.
+- With Shift held, ten bursts of turning over 4.5 s sent only touches and releases, with no steps.
 
 **Consequences.** Relative mode doesn't help: with Shift held, the host learns only that an encoder was turned, never which way. Shift + turn can reset a control (e.g., a pan to the center), but it can't make coarse steps.
 
@@ -527,3 +600,90 @@ and intuitiveness to be assessed).
 - A slow fade of a send from about −20 dB to off, on the ARC scale, sounded smooth.
 
 **Consequences.** The layout's screen, reset, and scales stand as section 9 describes them, and the encoders stay in absolute mode.
+
+### Test 12 (2026-11-01): asking for DAW mode while the device is already in it
+
+**Setup.** This is not a separate test; it records what the logs of the evening's sessions show. `sbdev lcbridge` and the app were often stopped with Control-C, which leaves the device in DAW mode, since only a proper quit sends `9F 0C 00`. None of the five `lcbridge` logs ends with leaving DAW mode.
+
+**Findings:**
+- Three `lcbridge` sessions that followed one stopped with Control-C asked for DAW mode 3, 2, and 6 times, 3 s apart, with no echo (`lc3-arc.log`, `xl3-pan.log`, `xl3-pan2.log`). Each "answered" at 9.736, 6.167, and 18.371 s; in two of them a pan message to TotalMix followed 1 ms later, so the driver most likely took a moved control as presence (it did then). Two sessions were answered at once, at 0.03 s (`lc3-resolution.log`, `lcxl-sends.log`); what ran before them isn't recorded.
+- The app was twice seen stuck on "Launch Control XL 3: Connecting", each time started after a host stopped with Control-C (`app-lc3.log`; the other launch kept no log), and connected at once after a proper quit (`app-lc4.log`, with `lc-daw-trace.log` showing the echo `9F 0C 7F` at 2.728 s).
+- Leaving DAW mode, the device sent `B6 1E 06`, `B6 1F 06` (twice), then `9F 0C 00` (`lc-daw-trace.log`, at 86.767 s).
+
+**Consequences.**
+- Inference (confirmed by test 14): the device echoes the DAW mode note only when the mode changes, so a host asking a device already in DAW mode gets no answer. The driver therefore leaves DAW mode and enters it again when it starts (`startBytes`), which makes a change either way, and it takes only a control moved or pressed as a sign of presence, not the feature replies sent on the way out.
+
+### Test 13 (2026-11-02): button shades and brightness
+
+**Setup.** Adam's Launch Control XL 3, firmware 1.2. The app (commit `6914def`) with the buttons in
+orange for mute and yellow for PFL, bright when on and the dimmest shade when off; then `sbdev lcxl`
+with `color b11 9`, `rgb b12 127 40 0`, `color b13 13`, and `rgb b14 127 127 0`. Seen by Adam.
+
+**Findings:**
+- Index 11 shows as a dim orange, easily told from dark, and the dim orange and dim yellow rows are
+  easily told apart.
+- Mute and PFL lit and cleared as pressed. A mute took effect in TotalMix only with its Mute Master
+  on (as in TOTALMIX-OSC.md, the global mute recheck of 2026-10-31).
+- Bright and dim could use more contrast. Palette 9 looked the same as RGB 127, 40, 0, and palette 13
+  the same as RGB 127, 127, 0, so the palette's bright shades are already at full brightness as far
+  as the eye can tell.
+
+**Consequences.**
+- The palette's runs of four (bright to dim) hold for orange as for red and yellow; index 11 is
+  orange's dimmest.
+- More contrast can come only from the device's own LED brightness (its Settings page, 1–10, 8 by
+  default, per Novation's user guide), which is the user's setting and left to the user.
+
+### Test 14 (2026-11-02): asking for DAW mode twice
+
+**Setup.** Adam's Launch Control XL 3, firmware 1.2, after the app had quit properly (leaving DAW
+mode). `sbdev lcxl --raw`, which enters DAW mode as it starts; then `daw on`, `daw off`, `daw off`,
+`daw on`, and `quit`, about 2 seconds apart. Log `lcxl-daw-echo-1102.log`.
+
+**Findings:**
+- On starting, `9F 0C 7F` was answered with `9F 0C 7F` 11 ms later.
+- `daw on` while in DAW mode: no answer.
+- `daw off`: `B6 1E 06`, `B6 1F 06`, `B6 1E 06`, `B6 1F 06`, then `9F 0C 00`, 11 ms later (Custom 1,
+  as in test 12).
+- `daw off` while out of DAW mode: no answer.
+- `daw on`: `9F 0C 7F`, 12 ms later. `quit` (DAW mode off): the same answer as the first `daw off`.
+
+**Consequence.** The device echoes the DAW mode note only when the mode changes, as test 12
+inferred. So a host asking a device already in DAW mode gets no answer, and the driver's start,
+leaving DAW mode and entering it again (`startBytes`), is what makes the device answer.
+
+### Test 15 (2026-11-02): Mute Master, shades, and flashing
+
+**Setup.** Adam's Launch Control XL 3 with the app (build 245), then `sbdev lcxl` (log
+`lcxl-flash-1102.log`), and TotalMix FX's Mute Master (the M button in its Control Strip).
+
+**Findings:**
+- With Mute Master off, a mute pressed on the XL 3 lit index 10, the medium orange: barely brighter
+  than index 11, and hard to tell from it or from index 9. Turning Mute Master on brought it to 9,
+  and off again back to 10, as the app intended; the menu showed "Mute Master: Off".
+- Track < and > pressed together went to the first page, and the device's Settings page did not
+  open in DAW mode.
+- Unplugged and plugged in again within about 2 seconds, the device was found again and drawn.
+- Index 9 sent as a Control Change on channel 2 (`B1 25 09`) or channel 3 (`B2 25 09`) changed
+  nothing: no flashing or pulsing, which those channels produce on Novation's Launchpads. The programmer's guide describes
+  only channel 1.[^prg-coloring]
+
+**Consequences.**
+- The medium shade is not used. A mute that is on while Mute Master is off flashes instead, drawn by
+  the driver (`LaunchControlDriver.blinkPeriod`).
+- In DAW mode, both Track buttons together are free for the app.
+
+### Test 16 (2026-11-02): the Launch Control 3's layout, Function held
+
+**Setup.** Adam's Launch Control XL 3 with the app and `--launch-control lc3-sim` (the Launch Control
+3's layout, Mute/Select standing in for Function). Log `app-lc3sim-1102.log`. Seen by Adam.
+
+**Findings.** All as intended: at rest Mute/Select was dim yellow and the top buttons dim orange
+(mute); while it was held, it lit bright yellow, the buttons turned dim yellow (PFL), and the screen
+showed "Buttons / PFL"; a button pressed then turned PFL on in TotalMix and lit bright yellow; on
+release the buttons went back to mute and the screen showed "Buttons / Mute"; holding it again and
+pressing the button turned the PFL off. No blue at start.
+
+**Consequence.** Function held for PFL works in the driver; on a Launch Control 3 it also needs
+Function to send its release (an inference, docs/LAUNCH-CONTROL-3.md).
+

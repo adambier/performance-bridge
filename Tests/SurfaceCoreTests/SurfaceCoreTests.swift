@@ -136,6 +136,8 @@ final class LayoutTests: XCTestCase {
         let asked = hub.refreshChannels(now: 10)
         XCTAssertTrue(asked.messages.contains { $0.address == "/sendall" })
         _ = hub.handle(.channel(bus: .input, channel: 2, parameter: "name", value: .text("Sonos")), now: 10.05)
+        _ = hub.handle(.channel(bus: .output, channel: 0, parameter: "name", value: .text("Main")), now: 10.05)
+        _ = hub.handle(.channel(bus: .output, channel: 2, parameter: "name", value: .text("Phones")), now: 10.05)
         _ = hub.tick(now: 10.5)
         XCTAssertNotNil(hub.mirror.channels[ChannelRef(.input, 0)], "kept until the answer is complete")
         _ = hub.tick(now: 11.1)
@@ -502,7 +504,67 @@ final class SurfaceHubTests: XCTestCase {
         _ = hub.handle(.other(path: "status/1", value: .number(0)), now: 1.2)
         XCTAssertEqual(hub.tick(now: 2.0).messages, [TotalMixCommand.sendAll()], "a status message is not an answer")
         _ = hub.handle(.channel(bus: .input, channel: 0, parameter: "name", value: .text("Keys")), now: 2.1)
+        _ = hub.handle(.channel(bus: .input, channel: 2, parameter: "name", value: .text("Vox")), now: 2.1)
+        XCTAssertEqual(hub.tick(now: 3.0).messages, [TotalMixCommand.sendAll()], "two channels: maybe a stereo pair split")
+        _ = hub.handle(.channel(bus: .input, channel: 4, parameter: "name", value: .text("Gtr")), now: 3.1)
         XCTAssertTrue(hub.tick(now: 5).messages.isEmpty)
+    }
+
+    func testAStereoSwitchInTotalMixAsksForEverythingAgain() {
+        var hub = SurfaceHub()
+        _ = hub.connect(now: 0)
+        for channel in [0, 2, 4] {
+            _ = hub.handle(.channel(bus: .input, channel: channel, parameter: "stereo", value: .number(1)), now: 0.1)
+            _ = hub.handle(.channel(bus: .input, channel: channel, parameter: "name", value: .text("In \(channel + 1)")), now: 0.1)
+        }
+        XCTAssertTrue(hub.tick(now: 2).messages.isEmpty, "answered")
+        // Split in TotalMix's window: only stereo = 0 for both halves arrives (TOTALMIX-OSC.md, test 20).
+        let split = hub.handle(.channel(bus: .input, channel: 4, parameter: "stereo", value: .number(0)), now: 3)
+        XCTAssertTrue(split.messages.contains(TotalMixCommand.sendAll()), "asks for the new channel's name")
+        let again = hub.handle(.channel(bus: .input, channel: 5, parameter: "stereo", value: .number(0)), now: 3)
+        XCTAssertFalse(again.messages.contains(TotalMixCommand.sendAll()), "once")
+        let rename = hub.handle(.channel(bus: .input, channel: 0, parameter: "name", value: .text("Vox")), now: 4)
+        XCTAssertFalse(rename.messages.contains(TotalMixCommand.sendAll()), "a rename arrives whole")
+    }
+
+    func testAnUnsolicitedChangeIsNotTheAnswerToSendAll() {
+        // Review of 2026-11-02: a refresh TotalMix never answered, plus one fader moved in its
+        // window, used to stop asking and drop every channel.
+        var hub = loadedHub()
+        let before = hub.mirror.channels.count
+        _ = hub.refreshChannels(now: 10)
+        _ = hub.handle(.mix(bus: .input, channel: 2, output: 0, parameter: "faderlin", value: .number(0.6)), now: 10.3)
+        _ = hub.handle(.channel(bus: .input, channel: 3, parameter: "mute", value: .number(1)), now: 10.4)
+        XCTAssertTrue(hub.tick(now: 11.4).messages.contains { $0.address == "/sendall" }, "still asking")
+        XCTAssertEqual(hub.mirror.channels.count, before, "nothing dropped")
+        XCTAssertTrue(hub.strips(of: roto)?.contains { $0.info != nil } ?? false, "the strips stay")
+
+        // Nor does one channel's stereo or color change, which TotalMix might send on its own.
+        _ = hub.handle(.channel(bus: .input, channel: 2, parameter: "stereo", value: .number(1)), now: 11.5)
+        XCTAssertTrue(hub.tick(now: 12.6).messages.contains { $0.address == "/sendall" }, "one channel is not an answer")
+        XCTAssertEqual(hub.mirror.channels.count, before)
+
+        // At connect too: a stray mute doesn't stop the retry.
+        var fresh = SurfaceHub()
+        _ = fresh.connect(now: 0)
+        _ = fresh.handle(.channel(bus: .input, channel: 0, parameter: "mute", value: .number(1)), now: 0.5)
+        XCTAssertEqual(fresh.tick(now: 2).messages, [TotalMixCommand.sendAll()])
+    }
+
+    func testAPagePastTheEndAfterARefreshMovesBack() {
+        var hub = SurfaceHub()
+        for number in 0..<12 {
+            _ = hub.handle(.channel(bus: .input, channel: number, parameter: "name", value: .text("In \(number + 1)")), now: 0)
+        }
+        _ = hub.addSurface(roto, capabilities: rotoCaps, mode: .strips(view: .sources, first: 8, knob: .level, switch: .mute), now: 0)
+        _ = hub.refreshChannels(now: 10)
+        for number in 0..<6 {  // inputs 7-12 hidden in TotalMix
+            _ = hub.handle(.channel(bus: .input, channel: number, parameter: "name", value: .text("In \(number + 1)")), now: 10.1)
+        }
+        _ = hub.tick(now: 11.2)
+        guard case .strips(_, let first, _, _)? = hub.mode(of: roto) else { return XCTFail("no mode") }
+        XCTAssertEqual(first, 0, "back to the last page, not blank strips")
+        XCTAssertEqual(hub.strips(of: roto)?.first?.info?.name, "In 1")
     }
 
     func testNameChangeUpdatesTheStrip() {
@@ -624,5 +686,16 @@ final class ScaleAndTextTests: XCTestCase {
         XCTAssertNil(hub.channel(at: 1, of: .sources, on: id))
         XCTAssertEqual(hub.channel(at: 4, of: .sources, on: id), ChannelRef(.playback, 0))
         XCTAssertEqual(hub.strips(of: id)?.compactMap { $0.info }.count, 1, "first page: the input, then blanks")
+    }
+
+    func testAnUnassignedCueIsKnownOnlyOnceReported() {
+        var mirror = MixerMirror()
+        XCTAssertFalse(mirror.reportedRoles.contains(.cue))
+        XCTAssertEqual(mirror.apply(.other(path: "controlroom/cuechan", value: .number(-1))), .controlRoom)
+        XCTAssertTrue(mirror.reportedRoles.contains(.cue))
+        XCTAssertNil(mirror.monitoring[.cue], "reported as none")
+        XCTAssertNil(mirror.apply(.other(path: "controlroom/cuechan", value: .number(-1))), "no change")
+        XCTAssertEqual(mirror.apply(.other(path: "controlroom/cuechan", value: .number(6))), .controlRoom)
+        XCTAssertEqual(mirror.monitoring[.cue], 6)
     }
 }

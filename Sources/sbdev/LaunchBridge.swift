@@ -20,7 +20,8 @@ let lcBridgeUsage = """
           from the keyboard (type `help`).
           --layout: xl3 (the default) for a Launch Control XL 3; lc3 for a Launch Control 3;
           lc3-sim for the Launch Control 3's layout on a Launch Control XL 3.
-          --port names the device's DAW ports (default "LCXL3 1 DAW", or "LC3 1 DAW" for lc3).
+          --port names the device's DAW ports (default: found by name, "LCXL3 n DAW" or
+          "LC3 n DAW" with the lowest device ID n).
           --host, --in-port, and --out-port are TotalMix's, as for monitor. --home is the home
           submix's output number, counting from 1 (default: TotalMix's Main Out).
           Stop sbdev monitor, sbdev bridge, and the app first: they need the same ports.
@@ -30,8 +31,9 @@ let lcBridgeUsage = """
       the top row's output, Shift + Page the middle row's), the bottom row pan, the top
       buttons PFL, and the bottom buttons mute. Launch Control 3 (or lc3-sim): the bottom
       encoder row is level, the top row pan or a send (Page up and down), the buttons mute,
-      and Function (Mute/Select on an XL 3) switches them to PFL. Shift + turning an
-      encoder resets it (pan to center, level to 0 dB, a send to -oo).
+      and holding Function (Mute/Select on an XL 3) makes them PFL. Holding Shift for 0.3 s
+      and turning an encoder resets it: pan to center, a level above 0 dB down to 0 dB, a
+      send to -oo and back again.
     """
 
 let lcBridgeCommandHelp = """
@@ -108,7 +110,8 @@ final class LaunchBridgeSession: @unchecked Sendable {
     func connect() {
         lock.lock()
         defer { lock.unlock() }
-        let portName = options.portName ?? options.device.defaultPortName
+        let portName = options.portName
+            ?? options.device.dawPort(among: MIDIConnection.sources().map(\.name)) ?? options.device.defaultPortName
         do {
             socket = try UDPSocket(listeningOn: options.endpoint.outgoingPort)
             midi = try MIDIConnection(clientName: "sbdev lcbridge", sourceName: portName,
@@ -241,12 +244,13 @@ final class LaunchBridgeSession: @unchecked Sendable {
     }
 
     func close() {
+        // The socket waits for its receive thread, which may be waiting for the lock.
+        socket?.stop()
         lock.lock()
         defer { lock.unlock() }
         let bytes = driver.stop(hub: &hub)
         try? midi?.send(bytes)
         Thread.sleep(forTimeInterval: 0.1)
-        socket?.stop()
         midi?.close()
     }
 }
