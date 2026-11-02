@@ -370,6 +370,9 @@ struct LaunchControlSendRowsView: View {
         let status = model.status
         let live = status.launchControlLayout == chosen && !status.launchControlSends.isEmpty
         VStack(alignment: .leading, spacing: 8) {
+            // A heading of its own, so the menus can list plain output names (Adam, 2026-11-01).
+            Text("Sends")
+                .font(.headline)
             Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 10, verticalSpacing: 8) {
                 ForEach(0..<rowCount, id: \.self) { row in
                     GridRow {
@@ -380,7 +383,7 @@ struct LaunchControlSendRowsView: View {
                                 Text("Pan").tag(Int?.none)
                             }
                             ForEach(choices(row), id: \.output) { choice in
-                                Text("> " + choice.name).tag(Int?.some(choice.output))
+                                Text(choice.name).tag(Int?.some(choice.output))
                             }
                         }
                         .labelsHidden()
