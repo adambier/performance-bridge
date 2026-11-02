@@ -98,7 +98,10 @@ public struct LaunchControlDriver: Sendable {
     /// With no answer to two questions, or an answer of a Custom Mode the device never announced,
     /// the driver takes it that the device restarted and lost DAW mode, and enters DAW mode
     /// again, which draws everything (Adam, 2026-11-02, from the review of that date). That a
-    /// device restarted without its port going away answers this way is an inference.
+    /// device restarted without its port going away answers this way is an inference, not yet
+    /// seen; the check is skipped in a Custom Mode. It also relies on the device answering
+    /// feature control 30, which the Launch Control 3 has not been seen to do (inference from its
+    /// guide).
     public static let presenceInterval: Double = 5
     private var shiftHeld = false
     private var trackLeftHeld = false
@@ -233,7 +236,9 @@ public struct LaunchControlDriver: Sendable {
             blinkLit = lit
             step.midi += drawButtons(hub: hub)
         }
-        if connected, let heard = lastHeard, now - heard >= Self.presenceInterval {
+        // Not in a Custom Mode the user chose: whether the device answers the question there is
+        // untested, and restarting would take it out of that mode (review of 2026-11-02).
+        if connected, !inCustomMode, let heard = lastHeard, now - heard >= Self.presenceInterval {
             if now - heard >= 2 * Self.presenceInterval + 1 {
                 restart(now: now, into: &step)   // two questions unanswered
             } else if now - (lastQuery ?? -Double.infinity) >= Self.presenceInterval {
@@ -267,6 +272,8 @@ public struct LaunchControlDriver: Sendable {
     private mutating func handle(_ event: LaunchControlEvent, hub: inout SurfaceHub, now: Double,
                                  into step: inout LaunchControlStep) {
         lastHeard = now
+        // Anything else heard settles the question: the device is there (review of 2026-11-02).
+        if case .mode = event {} else { awaitingModeReply = false }
         if case .dawMode(let on) = event {
             if on {
                 if !connected { connect(hub: &hub, now: now, into: &step) }
@@ -307,7 +314,19 @@ public struct LaunchControlDriver: Sendable {
         default:
             return
         }
-        guard !inCustomMode else { return }
+        // Shift and Track are tracked even in a Custom Mode, so a button released there isn't
+        // still taken as held back in DAW mode (review of 2026-11-02).
+        if inCustomMode {
+            switch event {
+            case .button(.shift, let pressed):
+                shiftHeld = pressed
+                shiftDownAt = pressed ? now : nil
+            case .button(.trackLeft, let pressed): trackLeftHeld = pressed
+            case .button(.trackRight, let pressed): trackRightHeld = pressed
+            default: break
+            }
+            return
+        }
 
         switch event {
         case .moved(let element, let value):
@@ -467,6 +486,14 @@ public struct LaunchControlDriver: Sendable {
         lastHeard = now
         lastQuery = nil
         awaitingModeReply = false
+        // Buttons held across a reconnection are not known to be held now (review of 2026-11-02).
+        shiftHeld = false
+        shiftDownAt = nil
+        shiftUsedForNavigation = false
+        resetThisShift = []
+        trackLeftHeld = false
+        trackRightHeld = false
+        blinkLit = true
         sentPositions = [:]
         sentColors = [:]
         sentTexts = [:]
@@ -917,8 +944,8 @@ public struct LaunchControlDriver: Sendable {
     }
 
     /// A strip button's light: bright when on, the dimmest shade when off; a mute that is on while
-    /// TotalMix FX's Mute Master is off (selected but not silencing) in the medium shade, as TotalMix FX
-    /// draws its M button partly lit (Adam, 2026-11-02).
+    /// TotalMix FX's Mute Master is off (selected but not silencing) flashes between the two,
+    /// `blinkPeriod` each (docs/LAUNCH-CONTROL-XL3.md, test 15; Adam, 2026-11-02).
     private mutating func drawButton(_ layer: Layer, _ index: Int, hub: SurfaceHub) -> [UInt8] {
         guard let button = button(layer, index) else { return [] }
         let info = infos[layer]?[index] ?? nil

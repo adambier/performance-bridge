@@ -106,7 +106,7 @@ public enum SetupChecklist {
         // Neither Live mode nor "Cue/PFL to" can be read over OSC (docs/TOTALMIX-OSC.md, tests 6
         // and 21), so they are notes.
         steps.append(SetupStep(id: "livemode", title: "PFL needs Live mode", state: .instruction,
-                               detail: "The hardware controllers’ PFL buttons work only with TotalMix FX in Live mode, which Performance Bridge can’t check. With Live mode on, the channels’ buttons read PFL instead of S.\n\nIn TotalMix FX’s Control Strip, click “options” and, under “solo/pfl mode”, choose “live”."))
+                               detail: "The hardware controllers’ PFL buttons have been seen to do nothing visible unless TotalMix FX is in Live mode, which Performance Bridge can’t check. With Live mode on, the channels’ buttons read PFL instead of S.\n\nIn TotalMix FX’s Control Strip, click “options” and, under “solo/pfl mode”, choose “live”."))
         steps.append(SetupStep(id: "cue", title: "Send PFL to your headphones", state: .instruction,
                                detail: "TotalMix FX sends PFL to Main by default, so PFL from a hardware controller replaces what Main Out plays: on stage, the audience hears only the channel being checked. Performance Bridge can’t check this setting.\n\nIn TotalMix FX’s Control Room section, click “assign”, then “Cue/PFL to”, and choose a headphone output (e.g., “Phones 1”)."))
 

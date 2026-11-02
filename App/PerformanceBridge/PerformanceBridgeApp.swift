@@ -343,7 +343,7 @@ final class BridgeModel: ObservableObject {
     }
 
     /// TotalMix FX among the running apps, if it is running. Matched by name, since its bundle
-    /// identifier hasn't been checked on a Mac (inference: it contains "TotalMix FX").
+    /// identifier hasn't been checked on a Mac (inference: it contains "totalmix", whatever the case).
     private static func runningTotalMix() -> NSRunningApplication? {
         NSWorkspace.shared.runningApplications.first { app in
             let names = [app.bundleIdentifier, app.localizedName].compactMap { $0?.lowercased() }

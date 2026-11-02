@@ -363,7 +363,8 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   - a pan goes to the center;
   - a level (the Launch Control 3's) above 0 dB comes down to 0 dB, and one at or below 0 dB
     stays: a reset never raises a level;
-  - a send goes to −oo, and a second Shift + turn brings it back to where it was;
+  - a send goes to −oo, and a second Shift + turn, after Shift is released and held again, brings it
+    back to where it was;
   - only once Shift has been held 0.3 s with no Page or Track press, and once per encoder per hold
     of Shift.
 
@@ -395,7 +396,9 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   5 s with nothing from the device. If two questions go unanswered, or the answer is a Custom Mode
   the device never announced, it assumes that the device restarted and lost DAW mode, and enters
   DAW mode again (Adam, 2026-11-02, from the review of that date). That a restarted device whose
-  port stays open answers this way is an inference; a quick unplug and replug tests it.
+  port stays open answers this way is an inference, not yet seen: the quick replug in test 15 was
+  caught by the app's port check, not by this. Whether the device answers the question in a Custom
+  Mode is untested, so the check is skipped there (review of 2026-11-02).
 - **Colors.** Level and pan encoders show their strip's TotalMix FX color from the palette; a blank
   strip is dark. A send row shows the color of the output it sends to (an output left white in
   TotalMix FX: green for a control room output, blue for another), so each row reads as one send, as
@@ -665,7 +668,8 @@ leaving DAW mode and entering it again (`startBytes`), is what makes the device 
   open in DAW mode.
 - Unplugged and plugged in again within about 2 seconds, the device was found again and drawn.
 - Index 9 sent as a Control Change on channel 2 (`B1 25 09`) or channel 3 (`B2 25 09`) changed
-  nothing: no flashing or pulsing, which those channels produce on Novation's Launchpads. The programmer's guide describes
+  nothing (seen by Adam; the log kept holds only the second run, with channel 3, since the first run's
+  was overwritten by it): no flashing or pulsing, which those channels produce on Novation's Launchpads. The programmer's guide describes
   only channel 1.[^prg-coloring]
 
 **Consequences.**

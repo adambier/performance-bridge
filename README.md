@@ -16,16 +16,15 @@ Performance Bridge is not affiliated with or endorsed by RME, Melbourne Instrume
 
 To set it up, follow the setup guide, [`docs/SETUP.md`](docs/SETUP.md).
 
-## Getting it
+## Installing
 
-Performance Bridge 1.0.0 runs on macOS 13 or later. Download it from the
-[latest release](https://github.com/adambier/performance-bridge/releases/latest), unzip it, and move
-"Performance Bridge.app" to the Applications folder. It is signed and notarized by Apple. Once it is
-installed, **Check for Updates…** in its menu finds new versions.
+Performance Bridge 1.0.0 runs on macOS 13 or later. Download the zip file from the
+[latest release](https://github.com/adambier/performance-bridge/releases/latest), open it, and move
+"Performance Bridge.app" to the Applications folder. The app is signed with a Developer ID and notarized
+by Apple. To update it later, choose **Check for Updates…** from its menu.
 
-Then follow the setup guide, [`docs/SETUP.md`](docs/SETUP.md): TotalMix FX's settings, the hardware
-controller, and what each control does. The app's own Setup Guide (in its menu) checks each step as
-it goes.
+The setup guide covers TotalMix FX's settings, the hardware controller, and what each control does. The
+app's own Setup Guide (in its menu) checks each step as it goes.
 
 ## What it works with
 
@@ -33,23 +32,23 @@ it goes.
   tested with TotalMix FX "2.10 (1)" and a Digiface AES.
 - **One hardware controller at a time:**
   - **Melbourne Instruments' Roto-Control**, in its MIX mode: eight motorized knobs for level, pan,
-    or a send, switches for mute and PFL, and each channel's name, TotalMix FX color, and meter. Tested
+    or a send; switches for mute and PFL; and each channel's name, TotalMix FX color, and meter. Tested
     on the device (`docs/ROTO-CONTROL.md`).
   - **Novation's Launch Control XL 3**, in its DAW mode: faders for level, two encoder rows for
     sends and one for pan, PFL and mute buttons, and the screen. Tested on the device
     (`docs/LAUNCH-CONTROL-XL3.md`).
-  - **Novation's Launch Control 3**, in its DAW mode: level, and pan or a send, on the encoders, and
-    mute or PFL on the buttons. Built from Novation's documents and tried as a simulation on an XL 3,
+  - **Novation's Launch Control 3**, in its DAW mode: encoders for level and for pan or a send, and
+    buttons for mute or PFL. Built from Novation's documents and tried as a simulation on an XL 3,
     but not yet on a Launch Control 3 (`docs/LAUNCH-CONTROL-3.md`).
 
 The app has a menu with the connection states, a Setup Guide, and Settings for TotalMix FX's host and
 ports, the hardware controller, a Launch Control's send rows, and the order and labels of the
-channels. Everything TotalMix FX can configure itself (e.g., names, colors, and which channels a
-controller sees) is set in TotalMix FX and read from it.
+channels. Everything TotalMix FX can configure itself (e.g., names, colors, and which channels
+each OSC Controller sees) is set in TotalMix FX and read from it.
 
 Planned for later releases: the Roto-Control's PLUGIN mode, for the parts of TotalMix FX that MIX mode
 can't reach (e.g., the control room); more than one hardware controller at once; and a connection to
-a DAW, for arming tracks and the transport, starting with Logic Pro and Bitwig Studio.
+a DAW, for arming tracks and controlling the transport, starting with Logic Pro and Bitwig Studio.
 
 ## What the repository holds
 
@@ -67,11 +66,10 @@ a DAW, for arming tracks and the transport, starting with Logic Pro and Bitwig S
 
 ## Building from source
 
-For development, or to try changes before a release:
+For development, or to try changes before a release, you need Swift 5.9 or later for the libraries and
+`sbdev`, plus Xcode or its Command Line Tools to build the app.
 
-- **Swift 5.9 or later** for the libraries and `sbdev`; Xcode or its Command Line Tools to build the app.
-
-## Trying `sbdev` with TotalMix FX
+### Trying `sbdev` with TotalMix FX
 
 In TotalMix FX, turn on Global OSC (Options → Mixer Settings… → OSC, "Compatibility (Mode)" set to "Global
 OSC"; `docs/SETUP.md`, Step 1, has every setting) and note the incoming and outgoing ports. RME's manual
@@ -91,7 +89,7 @@ swift run sbdev curve -6dB
 
 `swift run sbdev --help` lists everything.
 
-## Running the app from source
+### Running the app from source
 
 On a Mac, quit `sbdev` first (both need TotalMix FX's outgoing port), then:
 
@@ -101,7 +99,7 @@ swift run PerformanceBridge
 
 The app appears in the menu bar. Set TotalMix FX's host and ports and the hardware controller in
 Settings, or give the ports on the command line with `--in-port` and `--out-port`. The connection
-log goes to the Terminal.
+log goes to Terminal.
 
 On the command line, `--launch-control xl3` (a Launch Control XL 3), `lc3` (a Launch Control 3), or
 `lc3-sim` (the Launch Control 3's layout on an XL 3) overrides the hardware controller chosen in
@@ -112,8 +110,6 @@ To build the app itself, `./make-app.sh` makes "Performance Bridge.app" in the p
 Command Line Tools are enough; the first build downloads Sparkle). Open it with
 `open "Performance Bridge.app"`, or, to see its log, run
 `./"Performance Bridge.app"/Contents/MacOS/PerformanceBridge`. `./make-app.sh debug` makes a debug build.
-
-The setup guide, [`docs/SETUP.md`](docs/SETUP.md), goes through each step and what the menu says.
 
 ## Documentation
 

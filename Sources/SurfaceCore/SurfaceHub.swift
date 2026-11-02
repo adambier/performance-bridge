@@ -54,7 +54,9 @@ public struct SurfaceHub: Sendable {
     /// every channel (review of 2026-11-02). TotalMix FX also sends each of these on its own when it
     /// changes in its window, and splitting a stereo pair sends `stereo` for both halves at once
     /// (docs/TOTALMIX-OSC.md, test 20), so an answer has to come from at least three channels
-    /// (`answerChannels`): a change names one or two channels, an answer every channel.
+    /// (`answerChannels`): a change names one or two channels, an answer every channel. A mixer
+    /// showing fewer than three channels to this OSC Controller is never counted as answering, so
+    /// `/sendall` is asked again every second; accepted, since no real setup is that small.
     static let answersSendAll: Set<String> = ["name", "stereo", "color"]
     /// How many channels must send an answer-type setting before `/sendall` counts as answered.
     static let answerChannels = 3

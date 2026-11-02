@@ -723,7 +723,9 @@ public final class BridgeEngine: @unchecked Sendable {
             let name = hub.layout.label(for: ref) ?? hub.mirror.channels[ref]?.name ?? "Output \(output + 1)"
             return HomeChoice(output: output, name: name, roles: [])
         }
-        status.muteMasterOff = hub.mirror.muteMaster == false
+        // Only while TotalMix FX answers: a closed TotalMix FX shows no stale warning (review of
+        // 2026-11-02).
+        status.muteMasterOff = status.totalMixAnswering && hub.mirror.muteMaster == false
         status.channelCount = hub.mirror.channels.count
         status.levelsSeen = levelsSeen
         status.homeSubmix = hub.homeSubmix

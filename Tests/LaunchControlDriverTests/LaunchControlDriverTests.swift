@@ -644,17 +644,37 @@ final class LaunchControlDriverTests: XCTestCase {
         _ = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 10.1)
         XCTAssertTrue(driver.isConnected)
 
-        // A Custom Mode chosen on the device is announced, and is left alone.
+        // A Custom Mode chosen on the device is announced, and is left alone: no questions there.
         _ = driver.receive([0xB6, 0x1E, 0x06], hub: &hub, now: 11)
         XCTAssertTrue(driver.isConnected)
-        XCTAssertEqual(driver.tick(hub: &hub, now: 16).midi, query)
-        XCTAssertTrue(driver.receive([0xB6, 0x1E, 0x06], hub: &hub, now: 16.01).midi.isEmpty,
-                      "the answer agrees with what it announced")
+        XCTAssertTrue(driver.tick(hub: &hub, now: 16).midi.isEmpty, "no question in a Custom Mode")
+        XCTAssertTrue(driver.tick(hub: &hub, now: 30).midi.isEmpty, "and no restart")
+        _ = driver.receive([0xB6, 0x1E, 0x01], hub: &hub, now: 31)   // back to DAW Mixer: drawn again
 
         // Silence through two questions: asks for DAW mode again.
-        XCTAssertEqual(driver.tick(hub: &hub, now: 21.02).midi, query)
-        XCTAssertTrue(driver.tick(hub: &hub, now: 27.02).midi.contains(LaunchControlOutgoing.dawMode(true)))
+        XCTAssertEqual(driver.tick(hub: &hub, now: 36.02).midi, query)
+        XCTAssertTrue(driver.tick(hub: &hub, now: 42.02).midi.contains(LaunchControlOutgoing.dawMode(true)))
         XCTAssertFalse(driver.isConnected)
+    }
+
+    func testAnythingHeardAfterAQuestionSettlesIt() {
+        var (driver, hub, _) = connected(layout: .xl3)
+        XCTAssertEqual(driver.tick(hub: &hub, now: 5).midi, LaunchControlOutgoing.queryFeature(0x1E))
+        _ = driver.receive([0xBF, 0x05, 64], hub: &hub, now: 5.5)   // a fader moves instead of an answer
+        // The user then chooses a Custom Mode: announced, not a sign of a restart.
+        XCTAssertTrue(driver.receive([0xB6, 0x1E, 0x06], hub: &hub, now: 20).midi.isEmpty)
+        XCTAssertTrue(driver.isConnected)
+    }
+
+    func testShiftReleasedInACustomModeIsNotStillHeld() {
+        var (driver, hub, _) = connected(layout: .xl3)
+        _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 1)     // Shift down
+        _ = driver.receive([0xB6, 0x1E, 0x06], hub: &hub, now: 1.1)   // Custom 1
+        _ = driver.receive([0xB6, 0x3F, 0x00], hub: &hub, now: 1.2)   // Shift up, in the Custom Mode
+        _ = driver.receive([0xB6, 0x1E, 0x01], hub: &hub, now: 2)     // DAW Mixer again
+        // A bare touch of a pan encoder (bottom row, CC 29 on channel 15) resets nothing.
+        let touch = driver.receive([0xBE, 0x1D, 0x7F], hub: &hub, now: 3)
+        XCTAssertFalse(touch.core.messages.contains { $0.address.hasSuffix("balpan") }, "no reset with Shift up")
     }
 
     func testBothTrackButtonsGoToTheFirstPage() {
