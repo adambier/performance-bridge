@@ -131,7 +131,7 @@ public struct LaunchControlDriver: Sendable {
     private var knobValues: [Layer: [Double?]] = [:]  // the last position the hub sent, 0…1
     private var switchOn: [Layer: [Bool]] = [:]
     private var sentPositions: [UInt8: UInt8] = [:]  // control number → position
-    private var sentColors: [UInt8: UInt8] = [:]  // control number → palette index
+    private var sentColors: [UInt8: LightColor] = [:]  // control number → color sent
     private var sentTexts: [String: String] = [:]  // "target/field" → text
     private var sentConfig: [UInt8: UInt8] = [:]  // target byte → arrangement and flags
 
@@ -898,13 +898,13 @@ public struct LaunchControlDriver: Sendable {
     /// An encoder's light: dark for a strip with no channel; else a send row's output color
     /// (`sendColor`) or the strip's own (`color(for:)`), shaded by its level when
     /// `levelBrightness` is on and the encoder is a level or a send.
-    private func lightColor(_ layer: Layer, _ index: Int, hub: SurfaceHub) -> UInt8 {
+    private func lightColor(_ layer: Layer, _ index: Int, hub: SurfaceHub) -> LightColor {
         let info = infos[layer]?[index] ?? nil
-        guard info != nil, knobOn[layer]?[index] ?? false else { return 0 }
+        guard info != nil, knobOn[layer]?[index] ?? false else { return .palette(0) }
         let base = sendColor(layer, hub: hub) ?? Self.color(for: info)
-        guard levelBrightness, case .strips(_, _, let knob, _) = mode(for: layer, first: 0) else { return base }
-        if case .pan = knob { return base }
-        guard let position = knobValues[layer]?[index] ?? nil else { return base }
+        guard levelBrightness, case .strips(_, _, let knob, _) = mode(for: layer, first: 0) else { return .palette(base) }
+        if case .pan = knob { return .palette(base) }
+        guard let position = knobValues[layer]?[index] ?? nil else { return .palette(base) }
         return Self.shade(base, Self.levelShade(position: position))
     }
 
@@ -1162,9 +1162,18 @@ public struct LaunchControlDriver: Sendable {
     }
 
     private mutating func color(_ element: LaunchControlElement, _ index: UInt8) -> [UInt8] {
-        guard element.hasLight, sentColors[element.controlNumber] != index else { return [] }
-        sentColors[element.controlNumber] = index
-        return LaunchControlOutgoing.color(element, index) ?? []
+        color(element, .palette(index))
+    }
+
+    private mutating func color(_ element: LaunchControlElement, _ light: LightColor) -> [UInt8] {
+        guard element.hasLight, sentColors[element.controlNumber] != light else { return [] }
+        sentColors[element.controlNumber] = light
+        switch light {
+        case .palette(let index):
+            return LaunchControlOutgoing.color(element, index) ?? []
+        case .rgb(let rgb):
+            return LaunchControlOutgoing.rgb(element, red: rgb.red, green: rgb.green, blue: rgb.blue, model: device) ?? []
+        }
     }
 
     // MARK: - Text and colors
@@ -1231,22 +1240,79 @@ public struct LaunchControlDriver: Sendable {
         return .bright
     }
 
-    /// A palette color in a shade. The palette runs in groups of four, the second the bright
-    /// shade and the third and fourth dimmer ones: seen for red, orange, and yellow (tests 4 and
-    /// 13), in the picture's order for green and cyan (test 4), and an inference from the guide's
-    /// picture for blue, purple, and magenta (past index 39, not yet lit). So a color's medium
-    /// shade is its group's third and its dim shade the fourth. White (3) dims to 2 and 1, grey and
-    /// dim grey in the picture, which test 4's photo showed as near white (unchecked); grey (1) has
-    /// no dimmer shade and stays. The medium shade has been seen to be hard to tell from the others
-    /// for orange (test 15), so whether four states read on the device is not yet known.
-    public static func shade(_ color: UInt8, _ shade: LevelShade) -> UInt8 {
+    /// A light's color: a palette index (CC on channel 1), or an exact color (SysEx 01h 53h).
+    public enum LightColor: Equatable, Sendable {
+        /// A palette index, 0 for off.
+        case palette(UInt8)
+        /// An exact color.
+        case rgb(RGB)
+    }
+
+    /// An exact color, each part 0–127.
+    public struct RGB: Equatable, Sendable {
+        /// Red, 0–127.
+        public var red: UInt8
+        /// Green, 0–127.
+        public var green: UInt8
+        /// Blue, 0–127.
+        public var blue: UInt8
+
+        /// A color from its three parts, each 0–127.
+        public init(_ red: UInt8, _ green: UInt8, _ blue: UInt8) {
+            (self.red, self.green, self.blue) = (red, green, blue)
+        }
+
+        /// This color at `fraction` (0…1) of its brightness, each part rounded and a part that was
+        /// lit kept at 1 or more, so the hue stays.
+        public func scaled(_ fraction: Double) -> RGB {
+            func part(_ value: UInt8) -> UInt8 {
+                guard value > 0 else { return 0 }
+                return UInt8(min(max((Double(value) * fraction).rounded(), 1), 127))
+            }
+            return RGB(part(red), part(green), part(blue))
+        }
+    }
+
+    /// The exact color of each palette color the driver lights encoders with, for its dimmer
+    /// shades. Orange (127, 40, 0) and yellow (127, 127, 0) have been seen to match their palette
+    /// colors (test 13); the others are read off the guide's palette picture (inference), and
+    /// grey's is a guess, since 1–3 looked near white in test 4's photo.
+    public static let paletteRGB: [UInt8: RGB] = [
+        3: RGB(127, 127, 127),   // white
+        1: RGB(40, 40, 40),      // grey (a guess)
+        9: RGB(127, 40, 0),      // orange (test 13)
+        5: RGB(127, 0, 0),       // red
+        45: RGB(0, 0, 127),      // blue
+        21: RGB(0, 127, 0),      // green
+        13: RGB(127, 127, 0),    // yellow (test 13)
+        49: RGB(42, 0, 127),     // purple, for TotalMix FX's pink
+        37: RGB(0, 84, 127),     // cyan, the top send row's hue
+        53: RGB(127, 0, 127),    // magenta, the middle send row's hue
+    ]
+
+    /// How bright the medium and dim shades are, as a fraction of the color (`RGB.scaled`). Exact
+    /// colors rather than the palette's own dimmer shades (Adam, 2026-11-02), since orange's medium
+    /// palette shade (10) was too close to its neighbors to read (test 15) and white's (2, 1)
+    /// looked near white in test 4's photo. The fractions are a starting point for the check on
+    /// the device; that the device's brightness follows the RGB values in proportion is an
+    /// inference.
+    public static let mediumFraction = 0.3
+    /// The dim shade's fraction; see `mediumFraction`.
+    public static let dimFraction = 0.08
+
+    /// A palette color in a shade: off is dark, bright the palette color itself, and medium and
+    /// dim the color's exact RGB at `mediumFraction` and `dimFraction`. A color without an entry
+    /// in `paletteRGB` falls back to its palette group's third and fourth colors (the palette runs
+    /// in groups of four, bright to dim, as seen for red, orange, and yellow in tests 4 and 13).
+    public static func shade(_ color: UInt8, _ shade: LevelShade) -> LightColor {
         switch shade {
-        case .off: return 0
-        case .bright: return color
+        case .off: return .palette(0)
+        case .bright: return .palette(color)
         case .medium, .dim:
-            guard color > 3 else { return color == 3 ? (shade == .medium ? 2 : 1) : color }
-            let group = color & ~3
-            return group + (shade == .medium ? 2 : 3)
+            let fraction = shade == .medium ? mediumFraction : dimFraction
+            if let rgb = paletteRGB[color] { return .rgb(rgb.scaled(fraction)) }
+            guard color > 3 else { return .palette(color) }
+            return .palette((color & ~3) + (shade == .medium ? 2 : 3))
         }
     }
 

@@ -414,16 +414,15 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
 - **Level by brightness** (Adam, 2026-11-02, from the Tier 3 review of that date). A setting in
   Settings → Connections, off by default, shades each send encoder by its level, in four steps at
   TotalMix FX's own fader marks:[^tm-marks] bright above −10 dB, medium from −40 to −10 dB, dim below
-  −40 dB, and dark at −oo. A shade is the third or fourth color of the hue's group of four in the
-  palette: seen to run bright to dim for red, orange, and yellow (tests 4 and 13);[^test-4][^test-13]
-  for green and cyan, test 4's photo shows the picture's order, but the shades were not matched one
-  by one; for blue, purple, and magenta, past index 39, it is an inference from the guide's
-  picture. White dims to 2 and 1, grey and dim grey in the picture, which looked near white in
-  test 4's photo, so how white's shades read on the device is not yet known. Grey (1) has no dimmer
-  shade, so a grey channel shows only lit and dark. Pan encoders keep full
-  brightness, and the faders, which carry the level, have no lights. Whether four steps read on the
-  device is not yet known: orange's medium shade (10) was too close to its neighbors to read in
-  test 15,[^test-15] so three steps may be needed.
+  −40 dB, and dark at −oo. The bright shade is the palette color itself; the medium and dim shades
+  are the color's exact RGB (SysEx 01h 53h) at 0.3 and 0.08 of its parts (Adam, 2026-11-02),
+  rather than the palette's own dimmer colors: orange's medium palette shade (10) was too close to
+  its neighbors to read,[^test-15] and white's (2, 1) looked near white in test 4's photo.[^test-4]
+  Orange's and yellow's RGB values have been seen to match their palette colors;[^test-13] the
+  others are read off the guide's palette picture, and grey's is a guess (inference). The fractions
+  are a starting point for the check on the device, and that its brightness follows the RGB values
+  in proportion is an inference, so whether the four steps read is not yet known. Pan encoders
+  keep full brightness, and the faders, which carry the level, have no lights.
 - **Screen.** Each fader and encoder has a three-line display (arrangement 2): the channel's name,
   what the control does ("Level", "Pan", "> Phones 1"), and the value in dB or as a pan, sent by
   the driver.[^test-5] The stationary display, the home screen, has three lines (arrangement 2): the
