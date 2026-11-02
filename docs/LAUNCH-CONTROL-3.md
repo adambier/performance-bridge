@@ -161,6 +161,9 @@ own (Adam asked for its efficiency and intuitiveness to be assessed).
   Function is lit while they are on PFL, and the screen names the change.
 - **Paging and views.** Page up and down move by eight strips; Shift with Page up shows the
   sources and Shift with Page down the outputs.
+- **Screen and colors.** As on the XL 3 (`LAUNCH-CONTROL-XL3.md`, section 9): each encoder's display
+  shows its channel, what it does, and the value; the stationary display the page and the names;
+  the encoders their channel's color.
 - **Simulation on an XL 3.** The driver can run the Launch Control 3's layout on an XL 3: the top
   two encoder rows, the top button row, Page, Track, Shift, and Solo/Arm in Function's place. The
   faders, the bottom encoder row, and the bottom button row are left dark and do nothing. This

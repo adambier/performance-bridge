@@ -13,7 +13,7 @@ statement there carries its evidence.
 |---|---|
 | Repository | `adambier/performance-bridge` (GitHub), Swift package `performance-bridge` |
 | What it is | Performance Bridge, a macOS app (planned) that connects hardware control surfaces to RME TotalMix FX through its Global OSC interface, plus the libraries and developer tool behind it |
-| Surfaces | Melbourne Instruments Roto-Control first; Novation Launch Control XL 3 second; Mackie Control (MCU) surfaces possibly later |
+| Surfaces | Melbourne Instruments Roto-Control first; Novation Launch Control XL 3 and Launch Control 3 second; Mackie Control (MCU) surfaces possibly later |
 | License | MIT (`LICENSE`); not affiliated with or endorsed by RME, Melbourne Instruments, or Novation |
 | Language, tooling | Swift, `swift-tools-version:5.9`; CI uses the `swift:6.0-noble` image on Linux, Swift 6.2 on Windows, and the runner's Xcode on macOS; XCTest |
 | App platform | macOS 13 or later (`platforms: [.macOS(.v13)]`); SwiftUI plus AppKit; no Xcode project; Sparkle 2 for updates |
@@ -27,20 +27,22 @@ statement there carries its evidence.
 | `Sources/OSCCodec/` | OSC 1.0 packets: `OSCArgument`, `OSCMessage`, `OSCBundle`, `OSCPacket`, encoding and decoding |
 | `Sources/TotalMixOSC/` | Global OSC: `TotalMixBus`, `TotalMixCommand` (messages to send), `TotalMixEvent` (messages received), `TotalMixEndpoint` (host and ports), `TotalMixGroupFlags`, `FaderCurve`, `TotalMixVersion` (RME's version numbers; Global OSC needs 2.1 or later) |
 | `Sources/RotoControl/` | Roto-Control protocol: `RotoSysEx` (framing, 14-bit numbers, names), `RotoIncoming` and `RotoOutgoing` (SysEx messages), `RotoMIDIParser`, `RotoControlDecoder` and `RotoFeedback` (CCs and 14-bit knobs), `RotoHandshake`, `RotoInputDecoder`; PLUGIN mode in `RotoPlugin.swift` (`RotoHash`, `RotoPluginDetails`, `RotoParameterDetails`, `RotoControlMapping`) |
-| `Sources/LaunchControlXL3/` | Launch Control XL 3 protocol, from Novation's programmer's reference guide and not yet checked on the device: `LaunchControlElement` and `LaunchControlMode` (DAW mode's control map), `LaunchControlOutgoing` (DAW mode, feature controls, colors, positions, the screen), `LaunchControlText`, `LaunchControlEvent` and `LaunchControlParser` |
+| `Sources/LaunchControl/` | The Launch Control XL 3's and Launch Control 3's DAW-mode protocol, from Novation's programmer's reference guides, tested on an XL 3: `LaunchControlModel` (the two models: SysEx header byte, controls, port names), `LaunchControlElement` and `LaunchControlMode` (the control map), `LaunchControlOutgoing` (DAW mode, feature controls, colors, positions, the screen), `LaunchControlText`, `LaunchControlEvent` and `LaunchControlParser` |
+| `Sources/LaunchControlDriver/` | `LaunchControlDriver`: both Launch Control models on top of SurfaceCore, as several hub surfaces ("layers") paged together; the XL 3's and the Launch Control 3's layouts, and the Launch Control 3's on an XL 3; `LaunchControlRowFunction`, `LaunchControlStep` |
 | `Sources/MIDITransport/` | `MIDIConnection`: a CoreMIDI connection on macOS, a placeholder that throws elsewhere; `UniversalPackets`: MIDI 1.0 bytes to and from CoreMIDI's UMP words (Foundation only, tested everywhere) |
 | `Sources/SurfaceCore/` | The surface-neutral core: `SurfaceHub` (the engine: strips, paging, the home submix, holds, pickup, thinning, meters), `MixerMirror` (TotalMix's state), `PerformanceLayout` and `ViewKind`, `SurfaceCapabilities` and `SurfaceMode`, `SurfaceUpdate` and `CoreOutput`, `MeterScale` and `ValueText` |
 | `Sources/RotoDriver/` | `RotoDriver`: the Roto-Control's MIX mode on top of SurfaceCore (handshake, track sets, knob and switch modes, single-track pages, strips, knobs, lights, meters, value text); `RotoStep` |
 | `Sources/BridgeEngine/` | `BridgeEngine`: TotalMix and a Roto-Control connected through SurfaceCore and RotoDriver, with the UDP socket, the MIDI ports, and a clock; each side connects on its own and is retried every 3 s (an unplugged Roto-Control is reopened, a silent TotalMix asked for its state again); `BridgeSettings`, `BridgeStatus`, `HomeChoice` (for the app's menu); `SetupChecklist` and `SetupStep` (the setup window's steps, checked from the status); `SetupWatch` (when the setup window opens by itself, and the menu-bar warning mark). Platform code, like the transports it uses |
 | `Sources/UDPTransport/` | `UDPSocket`: POSIX UDP on macOS and Linux; a placeholder that throws on Windows |
-| `Sources/sbdev/` | Developer tool: `monitor`, `send`, `roundtrip`, `curve` (main.swift), `roto` (Roto.swift), `bridge` (Bridge.swift), `midi` (MIDIMonitor.swift), and `lcxl` (LaunchControl.swift) |
+| `Sources/sbdev/` | Developer tool: `monitor`, `send`, `roundtrip`, `curve` (main.swift), `roto` (Roto.swift), `bridge` (Bridge.swift), `midi` (MIDIMonitor.swift), `lcxl` (LaunchControl.swift), and `lcbridge` (LaunchBridge.swift) |
 | `App/PerformanceBridge/` | The menu-bar app (macOS only): `swift run PerformanceBridge` (`--in-port`/`--out-port` override the saved ports), or the bundle from `make-app.sh`. The menu, Setup Guide (opens by itself at first launch, and once per launch for a problem that has never worked with the current settings; the status lines at the top of the menu are dimmed and only report; "Refresh Channels from TotalMix FX" asks for TotalMix's whole state and drops channels its answer leaves out, also done by itself when the Channel Layout tab opens and when TotalMix returns after going quiet, since TotalMix doesn't announce hiding or showing a channel (test 11); a red dot on the menu-bar icon marks a fault (port in use, TotalMix running but silent, a Roto-Control plugged in but not connecting); TotalMix closed or the Roto-Control unplugged is idle and leaves no mark; the icon is dimmed whenever either connection is down, and normal when both are up), About (the icon at 128 points), Settings with two tabs, Connections (TotalMix's host and ports, the Roto-Control's MIDI port, kept in the user defaults) and Channel Layout (ordering channels; TotalMix FX has a Channel Layout window too, so app text names TotalMix's as "TotalMix FX's own Channel Layout window"); the menu's order follows Apple's HIG (Menus), and "Check for Updates…" when Sparkle is linked |
 | `make-app.sh` | Builds "Performance Bridge.app" with `swiftc` as one module, with Sparkle; signing, notarization, and `--appcast` are the owner's |
 | `Design/AppIcon/` | The app icon and menu-bar glyph: `make_icon.py` (geometry, writes the SVGs), the layered master, the legacy icon set, and its README |
 | `Tests/` | One test target per library |
 | `docs/TOTALMIX-OSC.md` | What this project relies on in Global OSC, with evidence, and the open questions |
 | `docs/ROTO-CONTROL.md` | What this project relies on in the Roto-Control's protocol, with evidence, and the open questions |
-| `docs/LAUNCH-CONTROL-XL3.md` | The same for the Launch Control XL 3, from Novation's documents, with the tests still to run on the device |
+| `docs/LAUNCH-CONTROL-XL3.md` | The same for the Launch Control XL 3, from Novation's documents and tests on the device |
+| `docs/LAUNCH-CONTROL-3.md` | The same for the Launch Control 3, from Novation's documents (no device yet) |
 
 ## 3. Architecture and what comes next
 
@@ -68,7 +70,11 @@ small driver of its own.
   - its displays.
 - **Drivers**, one per surface:
   - **RotoDriver** (`Sources/RotoDriver/`): the Roto-Control's SysEx API, with 14-bit motorized knobs. MIX mode drives the channel strips: the audio track set is the sources view and the master and return set the outputs view; the solo switches are PFL (as TotalMix's Solo is in Live Mode) and the record-arm switches do nothing (the firmware still shows their "ARM REC" label). Sources show their TotalMix color (each of TotalMix's eight colors mapped to a Roto-Control color scheme); outputs show their TotalMix color too, and those left white (TotalMix's default) show by kind, monitoring green and sends blue. PLUGIN mode, for the parts of TotalMix that MIX mode can't reach (e.g., a control-room page to choose the home submix), is left to a 1.x.0 release after 1.0 (Adam, 2026-10-31); until then the driver answers PLUGIN mode with no plugins. The driver is pure, like `SurfaceHub`; the app (or `sbdev bridge`) connects it to `MIDITransport`.
-  - **LaunchControlXL3 driver** (planned, on the `LaunchControlXL3` protocol library): the Launch Control XL 3's DAW mode, with 7-bit faders that are not motorized and endless encoders; a first plan is in `docs/LAUNCH-CONTROL-XL3.md` section 9.
+  - **LaunchControlDriver** (`Sources/LaunchControlDriver/`, on the `LaunchControl` protocol library; not yet in the app): the Launch Control XL 3 and Launch Control 3 in DAW mode, laid out with Adam (2026-11-01):
+    - XL 3: faders are level (7-bit, no motor: the device's own pickup holds a fader until it reaches TotalMix's level, with the hub's pickup behind it); each encoder row is pan or a send (an app setting, `LaunchControlRowFunction`; send rows take consecutive send targets, stepped together by Track < and >); the top buttons are PFL and the bottom mute.
+    - Launch Control 3: the bottom encoder row is level; the top row is pan or a send, stepped by Track < and >; the buttons are mute, switched to PFL by Function (red for mute, yellow for PFL).
+    - Both: Page moves by eight strips; Shift with Page up or down shows the sources or the outputs; the screen shows each control's channel, function, and value, and the page's names.
+    - The Launch Control 3's layout can run on an XL 3 (`sbdev lcbridge --layout lc3-sim`). The layouts are flagged for the Tier 1 UI review (efficiency and intuitiveness). Details in section 9 of `docs/LAUNCH-CONTROL-XL3.md` and of `docs/LAUNCH-CONTROL-3.md`.
   - **MackieControl**: later.
 - **Later (version 1.1.0 or after): a DAW connection.** The Roto-Control's record-arm switches would arm and disarm tracks, and its transport switches would drive the transport, in the user's DAW, starting with Logic Pro and Bitwig Studio.
 - **Protocol sources.** Each driver's protocol facts go in a `docs/` file of their own, with evidence, as `TOTALMIX-OSC.md` does for TotalMix. The vendors' documents are linked, not committed:
@@ -121,7 +127,7 @@ that location. Where the location has not been checked on a screen, say so.
 
 Do:
 
-- Keep `OSCCodec`, `TotalMixOSC`, `RotoControl`, `LaunchControlXL3`, `SurfaceCore`, `RotoDriver`, and the planned drivers Foundation-only, UI-free, and building on Linux, macOS, and Windows. Platform code (CoreMIDI, sockets, SwiftUI) stays in `UDPTransport`, `MIDITransport`, or the app.
+- Keep `OSCCodec`, `TotalMixOSC`, `RotoControl`, `LaunchControl`, `SurfaceCore`, `RotoDriver`, `LaunchControlDriver`, and the planned drivers Foundation-only, UI-free, and building on Linux, macOS, and Windows. Platform code (CoreMIDI, sockets, SwiftUI) stays in `UDPTransport`, `MIDITransport`, or the app.
 - Write cross-library imports as `#if canImport(OSCCodec)` / `import OSCCodec` / `#endif`. The app build will compile every folder as one module, and there such an import must compile out. No two top-level declarations in the library folders may share a name.
 - Put any new or changed claim about what TotalMix does in `docs/TOTALMIX-OSC.md` with its evidence: RME's document and its revision, or a test naming the TotalMix version and the interface. Mark inferences as inferences, in the code comment as well as the document. Do the same for the surfaces in their own documents.
 - Give every `public` declaration a `///` doc comment.
@@ -151,6 +157,7 @@ Don't:
   - `swift run sbdev roto ports` lists the MIDI ports.
   - `swift run sbdev roto` connects, runs the handshake, prints everything the Roto-Control sends, and takes commands (`help` lists them). `--type`, `--setup none`, and `--raw` are for the tests in `docs/ROTO-CONTROL.md` section 8.
 - **Against a Launch Control XL 3** (macOS): `swift run sbdev lcxl` puts it in DAW mode, prints what it sends, and takes commands (`help` lists them); the tests are in `docs/LAUNCH-CONTROL-XL3.md` section 8.
+- **TotalMix and a Launch Control together** (macOS): `swift run sbdev lcbridge` runs SurfaceCore and the Launch Control driver (`--layout xl3`, `lc3`, or `lc3-sim` for the Launch Control 3's layout on an XL 3; `--help` lists the rest).
 - **TotalMix and a Roto-Control together** (macOS): `swift run sbdev bridge --in-port 7004 --out-port 9004` runs SurfaceCore and the Roto-Control driver as the app will, and prints what goes to TotalMix (`help` lists the commands).
 
 ## 6. House style for text (README, docs, DocC, app strings)

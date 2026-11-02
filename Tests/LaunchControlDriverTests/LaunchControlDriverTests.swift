@@ -200,7 +200,7 @@ final class LaunchControlDriverTests: XCTestCase {
         var (driver, hub, _) = connected(layout: .xl3)
         _ = driver.receive([0xB6, 0x1E, 0x06], hub: &hub, now: 1)
         let change = hub.handle(.mix(bus: .input, channel: 0, output: 0, parameter: "faderlin", value: .number(0.25)), now: 2)
-        XCTAssertTrue(driver.take(change, hub: hub).midi.isEmpty, "nothing drawn in a Custom Mode")
+        XCTAssertTrue(driver.take(change, hub: &hub, now: 2).midi.isEmpty, "nothing drawn in a Custom Mode")
         let back = driver.receive([0xB6, 0x1E, 0x01], hub: &hub, now: 3)
         XCTAssertTrue(back.midi.contains([0xBF, 0x05, LaunchControlDriver.value(0.25)]), "everything sent again")
     }
@@ -222,8 +222,68 @@ final class LaunchControlDriverTests: XCTestCase {
         output.kind = .send
         XCTAssertEqual(LaunchControlDriver.color(for: output), 45, "a white send shows blue")
         XCTAssertEqual(LaunchControlDriver.color(for: nil), 0)
-        XCTAssertEqual(LaunchControlDriver.shortName("Mic 1 long"), "Mic 1")
-        XCTAssertEqual(LaunchControlDriver.shortName("AB CDE"), "AB CD")
-        XCTAssertEqual(LaunchControlDriver.shortName("Keys Left"), "Keys")
+        XCTAssertEqual(LaunchControlDriver.shortName("Keys"), "Keys")
+        XCTAssertEqual(LaunchControlDriver.shortName("Mic 1"), "Mic1")
+        XCTAssertEqual(LaunchControlDriver.shortName("Phones 2"), "Pho2")
+        XCTAssertEqual(LaunchControlDriver.shortName("PB 1/2"), "P1/2")
+        XCTAssertEqual(LaunchControlDriver.shortName("Tracks"), "Trac")
+        XCTAssertEqual(LaunchControlDriver.shortName("ADAT 12"), "AD12")
+    }
+
+    // From the review of 2026-11-01.
+
+    func testAPositionEqualToTheLastSentIsSentAgainAfterTheDeviceMoved() {
+        var (driver, hub, _) = connected(layout: .xl3)
+        _ = driver.receive([0xBF, 0x0D, 40], hub: &hub, now: 1)
+        _ = driver.take(hub.tick(now: 2), hub: &hub, now: 2)
+        let back = hub.handle(.mix(bus: .input, channel: 0, output: 0, parameter: "balpan", value: .number(0)), now: 3)
+        XCTAssertTrue(driver.take(back, hub: &hub, now: 3).midi.contains([0xBF, 0x0D, 64]),
+                      "the encoder is told the pan is centered again")
+    }
+
+    func testThePositionIsSentAfterAViewSwitch() {
+        var (driver, hub, _) = connected(layout: .xl3)
+        _ = hub.handle(.channel(bus: .output, channel: 0, parameter: "balpan", value: .number(0)), now: 0.5)
+        _ = driver.receive([0xBF, 0x0D, 40], hub: &hub, now: 1)
+        _ = driver.take(hub.tick(now: 2), hub: &hub, now: 2)
+        _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 3)
+        XCTAssertTrue(driver.receive([0xB0, 0x6B, 0x7F], hub: &hub, now: 3).midi.contains([0xBF, 0x0D, 64]))
+    }
+
+    func testLeavingDAWModeIsAskedAgain() {
+        var (driver, hub, _) = connected(layout: .xl3)
+        _ = driver.receive([0x9F, 0x0C, 0x00], hub: &hub, now: 1)
+        XCTAssertFalse(driver.isConnected)
+        XCTAssertTrue(driver.tick(hub: &hub, now: 4).midi.contains([0x9F, 0x0C, 0x7F]))
+    }
+
+    func testAFastFirstFaderMoveIsTaken() {
+        var (driver, hub, _) = connected(layout: .xl3)
+        let first = driver.receive([0xBF, 0x05, 72], hub: &hub, now: 1)
+        XCTAssertEqual(first.core.messages.count, 1, "8 steps past the level, let through by the device")
+    }
+
+    func testTrackLightsFollowTheSendTargets() {
+        var (driver, hub, _) = connected(layout: .lc3)
+        XCTAssertTrue(driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 1).midi.contains([0xB0, 0x66, 0]),
+                      "Track > dark at the last send")
+        var output = CoreOutput()
+        for event in [TotalMixEvent.channel(bus: .output, channel: 4, parameter: "stereo", value: .number(1)),
+                      .channel(bus: .output, channel: 4, parameter: "name", value: .text("Phones 2"))] {
+            output.append(hub.handle(event, now: 2))
+        }
+        XCTAssertTrue(driver.take(output, hub: &hub, now: 2).midi.contains([0xB0, 0x66, LaunchControlDriver.navigationOn]))
+    }
+
+    func testTheSendStepStaysInRangeWhenTargetsGo() {
+        var (driver, hub, _) = connected(layout: .lc3)
+        _ = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 1)
+        XCTAssertEqual(driver.sendStep, 0)
+        _ = driver.take(hub.setHomeSubmix(2, now: 2), hub: &hub, now: 2)
+        XCTAssertEqual(hub.sendTargets, [0])
+        XCTAssertEqual(driver.sendStep, 0)
+        let main = driver.take(hub.setHomeSubmix(nil, now: 3), hub: &hub, now: 3)
+        XCTAssertEqual(driver.sendStep, 0)
+        XCTAssertNotNil(main)
     }
 }

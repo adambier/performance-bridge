@@ -103,6 +103,14 @@ public struct LaunchControlDriver: Sendable {
     private var sentTexts: [String: String] = [:]  // "target/field" → text
     private var sentConfig: [UInt8: UInt8] = [:]  // target byte → arrangement and flags
 
+    /// How close to the level a fader's first value must be for the hub's pickup to take it, as a
+    /// fraction of the range: 12 steps of 127. The device holds a fader back until it crosses the
+    /// level, and then sends its first value just past it (one step past in test 3's slow moves),
+    /// but the hub has no earlier position to see the crossing with; a fast move may land a few
+    /// steps further (inference), and the window has to take it. If the device didn't hold the
+    /// fader (test 2), a jump of up to this much gets through.
+    public static let faderPickupWindow = 12.0 / 127
+
     /// How often entering DAW mode is asked again until the device answers, in seconds.
     public static let restartInterval: Double = 3
     /// The strips shown at once.
@@ -139,7 +147,7 @@ public struct LaunchControlDriver: Sendable {
         }
         if layout == .xl3 && layer == .faders {
             return SurfaceCapabilities(stripCount: Self.stripCount, feel: .pickup, hasSwitches: true,
-                                       pickupWindow: 3.0 / 127)
+                                       pickupWindow: Self.faderPickupWindow)
         }
         return SurfaceCapabilities(stripCount: Self.stripCount, feel: .follows, hasSwitches: hasSwitches)
     }
@@ -201,7 +209,14 @@ public struct LaunchControlDriver: Sendable {
     private mutating func handle(_ event: LaunchControlEvent, hub: inout SurfaceHub, now: Double,
                                  into step: inout LaunchControlStep) {
         if case .dawMode(let on) = event {
-            if on { connect(hub: &hub, now: now, into: &step) } else { connected = false }
+            if on {
+                if !connected { connect(hub: &hub, now: now, into: &step) }
+            } else {
+                // Left DAW mode (e.g., another program on the same port asked it to): ask again.
+                connected = false
+                inCustomMode = false
+                lastStart = now
+            }
             return
         }
         if case .mode(let mode) = event {
@@ -223,6 +238,9 @@ public struct LaunchControlDriver: Sendable {
 
         switch event {
         case .moved(let element, let value):
+            // The device is where the hand left it: a later position equal to this one must still
+            // be sent, so the driver's record of what it sent follows the device.
+            sentPositions[element.controlNumber] = value
             guard let (layer, strip) = control(for: element) else { return }
             take(hub.controlMoved(id(layer), strip: strip, to: Self.position(value), now: now), hub: hub, into: &step)
         case .touch(let element, let touched):
@@ -318,6 +336,9 @@ public struct LaunchControlDriver: Sendable {
         var output = CoreOutput()
         for layer in layers { output.append(hub.resend(id(layer), now: now)) }
         take(output, hub: hub, into: &step)
+        // Brings the stationary display up with what was just drawn on it (test 5 brought it up
+        // this way; whether it comes up by itself is untested).
+        step.midi += LaunchControlOutgoing.showDisplay(.stationary, true, model: device) ?? []
     }
 
     // MARK: - Modes
@@ -429,10 +450,18 @@ public struct LaunchControlDriver: Sendable {
 
     // MARK: - To the device
 
-    /// Moves this driver's updates out of a core output and into MIDI.
-    public mutating func take(_ output: CoreOutput, hub: SurfaceHub, now: Double = 0) -> LaunchControlStep {
+    /// Moves this driver's updates out of a core output (e.g., the hub's answer to TotalMix) and
+    /// into MIDI. If the send targets have changed so that the send step is out of range, the step
+    /// moves back into it.
+    public mutating func take(_ output: CoreOutput, hub: inout SurfaceHub, now: Double) -> LaunchControlStep {
         var step = LaunchControlStep()
         take(output, hub: hub, into: &step)
+        let range = sendStepRange(hub)
+        if !range.contains(sendStep) {
+            sendStep = min(max(sendStep, range.lowerBound), range.upperBound)
+            setModes(first: page.first, hub: &hub, now: now, into: &step)
+        }
+        if connected && !inCustomMode { step.midi += drawNavigation(hub: hub) }
         return step
     }
 
@@ -455,6 +484,7 @@ public struct LaunchControlDriver: Sendable {
             var layerKnobs = knobOn[layer] ?? Array(repeating: false, count: Self.stripCount)
             var layerSwitches = switchOn[layer] ?? Array(repeating: false, count: Self.stripCount)
             var touched = Set<Int>()
+            var values: [Int: String] = [:]  // sent after the strips, once their displays are set up
             for update in list {
                 switch update {
                 case .page(let first, let count):
@@ -478,11 +508,11 @@ public struct LaunchControlDriver: Sendable {
                             sentPositions[control.controlNumber] = position
                             bytes += LaunchControlOutgoing.position(control, position) ?? []
                         }
-                        bytes += text(.control(control), 2, valueText(layer, value))
+                        values[index] = valueText(layer, value)
                     }
                 case .valueText(let index, let text):
                     guard (0..<Self.stripCount).contains(index) else { continue }
-                    bytes += self.text(.control(element(layer, index)), 2, text)
+                    values[index] = text
                 case .switchState(let index, let on):
                     guard layerSwitches.indices.contains(index) else { continue }
                     layerSwitches[index] = on
@@ -495,9 +525,14 @@ public struct LaunchControlDriver: Sendable {
             knobOn[layer] = layerKnobs
             switchOn[layer] = layerSwitches
             for index in touched.sorted() { bytes += drawStrip(layer, index, hub: hub) }
+            for (index, value) in values.sorted(by: { $0.key < $1.key }) {
+                bytes += text(.control(element(layer, index)), 2, value)
+            }
         }
-        if pageChanged { bytes += drawStationary() + drawNavigation(hub: hub) }
-        return bytes
+        if pageChanged { bytes += drawStationary() }
+        // Every time: Track's ends change with the send targets, not only with the page (the
+        // lights are sent only when they change).
+        return bytes + drawNavigation(hub: hub)
     }
 
     /// A strip's display, encoder or fader light, and button light, for one layer.
@@ -616,14 +651,20 @@ public struct LaunchControlDriver: Sendable {
     /// The most characters a display field keeps: 20 (inference from the XL 3, test 5).
     public static let fieldLength = 20
     /// The characters of a name kept on the stationary display, whose columns hold about four
-    /// capitals (docs/LAUNCH-CONTROL-XL3.md, test 5).
-    public static let stationaryNameLength = 5
+    /// capitals and run together when full ("Mic 1Mic 2"; docs/LAUNCH-CONTROL-XL3.md, test 5).
+    public static let stationaryNameLength = 4
 
-    /// A name cut for the stationary display, without a trailing space.
+    /// A name cut to `stationaryNameLength` for the stationary display. A longer name loses its
+    /// spaces first, and then letters from before its number, so that numbered channels stay
+    /// apart: "Mic 1" → "Mic1", "Phones 2" → "Pho2", "PB 1/2" → "P1/2", "Tracks" → "Trac".
     public static func shortName(_ name: String) -> String {
-        var cut = String(name.prefix(stationaryNameLength))
-        while cut.hasSuffix(" ") { cut.removeLast() }
-        return cut
+        let limit = stationaryNameLength
+        guard name.count > limit else { return name }
+        let packed = name.filter { $0 != " " }
+        guard packed.count > limit else { return packed }
+        let number = String(packed.reversed().prefix { $0.isNumber || $0 == "/" }.reversed())
+        guard !number.isEmpty, number.count < limit else { return String(packed.prefix(limit)) }
+        return String(packed.prefix(limit - number.count)) + number
     }
 
     /// The label for a send: "> " and the output's name (AGENTS.md, house style).

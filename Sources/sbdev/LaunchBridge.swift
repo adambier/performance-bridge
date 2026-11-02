@@ -49,6 +49,7 @@ struct LaunchBridgeOptions {
     var layout = LaunchControlModel.xl3
     var device = LaunchControlModel.xl3
     var rows: [LaunchControlRowFunction] = [.pan, .send, .send]
+    var rowsGiven = false
     var portName: String?
     var home: Int?
     var verbose = false
@@ -84,6 +85,7 @@ func parseLaunchBridgeOptions(_ arguments: ArraySlice<String>) -> LaunchBridgeOp
                 fail("--rows takes up to three of pan and send, separated by commas (e.g., pan,send,send).")
             }
             options.rows = rows
+            options.rowsGiven = true
         case "--host": options.endpoint.host = value(argument)
         case "--in-port": options.endpoint.incomingPort = port(argument)
         case "--out-port": options.endpoint.outgoingPort = port(argument)
@@ -138,7 +140,11 @@ final class LaunchBridgeSession: @unchecked Sendable {
         dispatch(hub.connect(now: now))
         let started = driver.start(hub: &hub, now: now)
         send(started)
-        if options.layout == .xl3 { send(driver.setRowFunctions(options.rows, hub: &hub, now: now)) }
+        if options.layout == .xl3 {
+            send(driver.setRowFunctions(options.rows, hub: &hub, now: now))
+        } else if options.rowsGiven {
+            log("--rows is for the XL 3's layout; the Launch Control 3's top row is stepped with Track < and >.")
+        }
 
         let ticker = Thread { [weak self] in
             while let session = self {
@@ -181,7 +187,7 @@ final class LaunchBridgeSession: @unchecked Sendable {
     }
 
     private func dispatch(_ output: CoreOutput) {
-        send(driver.take(output, hub: hub, now: now))
+        send(driver.take(output, hub: &hub, now: now))
     }
 
     private func send(_ step: LaunchControlStep) {

@@ -12,8 +12,9 @@ import Foundation
 //                  fader curve; Foundation only
 //   RotoControl    Melbourne Instruments Roto-Control: SysEx messages, CCs, 14-bit knobs, and the
 //                  handshake; Foundation only
-//   LaunchControlXL3  Novation Launch Control XL 3: DAW mode's controls, colors, screen, and feature
-//                  controls, from Novation's programmer's reference guide; Foundation only
+//   LaunchControl  Novation Launch Control XL 3 and Launch Control 3: DAW mode's controls, colors,
+//                  screen, and feature controls, from Novation's programmer's reference guides;
+//                  Foundation only
 //   MIDITransport  a MIDI connection through CoreMIDI (macOS only; elsewhere it lists no ports and
 //                  throws), and the conversion between MIDI 1.0 bytes and CoreMIDI's packets
 //   UDPTransport   a small UDP socket for talking to TotalMix (POSIX on macOS and Linux; not yet
@@ -21,12 +22,13 @@ import Foundation
 //   SurfaceCore    the surface-neutral core: TotalMix's state, channel strips, paging, the home
 //                  submix, and the rules between surfaces and TotalMix; Foundation only
 //   RotoDriver     the Roto-Control's driver: its MIX mode on top of SurfaceCore; Foundation only
+//   LaunchControlDriver  the Launch Controls' driver on top of SurfaceCore; Foundation only
 //   BridgeEngine   TotalMix and a Roto-Control connected through SurfaceCore and RotoDriver, with
 //                  the sockets, the MIDI ports, and a clock: what the app runs
 //   sbdev          developer tool for checking the libraries against TotalMix and the surfaces
 //
-// Planned: the Launch Control XL 3's driver (on top of LaunchControlXL3), and the PerformanceBridge app (SwiftUI, macOS only, built
-// by make-app.sh).
+// The PerformanceBridge app (SwiftUI, macOS only, built by make-app.sh) is added below on a Mac.
+// Planned: the Launch Controls in BridgeEngine and the app.
 //
 // On a Mac the test targets are opt-in (PERFORMANCE_BRIDGE_TESTS=1), as in 3rd-wave-tools: with only
 // the Command Line Tools, SwiftPM fails while looking for XCTest even for a plain `swift build`.
