@@ -77,6 +77,7 @@ seen").
 [^test-14]: Test 14 (2026-11-02), section [10](#test-14-2026-11-02-asking-for-daw-mode-twice).
 [^test-15]: Test 15 (2026-11-02), section [10](#test-15-2026-11-02-mute-master-shades-and-flashing).
 [^test-17]: Test 17 (2026-11-02), section [10](#test-17-2026-11-02-colors-and-brightness-for-101).
+[^test-18]: Test 18 (2026-11-02), section [10](#test-18-2026-11-02-the-101-build-in-the-app-and-two-adjustments).
 [^tm-marks]: `docs/TOTALMIX-OSC.md`, test 18 (2026-11-01), the marks on TotalMix FX's faders.
 
 ## 2. MIDI ports
@@ -416,9 +417,12 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   turning a control has a visible, proportional effect (it isn't meant for reading a level off the
   light; Adam, 2026-11-02). The light is the color's exact RGB (SysEx 01h 53h), which matched each
   palette color tried,[^test-17] scaled so its brightness falls geometrically from full at the top
-  of the travel to a value of 9 at the bottom, and dark at −oo. In test 17, even steps of value
+  of the travel to a value of 5 at the bottom, and dark at −oo. In test 17, even steps of value
   and a 2.2 gamma curve looked bunched at the top, values from about 80 up looked alike, and
-  geometric steps looked even; 6 looked brighter than 9, hence the floor at 9.[^test-17] Pan
+  geometric steps looked even;[^test-17] in test 18, 9, 7, and 5 dimmed in turn and 4 and below
+  looked dark, hence the floor at 5.[^test-18] Palette yellow (13) looks greener on the encoders
+  than on the buttons, so the encoders show yellow as 127, 85, 0, which matched the buttons'
+  yellow, with the setting on or off; palette orange matched as it is.[^test-18] Pan
   encoders keep full brightness, and the faders, which carry the level, have no lights. Red's,
   green's, and grey's exact colors are inference (read off the guide's picture; grey's a guess).
 - **Screen.** Each fader and encoder has a three-line display (arrangement 2): the channel's name,
@@ -740,7 +744,44 @@ Seen by Adam.
   was not lit.
 - Level by brightness dims continuously: brightness falls geometrically from full at the top of the
   travel to 9 at its bottom (Adam, 2026-11-02: "the act of adjusting the fader [should] cause a
-  predictable outcome"). The floor is 9 rather than 6, because 6 looked brighter than 9.
+  predictable outcome"). The floor was set at 9, because 6 looked brighter than 9; test 18
+  lowered it to 5.
 - Since values from about 80 up look alike, roughly the top 15% of the travel (above about +1 dB)
   changes little. That share is computed from the curve, not seen.
 - The palette and RGB messages replace each other, so the driver can use either for any state.
+
+### Test 18 (2026-11-02): the 1.0.1 build in the app, and two adjustments
+
+**Setup.** Adam's Launch Control XL 3. The app from branch `v1.0.1` (commit `42888a3`; logs
+`app-101-xl3-1102.log`, `app-101-xl3-relaunch-1102.log`, `app-101-lc3sim-1102.log`), then
+`sbdev lcxl` (`lcxl-101-tune-1102.log`). TotalMix FX with ADAT 3/4 (white) on the top send row and
+Phones 2 (yellow) on the middle. Seen by Adam.
+
+**Findings:**
+- **Send-row colors** (setting off). The top row (ADAT 3/4, white) showed teal, which Adam saw as
+  cyan on its own. The middle row (Phones 2, yellow in TotalMix FX) showed "lime": yellow, but a
+  little greener than the yellow buttons.
+- **Show levels by brightness, turned on.** The send encoders dimmed at once to their levels, and
+  the pan row stayed at full color.
+- **Turning a send encoder by hand.** The light dimmed and brightened as the encoder turned, and
+  this "feels predictable"; the dimmest level "could be dimmer".
+- **Moving the send in TotalMix FX's window.** The light followed.
+- **Shift + turn.** A send at about the middle went to −oo, dark. A second Shift + turn brought it
+  back to −18.4 dB, lit at a medium brightness.
+- **The setting off.** Full color again at once.
+- **The setting on, then a relaunch.** It was remembered.
+- **The Launch Control 3 layout on the XL 3** (`lc3-sim`). The level row dimmed with the level
+  ("pretty much"; again, it could go dimmer), followed TotalMix FX's fader, and the top row
+  dimmed as a send and stayed at full color as pan.
+- **The dimmest value** (red, `sbdev lcxl`). 9, 7, and 5 each looked dimmer than the last; 4, 3,
+  and 2 looked dark.
+- **Yellow on the encoders.** Against a top button lit palette yellow (13), RGB 127, 85, 0 on an
+  encoder matched best; palette 13 and 127, 100, 0 were greener.
+- **Orange on the encoders.** Palette orange (9) matched the button's orange better than 127, 30, 0.
+- Several `sbdev` commands pasted at once lost some of them; one at a time worked.
+
+**Consequence.**
+- The floor is 5.
+- Encoders show yellow as 127, 85, 0, with the setting on or off; buttons keep palette 13.
+- Everything else in the 1.0.1 build behaved as section 9 describes.
+

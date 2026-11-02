@@ -443,12 +443,33 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertEqual(D.shaded(21, position: 0), .palette(0), "−oo: dark")
         XCTAssertEqual(D.shaded(5, position: 1), .rgb(D.RGB(127, 0, 0)), "full: red's exact color")
         guard case .rgb(let low) = D.shaded(9, position: FaderCurve.position(gainDB: -64)) else { return XCTFail("orange") }
-        XCTAssertEqual(low, D.RGB(9, 3, 0), "orange at its dimmest keeps a little green")
+        XCTAssertEqual(low, D.RGB(5, 2, 0), "orange at its dimmest keeps a little green")
         XCTAssertEqual(D.RGB(1, 127, 0).scaled(0.08), D.RGB(1, 10, 0), "a lit part stays lit")
         for color in D.paletteForTotalMixColor.values.sorted() + D.sendRowHues {
             XCTAssertNotNil(D.paletteRGB[color], "every color the encoders use has its exact color: \(color)")
         }
         XCTAssertEqual(D.shaded(17, position: 0.5), .palette(17), "a color without an exact one stays undimmed")
+    }
+
+    func testEncodersShowTheButtonsYellow() {
+        // Test 18: palette yellow looks greener on the encoders than on the buttons.
+        typealias D = LaunchControlDriver
+        XCTAssertEqual(D.encoderColor(13), .rgb(D.RGB(127, 85, 0)))
+        XCTAssertEqual(D.encoderColor(9), .palette(9), "orange matched as it is")
+        var hub = SurfaceHub()
+        for event: TotalMixEvent in [.channel(bus: .input, channel: 0, parameter: "name", value: .text("Keys")),
+                                     .channel(bus: .input, channel: 0, parameter: "color", value: .number(7)),
+                                     .mix(bus: .input, channel: 0, output: 0, parameter: "faderlin", value: .number(0.5)),
+                                     .mix(bus: .input, channel: 0, output: 0, parameter: "balpan", value: .number(0)),
+                                     .other(path: "controlroom/mainout", value: .number(0))] {
+            _ = hub.handle(event, now: 0)
+        }
+        var driver = LaunchControlDriver(name: "lc", layout: .xl3)
+        _ = driver.start(hub: &hub, now: 0)
+        let midi = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0).midi
+        XCTAssertTrue(midi.contains(LaunchControlOutgoing.rgb(.encoder(row: 2, column: 0), red: 127, green: 85, blue: 0) ?? [1]),
+                      "a yellow channel's pan encoder, with the setting off: the matched yellow")
+        XCTAssertFalse(midi.contains([0xB0, 0x1D, 13]), "not palette yellow")
     }
 
     /// Keys (input 1/2, red in TotalMix FX) to Main Out at `db`.

@@ -902,9 +902,10 @@ public struct LaunchControlDriver: Sendable {
         let info = infos[layer]?[index] ?? nil
         guard info != nil, knobOn[layer]?[index] ?? false else { return .palette(0) }
         let base = sendColor(layer, hub: hub) ?? Self.color(for: info)
-        guard levelBrightness, case .strips(_, _, let knob, _) = mode(for: layer, first: 0) else { return .palette(base) }
-        if case .pan = knob { return .palette(base) }
-        guard let position = knobValues[layer]?[index] ?? nil else { return .palette(base) }
+        let full = Self.encoderColor(base)
+        guard levelBrightness, case .strips(_, _, let knob, _) = mode(for: layer, first: 0) else { return full }
+        if case .pan = knob { return full }
+        guard let position = knobValues[layer]?[index] ?? nil else { return full }
         return Self.shaded(base, position: position)
     }
 
@@ -1251,7 +1252,8 @@ public struct LaunchControlDriver: Sendable {
     }
 
     /// The exact color of each palette color the driver lights encoders with, for dimming. Orange
-    /// and yellow have been seen to match their palette colors on buttons (test 13), and teal,
+    /// has been seen to match its palette color on buttons (test 13; yellow is set to match the
+    /// buttons' yellow as the encoders show it, test 18), and teal,
     /// magenta, blue, purple, and white on encoders (test 17, purple after a correction); red and
     /// green are read off the guide's palette picture (inference), and grey's is a guess.
     public static let paletteRGB: [UInt8: RGB] = [
@@ -1261,16 +1263,28 @@ public struct LaunchControlDriver: Sendable {
         5: RGB(127, 0, 0),       // red
         45: RGB(0, 0, 127),      // blue
         21: RGB(0, 127, 0),      // green
-        13: RGB(127, 127, 0),    // yellow (test 13)
+        13: RGB(127, 85, 0),     // yellow, as the encoders show the buttons' yellow (test 18)
         49: RGB(16, 0, 127),     // purple, for TotalMix FX's pink (test 17: 20 was a little redder)
         33: RGB(0, 127, 76),     // teal, the top send row's hue
         53: RGB(127, 0, 127),    // magenta, the middle send row's hue
     ]
 
-    /// The device value (0–127) of the dimmest lit level, at the bottom of an encoder's travel.
-    /// Values below it have been seen to read unevenly: 6 looked brighter than 9 (docs/
-    /// LAUNCH-CONTROL-XL3.md, test 17).
-    public static let dimmestValue = 9.0
+    /// The device value (0–127) of the dimmest lit level, at the bottom of an encoder's travel:
+    /// 9, 7, and 5 have been seen to dim in turn, and 4 and below to look dark (docs/
+    /// LAUNCH-CONTROL-XL3.md, test 18).
+    public static let dimmestValue = 5.0
+
+    /// Palette colors an encoder shows as an exact color instead, at full brightness: palette
+    /// yellow (13) has been seen to look greener on the encoders than on the buttons, and
+    /// 127, 85, 0 to match the buttons' yellow; palette orange (9) matched (test 18).
+    public static let encoderExactColors: Set<UInt8> = [13]
+
+    /// An encoder's light at full brightness for a palette color: the palette color, or its exact
+    /// color (`paletteRGB`) for those in `encoderExactColors`.
+    public static func encoderColor(_ color: UInt8) -> LightColor {
+        guard encoderExactColors.contains(color), let rgb = paletteRGB[color] else { return .palette(color) }
+        return .rgb(rgb)
+    }
 
     /// How bright a level or send encoder is, as a fraction of its color, for a fader position
     /// (0…1), when `levelBrightness` is on; `nil` for dark (−oo). The brightness falls
