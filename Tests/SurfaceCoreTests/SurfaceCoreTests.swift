@@ -573,7 +573,7 @@ final class ScaleAndTextTests: XCTestCase {
     }
 
     func testValueText() {
-        XCTAssertEqual(ValueText.level(position: 0), "off")
+        XCTAssertEqual(ValueText.level(position: 0), "-oo")
         XCTAssertEqual(ValueText.level(position: FaderCurve.unityPosition), "0.0 dB")
         XCTAssertEqual(ValueText.level(position: FaderCurve.position(gainDB: -6)), "-6.0 dB")
         XCTAssertEqual(ValueText.level(position: 1), "+6.0 dB")

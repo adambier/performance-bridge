@@ -301,7 +301,7 @@ final class LaunchControlDriverTests: XCTestCase {
 
     func testTheFaderScaleMatchesTheTicks() {
         for tick in LaunchControlDriver.faderTicks {
-            let position = LaunchControlDriver.faderPosition(UInt8(tick.value))
+            let position = LaunchControlDriver.faderPosition(exactly: tick.value)
             XCTAssertEqual(FaderCurve.gainDB(position: position) ?? -999, tick.gainDB, accuracy: 0.01, "tick \(tick.value)")
         }
         XCTAssertNil(FaderCurve.gainDB(position: LaunchControlDriver.faderPosition(0)), "the bottom is off")
@@ -313,7 +313,7 @@ final class LaunchControlDriverTests: XCTestCase {
             previous = position
             XCTAssertEqual(LaunchControlDriver.faderValue(position), value, "round trip at \(value)")
         }
-        XCTAssertEqual(LaunchControlDriver.faderValue(FaderCurve.unityPosition), 102, "0 dB sits on the third tick")
+        XCTAssertEqual(LaunchControlDriver.faderValue(FaderCurve.unityPosition), 101, "0 dB sits on the third tick")
     }
 
     func testFadersUseTheScaleAndEncodersDoNot() {
@@ -322,7 +322,7 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(midi.contains([0xBF, 0x0D, 64]), "encoders keep the plain scale")
         let unity = driver.receive([0xBF, 0x05, LaunchControlDriver.faderValue(0.5)], hub: &hub, now: 1)
         XCTAssertEqual(unity.core.messages.count, 1)
-        let top = driver.receive([0xBF, 0x05, 102], hub: &hub, now: 2)
+        let top = driver.receive([0xBF, 0x05, 101], hub: &hub, now: 2)
         XCTAssertEqual(top.core.messages, [TotalMixCommand.setMix(from: .input, 0, to: 0, "faderlin", Float(FaderCurve.unityPosition))])
     }
 
@@ -346,5 +346,35 @@ final class LaunchControlDriverTests: XCTestCase {
         _ = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 3)
         XCTAssertEqual(hub.strips(of: driver.id(.faders))?[0].knobTarget, .level(ChannelRef(.playback, 0), submix: 0),
                        "Shift + Track >: the last page, starting on a multiple of eight")
+    }
+
+    func testPageMovesTheSendRowsAPageAtATimeAndShiftShowsTheView() {
+        var hub = loadedHub()
+        for (number, name) in [(4, "ADAT 1/2"), (6, "ADAT 3/4"), (8, "ADAT 5/6")] {
+            _ = hub.handle(.channel(bus: .output, channel: number, parameter: "stereo", value: .number(1)), now: 0)
+            _ = hub.handle(.channel(bus: .output, channel: number, parameter: "name", value: .text(name)), now: 0)
+        }
+        XCTAssertEqual(hub.sendTargets.count, 4)
+        var driver = LaunchControlDriver(name: "lc", layout: .xl3)
+        _ = driver.start(hub: &hub, now: 0)
+        let first = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0)
+        XCTAssertTrue(first.midi.contains([0xB0, 0x6A, 0]), "Page up dark: sends 1-2 are the first")
+        XCTAssertTrue(first.midi.contains([0xB0, 0x6B, LaunchControlDriver.navigationOn]))
+        let next = driver.receive([0xB0, 0x6B, 0x7F], hub: &hub, now: 1)
+        XCTAssertEqual(driver.sendStep, 2, "Page down: sends 3-4 on the two send rows")
+        XCTAssertEqual(hub.strips(of: driver.id(.row0))?[0].knobTarget, .level(ChannelRef(.input, 0), submix: 6))
+        XCTAssertEqual(hub.strips(of: driver.id(.row1))?[0].knobTarget, .level(ChannelRef(.input, 0), submix: 8))
+        XCTAssertTrue(next.midi.contains(LaunchControlOutgoing.text(.overlay, field: 0, "Sends 3-4") ?? []))
+        XCTAssertTrue(next.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, "Top: > ADAT 3/4") ?? []))
+        XCTAssertTrue(next.midi.contains([0xB0, 0x6B, 0]), "Page down dark at the last page of sends")
+
+        let shift = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 2)
+        XCTAssertTrue(shift.midi.contains([0xB0, 0x6A, 0]), "with Shift, Page up is dark in the sources view")
+        XCTAssertTrue(shift.midi.contains([0xB0, 0x6B, LaunchControlDriver.navigationOn]), "and Page down lit, toward the outputs")
+        let outputs = driver.receive([0xB0, 0x6B, 0x7F], hub: &hub, now: 2)
+        XCTAssertTrue(outputs.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, "Outputs") ?? []))
+        XCTAssertTrue(outputs.midi.contains([0xB0, 0x6A, LaunchControlDriver.navigationOn]), "Page up lit, toward the sources")
+        let release = driver.receive([0xB6, 0x3F, 0x00], hub: &hub, now: 3)
+        XCTAssertTrue(release.midi.contains([0xB0, 0x6A, 0]), "outputs have no sends, so Page is dark (Page down already was)")
     }
 }

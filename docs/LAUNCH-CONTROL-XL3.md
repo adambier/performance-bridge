@@ -286,8 +286,10 @@ and intuitiveness to be assessed).
 - **Encoder rows.** Each row is Pan or Send, set in the app. The default is Send, Send, Pan, the
   order of Novation's own DAW integrations (Live, Logic Pro, and Cubase in the user guide's "DAW
   Mixer mode" sections), with pan just above the fader. Send rows take consecutive send targets
-  (control room outputs first), and Page up and down step them together, as Page steps the sends
-  in Novation's integrations. Gain is left out for now: TotalMix sends it only for inputs with a preamp, which the
+  (control room outputs first). Page up and down move the send rows a page at a time (sends 1–2,
+  then 3–4, and so on, with two send rows), as Page steps the sends in Novation's integrations, and
+  the overlay names the send on each row ("Sends 3-4" / "Top: > ADAT 3/4" / "Middle: > ADAT 5/6").
+  Page is lit where it would move, and dark in the outputs view, which has no sends. Gain is left out for now: TotalMix sends it only for inputs with a preamp, which the
   project's interfaces don't have. The encoders take positions from the driver (test 2), so they
   never jump.
 - **Buttons.** The top row is PFL (yellow; dark yellow when off), as on the Roto-Control; the bottom
@@ -298,7 +300,8 @@ and intuitiveness to be assessed).
   Here the order is set in the app, so moving one strip gains nothing, and pages stay on multiples
   of eight, as on the Roto-Control; Shift modifies Track rather than adding a new function; Adam,
   2026-11-01.) Shift with Page up
-  shows the sources, and with Page down the outputs. Page and Track are lit where they would move.
+  shows the sources, and with Page down the outputs, and the overlay names the view. While Shift is
+  held, Page lights toward the other view. Page and Track are lit where they would move.
 - **Colors.** Level and pan encoders show their strip's TotalMix color from the palette (an output
   left white: green for monitoring, blue for sends, as on the Roto-Control); a blank strip is dark.
   A send row shows the color of the output it sends to, the same way, so each row reads as one
@@ -458,3 +461,11 @@ and intuitiveness to be assessed).
 - An earlier reading of the top three ticks as 127, 117, and 107 (from gains Adam read) does not fit and is set aside.
 
 **Consequences.** The driver takes the ticks at 127, 120, 102, 84, 66, 46, 29, 11, and 0 (`LaunchControlDriver.faderTicks`), so each lands on its label whatever the fader does between them.
+
+### Test 8 (2026-11-01): the fader scale, read back
+
+**Setup.** `sbdev lcbridge` with the fader scale of test 7 (ticks taken at 127, 120, 102, 84, 66, 46, 29, 11, and 0). Adam set fader 1 to each tick and read the gain.
+
+**Findings** (Adam, from the bottom tick up): −oo, −60, −40, −19.5, −10.5, −6.2, −0.7, +2.7, +6.0, against labels of −∞, −60, −40, −20, −10, −6, 0, +3, and +6.
+
+**Consequences.** Each reading, through the slope of its stretch of the scale, places its tick a little off test 7's value: 0 dB at about 99.9 (not 102), +3 at 118.2 (not 120), −6 at 83.1, −10 at 65, −20 at 46.4. Neither pass is exact (Adam's alignment by eye), so the driver takes the mean of the two: 127, 119, 101, 83.5, 65.5, 46, 29, 11, and 0. Readings still off by a few tenths of a dB at a tick are within how exactly a tick can be hit by eye. Off now shows as "-oo" on the hardware controllers' displays, as TotalMix FX shows it (Adam, 2026-11-01).
