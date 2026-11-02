@@ -118,8 +118,8 @@ Launch Control 3.
    Controls' DAW ports, "LCXL3 1 DAW" and "LC3 1 DAW" (the part their "… Out" and "… In" ports share).
    The menu lists the ports connected when Settings opens; choose another one if yours is named
    differently.
-4. Click **Apply**. With a Launch Control chosen, Settings also shows a **Launch Control** tab, where its
-   send rows' outputs can be chosen (step 6).
+4. Click **Apply**. With a Launch Control chosen, the Connections tab also shows its send rows, whose outputs
+   can be chosen there once it is connected (step 6).
 
 ## Step 4: Start the app
 
@@ -206,8 +206,8 @@ can feed are the ones in Settings → Channel Layout → Outputs, in that order,
   screen names the row and its new output, and each send row's lights take the color of the output it feeds.
 - Page and Track are lit where they can move, and dark at the ends. While Shift is held, Page lights for the middle
   row.
-- Each row's output is remembered when Performance Bridge restarts, and can also be chosen in Settings, on the
-  Launch Control tab.
+- Each row's output is remembered when Performance Bridge restarts, and can also be chosen in Settings, at the
+  bottom of the Connections tab.
 - Solo/Arm, Mute/Select, Record, Play, and the Novation button do nothing, so they stay free for later uses (e.g., a
   connection to a DAW).
 - Level and pan are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so TotalMix's
