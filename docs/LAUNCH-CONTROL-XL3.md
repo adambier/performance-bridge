@@ -352,9 +352,18 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   Shift is held. The choices are remembered across launches. Gain is left out for now: TotalMix sends it only for inputs with a preamp, which the
   project's interfaces don't have. The encoders take positions from the driver,[^test-2] so they
   never jump.
-- **Shift + turn.** Resets the encoder: a pan to the center, a send to −oo (Adam, 2026-11-01). With
-  Shift held the device reports only that an encoder turned, not which way,[^test-9][^test-10] so
-  a reset is all it can do. The driver also sends the encoder its new position, since the turn
+- **Shift + turn.** Resets the encoder (Adam, 2026-11-01; made safer 2026-11-02 after the review
+  of that date, which found that a hand reaching for Shift + Page or Shift + Track could brush an
+  encoder and reset it):
+  - a pan goes to the center;
+  - a level (the Launch Control 3's) above 0 dB comes down to 0 dB, and one at or below 0 dB
+    stays: a reset never makes anything louder;
+  - a send goes to −oo, and a second Shift + turn brings it back to where it was;
+  - only once Shift has been held 0.3 s with no Page or Track press, and once per encoder per hold
+    of Shift.
+
+  With Shift held the device reports only that an encoder turned, not which way,[^test-9][^test-10]
+  so a reset is all it can do. The driver also sends the encoder its new position, since the turn
   with Shift held left the device's own value where it was.[^test-9]
 - **Buttons.** The top row is PFL (yellow; dark yellow when off), as on the Roto-Control; the bottom
   row is mute (red; dark red when off). Solo/Arm and Mute/Select do nothing for now: in DAW mode

@@ -203,7 +203,7 @@ the main mix) and the cue output (PFL uses it).
 | **Track >** / **Track <** | Show the next or previous eight channels. With **Shift**: the last or first eight. |
 | **Page ▼** / **Page ▲** | Change the output the **top** encoder row feeds, to the next or previous one in the Outputs list. |
 | **Shift + Page ▼** / **▲** | The same for the **middle** encoder row. |
-| **Shift + turn an encoder** | Reset it: a pan to the center, a send to −oo. |
+| **Shift + turn an encoder** | Reset it: a pan to the center, a send to −oo (Shift + turn again to bring it back). Hold Shift for a moment first; after Page or Track in the same hold, turning does nothing. |
 
 - The two send rows never feed the same output: stepping one skips the output the other has.
 - The screen shows the channels on the page, counted in the order of Settings → Channel Layout with a stereo pair
@@ -229,7 +229,8 @@ The Launch Control 3 works the same way, with fewer controls:
 | Top encoder | Pan, or a send: **Page ▼** / **▲** steps it through Pan, then each output in the Outputs list |
 | Button | Mute, or PFL after **Function** (red for mute, yellow for PFL; Function lights yellow while the buttons are PFL) |
 
-Track works as on the XL 3, and Shift + turn resets an encoder (a level to 0 dB). The screen shows the channels on
+Track works as on the XL 3, and Shift + turn resets an encoder as there; a level above 0 dB comes down to 0 dB, and
+one below 0 dB stays. The screen shows the channels on
 the page, the top row's function (e.g., "Top: Pan"), and the buttons' ("Buttons: Mute"). The Launch Control 3 has not been tried on a device yet (`docs/LAUNCH-CONTROL-3.md`).
 
 ### Roto-Control

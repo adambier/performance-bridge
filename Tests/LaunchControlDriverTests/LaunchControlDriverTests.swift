@@ -410,26 +410,53 @@ final class LaunchControlDriverTests: XCTestCase {
         var (driver, hub, _) = connected(layout: .xl3)
         _ = driver.receive([0xBF, 0x1D, 127], hub: &hub, now: 1)  // pan right
         _ = driver.receive([0xBF, 0x0D, 100], hub: &hub, now: 1)  // send up
+        let sendBefore = hub.mirror.value(of: .level(ChannelRef(.input, 0), submix: 2))
         XCTAssertEqual(driver.receive([0xBE, 0x1D, 0x7F], hub: &hub, now: 2).core.messages, [],
                        "a turn without Shift resets nothing")
         _ = driver.receive([0xBE, 0x1D, 0x00], hub: &hub, now: 2)
 
         _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 3)
-        let pan = driver.receive([0xBE, 0x1D, 0x7F], hub: &hub, now: 3)
+        XCTAssertEqual(driver.receive([0xBE, 0x1D, 0x7F], hub: &hub, now: 3.1).core.messages, [],
+                       "not before Shift has been held 0.3 s")
+        let pan = driver.receive([0xBE, 0x1D, 0x7F], hub: &hub, now: 3.4)
         XCTAssertEqual(pan.core.messages, [TotalMixCommand.setMix(from: .input, 0, to: 0, "balpan", 0)], "pan to the center")
         XCTAssertTrue(pan.midi.contains([0xBF, 0x1D, 64]), "the encoder told the center, to carry on from there")
-        let send = driver.receive([0xBE, 0x0D, 0x7F], hub: &hub, now: 3)
+        let send = driver.receive([0xBE, 0x0D, 0x7F], hub: &hub, now: 3.4)
         XCTAssertEqual(send.core.messages, [TotalMixCommand.setMix(from: .input, 0, to: 2, "faderlin", 0)], "a send to -oo")
         XCTAssertTrue(send.midi.contains([0xBF, 0x0D, 0]))
-        XCTAssertEqual(driver.receive([0xBE, 0x05, 0x7F], hub: &hub, now: 3).core.messages, [],
+        XCTAssertEqual(driver.receive([0xBE, 0x0D, 0x7F], hub: &hub, now: 3.6).core.messages, [],
+                       "one reset per encoder per hold of Shift, however many touch reports a turn sends")
+        XCTAssertEqual(driver.receive([0xBE, 0x05, 0x7F], hub: &hub, now: 3.6).core.messages, [],
                        "a fader moved with Shift held isn't reset")
+        _ = driver.receive([0xB6, 0x3F, 0x00], hub: &hub, now: 4)
 
-        var (lc3, lc3Hub, _) = connected(layout: .lc3, device: .xl3)
-        _ = lc3.receive([0xB6, 0x3F, 0x7F], hub: &lc3Hub, now: 1)
-        let level = lc3.receive([0xBE, 0x15, 0x7F], hub: &lc3Hub, now: 1)
+        // A second Shift + turn brings the send back.
+        _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 5)
+        let restore = driver.receive([0xBE, 0x0D, 0x7F], hub: &hub, now: 5.4)
+        XCTAssertEqual(restore.core.messages.count, 1)
+        XCTAssertEqual(Double(hub.mirror.value(of: .level(ChannelRef(.input, 0), submix: 2)) ?? -1), sendBefore ?? -2,
+                       accuracy: 0.0001, "the send is back where it was")
+        _ = driver.receive([0xB6, 0x3F, 0x00], hub: &hub, now: 6)
+
+        // Shift held for Shift + Page: a brushed encoder changes nothing.
+        _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 7)
+        _ = driver.receive([0xB0, 0x6B, 0x7F], hub: &hub, now: 7.1)
+        XCTAssertEqual(driver.receive([0xBE, 0x1D, 0x7F], hub: &hub, now: 7.5).core.messages, [],
+                       "no reset once Page or Track has been pressed in this hold of Shift")
+    }
+
+    func testShiftAndTurnNeverRaisesALevel() {
+        var (lc3, hub, _) = connected(layout: .lc3, device: .xl3)
+        _ = lc3.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 1)
+        XCTAssertEqual(lc3.receive([0xBE, 0x15, 0x7F], hub: &hub, now: 1.5).core.messages, [],
+                       "a level below 0 dB stays where it is")
+        _ = lc3.receive([0xB6, 0x3F, 0x00], hub: &hub, now: 2)
+        _ = lc3.receive([0xBF, 0x15, 127], hub: &hub, now: 3)  // +6 dB
+        _ = lc3.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 4)
+        let level = lc3.receive([0xBE, 0x15, 0x7F], hub: &hub, now: 4.5)
         XCTAssertEqual(level.core.messages,
                        [TotalMixCommand.setMix(from: .input, 0, to: 0, "faderlin", Float(FaderCurve.position(gainDB: 0)))],
-                       "a level to 0 dB")
+                       "a level above 0 dB comes down to 0 dB")
     }
 
     // From the review of 2026-11-01.

@@ -87,6 +87,20 @@ public struct LaunchControlDriver: Sendable {
     private var inCustomMode = false
     private var lastStart: Double?
     private var shiftHeld = false
+    /// When Shift went down, and whether Page or Track has been pressed since, for the reset's
+    /// guard (`resetAllowed`).
+    private var shiftDownAt: Double?
+    private var shiftUsedForNavigation = false
+    /// The encoders reset during this hold of Shift: each resets once per hold, since one turn can
+    /// send several touch reports.
+    private var resetThisShift: Set<UInt8> = []
+    /// A send's position before Shift + turn took it to −oo, so the next Shift + turn restores it.
+    private var sendsBeforeReset: [ControlTarget: Double] = [:]
+
+    /// How long Shift must be held, with no Page or Track press, before Shift + turn resets: so a
+    /// hand reaching for Shift + Page or Shift + Track that brushes an encoder changes nothing
+    /// (Adam, 2026-11-02, from the review of that date).
+    public static let resetHold: Double = 0.3
     private var parser = LaunchControlParser()
     private var page = (first: 0, count: 0)
     private var infos: [Layer: [StripInfo?]] = [:]
@@ -259,12 +273,16 @@ public struct LaunchControlDriver: Sendable {
             take(hub.controlMoved(id(layer), strip: strip, to: position, now: now), hub: hub, into: &step)
         case .touch(let element, let touched):
             guard let (layer, strip) = control(for: element) else { return }
-            if touched, shiftHeld, case .encoder = element {
+            if touched, shiftHeld, case .encoder = element, resetAllowed(now: now),
+               resetThisShift.insert(element.controlNumber).inserted {
                 reset(element, layer: layer, strip: strip, hub: &hub, now: now, into: &step)
             }
             take(hub.touched(id(layer), strip: strip, touched, now: now), hub: hub, into: &step)
         case .button(.shift, let pressed):
             shiftHeld = pressed
+            shiftDownAt = pressed ? now : nil
+            shiftUsedForNavigation = false
+            resetThisShift = []
             // Page and Track light for what they do with Shift held, and back on release.
             step.midi += drawNavigation(hub: hub)
         case .button(let element, pressed: true):
@@ -281,12 +299,14 @@ public struct LaunchControlDriver: Sendable {
             guard let (layer, strip) = switchControl(for: element) else { return }
             take(hub.switchPressed(id(layer), strip: strip, now: now), hub: hub, into: &step)
         case .pageUp, .pageDown:
+            if shiftHeld { shiftUsedForNavigation = true }
             // Page steps the top send row's output; on the XL 3, Shift + Page the middle row's
             // (Adam, 2026-11-01).
             let row = shiftHeld && layout == .xl3 ? 1 : 0
             guard !shiftHeld || layout == .xl3 else { return }
             stepSend(row: row, by: element == .pageUp ? -1 : 1, hub: &hub, now: now, into: &step)
         case .trackLeft, .trackRight:
+            if shiftHeld { shiftUsedForNavigation = true }
             // Eight strips a press; with Shift, the first or the last page. Pages always start at
             // a multiple of eight, as on the Roto-Control: the order is set in the app, so there is
             // nothing to gain from moving one strip (Adam, 2026-11-01).
@@ -468,16 +488,35 @@ public struct LaunchControlDriver: Sendable {
 
     // MARK: - Controls
 
-    /// Where Shift + turn puts an encoder: a pan at the center, a level at 0 dB, a send at −oo
-    /// (Adam, 2026-11-01). With Shift held the device reports only that an encoder turned, not
-    /// which way, in absolute and relative mode alike (docs/LAUNCH-CONTROL-XL3.md, tests 9 and 10),
-    /// so a reset is all Shift + turn can do; `nil` for a layer that controls nothing.
-    func resetPosition(_ layer: Layer) -> Double? {
+    /// Whether Shift + turn may reset now: Shift held at least `resetHold`, with no Page or Track
+    /// press since it went down.
+    private func resetAllowed(now: Double) -> Bool {
+        guard let down = shiftDownAt else { return false }
+        return now - down >= Self.resetHold && !shiftUsedForNavigation
+    }
+
+    /// Where Shift + turn puts an encoder, from where it is now (`current`, the hub position), or
+    /// `nil` to leave it (Adam, 2026-11-02, after the review of that date: a brushed encoder must
+    /// never make anything louder):
+    /// - a pan goes to the center;
+    /// - a level above 0 dB comes down to 0 dB, and one at or below 0 dB stays;
+    /// - a send goes to −oo, and a send at −oo goes back to where the last reset took it from
+    ///   (`previous`).
+    /// With Shift held the device reports only that an encoder turned, not which way, in absolute
+    /// and relative mode alike (docs/LAUNCH-CONTROL-XL3.md, tests 9 and 10), so a reset is all
+    /// Shift + turn can do.
+    func resetPosition(_ layer: Layer, current: Double?, previous: Double?) -> Double? {
         guard case .strips(_, _, let knob, _) = mode(for: layer, first: 0) else { return nil }
         switch knob {
-        case .pan: return 0.5
-        case .level: return FaderCurve.position(gainDB: 0)
-        case .send(let index): return index == Int.max ? nil : 0
+        case .pan:
+            return 0.5
+        case .level:
+            let unity = FaderCurve.position(gainDB: 0)
+            return (current ?? 0) > unity ? unity : nil
+        case .send(let index):
+            guard index != Int.max else { return nil }
+            if (current ?? 0) > 0 { return 0 }
+            return previous
         }
     }
 
@@ -486,9 +525,15 @@ public struct LaunchControlDriver: Sendable {
     /// reset.
     private mutating func reset(_ element: LaunchControlElement, layer: Layer, strip: Int,
                                 hub: inout SurfaceHub, now: Double, into step: inout LaunchControlStep) {
-        guard let position = resetPosition(layer),
-              hub.strips(of: id(layer))?.indices.contains(strip) == true,
-              hub.strips(of: id(layer))?[strip].knobTarget != nil else { return }
+        guard let strips = hub.strips(of: id(layer)), strips.indices.contains(strip),
+              let target = strips[strip].knobTarget else { return }
+        let stored = hub.mirror.value(of: target)
+        // The hub keeps a pan as −1…+1 and positions as 0…1.
+        let current: Double? = { if case .pan = target { return stored.map { ($0 + 1) / 2 } }; return stored }()
+        guard let position = resetPosition(layer, current: current, previous: sendsBeforeReset[target]) else { return }
+        if case .strips(_, _, .send, _) = mode(for: layer, first: 0) {
+            if position == 0 { sendsBeforeReset[target] = current } else { sendsBeforeReset[target] = nil }
+        }
         take(hub.controlMoved(id(layer), strip: strip, to: position, now: now), hub: hub, into: &step)
         let value = deviceValue(layer, position)
         guard connected, !inCustomMode, sentPositions[element.controlNumber] != value else { return }
