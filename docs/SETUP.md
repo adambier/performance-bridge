@@ -85,7 +85,7 @@ Checked on screen with TotalMix FX "2.10 (1)" on a Mac (Adam, 2026-10-31); the s
    checked and Global OSC worked (`docs/TOTALMIX-OSC.md`, section 1); a run with it unchecked hasn't been
    compared, so leave it as it is.
 9. **Mute and PFL.** The hardware controllers' mute and PFL buttons depend on three settings in TotalMix's
-   window (Adam's screenshot of the Control Strip, 2026-11-02):
+   window, checked on screen:
 
    <img src="../App/PerformanceBridge/Resources/totalmix-control-strip.png" width="160" alt="TotalMix FX's Control Strip: the M, S, and F buttons, and the options panel with solo/pfl mode set to live">
 
@@ -98,7 +98,7 @@ Checked on screen with TotalMix FX "2.10 (1)" on a Mac (Adam, 2026-10-31); the s
      (`docs/TOTALMIX-OSC.md`, test 6). TotalMix
      doesn't send this setting over OSC, so Performance Bridge can't check it; the Setup Guide reminds you.
    - **Where PFL goes.** In the Control Room section, click **assign**, then **Cue/PFL to**, and choose a
-     headphone output, e.g., **Phones 1** (Adam's screenshot, 2026-11-02; `docs/TOTALMIX-OSC.md`, test 21). Its
+     headphone output, e.g., **Phones 1** (checked on screen; `docs/TOTALMIX-OSC.md`, test 21). Its
      default, **Main**, makes PFL replace what Main Out plays, so on stage the audience hears only the channel
      being checked (test 6). TotalMix doesn't send this setting over OSC (test 21), so Performance Bridge can't check it; the Setup
      Guide reminds you.
