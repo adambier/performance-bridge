@@ -105,12 +105,21 @@ The table's **Remote Controller** column lists M1–M4 and O1–O4 for each chan
 shows for a hidden channel has not been checked. Hiding has been seen not to renumber the other channels (one
 run).
 
-## Step 3: Connect the Roto-Control
+## Step 3: Connect the hardware controller
 
-1. Connect the Roto-Control to the Mac by USB. It can be connected before or after the app starts.
-2. The app finds the Roto-Control by the name of its MIDI port. The default, "Roto", matches the port
-   named "Roto-Control". To choose another port, open Settings (Connections tab) and pick it from the MIDI port menu under
-   Roto-Control; the menu lists the ports connected when Settings opens.
+Performance Bridge uses one hardware controller at a time: a Roto-Control, a Launch Control XL 3, or a
+Launch Control 3.
+
+1. Connect the hardware controller to the Mac by USB. It can be connected before or after the app starts.
+2. In Performance Bridge, open **Settings… → Connections** and choose it from the **Controller** menu
+   under Hardware Controller. The Roto-Control is the default.
+3. The app finds the controller by the name of its MIDI port, shown in the **MIDI port** menu below it.
+   The defaults match the usual names: "Roto" for the Roto-Control's port "Roto-Control", and the Launch
+   Controls' DAW ports, "LCXL3 1 DAW" and "LC3 1 DAW" (the part their "… Out" and "… In" ports share).
+   The menu lists the ports connected when Settings opens; choose another one if yours is named
+   differently.
+4. Click **Apply**. With a Launch Control chosen, Settings also shows a **Launch Control** tab, where its
+   send rows' outputs can be chosen (step 6).
 
 ## Step 4: Start the app
 
@@ -197,9 +206,12 @@ can feed are the ones in Settings → Channel Layout → Outputs, in that order,
   screen names the row and its new output, and each send row's lights take the color of the output it feeds.
 - Page and Track are lit where they can move, and dark at the ends. While Shift is held, Page lights for the middle
   row.
-- Each row's output is remembered when Performance Bridge restarts.
+- Each row's output is remembered when Performance Bridge restarts, and can also be chosen in Settings, on the
+  Launch Control tab.
 - Solo/Arm, Mute/Select, Record, Play, and the Novation button do nothing, so they stay free for later uses (e.g., a
   connection to a DAW).
+- Level and pan are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so TotalMix's
+  window shows the pans set here only while Main Out's output is selected in its bottom row (seen 2026-11-01).
 
 ### Launch Control 3
 
