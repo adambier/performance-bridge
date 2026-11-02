@@ -1,7 +1,7 @@
 # Performance Bridge
 
 **Performance Bridge** is a macOS menu-bar app that connects hardware controllers to RME TotalMix FX
-through TotalMix's Global OSC interface. With it, the knobs, faders, buttons, and displays of a
+through TotalMix's Global OSC interface. With it, the knobs, faders, buttons, and displays of the
 hardware controller show and control TotalMix's mixer, in both directions.
 
 Its aim is TotalMix as a performance mixer: for mixing live, in practice or on stage, with the
