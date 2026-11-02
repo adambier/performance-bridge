@@ -240,7 +240,7 @@ by Adam (Adam asked for its efficiency and intuitiveness to be assessed).
 - **Top encoder row.** Pan or a send, chosen on the device: Page up and down step it through Pan,
   then each send in order (control room outputs first), as Page does in Novation's own DAW
   integrations.[^ug-daw-mixer] The screen names the choice ("Pan", "> Phones 1"), and a send row
-  lights in its output's color, or cyan for an output left white in TotalMix FX (Adam, 2026-11-02;
+  lights in its output's color, or teal for an output left white in TotalMix FX (Adam, 2026-11-02;
   `LAUNCH-CONTROL-XL3.md`, section 9).
 - **Buttons.** Mute, and PFL while Function is held (Adam, 2026-11-02, from the review of that date:
   a toggle could leave the buttons on PFL by mistake on stage). The buttons are orange for mute and
@@ -261,9 +261,11 @@ by Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   screen shows the channels on the page, the top row's function ("Top: Pan" or "Top > Phones 1"),
   and the buttons' ("Buttons: Mute" or "Buttons: PFL").
 - **Level by brightness.** As on the XL 3 (an off-by-default setting; Adam, 2026-11-02):[^xl3-use]
-  the level encoders, and the top row when it is a send, are bright above −10 dB, medium from −40
-  to −10 dB, dim below −40 dB, and dark at −oo; pan keeps full brightness. Here the level row has
-  lights, so the levels themselves show, which the XL 3's faders can't.
+  the level encoders, and the top row when it is a send, dim continuously with their level, from
+  full at the top of the travel to dim at the bottom and dark at −oo; pan keeps full brightness.
+  Here the level row has lights, so the levels themselves dim, which the XL 3's faders can't. The
+  curve was set on the XL 3 (its test 17); that the Launch Control 3's LEDs respond the same way is
+  an inference.
 - **Simulation on an XL 3.** The driver can run the Launch Control 3's layout on an XL 3: the top
   two encoder rows, the top button row, Page, Track, Shift, and Mute/Select as Function (the same
   number, 66). The faders, the bottom encoder row, the bottom button row, Solo/Arm, Record, and

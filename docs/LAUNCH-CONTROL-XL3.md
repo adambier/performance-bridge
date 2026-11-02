@@ -76,6 +76,7 @@ seen").
 [^test-13]: Test 13 (2026-11-02), section [10](#test-13-2026-11-02-button-shades-and-brightness).
 [^test-14]: Test 14 (2026-11-02), section [10](#test-14-2026-11-02-asking-for-daw-mode-twice).
 [^test-15]: Test 15 (2026-11-02), section [10](#test-15-2026-11-02-mute-master-shades-and-flashing).
+[^test-17]: Test 17 (2026-11-02), section [10](#test-17-2026-11-02-colors-and-brightness-for-101).
 [^tm-marks]: `docs/TOTALMIX-OSC.md`, test 18 (2026-11-01), the marks on TotalMix FX's faders.
 
 ## 2. MIDI ports
@@ -404,25 +405,22 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   strip is dark. A send row shows the color of the output it sends to, so each row reads as one
   send, as Ableton Live's integration lights send rows in the send's color.[^ug-daw-chapters] An
   output left white in TotalMix FX (its default) shows the row's own hue instead, as Logic Pro's and
-  Cubase's integrations use a fixed color per row: cyan (37) for the top row and magenta (53) for
+  Cubase's integrations use a fixed color per row: teal (33) for the top row and magenta (53) for
   the middle, neither one of TotalMix FX's eight colors, so the rows can be told apart from each
-  other and from the sources (Adam, 2026-11-02, from the Tier 3 review of that date; before 1.0.1, a
-  white output was green in the control room and blue otherwise). Blue (45), purple (49), and
-  magenta (53) are past the part of the palette seen in test 4, and cyan (37) is in it but was not
-  matched to the guide's picture one by one (the run ended in cyans and blues), so that 37 and 53
-  show as cyan and magenta is an inference still to be checked (section 8, item 9).
+  other and from the sources (Adam, 2026-11-02, from the Tier 3 review of that date; before 1.0.1,
+  a white output was green in the control room and blue otherwise). Both have been seen as named
+  and told apart from blue, purple, and green; cyan (37), tried first, looked too close to
+  blue.[^test-17] Blue (45) and purple (49) were seen as named in test 17 too.
 - **Level by brightness** (Adam, 2026-11-02, from the Tier 3 review of that date). A setting in
-  Settings → Connections, off by default, shades each send encoder by its level, in four steps at
-  TotalMix FX's own fader marks:[^tm-marks] bright above −10 dB, medium from −40 to −10 dB, dim below
-  −40 dB, and dark at −oo. The bright shade is the palette color itself; the medium and dim shades
-  are the color's exact RGB (SysEx 01h 53h) at 0.3 and 0.08 of its parts (Adam, 2026-11-02),
-  rather than the palette's own dimmer colors: orange's medium palette shade (10) was too close to
-  its neighbors to read,[^test-15] and white's (2, 1) looked near white in test 4's photo.[^test-4]
-  Orange's and yellow's RGB values have been seen to match their palette colors, on buttons;[^test-13] the
-  others are read off the guide's palette picture, and grey's is a guess (inference). The fractions
-  are a starting point for the check on the device, and that its brightness follows the RGB values
-  in proportion is an inference, so whether the four steps read is not yet known. Pan encoders
-  keep full brightness, and the faders, which carry the level, have no lights.
+  Settings → Connections, off by default, dims each send encoder continuously with its level, so
+  turning a control has a visible, proportional effect (it isn't meant for reading a level off the
+  light; Adam, 2026-11-02). The light is the color's exact RGB (SysEx 01h 53h), which matched each
+  palette color tried,[^test-17] scaled so its brightness falls geometrically from full at the top
+  of the travel to a value of 9 at the bottom, and dark at −oo. In test 17, even steps of value
+  and a 2.2 gamma curve looked bunched at the top, values from about 80 up looked alike, and
+  geometric steps looked even; 6 looked brighter than 9, hence the floor at 9.[^test-17] Pan
+  encoders keep full brightness, and the faders, which carry the level, have no lights. Red's,
+  green's, and grey's exact colors are inference (read off the guide's picture; grey's a guess).
 - **Screen.** Each fader and encoder has a three-line display (arrangement 2): the channel's name,
   what the control does ("Level", "Pan", "> Phones 1"), and the value in dB or as a pan, sent by
   the driver.[^test-5] The stationary display, the home screen, has three lines (arrangement 2): the
@@ -708,3 +706,41 @@ pressing the button turned the PFL off. No blue at start.
 **Consequence.** Function held for PFL works in the driver; on a Launch Control 3 it also needs
 Function to send its release (an inference, docs/LAUNCH-CONTROL-3.md).
 
+
+### Test 17 (2026-11-02): colors and brightness for 1.0.1
+
+**Setup.** Adam's Launch Control XL 3, firmware 1.2, LED brightness at its default. `sbdev lcxl` on
+branch `v1.0.1` (log `lcxl-101-colors-1103.log`), with `color` and `rgb` commands on the encoders.
+Seen by Adam.
+
+**Findings:**
+- Palette 37, 53, 45, and 49 showed as cyan, magenta, blue, and purple, all told apart, but cyan and
+  blue looked "pretty similar". Teal (33) looked "quite different" from blue; green (21) looked
+  different from all of them.
+- RGB against palette, one above the other: 0, 127, 76 matched teal (33); 127, 0, 127 matched
+  magenta (53); 0, 0, 127 matched blue (45); and 127, 127, 127 matched white (3), in hue and
+  brightness. Purple (49) looked a little bluer than 42, 0, 127; 20, 0, 127 was closer, still
+  slightly redder.
+- Brightness steps by RGB (red): 127, 38, 10, and dark all looked different; so did white at 127,
+  38, and 10.
+- Eight reds in even steps of value (127 down to 5): the brighter ones looked nearly the same, with
+  the big changes all at the dim end. On a 2.2 gamma curve (127, 94, 67, 45, 27, 15, 6, 2): still
+  bunched at the top. Geometric (127, 70, 39, 21, 12, 7, 4, 2): the first two or three bunched,
+  and the bottom changes were less distinct.
+- From 127 down (127, 96, 80, 64, 48, 40, 32, 24), 64 was the first that looked clearly dimmer than
+  127.
+- Geometric from 80 to 6 (80, 55, 38, 26, 18, 13, 9, 6): "pretty close" to even; 80 looked a little
+  dimmer than 127; 6 looked clearly lit, and brighter than 9.
+- A palette color after an RGB color on the same encoder, and the reverse (`rgb` 38, 0, 0; `color`
+  5; `rgb` 10, 0, 0; `color` 0): each showed the newest color, ending dark.
+
+**Consequence.**
+- The top send row's hue for white outputs is teal (33), not cyan (37).
+- Purple's exact color is 16, 0, 127. This is an inference from 20 being slightly redder; 16 itself
+  was not lit.
+- Level by brightness dims continuously: brightness falls geometrically from full at the top of the
+  travel to 9 at its bottom (Adam, 2026-11-02: "the act of adjusting the fader [should] cause a
+  predictable outcome"). The floor is 9 rather than 6, because 6 looked brighter than 9.
+- Since values from about 80 up look alike, roughly the top 15% of the travel (above about +1 dB)
+  changes little. That share is computed from the curve, not seen.
+- The palette and RGB messages replace each other, so the driver can use either for any state.

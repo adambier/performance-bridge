@@ -78,7 +78,7 @@ public struct LaunchControlDriver: Sendable {
     public var sendOutputs: [Int?] { sendRows.choices }
     /// Launch Control 3: whether the buttons are PFL (`true`, while Function is held) or mute.
     public private(set) var buttonsArePFL = false
-    /// Whether level and send encoders show their level by brightness (`levelShade(position:)`), a
+    /// Whether level and send encoders dim with their level (`brightness(position:)`), a
     /// setting that is off by default (Adam, 2026-11-02, from the Tier 3 review of that date).
     /// Pan encoders keep full brightness.
     public private(set) var levelBrightness: Bool
@@ -905,7 +905,7 @@ public struct LaunchControlDriver: Sendable {
         guard levelBrightness, case .strips(_, _, let knob, _) = mode(for: layer, first: 0) else { return .palette(base) }
         if case .pan = knob { return .palette(base) }
         guard let position = knobValues[layer]?[index] ?? nil else { return .palette(base) }
-        return Self.shade(base, Self.levelShade(position: position))
+        return Self.shaded(base, position: position)
     }
 
     private mutating func take(_ output: CoreOutput, hub: SurfaceHub, into step: inout LaunchControlStep) {
@@ -1209,36 +1209,12 @@ public struct LaunchControlDriver: Sendable {
     /// The Function button while the buttons are mute: the dimmest yellow, PFL's color when off,
     /// as for any button that is off (Adam, 2026-11-02).
     public static let functionIdle: UInt8 = 15
-    /// The hue of a send row whose output is left white in TotalMix FX: cyan (37) for the top row,
+    /// The hue of a send row whose output is left white in TotalMix FX: teal (33) for the top row,
     /// magenta (53) for the XL 3's middle row; neither is one of TotalMix FX's eight colors (Adam,
-    /// 2026-11-02, from the Tier 3 review of that date). 37 was lit in test 4 but not matched to
-    /// the guide's palette picture one by one, and 53 is past the part seen on the device; that
-    /// they show as cyan and magenta is an inference until checked.
-    public static let sendRowHues: [UInt8] = [37, 53]
-
-    /// How bright a level or send encoder shows its level, when `levelBrightness` is on: split at
-    /// TotalMix FX's own fader marks (docs/TOTALMIX-OSC.md, test 18), not at a level of our own
-    /// (Adam, 2026-11-02).
-    public enum LevelShade: Equatable, Sendable {
-        /// −oo: dark.
-        case off
-        /// Below −40 dB.
-        case dim
-        /// −40 dB to −10 dB.
-        case medium
-        /// Above −10 dB.
-        case bright
-    }
-
-    /// The shade for a fader position (0…1).
-    public static func levelShade(position: Double) -> LevelShade {
-        guard let gain = FaderCurve.gainDB(position: position) else { return .off }
-        if gain < -40 { return .dim }
-        // The marks themselves belong to the middle step; the small tolerance keeps −10 dB there
-        // after its round trip through `FaderCurve` (−9.999999999999993; review of 2026-11-02).
-        if gain <= -10 + 1e-9 { return .medium }
-        return .bright
-    }
+    /// 2026-11-02, from the Tier 3 review of that date). On the XL 3 both have been seen as
+    /// named and told apart from blue, purple, and green; cyan (37), tried first, looked too close
+    /// to blue (test 17).
+    public static let sendRowHues: [UInt8] = [33, 53]
 
     /// A light's color: a palette index (CC on channel 1), or an exact color (SysEx 01h 53h).
     public enum LightColor: Equatable, Sendable {
@@ -1274,10 +1250,10 @@ public struct LaunchControlDriver: Sendable {
         }
     }
 
-    /// The exact color of each palette color the driver lights encoders with, for its dimmer
-    /// shades. Orange (127, 40, 0) and yellow (127, 127, 0) have been seen to match their palette
-    /// colors on buttons (test 13); the others are read off the guide's palette picture (inference), and
-    /// grey's is a guess, since 1–3 looked near white in test 4's photo.
+    /// The exact color of each palette color the driver lights encoders with, for dimming. Orange
+    /// and yellow have been seen to match their palette colors on buttons (test 13), and teal,
+    /// magenta, blue, purple, and white on encoders (test 17, purple after a correction); red and
+    /// green are read off the guide's palette picture (inference), and grey's is a guess.
     public static let paletteRGB: [UInt8: RGB] = [
         3: RGB(127, 127, 127),   // white
         1: RGB(40, 40, 40),      // grey (a guess)
@@ -1286,35 +1262,35 @@ public struct LaunchControlDriver: Sendable {
         45: RGB(0, 0, 127),      // blue
         21: RGB(0, 127, 0),      // green
         13: RGB(127, 127, 0),    // yellow (test 13)
-        49: RGB(42, 0, 127),     // purple, for TotalMix FX's pink
-        37: RGB(0, 84, 127),     // cyan, the top send row's hue
+        49: RGB(16, 0, 127),     // purple, for TotalMix FX's pink (test 17: 20 was a little redder)
+        33: RGB(0, 127, 76),     // teal, the top send row's hue
         53: RGB(127, 0, 127),    // magenta, the middle send row's hue
     ]
 
-    /// How bright the medium and dim shades are, as a fraction of the color (`RGB.scaled`). Exact
-    /// colors rather than the palette's own dimmer shades (Adam, 2026-11-02), since orange's medium
-    /// palette shade (10) was too close to its neighbors to read (test 15) and white's (2, 1)
-    /// looked near white in test 4's photo. The fractions are a starting point for the check on
-    /// the device; that the device's brightness follows the RGB values in proportion is an
-    /// inference.
-    public static let mediumFraction = 0.3
-    /// The dim shade's fraction; see `mediumFraction`.
-    public static let dimFraction = 0.08
+    /// The device value (0–127) of the dimmest lit level, at the bottom of an encoder's travel.
+    /// Values below it have been seen to read unevenly: 6 looked brighter than 9 (docs/
+    /// LAUNCH-CONTROL-XL3.md, test 17).
+    public static let dimmestValue = 9.0
 
-    /// A palette color in a shade: off is dark, bright the palette color itself, and medium and
-    /// dim the color's exact RGB at `mediumFraction` and `dimFraction`. A color without an entry
-    /// in `paletteRGB` falls back to its palette group's third and fourth colors (the palette runs
-    /// in groups of four, bright to dim, as seen for red, orange, and yellow in tests 4 and 13).
-    public static func shade(_ color: UInt8, _ shade: LevelShade) -> LightColor {
-        switch shade {
-        case .off: return .palette(0)
-        case .bright: return .palette(color)
-        case .medium, .dim:
-            let fraction = shade == .medium ? mediumFraction : dimFraction
-            if let rgb = paletteRGB[color] { return .rgb(rgb.scaled(fraction)) }
-            guard color > 3 else { return .palette(color) }
-            return .palette((color & ~3) + (shade == .medium ? 2 : 3))
-        }
+    /// How bright a level or send encoder is, as a fraction of its color, for a fader position
+    /// (0…1), when `levelBrightness` is on; `nil` for dark (−oo). The brightness falls
+    /// geometrically from full at the top of the travel to `dimmestValue` at the bottom, so equal
+    /// turns look like equal steps: on the XL 3, values from about 80 up looked equally bright,
+    /// a straight line and a 2.2 gamma curve both bunched at the top, and geometric steps looked
+    /// even (test 17). The dimming is continuous, so turning a control has a visible, proportional
+    /// effect; it isn't meant for reading a level off the light (Adam, 2026-11-02).
+    public static func brightness(position: Double) -> Double? {
+        guard FaderCurve.gainDB(position: position) != nil else { return nil }
+        let position = min(max(position, 0), 1)
+        return dimmestValue * pow(127 / dimmestValue, position) / 127
+    }
+
+    /// A palette color dimmed for a fader position (`brightness(position:)`), as its exact RGB
+    /// (`paletteRGB`), or dark at −oo. A color without an exact one stays undimmed.
+    public static func shaded(_ color: UInt8, position: Double) -> LightColor {
+        guard let fraction = brightness(position: position) else { return .palette(0) }
+        guard let rgb = paletteRGB[color] else { return .palette(color) }
+        return .rgb(rgb.scaled(fraction))
     }
 
     /// The palette color for each of TotalMix FX's eight colors (1 white, 2 grey, 3 orange, 4 red,

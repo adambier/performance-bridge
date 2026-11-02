@@ -124,8 +124,8 @@ lowest device ID.
 With a Launch Control chosen, the Connections tab also shows its send rows below Apply. Their outputs can
 be chosen there at any time while TotalMix FX is open, with the Launch Control connected or not, and a
 change takes effect at once (Step 6). Below them, **Show levels by brightness** (off by default) dims each
-level and send encoder's light as its level falls: bright above −10 dB, dimmer down to −40 dB, dimmest below,
-and dark at −oo. Pan encoders keep full brightness; the XL 3's faders have no lights.
+level and send encoder's light as you turn it down, from full at the top to dim at the bottom, and dark at
+−oo. Pan encoders keep full brightness; the XL 3's faders have no lights.
 
 ## Step 4: Check the connections
 
@@ -220,7 +220,7 @@ the main mix) and the cue output (PFL uses it).
   counting once, and where each send row goes (e.g., "Inputs 1-7", "Top > Phones 1",
   "Mid > Phones 2"). Moving a control shows its channel, what it does, and its value. After each Page press the
   screen names the row and its new output, and each send row's lights take the color of the output it feeds: its
-  color in TotalMix FX, or, for an output left white, cyan for the top row and magenta for the middle row.
+  color in TotalMix FX, or, for an output left white, teal for the top row and magenta for the middle row.
 - Page and Track are lit where they can move and dark at the ends. While Shift is held, Page lights for the middle
   row.
 - Each row's output is remembered when Performance Bridge restarts. It can also be chosen in Settings, at the
