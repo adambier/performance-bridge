@@ -278,7 +278,7 @@ final class RotoFeedbackTests: XCTestCase {
         XCTAssertEqual(RotoFeedback.position(1), 16383)
         XCTAssertEqual(RotoFeedback.position(0.5), 8192)
         XCTAssertEqual(RotoFeedback.position(-1), 0)
-        // TotalMix's 0 dB fader position, step 836 of 1023.
+        // TotalMix FX's 0 dB fader position, step 836 of 1023.
         XCTAssertEqual(RotoFeedback.position(836.0 / 1023), 13388)
         XCTAssertEqual(RotoFeedback.fraction(16383), 1)
         XCTAssertEqual(RotoFeedback.fraction(0), 0)

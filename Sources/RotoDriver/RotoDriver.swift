@@ -13,11 +13,11 @@ import SurfaceCore
 #endif
 
 /// What the Roto-Control driver produces in answer to MIDI from the Roto-Control: MIDI bytes for
-/// the Roto-Control, and the core's output for TotalMix and the other surfaces.
+/// the Roto-Control, and the core's output for TotalMix FX and the other surfaces.
 public struct RotoStep: Equatable, Sendable {
     /// Complete MIDI messages for the Roto-Control, in order.
     public var midi: [UInt8] = []
-    /// Messages for TotalMix, and updates for the other surfaces. This driver's own updates are
+    /// Messages for TotalMix FX, and updates for the other surfaces. This driver's own updates are
     /// already turned into `midi`.
     public var core = CoreOutput()
 
@@ -34,7 +34,7 @@ public struct RotoStep: Equatable, Sendable {
 /// How the Roto-Control's MIX mode maps onto the core (docs/ROTO-CONTROL.md):
 /// - both track sets show the sources (the channels); the outputs are not shown (Adam, 2026-11-01);
 /// - the level, pan, and send knob modes are the core's `level`, `pan`, and `send(n)`;
-/// - the mute switch mode is mute; solo is PFL, as TotalMix's own Solo button is in its Live Mode
+/// - the mute switch mode is mute; solo is PFL, as TotalMix FX's own Solo button is in its Live Mode
 ///   (docs/TOTALMIX-OSC.md, test 6); the record-arm switches do nothing (arming tracks in a DAW is planned for a later version; the
 ///   Roto-Control's firmware still shows their "ARM REC" label);
 /// - single-track mode is the core's focus mode on the selected track: level, pan, and six sends
@@ -44,7 +44,7 @@ public struct RotoStep: Equatable, Sendable {
 /// place, and switches that send only presses.
 public struct RotoDriver: Sendable {
     /// What the Roto-Control has, for `SurfaceHub.addSurface`. The jump guard is 8,000/16,383 of
-    /// the range, compared after the 0 dB indent's bend, where it is 0.43–0.50 of TotalMix's fader
+    /// the range, compared after the 0 dB indent's bend, where it is 0.43–0.50 of TotalMix FX's fader
     /// travel (review of 2026-11-02). In the kept logs of tests 2 and 3, counted by script, every end event
     /// in MIX mode jumped at least 12,690 counts, and no other report in MIX mode differed from the
     /// knob's last by more than 2,942 (docs/ROTO-CONTROL.md, section 6).
@@ -72,7 +72,7 @@ public struct RotoDriver: Sendable {
         }
     }
 
-    /// The knob position (0…1) for a fader position (0…1), bent so that TotalMix's 0 dB
+    /// The knob position (0…1) for a fader position (0…1), bent so that TotalMix FX's 0 dB
     /// (`FaderCurve.unityPosition`) lands in the knob's 0 dB indent: linear from 0 to the indent
     /// and from the indent to 1. With no indent, the position is unchanged.
     public static func knobPosition(forFader fader: Double, indent: Double?) -> Double {
@@ -126,7 +126,7 @@ public struct RotoDriver: Sendable {
     /// Whether the handshake is complete.
     public var isConnected: Bool { handshake.isConnected }
 
-    /// A test of exact colors (SET TRACK COLOUR), off (`nil`) by default: RGB colors by TotalMix
+    /// A test of exact colors (SET TRACK COLOUR), off (`nil`) by default: RGB colors by TotalMix FX
     /// color index, sent for every strip of the page each time a page is drawn in all-tracks mode,
     /// after the color schemes. The Roto-Control draws the names in white over an exact color, and
     /// has been observed to keep an exact color on its screen when the page changes
@@ -148,11 +148,11 @@ public struct RotoDriver: Sendable {
         }
     }
 
-    /// Color schemes chosen in place of `schemeForTotalMixColor`, by TotalMix color index, for
-    /// strips drawn in their TotalMix color: for trying schemes on the screens. Empty by default.
+    /// Color schemes chosen in place of `schemeForTotalMixColor`, by TotalMix FX color index, for
+    /// strips drawn in their TotalMix FX color: for trying schemes on the screens. Empty by default.
     public var schemeOverrides: [Int: UInt8] = [:]
 
-    /// The color scheme this driver draws a strip with: an override for a source's TotalMix
+    /// The color scheme this driver draws a strip with: an override for a source's TotalMix FX
     /// color if there is one, else `colorScheme(for:)`.
     public func scheme(for info: StripInfo) -> UInt8 {
         if info.kind == .source || Self.hasColor(info), let color = info.color, let scheme = schemeOverrides[color] {
@@ -161,7 +161,7 @@ public struct RotoDriver: Sendable {
         return Self.colorScheme(for: info)
     }
 
-    /// SET TRACK DETAILS (shown at once) for the sources on the current page in TotalMix color
+    /// SET TRACK DETAILS (shown at once) for the sources on the current page in TotalMix FX color
     /// `color`: one message per strip, for trying color schemes without drawing the whole page,
     /// which in quick succession has been followed by the Roto-Control freezing (run 19; that the
     /// redraws caused it is an inference). Nothing outside all-tracks mode or before the handshake.
@@ -198,7 +198,7 @@ public struct RotoDriver: Sendable {
     /// The bytes that set the exact colors of the current page again, without drawing the strips:
     /// for changing a color while watching the screens. Nothing before the handshake is complete,
     /// in PLUGIN mode or single-track mode, or when `exactColors` is off.
-    /// With `color`, only for the sources in that TotalMix color.
+    /// With `color`, only for the sources in that TotalMix FX color.
     public func exactColorBytes(hub: SurfaceHub, onlyTotalMixColor color: Int? = nil) -> [UInt8] {
         guard handshake.isConnected, !inPluginMode, case .strips? = hub.mode(of: id) else { return [] }
         return exactColorMessages(onlyTotalMixColor: color).flatMap(\.bytes)
@@ -221,7 +221,7 @@ public struct RotoDriver: Sendable {
 
     /// The shortest time between two page draws, in seconds. A page changed again sooner is drawn
     /// once, `pageDrawInterval` after the last draw, by `tick(now:hub:)`: at every connection
-    /// TotalMix's answer to `/sendall` changed the page about 33 times in 0.35 s (about 440 SysEx
+    /// TotalMix FX's answer to `/sendall` changed the page about 33 times in 0.35 s (about 440 SysEx
     /// messages; review of 2026-11-02), and the Roto-Control has frozen under bursts of SysEx
     /// before (docs/ROTO-CONTROL.md, test 4, runs 17–20). That the burst could freeze it is an
     /// inference; Adam chose to coalesce (2026-11-02). Knobs, lights, meters, and value text are not
@@ -498,20 +498,20 @@ public struct RotoDriver: Sendable {
         }
     }
 
-    /// The color scheme for monitoring outputs left white (TotalMix's default): 33, seen as green
+    /// The color scheme for monitoring outputs left white (TotalMix FX's default): 33, seen as green
     /// (docs/ROTO-CONTROL.md, test 2).
     public static let monitoringScheme: UInt8 = 33
-    /// The color scheme for sends left white (TotalMix's default): 22, seen as blue.
+    /// The color scheme for sends left white (TotalMix FX's default): 22, seen as blue.
     public static let sendScheme: UInt8 = 22
 
-    /// Whether a strip has a TotalMix color other than the default white.
+    /// Whether a strip has a TotalMix FX color other than the default white.
     private static func hasColor(_ info: StripInfo) -> Bool {
         guard let color = info.color else { return false }
         return color != 1 && schemeForTotalMixColor[color] != nil
     }
 
-    /// The Roto-Control color scheme for a strip: its TotalMix color; for an output left white
-    /// (TotalMix's default), its kind instead: monitoring outputs green, sends blue (Adam,
+    /// The Roto-Control color scheme for a strip: its TotalMix FX color; for an output left white
+    /// (TotalMix FX's default), its kind instead: monitoring outputs green, sends blue (Adam,
     /// 2026-10-30).
     public static func colorScheme(for info: StripInfo) -> UInt8 {
         switch info.kind {
@@ -521,13 +521,13 @@ public struct RotoDriver: Sendable {
         }
     }
 
-    /// The Roto-Control color scheme for each of TotalMix's eight colors, by TotalMix's color
+    /// The Roto-Control color scheme for each of TotalMix FX's eight colors, by TotalMix FX's color
     /// index: 1 white, 2 grey, 3 orange, 4 red, 5 blue, 6 green, 7 yellow, 8 pink (the order of
-    /// TotalMix's Color menu, and the indexes TotalMix sends; docs/TOTALMIX-OSC.md, test 7). The
-    /// schemes are matched by eye on the Roto-Control's screens to the colors TotalMix draws ("pink"
+    /// TotalMix FX's Color menu, and the indexes TotalMix FX sends; docs/TOTALMIX-OSC.md, test 7). The
+    /// schemes are matched by eye on the Roto-Control's screens to the colors TotalMix FX draws ("pink"
     /// is drawn purple), because the screens show some of the SysEx doc's table colors differently:
     /// darker reds and oranges look brown, and purples look royal blue (docs/ROTO-CONTROL.md,
-    /// test 4). White is TotalMix's default; it is drawn as light grey (27, chosen by Adam from the
+    /// test 4). White is TotalMix FX's default; it is drawn as light grey (27, chosen by Adam from the
     /// neutral greys, run 24). Exact colors (SET TRACK COLOUR) are not used: they have been
     /// observed to show only on the first page and to stay on a screen when the page changes.
     public static let schemeForTotalMixColor: [Int: UInt8] = [
@@ -541,9 +541,9 @@ public struct RotoDriver: Sendable {
         8: 67,  // pink, drawn purple
     ]
 
-    /// TotalMix's eight colors as RGB, for the exact-color test, by TotalMix color index: the
+    /// TotalMix FX's eight colors as RGB, for the exact-color test, by TotalMix FX color index: the
     /// accent line under a channel's name, sampled from a screenshot of TotalMix FX 2.10 on macOS
-    /// (playback channels colored 1–8, 2026-10-30). White is TotalMix's default and draws no
+    /// (playback channels colored 1–8, 2026-10-30). White is TotalMix FX's default and draws no
     /// line; its value here, a light grey, is a placeholder, not a sample.
     public static let totalMixColors: [Int: RotoColor] = [
         1: RotoColor(red: 0xA0, green: 0xA4, blue: 0xA8),  // white: placeholder
@@ -556,8 +556,8 @@ public struct RotoDriver: Sendable {
         8: RotoColor(red: 0x6F, green: 0x41, blue: 0xCD),  // pink, drawn purple
     ]
 
-    /// The exact color for a strip in the exact-color test: sources by their TotalMix color,
-    /// monitoring outputs as TotalMix's green and sends as its blue (as the schemes show them), and
+    /// The exact color for a strip in the exact-color test: sources by their TotalMix FX color,
+    /// monitoring outputs as TotalMix FX's green and sends as its blue (as the schemes show them), and
     /// white for no color or an index the palette lacks.
     public static func exactColor(for info: StripInfo, palette: [Int: RotoColor]) -> RotoColor {
         let index: Int?
@@ -569,7 +569,7 @@ public struct RotoDriver: Sendable {
         return index.flatMap { palette[$0] } ?? palette[1] ?? RotoColor(red: 0, green: 0, blue: 0)
     }
 
-    /// The Roto-Control color scheme (0–82) for a TotalMix color index, or white (TotalMix's
+    /// The Roto-Control color scheme (0–82) for a TotalMix FX color index, or white (TotalMix FX's
     /// default) for no color or an unknown index.
     public static func colorScheme(forTotalMixColor color: Int?) -> UInt8 {
         guard let color, let scheme = schemeForTotalMixColor[color] else { return schemeForTotalMixColor[1] ?? 0 }

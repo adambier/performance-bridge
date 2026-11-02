@@ -1,8 +1,8 @@
 import Foundation
 
-/// The curve between a TotalMix fader's position and its gain.
+/// The curve between a TotalMix FX fader's position and its gain.
 ///
-/// TotalMix's Global OSC sends and accepts fader positions as `faderlin`, scaled 0 to 1. RME's
+/// TotalMix FX's Global OSC sends and accepts fader positions as `faderlin`, scaled 0 to 1. RME's
 /// Global OSC protocol document (revision 2026-07-21, sheet "Fader curve") gives the curve as two
 /// segments over 1,023 steps of travel. This is our own implementation of that curve, written with
 /// the exact fractions behind RME's decimal constants (for example 0.0320855615 = 6/187 and

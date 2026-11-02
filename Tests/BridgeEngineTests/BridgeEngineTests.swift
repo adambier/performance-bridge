@@ -51,7 +51,7 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(targets.count, 3)
         guard targets.count >= 3 else { return }
 
-        // No Launch Control is connected, yet both layouts' rows resolve against TotalMix's outputs.
+        // No Launch Control is connected, yet both layouts' rows resolve against TotalMix FX's outputs.
         XCTAssertEqual(engine.status.launchControlSends[.xl3], [targets[0], targets[1]])
         XCTAssertEqual(engine.status.launchControlSends[.lc3], [nil], "pan")
 
@@ -117,7 +117,7 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertEqual(BridgeSettings().retryInterval, 3)
     }
 
-    /// TotalMix's port is taken, then freed: the engine runs anyway, says why, and opens the port
+    /// TotalMix FX's port is taken, then freed: the engine runs anyway, says why, and opens the port
     /// on a later try. The Roto-Control is missing throughout (no MIDI here, or no device).
     func testTheEngineKeepsTryingTotalMixsPortAndRunsWithoutTheRotoControl() throws {
         #if os(Windows)
@@ -304,7 +304,7 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertEqual(item.label, "Vox")
 
         engine.setLabel("", for: ChannelRef(.input, 0))
-        XCTAssertEqual(engine.layoutItems(.sources).first?.name, "ADI-2", "clearing the label shows TotalMix's name")
+        XCTAssertEqual(engine.layoutItems(.sources).first?.name, "ADI-2", "clearing the label shows TotalMix FX's name")
         XCTAssertEqual(saved.all.last?.labels, [:], "the change is reported, for the app to save")
         #endif
     }
@@ -340,13 +340,13 @@ final class BridgeEngineTests: XCTestCase {
         for second in 0...120 {
             XCTAssertNil(watch.update(status: status(), totalMixRunning: false, now: Double(second)))
         }
-        XCTAssertFalse(watch.needsAttention(status: status(), now: 120), "TotalMix closed is idle, not a fault")
+        XCTAssertFalse(watch.needsAttention(status: status(), now: 120), "TotalMix FX closed is idle, not a fault")
     }
 
     func testSetupWatchOpensWhenTotalMixRunsButHasNeverAnswered() {
         var watch = SetupWatch(totalMixWorked: false, rotoWorked: false)
         XCTAssertNil(watch.update(status: status(), totalMixRunning: false, now: 0))
-        XCTAssertNil(watch.update(status: status(), totalMixRunning: true, now: 10))   // TotalMix started
+        XCTAssertNil(watch.update(status: status(), totalMixRunning: true, now: 10))   // TotalMix FX started
         XCTAssertNil(watch.update(status: status(), totalMixRunning: true, now: 39))
         XCTAssertEqual(watch.update(status: status(), totalMixRunning: true, now: 40), .totalMixNotAnswering)
         XCTAssertTrue(watch.needsAttention(status: status(), now: 40))

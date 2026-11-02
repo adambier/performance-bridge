@@ -477,13 +477,13 @@ final class RotoDriverTests: XCTestCase {
         var (driver, hub, _) = connected()
         _ = driver.receive(knobCCs(1, 1000), hub: &hub, now: 1)        // the user turns knob 2 down
         _ = hub.handle(.mix(bus: .input, channel: 2, output: 0, parameter: "faderlin", value: .number(0.95)), now: 2)
-        _ = hub.tick(now: 2)                                            // TotalMix moves it far up; the motor follows
+        _ = hub.tick(now: 2)                                            // TotalMix FX moves it far up; the motor follows
         let turn = driver.receive(knobCCs(1, levelKnob(0.95) - 300), hub: &hub, now: 5)
         XCTAssertFalse(turn.core.messages.isEmpty, "a turn from where the motor put the knob is not taken for a jump")
     }
 
     func testTotalMixColors() {
-        XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: nil), 27, "no color is TotalMix's default, white")
+        XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: nil), 27, "no color is TotalMix FX's default, white")
         XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: 1), 27)
         XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: 4), 14, "red")
         XCTAssertEqual(RotoDriver.colorScheme(forTotalMixColor: 8), 67, "pink, drawn purple")
@@ -496,7 +496,7 @@ final class RotoDriverTests: XCTestCase {
         var (driver, hub, midi) = connected()
         XCTAssertTrue(midi.contains(RotoOutgoing.trackDetailsEnd.bytes), "the first draw goes at once")
         let end = RotoOutgoing.trackDetailsEnd.bytes
-        // TotalMix renames and recolors channels just after the connection, as its /sendall answer does.
+        // TotalMix FX renames and recolors channels just after the connection, as its /sendall answer does.
         var sent: [UInt8] = []
         for (step, name) in ["Vox", "Vox 2", "Vox 3"].enumerated() {
             let now = 0.02 * Double(step + 1)

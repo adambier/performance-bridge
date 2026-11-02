@@ -3,8 +3,8 @@ import Foundation
 import OSCCodec
 #endif
 
-/// Thins continuous messages to TotalMix: at most one per address per interval, and the latest
-/// value always goes out. TotalMix updates on a 20 ms cycle (docs/TOTALMIX-OSC.md, tests 1 and 3),
+/// Thins continuous messages to TotalMix FX: at most one per address per interval, and the latest
+/// value always goes out. TotalMix FX updates on a 20 ms cycle (docs/TOTALMIX-OSC.md, tests 1 and 3),
 /// so sending faster than that adds load and nothing else (an inference).
 public struct OutgoingThinner: Sendable {
     /// The shortest time between two messages to one address, in seconds.
@@ -13,7 +13,7 @@ public struct OutgoingThinner: Sendable {
     private var pending: [String: OSCMessage] = [:]
     private var pendingOrder: [String] = []
 
-    /// A thinner; the default interval is TotalMix's 20 ms cycle.
+    /// A thinner; the default interval is TotalMix FX's 20 ms cycle.
     public init(interval: Double = 0.02) {
         self.interval = interval
     }
@@ -54,7 +54,7 @@ public struct OutgoingThinner: Sendable {
     public var hasPending: Bool { !pending.isEmpty }
 }
 
-/// Whether a strip's control is in the user's hand, so that values from TotalMix must not move it.
+/// Whether a strip's control is in the user's hand, so that values from TotalMix FX must not move it.
 /// A control is held while touched, and for a short time after it last moved, because the
 /// Roto-Control's touch sensing has been observed to be unreliable (docs/ROTO-CONTROL.md).
 public struct ControlHold: Hashable, Sendable {
@@ -77,7 +77,7 @@ public struct ControlHold: Hashable, Sendable {
     }
 }
 
-/// The rule for a control without a motor ("pickup"): after TotalMix's value has changed, moves
+/// The rule for a control without a motor ("pickup"): after TotalMix FX's value has changed, moves
 /// are ignored until the control reaches the value, or crosses it.
 public enum Pickup {
     /// Whether a move from `previous` to `position` picks up `target` (all 0…1). `previous` is

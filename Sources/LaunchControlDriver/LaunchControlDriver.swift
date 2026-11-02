@@ -13,11 +13,11 @@ import SurfaceCore
 #endif
 
 /// What the Launch Control driver produces in answer to MIDI or a call: MIDI bytes for the device,
-/// and the core's output for TotalMix and the other surfaces.
+/// and the core's output for TotalMix FX and the other surfaces.
 public struct LaunchControlStep: Equatable, Sendable {
     /// Complete MIDI messages for the device's DAW port, in order.
     public var midi: [UInt8] = []
-    /// Messages for TotalMix, and updates for the other surfaces. This driver's own updates are
+    /// Messages for TotalMix FX, and updates for the other surfaces. This driver's own updates are
     /// already turned into `midi`.
     public var core = CoreOutput()
 
@@ -128,7 +128,7 @@ public struct LaunchControlDriver: Sendable {
     private var sentConfig: [UInt8: UInt8] = [:]  // target byte → arrangement and flags
 
     /// How close to the level a fader's first value must be for the hub's pickup to take it, as a
-    /// fraction of TotalMix's fader travel (0…1): 12/127 of it, which on the printed scale is 7 to
+    /// fraction of TotalMix FX's fader travel (0…1): 12/127 of it, which on the printed scale is 7 to
     /// 18 of the fader's values depending on where the fader is (review of 2026-11-02). The device holds a fader back until it crosses the
     /// level, and then sends its first value just past it (one step past in test 3's slow moves),
     /// but the hub has no earlier position to see the crossing with; a fast move may land a few
@@ -355,7 +355,7 @@ public struct LaunchControlDriver: Sendable {
         case .button:
             guard let (layer, strip) = switchControl(for: element) else { return }
             take(hub.switchPressed(id(layer), strip: strip, now: now), hub: hub, into: &step)
-            // A mute does nothing in the audio while TotalMix's Mute Master is off: say so where
+            // A mute does nothing in the audio while TotalMix FX's Mute Master is off: say so where
             // the eyes are (Adam, 2026-11-02).
             if hub.mirror.muteMaster == false, !isPFLLayer(layer, hub: hub), infos[layer]?[strip] ?? nil != nil {
                 step.midi += overlay("Mute Master off", "in TotalMix FX")
@@ -638,19 +638,19 @@ public struct LaunchControlDriver: Sendable {
         return true
     }
 
-    /// TotalMix's position (0…1) for a value from a layer's controls.
+    /// TotalMix FX's position (0…1) for a value from a layer's controls.
     private func devicePosition(_ layer: Layer, _ value: UInt8) -> Double {
         usesFaderScale(layer) ? Self.faderPosition(value)
             : usesVolumeScale(layer) ? Self.encoderPosition(value) : Self.panPosition(value)
     }
 
-    /// The value to send a layer's control for TotalMix's position (0…1).
+    /// The value to send a layer's control for TotalMix FX's position (0…1).
     private func deviceValue(_ layer: Layer, _ position: Double) -> UInt8 {
         usesFaderScale(layer) ? Self.faderValue(position)
             : usesVolumeScale(layer) ? Self.encoderValue(position) : Self.panValue(position)
     }
 
-    /// The pan, in TotalMix's whole steps (−100 for L100 to +100 for R100), for a pan encoder's
+    /// The pan, in TotalMix FX's whole steps (−100 for L100 to +100 for R100), for a pan encoder's
     /// value: 64 is the center, 0 is L100, and 127 is R100, each value about 1.6 steps (so steps of
     /// 1 or 2; Adam, 2026-11-01).
     public static func panSteps(_ value: UInt8) -> Int {
@@ -659,8 +659,8 @@ public struct LaunchControlDriver: Sendable {
     }
 
     /// The hub position (0…1, the center at 0.5) for a pan encoder's value. It lands a quarter step
-    /// to the right of one of TotalMix's whole pan steps, so that TotalMix's window and the
-    /// encoder's display show the same step. TotalMix has been observed to show the whole step
+    /// to the right of one of TotalMix FX's whole pan steps, so that TotalMix FX's window and the
+    /// encoder's display show the same step. TotalMix FX has been observed to show the whole step
     /// below a fractional pan, toward L (R1.6 as R01, L2.25 as L03; Adam, 2026-11-01;
     /// docs/LAUNCH-CONTROL-XL3.md, section 9), and the display rounds, so a quarter step to the
     /// right gives the same step in both.
@@ -711,13 +711,13 @@ public struct LaunchControlDriver: Sendable {
         return arcDetents[lower] + fraction * (arcDetents[lower + 1] - arcDetents[lower])
     }
 
-    /// TotalMix's fader position (0…1) for a level or send encoder's value, on the ARC scale.
+    /// TotalMix FX's fader position (0…1) for a level or send encoder's value, on the ARC scale.
     public static func encoderPosition(_ value: UInt8) -> Double {
         guard let gain = encoderGain(exactly: Double(min(value, 127))) else { return 0 }
         return FaderCurve.position(gainDB: gain)
     }
 
-    /// The encoder value for TotalMix's fader position (0…1) on the ARC scale: the inverse of
+    /// The encoder value for TotalMix FX's fader position (0…1) on the ARC scale: the inverse of
     /// `encoderPosition(_:)`, rounded. A gain between off and the lowest detent is value 1.
     public static func encoderValue(_ position: Double) -> UInt8 {
         guard position.isFinite, let gain = FaderCurve.gainDB(position: min(max(position, 0), 1)) else { return 0 }
@@ -738,13 +738,13 @@ public struct LaunchControlDriver: Sendable {
     /// each fader, top to bottom, with the fader value measured at each tick
     /// (docs/LAUNCH-CONTROL-XL3.md, tests 7 and 8: the mean of two passes). The labels are TotalMix FX's own fader marks: +6 (the
     /// top), +3, 0, −6, −10, −20, −40, −60 (docs/TOTALMIX-OSC.md, test 18); the bottom tick, value 0,
-    /// is off. Between ticks the gain moves evenly in dB; below −60 it follows TotalMix's fader
+    /// is off. Between ticks the gain moves evenly in dB; below −60 it follows TotalMix FX's fader
     /// position down to off.
     public static let faderTicks: [(value: Double, gainDB: Double)] = [
         (127, 6), (119, 3), (101, 0), (83.5, -6), (65.5, -10), (46, -20), (29, -40), (11, -60),
     ]
 
-    /// TotalMix's fader position (0…1) for an XL 3 fader value, on the printed scale.
+    /// TotalMix FX's fader position (0…1) for an XL 3 fader value, on the printed scale.
     public static func faderPosition(_ value: UInt8) -> Double {
         faderPosition(exactly: Double(min(value, 127)))
     }
@@ -762,7 +762,7 @@ public struct LaunchControlDriver: Sendable {
         return 1
     }
 
-    /// The XL 3 fader value for TotalMix's fader position (0…1): the inverse of
+    /// The XL 3 fader value for TotalMix FX's fader position (0…1): the inverse of
     /// `faderPosition(_:)`, rounded.
     public static func faderValue(_ position: Double) -> UInt8 {
         let position = min(max(position.isFinite ? position : 0, 0), 1)
@@ -795,7 +795,7 @@ public struct LaunchControlDriver: Sendable {
 
     // MARK: - To the device
 
-    /// Moves this driver's updates out of a core output (e.g., the hub's answer to TotalMix) and
+    /// Moves this driver's updates out of a core output (e.g., the hub's answer to TotalMix FX) and
     /// into MIDI. If the send targets have changed, the send rows are resolved again
     /// (`sendOutputs`).
     public mutating func take(_ output: CoreOutput, hub: inout SurfaceHub, now: Double) -> LaunchControlStep {
@@ -805,7 +805,7 @@ public struct LaunchControlDriver: Sendable {
         resolveSends(hub)
         if sendIndices != before { setModes(first: page.first, hub: &hub, now: now, into: &step) }
         // Each time, since they depend on the outputs, not on this surface's strips: a send row's
-        // color and the home screen follow an output recolored or renamed in TotalMix (review of
+        // color and the home screen follow an output recolored or renamed in TotalMix FX (review of
         // 2026-11-02). All three send only what changed.
         if connected && !inCustomMode {
             step.midi += drawNavigation(hub: hub) + drawSendColors(hub: hub) + drawStationary(hub: hub)
@@ -917,7 +917,7 @@ public struct LaunchControlDriver: Sendable {
     }
 
     /// A strip button's light: bright when on, the dimmest shade when off; a mute that is on while
-    /// TotalMix's Mute Master is off (selected but not silencing) in the medium shade, as TotalMix
+    /// TotalMix FX's Mute Master is off (selected but not silencing) in the medium shade, as TotalMix FX
     /// draws its M button partly lit (Adam, 2026-11-02).
     private mutating func drawButton(_ layer: Layer, _ index: Int, hub: SurfaceHub) -> [UInt8] {
         guard let button = button(layer, index) else { return [] }
@@ -952,7 +952,7 @@ public struct LaunchControlDriver: Sendable {
     }
 
     /// For a layer of sends, the palette color of the output it sends to, so that each send row
-    /// reads as one send, as in Novation's integrations (Adam, 2026-11-01): the output's TotalMix
+    /// reads as one send, as in Novation's integrations (Adam, 2026-11-01): the output's TotalMix FX
     /// color, or, if left white, green for a control room output and blue for another; `nil` for
     /// any other layer.
     private func sendColor(_ layer: Layer, hub: SurfaceHub) -> UInt8? {
@@ -1105,7 +1105,7 @@ public struct LaunchControlDriver: Sendable {
     public static let muteOn: UInt8 = 9
     /// A mute button that is off: the dimmest orange.
     public static let muteOff: UInt8 = 11
-    /// How a mute that is on while TotalMix's Mute Master is off shows: it flashes between bright
+    /// How a mute that is on while TotalMix FX's Mute Master is off shows: it flashes between bright
     /// and dim orange, `blinkPeriod` seconds each, drawn by the driver. The medium shade (10) was
     /// tried and was too close to the others to read, and the device has no flashing of its own
     /// (docs/LAUNCH-CONTROL-XL3.md, test 15; Adam, 2026-11-02).
@@ -1120,7 +1120,7 @@ public struct LaunchControlDriver: Sendable {
     /// as for any button that is off (Adam, 2026-11-02).
     public static let functionIdle: UInt8 = 15
 
-    /// The palette color for each of TotalMix's eight colors (1 white, 2 grey, 3 orange, 4 red,
+    /// The palette color for each of TotalMix FX's eight colors (1 white, 2 grey, 3 orange, 4 red,
     /// 5 blue, 6 green, 7 yellow, 8 pink; docs/TOTALMIX-OSC.md, test 7). White, grey, orange, red,
     /// yellow, and green are from the part of the palette seen on the device (test 4); blue (45)
     /// and purple for pink (49) are past it, chosen from the guide's picture (inference).
@@ -1132,10 +1132,10 @@ public struct LaunchControlDriver: Sendable {
         5: 45,  // blue
         6: 21,  // green
         7: 13,  // yellow
-        8: 49,  // pink, as purple (TotalMix draws it purple)
+        8: 49,  // pink, as purple (TotalMix FX draws it purple)
     ]
 
-    /// The palette color for a strip: its TotalMix color; an output left white (TotalMix's
+    /// The palette color for a strip: its TotalMix FX color; an output left white (TotalMix FX's
     /// default) by its kind instead, monitoring outputs green and sends blue, as on the
     /// Roto-Control.
     public static func color(for info: StripInfo?) -> UInt8 {

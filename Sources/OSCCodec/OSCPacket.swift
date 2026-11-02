@@ -3,7 +3,7 @@ import Foundation
 /// One argument of an OSC message.
 ///
 /// The cases cover the OSC 1.0 core types (`i`, `f`, `s`, `b`) and the common nonstandard types
-/// that TotalMix FX or other software may send (`T`, `F`, `N`, `h`, `d`). TotalMix's Global OSC
+/// that TotalMix FX or other software may send (`T`, `F`, `N`, `h`, `d`). TotalMix FX's Global OSC
 /// documentation says it sends floats and strings, and that it also accepts true/false and
 /// integers where it expects a float.
 public enum OSCArgument: Equatable, Sendable {

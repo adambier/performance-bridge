@@ -1,6 +1,6 @@
 // Performance Bridge: the menu-bar app (macOS only). Run it from the package with
 // `swift run PerformanceBridge`, or `swift run PerformanceBridge --in-port 7004 --out-port 9004` to
-// override the ports saved in Settings; quit `sbdev bridge` first, since both need TotalMix's
+// override the ports saved in Settings; quit `sbdev bridge` first, since both need TotalMix FX's
 // outgoing port and the Roto-Control's MIDI ports. make-app.sh builds the app bundle, with Sparkle.
 // The hardware controller is chosen in Settings → Connections. `--launch-control xl3`, `lc3`, or
 // `lc3-sim` (`LaunchControlSetting(arguments:)`) overrides it, e.g., for the Launch Control 3's
@@ -292,7 +292,7 @@ final class BridgeModel: ObservableObject {
 
     private static let setupShownKey = "setupShown"
 
-    /// The keys under which "worked with these settings" is kept: TotalMix's host and ports, and the
+    /// The keys under which "worked with these settings" is kept: TotalMix FX's host and ports, and the
     /// Roto-Control's port name, as the engine uses them.
     private var totalMixWorkedKey: String {
         let endpoint = engine.settings.endpoint
@@ -343,7 +343,7 @@ final class BridgeModel: ObservableObject {
     }
 
     /// TotalMix FX among the running apps, if it is running. Matched by name, since its bundle
-    /// identifier hasn't been checked on a Mac (inference: it contains "TotalMix").
+    /// identifier hasn't been checked on a Mac (inference: it contains "TotalMix FX").
     private static func runningTotalMix() -> NSRunningApplication? {
         NSWorkspace.shared.runningApplications.first { app in
             let names = [app.bundleIdentifier, app.localizedName].compactMap { $0?.lowercased() }
@@ -352,7 +352,7 @@ final class BridgeModel: ObservableObject {
     }
 
     /// A running app's version, read from its app bundle's Info.plist (read only; nothing of
-    /// TotalMix's is written). Which key holds TotalMix's "2.10" hasn't been checked on a Mac, so
+    /// TotalMix FX's is written). Which key holds TotalMix FX's "2.10" hasn't been checked on a Mac, so
     /// the short version string is preferred and the build version is the fallback.
     private static func version(of app: NSRunningApplication) -> String? {
         guard let url = app.bundleURL, let info = Bundle(url: url)?.infoDictionary else { return nil }
@@ -395,8 +395,8 @@ final class BridgeModel: ObservableObject {
     /// The key for the saved layout (channel order, new-page option, and labels), as JSON.
     nonisolated private static let layoutKey = "layout"
 
-    /// The layout saved last, or the default (TotalMix's order and names). Earlier builds didn't
-    /// save the order at all, so it went back to TotalMix's at every launch and every Apply.
+    /// The layout saved last, or the default (TotalMix FX's order and names). Earlier builds didn't
+    /// save the order at all, so it went back to TotalMix FX's at every launch and every Apply.
     private static func savedLayout() -> PerformanceLayout {
         guard let data = UserDefaults.standard.data(forKey: layoutKey),
               let layout = try? JSONDecoder().decode(PerformanceLayout.self, from: data) else { return PerformanceLayout() }
@@ -473,7 +473,7 @@ struct MenuContent: View {
         if let name = model.status.launchControlName {
             Text(name + ": " + launchControlState)
         }
-        // Only while it's off: mutes then do nothing in the audio (Adam, 2026-11-02). A TotalMix
+        // Only while it's off: mutes then do nothing in the audio (Adam, 2026-11-02). A TotalMix FX
         // state that can change between sessions, so a status line, not a fault mark.
         if model.status.muteMasterOff {
             Text("Mute Master: Off")

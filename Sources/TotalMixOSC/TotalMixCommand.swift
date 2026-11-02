@@ -3,7 +3,7 @@ import Foundation
 import OSCCodec
 #endif
 
-/// Messages to send to TotalMix's Global OSC.
+/// Messages to send to TotalMix FX's Global OSC.
 ///
 /// Channel numbers count from 0; snapshot, layout, and group numbers from 1 (as in RME's protocol
 /// document). For a stereo channel, address the left channel; parameters marked L/R in
@@ -28,29 +28,29 @@ public enum TotalMixCommand {
         OSCMessage("/\(path)", [.float(value)])
     }
 
-    /// Asks TotalMix to send every parameter (`/sendall`). With `activeNodesOnly`, mixer nodes are
+    /// Asks TotalMix FX to send every parameter (`/sendall`). With `activeNodesOnly`, mixer nodes are
     /// sent only where the fader is above −65 dB.
     public static func sendAll(activeNodesOnly: Bool = false) -> OSCMessage {
         OSCMessage("/sendall", [.float(activeNodesOnly ? 2 : 1)])
     }
 
-    /// Asks TotalMix to send the control parameters and FX settings (`/sendsettings`).
+    /// Asks TotalMix FX to send the control parameters and FX settings (`/sendsettings`).
     public static func sendSettings() -> OSCMessage { trigger("/sendsettings") }
 
-    /// Asks TotalMix to send every status message, DURec's included (`/sendstate`).
+    /// Asks TotalMix FX to send every status message, DURec's included (`/sendstate`).
     public static func sendState() -> OSCMessage { trigger("/sendstate") }
 
-    /// Asks TotalMix to send every setting of one channel (`/sendchan/<bus>/<channel>`).
+    /// Asks TotalMix FX to send every setting of one channel (`/sendchan/<bus>/<channel>`).
     public static func sendChannel(_ bus: TotalMixBus, _ channel: Int) -> OSCMessage {
         trigger("/sendchan/\(bus.settingsName)/\(channel)")
     }
 
-    /// Asks TotalMix to send all mixer nodes (`/sendmix`), or only those with the fader above −65 dB.
+    /// Asks TotalMix FX to send all mixer nodes (`/sendmix`), or only those with the fader above −65 dB.
     public static func sendMix(activeNodesOnly: Bool = false) -> OSCMessage {
         OSCMessage("/sendmix", [.float(activeNodesOnly ? 2 : 1)])
     }
 
-    /// Asks TotalMix to send the mixer nodes of one submix (`/sendsubmix/<output>`).
+    /// Asks TotalMix FX to send the mixer nodes of one submix (`/sendsubmix/<output>`).
     public static func sendSubmix(_ output: Int, activeNodesOnly: Bool = false) -> OSCMessage {
         OSCMessage("/sendsubmix/\(output)", [.float(activeNodesOnly ? 2 : 1)])
     }
@@ -58,7 +58,7 @@ public enum TotalMixCommand {
     /// Loads a snapshot (numbered from 1).
     public static func loadSnapshot(_ number: Int) -> OSCMessage { trigger("/snapshot/load/\(number)") }
 
-    /// A trigger message: TotalMix ignores values below 0.5, so 1.0 is sent.
+    /// A trigger message: TotalMix FX ignores values below 0.5, so 1.0 is sent.
     public static func trigger(_ address: String) -> OSCMessage {
         OSCMessage(address, [.float(1)])
     }

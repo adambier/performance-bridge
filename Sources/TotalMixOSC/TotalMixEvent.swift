@@ -3,7 +3,7 @@ import Foundation
 import OSCCodec
 #endif
 
-/// A value TotalMix sent: a number, a text, or nothing.
+/// A value TotalMix FX sent: a number, a text, or nothing.
 public enum TotalMixValue: Equatable, Sendable, CustomStringConvertible {
     case number(Double)
     case text(String)
@@ -33,14 +33,14 @@ public enum TotalMixValue: Equatable, Sendable, CustomStringConvertible {
     }
 }
 
-/// What a snapshot message from TotalMix reports.
+/// What a snapshot message from TotalMix FX reports.
 public enum SnapshotState: Int, Sendable {
     case off = 0
     case active = 2
     case changed = 3
 }
 
-/// A message from TotalMix's Global OSC, sorted by what it is about.
+/// A message from TotalMix FX's Global OSC, sorted by what it is about.
 public enum TotalMixEvent: Equatable, Sendable {
     /// A channel setting: `/input|playback|output/<channel>/<parameter>`. `parameter` keeps any
     /// sub-path, e.g. `eq/band1gain`.
@@ -51,11 +51,11 @@ public enum TotalMixEvent: Equatable, Sendable {
     case level(bus: TotalMixBus, channel: Int, peakDB: Double)
     /// A snapshot's state: `/snapshot/load/<number>`.
     case snapshot(number: Int, state: SnapshotState)
-    /// Anything else TotalMix sends (control room, FX, DURec, status, global mute and solo), by its
+    /// Anything else TotalMix FX sends (control room, FX, DURec, status, global mute and solo), by its
     /// path without the leading "/".
     case other(path: String, value: TotalMixValue)
 
-    /// Sorts a message. Returns `nil` only for an address that cannot be TotalMix's (no parts).
+    /// Sorts a message. Returns `nil` only for an address that cannot be TotalMix FX's (no parts).
     public init?(_ message: OSCMessage) {
         let parts = message.addressParts
         guard let head = parts.first, !head.isEmpty else { return nil }

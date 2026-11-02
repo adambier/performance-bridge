@@ -94,7 +94,7 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(answer.midi.contains([0xBF, 0x05, LaunchControlDriver.faderValue(0.5)]),
                       "fader 1 told its level, on the printed scale, for the device's pickup")
         XCTAssertTrue(answer.midi.contains([0xBF, 0x1D, 64]), "encoder 1 of the bottom row (pan) told the middle")
-        XCTAssertTrue(answer.midi.contains([0xB0, 0x1D, 5]), "Keys is red in TotalMix")
+        XCTAssertTrue(answer.midi.contains([0xB0, 0x1D, 5]), "Keys is red in TotalMix FX")
         XCTAssertTrue(answer.midi.contains([0xB0, 0x1E, 3]), "Vox is white")
         XCTAssertTrue(answer.midi.contains([0xB0, 0x21, 0]), "a blank strip's encoder is dark")
         XCTAssertTrue(answer.midi.contains([0xB0, 0x0D, 45]),
@@ -145,7 +145,7 @@ final class LaunchControlDriverTests: XCTestCase {
         var (driver, hub, _) = connected(layout: .xl3)
         let message = OSCMessage("/globalmute", [.float(0)])
         let event = try! XCTUnwrap(TotalMixEvent(message))
-        XCTAssertEqual(event, .other(path: "globalmute", value: .number(0)), "TotalMix's /globalmute")
+        XCTAssertEqual(event, .other(path: "globalmute", value: .number(0)), "TotalMix FX's /globalmute")
         let off = driver.take(hub.handle(event, now: 1), hub: &hub, now: 1)
         XCTAssertEqual(hub.mirror.muteMaster, false)
         XCTAssertTrue(off.midi.isEmpty, "no mute on yet: nothing to redraw")
@@ -290,7 +290,7 @@ final class LaunchControlDriverTests: XCTestCase {
     }
 
     func testLevelAndSendEncodersUseTheARCScale() {
-        // The ARC USB's detents, as TotalMix showed them (docs/TOTALMIX-OSC.md, test 19).
+        // The ARC USB's detents, as TotalMix FX showed them (docs/TOTALMIX-OSC.md, test 19).
         XCTAssertNil(LaunchControlDriver.encoderGain(exactly: 0), "value 0 is off")
         XCTAssertEqual(LaunchControlDriver.encoderGain(exactly: 1), -63.5)
         XCTAssertEqual(LaunchControlDriver.encoderGain(exactly: 101), 0, "0 dB at 101, as on the faders")
@@ -332,14 +332,14 @@ final class LaunchControlDriverTests: XCTestCase {
             let pan = LaunchControlDriver.panPosition(value) * 2 - 1
             XCTAssertEqual(ValueText.pan(pan), steps == 0 ? "C" : steps < 0 ? "L\(-steps)" : "R\(steps)",
                            "the display shows the whole step sent, at \(value)")
-            XCTAssertEqual(Int((pan * 100).rounded(.down)), steps, "TotalMix's step (the one below) is the same, at \(value)")
+            XCTAssertEqual(Int((pan * 100).rounded(.down)), steps, "TotalMix FX's step (the one below) is the same, at \(value)")
             XCTAssertEqual(LaunchControlDriver.panValue(LaunchControlDriver.panPosition(value)), value)
             if value > 0 {
                 let gap = steps - LaunchControlDriver.panSteps(value - 1)
                 XCTAssertTrue(gap == 1 || gap == 2, "steps of 1 or 2, at \(value)")
             }
         }
-        XCTAssertEqual(LaunchControlDriver.panValue(0.5 + 0.01 / 2), 65, "R1 from TotalMix: the nearest value")
+        XCTAssertEqual(LaunchControlDriver.panValue(0.5 + 0.01 / 2), 65, "R1 from TotalMix FX: the nearest value")
 
         var (driver, hub, _) = connected(layout: .xl3)
         let right = driver.receive([0xBF, 0x1D, 65], hub: &hub, now: 1)
@@ -396,10 +396,10 @@ final class LaunchControlDriverTests: XCTestCase {
 
     func testAnOutputsNewColorReachesItsSendRow() {
         var (driver, hub, midi) = connected(layout: .xl3)
-        XCTAssertTrue(midi.contains([0xB0, 0x0D, 45]), "Phones, white in TotalMix, is blue")
+        XCTAssertTrue(midi.contains([0xB0, 0x0D, 45]), "Phones, white in TotalMix FX, is blue")
         let recolor = hub.handle(.channel(bus: .output, channel: 2, parameter: "color", value: .number(4)), now: 1)
         let step = driver.take(recolor, hub: &hub, now: 1)
-        XCTAssertTrue(step.midi.contains([0xB0, 0x0D, 5]), "TotalMix's red reaches the top row at once")
+        XCTAssertTrue(step.midi.contains([0xB0, 0x0D, 5]), "TotalMix FX's red reaches the top row at once")
     }
 
     func testTheAppCanSetASendRow() {

@@ -1,20 +1,20 @@
 // sbdev: developer tool for checking the libraries against TotalMix FX and the surfaces without
 // the app.
 //
-//   sbdev monitor [options]           print what TotalMix's Global OSC sends
+//   sbdev monitor [options]           print what TotalMix FX's Global OSC sends
 //   sbdev send [options] <address> [value…]
-//                                     send one message to TotalMix
+//                                     send one message to TotalMix FX
 //   sbdev roundtrip [options] <address> [value…]
-//                                     send one message and print what TotalMix sends back
+//                                     send one message and print what TotalMix FX sends back
 //   sbdev curve <position | gain dB>  convert between fader position and gain
 //   sbdev curve --table               print the curve in steps of 1 dB
 //   sbdev roto ports | sbdev roto [options]
 //                                     list MIDI ports; talk to a Roto-Control (Roto.swift)
-//   sbdev bridge [options]            run SurfaceCore and the Roto-Control driver between TotalMix
+//   sbdev bridge [options]            run SurfaceCore and the Roto-Control driver between TotalMix FX
 //                                     and a Roto-Control, as the app will (Bridge.swift)
 //   sbdev lcxl ports | sbdev lcxl [options]
 //                                     talk to a Launch Control XL 3 in DAW mode (LaunchControl.swift)
-//   sbdev lcbridge [options]          run SurfaceCore and the Launch Control driver between TotalMix
+//   sbdev lcbridge [options]          run SurfaceCore and the Launch Control driver between TotalMix FX
 //                                     and a Launch Control XL 3 or Launch Control 3 (LaunchBridge.swift)
 
 import Foundation
@@ -26,17 +26,17 @@ let usage = """
     Usage:
       sbdev monitor [--host H] [--in-port P] [--out-port P] [--sendall | --sendstate | --sendsettings]
                     [--no-levels] [--no-status] [--packets] [--raw]
-          Listens on TotalMix's outgoing port and prints each message TotalMix sends.
-          --sendall etc. ask TotalMix to send its current state once listening has started.
+          Listens on TotalMix FX's outgoing port and prints each message TotalMix FX sends.
+          --sendall etc. ask TotalMix FX to send its current state once listening has started.
           --no-levels leaves out /level messages; --no-status leaves out /status messages
-          (TotalMix sends one about every second); --packets marks each OSC bundle and how many
+          (TotalMix FX sends one about every second); --packets marks each OSC bundle and how many
           messages it holds; --raw prints the OSC arguments as received.
       sbdev send [--host H] [--in-port P] <address> [value…]
-          Sends one message to TotalMix's incoming port. Numbers are sent as floats (what
-          TotalMix expects); anything else as a string. With no value, 1.0 is sent (a trigger).
+          Sends one message to TotalMix FX's incoming port. Numbers are sent as floats (what
+          TotalMix FX expects); anything else as a string. With no value, 1.0 is sent (a trigger).
       sbdev roundtrip [--host H] [--in-port P] [--out-port P] [--wait MS] <address> [value…]
-          Listens on TotalMix's outgoing port, sends one message as send does, and prints every
-          message TotalMix sends in the next MS milliseconds (default 1000), with the time since
+          Listens on TotalMix FX's outgoing port, sends one message as send does, and prints every
+          message TotalMix FX sends in the next MS milliseconds (default 1000), with the time since
           sending, leaving out /status and /level messages. Stop sbdev monitor first: both need
           the outgoing port.
       sbdev curve <position 0…1 | gain, e.g. -6dB>
@@ -46,12 +46,12 @@ let usage = """
       sbdev roto [options]      (sbdev roto --help for the options)
       sbdev bridge [options]    (sbdev bridge --help for the options)
       sbdev lcxl [options]      talks to a Launch Control XL 3 (sbdev lcxl --help)
-      sbdev lcbridge [options]  TotalMix and a Launch Control, as the app will (sbdev lcbridge --help)
+      sbdev lcbridge [options]  TotalMix FX and a Launch Control, as the app will (sbdev lcbridge --help)
 
     Defaults: --host localhost --in-port 7001 --out-port 9001 (Performance Bridge's defaults;
     RME's manual gives them as typical values).
-    In-port is the port TotalMix receives on; out-port the port TotalMix sends to.
-    monitor numbers channels from 1, as TotalMix's window does; addresses count from 0
+    In-port is the port TotalMix FX receives on; out-port the port TotalMix FX sends to.
+    monitor numbers channels from 1, as TotalMix FX's window does; addresses count from 0
     (/input/2/mute is input 3).
     """
 
@@ -166,7 +166,7 @@ func monitor(_ options: Options) -> Never {
     } catch {
         fail("\(error)")
     }
-    print("Listening on UDP port \(socket.localPort) for TotalMix at \(options.endpoint.host). Ctrl-C to stop.")
+    print("Listening on UDP port \(socket.localPort) for TotalMix FX at \(options.endpoint.host). Ctrl-C to stop.")
     socket.startReceiving { bytes, sender in
         let packet: OSCPacket
         do {

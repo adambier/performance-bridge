@@ -1,8 +1,8 @@
 import Foundation
 
-/// A TotalMix FX version, such as "2.10 (1)" as TotalMix shows it, compared as RME numbers them.
+/// A TotalMix FX version, such as "2.10 (1)" as TotalMix FX shows it, compared as RME numbers them.
 ///
-/// RME writes TotalMix versions with a two-digit minor number ("1.96", "2.10"), which reads as a
+/// RME writes TotalMix FX versions with a two-digit minor number ("1.96", "2.10"), which reads as a
 /// decimal: 2.10 is "2.1", and comes after 1.99 and before 2.11. So the minor number is read as
 /// hundredths: "2.1" and "2.10" are the same version. (Inference from the version strings seen:
 /// "2.10 (1)" on Adam's Mac, and RME's protocol document for "TotalMix FX 2.1 beta 2".) Anything

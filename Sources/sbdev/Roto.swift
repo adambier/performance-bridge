@@ -29,7 +29,7 @@ let rotoUsage = """
 let rotoCommandHelp = """
     Commands (knobs, switches, and tracks on the page count from 1):
       knob K VALUE      move knob K: a 14-bit position (0–16383), a fraction with a point
-                        (0.5), or a TotalMix gain (-6dB, 0dB) through the fader curve
+                        (0.5), or a TotalMix FX gain (-6dB, 0dB) through the fader curve
       sweep K [MS]      move knob K from 0 to 16383 in 33 steps over MS (default 2000)
       led K on|off      light switch K, or turn it off
       meter K L [R]     set track K's meters (0–127; R defaults to L)
@@ -150,7 +150,7 @@ func describe(_ event: RotoControlEvent) -> String {
     switch event {
     case .knob(let index, let position):
         let gain = gainText(FaderCurve.gainDB(position: RotoFeedback.fraction(position)))
-        return "knob \(index + 1) = \(position)  (\(String(format: "%.4f", RotoFeedback.fraction(position))); as a TotalMix fader \(gain))"
+        return "knob \(index + 1) = \(position)  (\(String(format: "%.4f", RotoFeedback.fraction(position))); as a TotalMix FX fader \(gain))"
     case .touch(let index, let touched): return "knob \(index + 1) \(touched ? "touched" : "released")"
     case .switch(let index, let value): return "switch \(index + 1) = \(value)"
     case .transport(let index, let pressed): return "transport switch \(index + 1) \(pressed ? "pressed" : "released")"

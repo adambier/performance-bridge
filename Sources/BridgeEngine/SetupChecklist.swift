@@ -40,7 +40,7 @@ public struct SetupStep: Equatable, Sendable, Identifiable {
 
 /// The steps of setting up Performance Bridge with TotalMix FX and a Roto-Control, checked live
 /// from the engine's status where the app can see the result, and given as instructions where it
-/// can't. Every TotalMix location is given in full, with the labels TotalMix shows; they were
+/// can't. Every TotalMix FX location is given in full, with the labels TotalMix FX shows; they were
 /// checked on screen with TotalMix FX "2.10 (1)" (docs/SETUP.md).
 public enum SetupChecklist {
     /// The steps for a status and the settings the engine runs with. `totalMixRunning` says whether
@@ -143,7 +143,7 @@ public enum SetupChecklist {
 
     /// TotalMix FX's version: Global OSC needs 2.1 or later; release candidates count.
     static func versionStep(status: BridgeStatus, running: Bool, version: String?) -> SetupStep {
-        // An answer from TotalMix proves it runs, whatever the list of running apps says.
+        // An answer from TotalMix FX proves it runs, whatever the list of running apps says.
         let running = running || status.totalMixAnswering
         let needs = "Performance Bridge requires TotalMix FX 2.1 or later."
         guard running else {
@@ -161,7 +161,7 @@ public enum SetupChecklist {
                          detail: needs + " Update it from RME’s website.")
     }
 
-    /// Whether every step the surfaces need is done: TotalMix answering with its channels, the
+    /// Whether every step the surfaces need is done: TotalMix FX answering with its channels, the
     /// Roto-Control connected if it is used, and the Launch Control connected if one is set.
     public static func isComplete(_ status: BridgeStatus) -> Bool {
         status.listening && status.totalMixAnswering && status.channelCount > 0

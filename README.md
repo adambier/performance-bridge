@@ -1,14 +1,14 @@
 # Performance Bridge
 
 **Performance Bridge** is a macOS menu-bar app that connects hardware controllers to RME TotalMix FX
-through TotalMix's Global OSC interface. With it, the knobs, faders, buttons, and displays of the
-hardware controller show and control TotalMix's mixer, in both directions.
+through TotalMix FX's Global OSC interface. With it, the knobs, faders, buttons, and displays of the
+hardware controller show and control TotalMix FX's mixer, in both directions.
 
-Its aim is TotalMix as a performance mixer: for mixing live, in practice or on stage, with the
+Its aim is TotalMix FX as a performance mixer: for mixing live, in practice or on stage, with the
 hands on the hardware controller rather than the mouse.
 
 The repository also holds the Swift libraries behind the app and a developer tool for checking
-them against TotalMix. The libraries depend only on Foundation, and they build on macOS, Linux, and
+them against TotalMix FX. The libraries depend only on Foundation, and they build on macOS, Linux, and
 Windows.
 
 Performance Bridge is not affiliated with or endorsed by RME, Melbourne Instruments, or Novation.
@@ -23,7 +23,7 @@ release, it is built from source (`docs/SETUP.md`). It runs on macOS 13 or later
 hardware controller at a time:
 
 - **Melbourne Instruments' Roto-Control**, in its MIX mode: eight motorized knobs for level, pan, or
-  a send, switches for mute and PFL, and each channel's name, TotalMix color, and meter. Tested on
+  a send, switches for mute and PFL, and each channel's name, TotalMix FX color, and meter. Tested on
   the device (`docs/ROTO-CONTROL.md`).
 - **Novation's Launch Control XL 3**, in its DAW mode: faders for level, two encoder rows for sends
   and one for pan, PFL and mute buttons, and the screen. Tested on the device
@@ -33,36 +33,36 @@ hardware controller at a time:
   but not yet on a Launch Control 3 (`docs/LAUNCH-CONTROL-3.md`).
 
 The app has a menu with the connection states, a Setup Guide that checks the setup as it goes, and
-Settings for TotalMix's host and ports, the hardware controller, a Launch Control's send rows, and
-the order and labels of the channels. Everything TotalMix can configure itself (e.g., names, colors,
-and which channels a controller sees) is set in TotalMix and read from it.
+Settings for TotalMix FX's host and ports, the hardware controller, a Launch Control's send rows, and
+the order and labels of the channels. Everything TotalMix FX can configure itself (e.g., names, colors,
+and which channels a controller sees) is set in TotalMix FX and read from it.
 
-Planned for later releases: the Roto-Control's PLUGIN mode, for the parts of TotalMix that MIX mode
+Planned for later releases: the Roto-Control's PLUGIN mode, for the parts of TotalMix FX that MIX mode
 can't reach (e.g., the control room); more than one hardware controller at once; and a connection to
 a DAW, for arming tracks and the transport, starting with Logic Pro and Bitwig Studio.
 
 ## What the repository holds
 
 - **`OSCCodec`**: OSC 1.0 messages and bundles, encoded and decoded.
-- **`TotalMixOSC`**: TotalMix's Global OSC addresses, the values TotalMix sends and accepts, and the curve between a fader's position and its gain.
+- **`TotalMixOSC`**: TotalMix FX's Global OSC addresses, the values TotalMix FX sends and accepts, and the curve between a fader's position and its gain.
 - **`RotoControl`**: the Roto-Control's MIDI protocol: its SysEx messages, its knobs, switches, and meters, and the handshake that connects it to a host.
 - **`LaunchControl`**: the DAW mode protocol of Novation's Launch Control XL 3 and Launch Control 3 (their controls, colors, screen, and settings), from Novation's programmer's reference guides.
-- **`SurfaceCore`**: the surface-neutral core. It keeps a copy of TotalMix's state and maps it onto any controller's strips: levels and pans in Main Out's submix, sends, mute, PFL, and meters, with paging and a single-channel focus mode. It keeps TotalMix from moving a control in the user's hand and makes faders without motors pick up.
+- **`SurfaceCore`**: the surface-neutral core. It keeps a copy of TotalMix FX's state and maps it onto any controller's strips: levels and pans in Main Out's submix, sends, mute, PFL, and meters, with paging and a single-channel focus mode. It keeps TotalMix FX from moving a control in the user's hand and makes faders without motors pick up.
 - **`RotoDriver`** and **`LaunchControlDriver`**: the drivers for the Roto-Control and the two Launch Controls, on top of `SurfaceCore`.
-- **`BridgeEngine`**: TotalMix and a hardware controller connected through the core and the drivers: the socket, the MIDI ports, and a clock. Each side connects on its own and is tried again every 3 seconds, so either can be started, quit, or unplugged at any time.
+- **`BridgeEngine`**: TotalMix FX and a hardware controller connected through the core and the drivers: the socket, the MIDI ports, and a clock. Each side connects on its own and is tried again every 3 seconds, so either can be started, quit, or unplugged at any time.
 - **The app** (`App/PerformanceBridge/`): the menu-bar app, which runs `BridgeEngine`.
 - **`MIDITransport`**: a MIDI connection through CoreMIDI, on macOS.
 - **`UDPTransport`**: a small UDP socket, on macOS and Linux.
-- **`sbdev`**: a developer tool that prints what TotalMix sends and sends single messages to it, talks to a Roto-Control or (`sbdev lcxl`) a Launch Control XL 3, and runs the core and a driver between TotalMix and a Roto-Control (`sbdev bridge`) or a Launch Control (`sbdev lcbridge`).
+- **`sbdev`**: a developer tool that prints what TotalMix FX sends and sends single messages to it, talks to a Roto-Control or (`sbdev lcxl`) a Launch Control XL 3, and runs the core and a driver between TotalMix FX and a Roto-Control (`sbdev bridge`) or a Launch Control (`sbdev lcbridge`).
 
 ## Requirements
 
 - **TotalMix FX 2.1 or later**, with Global OSC turned on. Development uses TotalMix FX "2.10 (1)" with a Digiface AES.
 - **Swift 5.9 or later** for the libraries and `sbdev`; Xcode or its Command Line Tools to build the app.
 
-## Trying `sbdev` with TotalMix
+## Trying `sbdev` with TotalMix FX
 
-In TotalMix, turn on Global OSC (Options → Mixer Settings… → OSC, "Compatibility (Mode)" set to "Global
+In TotalMix FX, turn on Global OSC (Options → Mixer Settings… → OSC, "Compatibility (Mode)" set to "Global
 OSC"; `docs/SETUP.md`, Step 1, has every setting) and note the incoming and outgoing ports. RME's manual
 gives 7001 and 9001 as typical values, and they are Performance Bridge's defaults. Then, from this folder:
 
@@ -70,7 +70,7 @@ gives 7001 and 9001 as typical values, and they are Performance Bridge's default
 swift run sbdev monitor --sendall
 ```
 
-That prints every message TotalMix sends, after asking TotalMix for its whole state. Give other ports
+That prints every message TotalMix FX sends, after asking TotalMix FX for its whole state. Give other ports
 with `--in-port` and `--out-port` and another computer with `--host`.
 
 ```
@@ -82,13 +82,13 @@ swift run sbdev curve -6dB
 
 ## Trying the app
 
-On a Mac, quit `sbdev` first (both need TotalMix's outgoing port), then:
+On a Mac, quit `sbdev` first (both need TotalMix FX's outgoing port), then:
 
 ```
 swift run PerformanceBridge
 ```
 
-The app appears in the menu bar. Set TotalMix's host and ports and the hardware controller in
+The app appears in the menu bar. Set TotalMix FX's host and ports and the hardware controller in
 Settings, or give the ports on the command line with `--in-port` and `--out-port`. The connection
 log goes to the Terminal.
 
@@ -106,7 +106,7 @@ The setup guide, [`docs/SETUP.md`](docs/SETUP.md), goes through each step and wh
 
 ## Documentation
 
-- **[`docs/TOTALMIX-OSC.md`](docs/TOTALMIX-OSC.md)**: what this project relies on in TotalMix's Global OSC, the evidence for each statement, and the questions still to settle by testing.
+- **[`docs/TOTALMIX-OSC.md`](docs/TOTALMIX-OSC.md)**: what this project relies on in TotalMix FX's Global OSC, the evidence for each statement, and the questions still to settle by testing.
 - **[`docs/SETUP.md`](docs/SETUP.md)**: setting up Performance Bridge with TotalMix FX and a hardware controller, step by step, with what has and has not been checked on screen.
 - **[`docs/ROTO-CONTROL.md`](docs/ROTO-CONTROL.md)**: what this project relies on in the Roto-Control's protocol, the evidence for each statement, and the questions still to settle by testing.
 - **[`docs/LAUNCH-CONTROL-XL3.md`](docs/LAUNCH-CONTROL-XL3.md)** and **[`docs/LAUNCH-CONTROL-3.md`](docs/LAUNCH-CONTROL-3.md)**: the same for the Launch Control XL 3 and the Launch Control 3.

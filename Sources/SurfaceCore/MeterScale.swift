@@ -3,10 +3,10 @@ import Foundation
 import TotalMixOSC
 #endif
 
-/// The scale from TotalMix's peak levels to a surface's meters (0…127).
+/// The scale from TotalMix FX's peak levels to a surface's meters (0…127).
 ///
-/// TotalMix sends peak levels in dB (`/level/…`, docs/TOTALMIX-OSC.md). The scale is linear in dB
-/// over −65…0 dBFS, the range of TotalMix's own meters (docs/TOTALMIX-OSC.md), with the top value
+/// TotalMix FX sends peak levels in dB (`/level/…`, docs/TOTALMIX-OSC.md). The scale is linear in dB
+/// over −65…0 dBFS, the range of TotalMix FX's own meters (docs/TOTALMIX-OSC.md), with the top value
 /// reserved for full scale. The color thresholds borrow RME's own meter steps (the M-32 AD Pro's
 /// front-panel meter: yellow from −5 dBFS, orange from −4, red from −1, flashing at 0;
 /// docs/TOTALMIX-OSC.md) as closely as a surface with two thresholds can: yellow from −5 dBFS and
