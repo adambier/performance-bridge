@@ -340,8 +340,12 @@ struct LaunchControlSendRowsView: View {
                                 // An XL 3 row with no output left to feed (review of 2026-11-02).
                                 Text("None").tag(Int?.none)
                             }
+                            // On the Launch Control 3 the row is pan or a send, so the sends carry
+                            // the "> " that marks a send (Adam, 2026-11-02); the XL 3's rows are
+                            // always sends, under the "Sends" heading (Adam, 2026-11-01).
                             ForEach(choices(row), id: \.output) { choice in
-                                Text(choice.name).tag(Int?.some(choice.output))
+                                Text(chosen == .lc3 ? LaunchControlDriver.sendLabel(choice.name) : choice.name)
+                                    .tag(Int?.some(choice.output))
                             }
                         }
                         .labelsHidden()
