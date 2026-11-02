@@ -19,6 +19,10 @@ Rules the design keeps:
   cable would: a parabola with a vertical axis, its low point at the deck anchor.
 - The tower is drawn two to three times taller, relative to the spans, than the real one, so the
   bridge reads at small sizes.
+- The deck stands above the water (Adam, 2026-11-02: a deck at the waterline is a strange choice
+  for a bridge): on piers under the cable anchors, where a self-anchored span needs them, with the
+  tower running down to the water. The reflection, deck and piers included, mirrors the bridge at
+  the waterline.
 - The reflection, waterline, and shaded caps appear at 128 px and up; 32 and 64 px are plain; 16 px
   has its own drawing.
 - The About window shows the icon at 128 points (the 256 px art), large enough for the details.
