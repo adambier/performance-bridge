@@ -258,18 +258,18 @@ final class LaunchControlDriverTests: XCTestCase {
     func testLevelAndSendEncodersUseTheARCScale() {
         // The ARC USB's detents, as TotalMix showed them (docs/TOTALMIX-OSC.md, test 19).
         XCTAssertNil(LaunchControlDriver.encoderGain(exactly: 0), "value 0 is off")
-        XCTAssertEqual(LaunchControlDriver.encoderGain(exactly: 1), -62)
+        XCTAssertEqual(LaunchControlDriver.encoderGain(exactly: 1), -63.5)
         XCTAssertEqual(LaunchControlDriver.encoderGain(exactly: 101), 0, "0 dB at 101, as on the faders")
         XCTAssertEqual(LaunchControlDriver.encoderGain(exactly: 127), 6)
         XCTAssertEqual(LaunchControlDriver.encoderValue(FaderCurve.unityPosition), 101)
         XCTAssertEqual(LaunchControlDriver.encoderValue(0), 0)
         XCTAssertEqual(LaunchControlDriver.encoderValue(1), 127)
-        // Steps: about 0.2 dB a value near 0 dB, and no more than 1.3 dB anywhere.
+        // Steps: about 0.2 dB a value near 0 dB, and no more than 1.27 dB anywhere.
         var previous = LaunchControlDriver.encoderGain(exactly: 1) ?? 0
         for value in 2...127 {
             let gain = LaunchControlDriver.encoderGain(exactly: Double(value)) ?? 0
             XCTAssertGreaterThan(gain, previous)
-            XCTAssertLessThanOrEqual(gain - previous, 1.3, "value \(value)")
+            XCTAssertLessThanOrEqual(gain - previous, 1.27, "value \(value)")
             previous = gain
         }
         let nearUnity = (LaunchControlDriver.encoderGain(exactly: 102) ?? 0) - (LaunchControlDriver.encoderGain(exactly: 101) ?? 0)

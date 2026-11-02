@@ -286,9 +286,9 @@ and intuitiveness to be assessed).
   −10, −20, −40, −60, and off: TotalMix FX's own fader marks (`TOTALMIX-OSC.md`, test 18), placed
   at the fader values measured at each tick (test 7). Between ticks the gain moves evenly in dB
   (Adam, 2026-11-01). Level and send encoders use the scale of RME's ARC USB volume wheel, as volume
-  controls (Adam, 2026-11-01): its 53 detents from −62 to +6 dB (docs/TOTALMIX-OSC.md, test 19),
+  controls (Adam, 2026-11-01): its 54 detents from −63.5 to +6 dB (docs/TOTALMIX-OSC.md, test 19),
   spread over the encoder's values so that 0 dB is at 101, as on the faders. That is about 0.2 dB a
-  value from −5 to +5 dB, 0.4 dB from −15 to −5, and up to 1.2 dB at the bottom; value 0 is off.
+  value from −5 to +5 dB, 0.4 dB from −15 to −5, and up to 1.3 dB at the bottom; value 0 is off.
   Pan encoders keep a plain scale, centered at 64.
 - **Encoder rows.** Fixed (Adam, 2026-11-01): the top two rows are sends and the bottom row pan,
   the order of Novation's own DAW integrations (Live, Logic Pro, and Cubase in the user guide's "DAW

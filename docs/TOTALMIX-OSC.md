@@ -409,10 +409,11 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 
 ### Test 19 (2026-11-01): the ARC USB wheel's detents
 
-**Setup.** TotalMix FX "2.10 (1)" with a Digiface AES and RME's ARC USB. Adam turned the ARC's wheel one detent at a time and read Main Out's volume in TotalMix's window at each. The ARC's encoder setting was not recorded (RME's forum names it Options → ARC & Key Commands → ARC USB Settings → Default Encoder Function, with "Volume Main (Default)" and "Volume Main (0.1 dB)"; not checked on screen); the steps below are not 0.1 dB, so it is taken to be the default (inference).
+**Setup.** TotalMix FX "2.10 (1)" with a Digiface AES and RME's ARC USB. Adam turned the ARC's wheel one detent at a time from off and read Main Out's volume in TotalMix's window at each. The ARC's encoder setting was not recorded (RME's forum names it Options → ARC & Key Commands → ARC USB Settings → Default Encoder Function, with "Volume Main (Default)" and "Volume Main (0.1 dB)"; not checked on screen); the steps below are not 0.1 dB, so it is taken to be the default (inference).
 
-**Findings.** From off, one detent at a time: −62, −59, −56, −53, −50, −47, −44, −41.5, −39, −36.5, −34, −32, −30, −28, −26, −24, −22.5, −21, −19.5, −18, −16.5, −15, −14, −13, −12, −11, −10, −9, −8, −7, −6, −5, −4.5, −4, −3.5, −3, −2.5, −2, −1.5, −1, −0.5, 0, +0.5, +1, … +5 in 0.5 dB steps, and +6.
-- So the step is 3 dB from −62 to −44, 2.5 dB to −34, 2 dB to −24, 1.5 dB to −15, 1 dB to −5, 0.5 dB from −5 to +5, and 1 dB from +5 to +6: 53 detents above off.
+**Findings.** One detent at a time from off: −63.5, −60.5, −57.5, −54.5, −51.5, −48.5, −45.5, −43, −40.5, −38, −35.5, −33.5, −31.5, −29.5, −27.5, −25.5, −24, −22.5, −21, −19.5, −18, −16.5, −15, then 1 dB steps to −5, 0.5 dB steps to +5, and +6.
+- So the step is 3 dB from −63.5 to −45.5, 2.5 dB to −35.5, 2 dB to −25.5, 1.5 dB to −15, 1 dB to −5, 0.5 dB from −5 to +5, and 1 dB from +5 to +6: 54 detents above off.
+- A list Adam had from ControlPilot's approximation of the ARC has the same steps but one 1.5 dB step fewer, so everything below −24 dB sits 1.5 dB higher there (−62 at the bottom).
 - RME's forum describes the default as 0.5 dB steps throughout; that holds only from −5 to +5 dB.
 
 **Consequence.** The Launch Controls' level and send encoders use this scale (`LaunchControlDriver.arcDetents`; docs/LAUNCH-CONTROL-XL3.md, section 9).
