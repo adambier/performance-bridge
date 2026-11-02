@@ -122,7 +122,7 @@ public enum SurfaceUpdate: Hashable, Sendable {
     /// A knob's position, 0…1 (a pan's −1…+1 is scaled to 0…1, with the center at 0.5); `nil`
     /// when the knob does nothing.
     case knob(index: Int, value: Double?)
-    /// A knob's value as text, e.g., "-6.0 dB", "off", "L25".
+    /// A knob's value as text, e.g., "-6.0 dB", "-oo", "L25".
     case valueText(index: Int, text: String)
     /// A switch's light: on or off.
     case switchState(index: Int, on: Bool)

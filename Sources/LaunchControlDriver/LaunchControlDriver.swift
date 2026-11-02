@@ -259,6 +259,8 @@ public struct LaunchControlDriver: Sendable {
             take(hub.touched(id(layer), strip: strip, touched, now: now), hub: hub, into: &step)
         case .button(.shift, let pressed):
             shiftHeld = pressed
+            // Page and Track light for what they do with Shift held, and back on release.
+            step.midi += drawNavigation(hub: hub)
         case .button(let element, pressed: true):
             pressed(element, hub: &hub, now: now, into: &step)
         default:
@@ -278,6 +280,7 @@ public struct LaunchControlDriver: Sendable {
                 guard next != view else { return }
                 view = next
                 setModes(first: 0, hub: &hub, now: now, into: &step)
+                step.midi += overlay("View", next == .sources ? "Sources" : "Outputs")
             } else {
                 stepSends(by: element == .pageUp ? -1 : 1, hub: &hub, now: now, into: &step)
             }
@@ -314,22 +317,49 @@ public struct LaunchControlDriver: Sendable {
     private func sendStepRange(_ hub: SurfaceHub) -> ClosedRange<Int> {
         let targets = hub.sendTargets.count
         if layout == .lc3 { return -1...max(targets - 1, -1) }
-        let sendRows = rowFunctions.filter { $0 == .send }.count
-        return 0...max(targets - sendRows, 0)
+        let rows = max(sendRowCount, 1)
+        return 0...(max(targets - 1, 0) / rows * rows)
     }
 
+    /// XL 3: how many encoder rows are sends.
+    private var sendRowCount: Int { rowFunctions.filter { $0 == .send }.count }
+
+    /// How far Page moves the sends: a page of them on the XL 3 (as many as there are send rows,
+    /// so that Page shows sends 1–2, then 3–4, and so on), one at a time on the Launch Control 3's
+    /// single top row (Pan, then each send).
+    private var sendPageSize: Int { layout == .lc3 ? 1 : max(sendRowCount, 1) }
+
+    /// Whether Page steps anything in the current view: outputs have no sends.
+    private var pageSteps: Bool { view == .sources && (layout == .lc3 || rowFunctions.contains(.send)) }
+
     private mutating func stepSends(by delta: Int, hub: inout SurfaceHub, now: Double, into step: inout LaunchControlStep) {
-        if layout == .xl3 && !rowFunctions.contains(.send) { return }
+        guard pageSteps else { return }
         let range = sendStepRange(hub)
-        let next = min(max(sendStep + delta, range.lowerBound), range.upperBound)
+        let next = min(max(sendStep + delta * sendPageSize, range.lowerBound), range.upperBound)
         guard next != sendStep else { return }
         sendStep = next
         setModes(first: page.first, hub: &hub, now: now, into: &step)
         if layout == .lc3 {
             step.midi += overlay("Top row", sendStep < 0 ? "Pan" : Self.sendLabel(sendName(sendStep, hub: hub)))
         } else {
-            step.midi += overlay("Sends", Self.sendLabel(sendName(sendStep, hub: hub)))
+            step.midi += sendOverlay(hub: hub)
         }
+    }
+
+    /// The overlay after Page on the XL 3: which sends are shown, and on which rows, e.g.
+    /// "Sends 3-4" / "Top: > Phones 1" / "Middle: > Phones 2".
+    private mutating func sendOverlay(hub: SurfaceHub) -> [UInt8] {
+        let rowNames = ["Top", "Middle", "Bottom"]
+        var lines: [String] = []
+        var index = sendStep
+        for (row, function) in rowFunctions.enumerated() where function == .send {
+            let name = hub.sendTargets.indices.contains(index) ? Self.sendLabel(sendName(index, hub: hub)) : "-"
+            lines.append("\(rowNames[row]): \(name)")
+            index += 1
+        }
+        let last = min(sendStep + sendRowCount, hub.sendTargets.count)
+        let title = last > sendStep + 1 ? "Sends \(sendStep + 1)-\(last)" : "Send \(sendStep + 1)"
+        return overlay(title, lines.first ?? "", lines.count > 1 ? lines[1] : nil)
     }
 
     private func sendName(_ index: Int, hub: SurfaceHub) -> String {
@@ -461,17 +491,21 @@ public struct LaunchControlDriver: Sendable {
 
     /// The XL 3's fader scale (Adam, 2026-11-01): the gain at each of the nine ticks printed beside
     /// each fader, top to bottom, with the fader value measured at each tick
-    /// (docs/LAUNCH-CONTROL-XL3.md, test 7). The labels are TotalMix FX's own fader marks: +6 (the
+    /// (docs/LAUNCH-CONTROL-XL3.md, tests 7 and 8: the mean of two passes). The labels are TotalMix FX's own fader marks: +6 (the
     /// top), +3, 0, −6, −10, −20, −40, −60 (docs/TOTALMIX-OSC.md, test 18); the bottom tick, value 0,
     /// is off. Between ticks the gain moves evenly in dB; below −60 it follows TotalMix's fader
     /// position down to off.
     public static let faderTicks: [(value: Double, gainDB: Double)] = [
-        (127, 6), (120, 3), (102, 0), (84, -6), (66, -10), (46, -20), (29, -40), (11, -60),
+        (127, 6), (119, 3), (101, 0), (83.5, -6), (65.5, -10), (46, -20), (29, -40), (11, -60),
     ]
 
     /// TotalMix's fader position (0…1) for an XL 3 fader value, on the printed scale.
     public static func faderPosition(_ value: UInt8) -> Double {
-        let value = Double(min(value, 127))
+        faderPosition(exactly: Double(min(value, 127)))
+    }
+
+    /// `faderPosition(_:)` for any value from 0 to 127, including the ticks between whole values.
+    static func faderPosition(exactly value: Double) -> Double {
         guard let lowest = faderTicks.last else { return value / 127 }
         if value <= lowest.value {
             return value / lowest.value * FaderCurve.position(gainDB: lowest.gainDB)
@@ -682,10 +716,15 @@ public struct LaunchControlDriver: Sendable {
         var bytes: [UInt8] = []
         bytes += color(.trackLeft, page.first > 0 ? Self.navigationOn : 0)
         bytes += color(.trackRight, page.first + Self.stripCount < page.count ? Self.navigationOn : 0)
-        let range = sendStepRange(hub)
-        let steps = layout == .lc3 || rowFunctions.contains(.send)
-        bytes += color(.pageUp, steps && sendStep > range.lowerBound ? Self.navigationOn : 0)
-        bytes += color(.pageDown, steps && sendStep < range.upperBound ? Self.navigationOn : 0)
+        if shiftHeld {
+            // Shift + Page switches the view: lit toward the other one.
+            bytes += color(.pageUp, view == .outputs ? Self.navigationOn : 0)
+            bytes += color(.pageDown, view == .sources ? Self.navigationOn : 0)
+        } else {
+            let range = sendStepRange(hub)
+            bytes += color(.pageUp, pageSteps && sendStep > range.lowerBound ? Self.navigationOn : 0)
+            bytes += color(.pageDown, pageSteps && sendStep < range.upperBound ? Self.navigationOn : 0)
+        }
         if layout == .lc3 { bytes += color(Self.functionButton, buttonsArePFL ? Self.pflOn : Self.functionIdle) }
         return bytes
     }
@@ -693,11 +732,12 @@ public struct LaunchControlDriver: Sendable {
     /// Shows two lines on the overlay (a temporary display not tied to a control), e.g., after
     /// Function or Page. That the overlay comes up with SysEx 04h 7Fh, as other displays do, is
     /// an inference (not yet tried on the device).
-    private mutating func overlay(_ first: String, _ second: String) -> [UInt8] {
+    private mutating func overlay(_ first: String, _ second: String, _ third: String? = nil) -> [UInt8] {
         guard connected else { return [] }
-        var bytes = configure(.overlay, .nameAndValue, quiet: false)
+        var bytes = configure(.overlay, third == nil ? .nameAndValue : .titleNameAndValue, quiet: false)
         bytes += text(.overlay, 0, first, force: true)
         bytes += text(.overlay, 1, second, force: true)
+        if let third { bytes += text(.overlay, 2, third, force: true) }
         bytes += LaunchControlOutgoing.showDisplay(.overlay, true, model: device) ?? []
         return bytes
     }
