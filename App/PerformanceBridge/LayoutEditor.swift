@@ -43,7 +43,11 @@ struct LayoutView: View {
             .onChange(of: view) { _ in reload() }
 
             // Above the list, as an instruction rather than a heading (Adam, 2026-10-31).
-            Text("Drag to reorder. Click a name to give it a label for the hardware controllers.")
+            // The hardware controllers show only the sources; the outputs' order is the order the
+            // send controls step through them (Adam, 2026-11-01).
+            Text(view == .outputs
+                 ? "Drag to set the order the send controls step through the outputs. Click a name to give it a label for the hardware controllers."
+                 : "Drag to reorder. Click a name to give it a label for the hardware controllers.")
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 

@@ -11,10 +11,10 @@ final class BridgeEngineTests: XCTestCase {
     func testALaunchControlCanBeChosenOnTheCommandLine() {
         XCTAssertNil(LaunchControlSetting(arguments: ["app"]))
         XCTAssertNil(LaunchControlSetting(arguments: ["app", "--launch-control", "mk2"]))
-        let xl3 = LaunchControlSetting(arguments: ["app", "--launch-control", "xl3", "--launch-control-rows", "send,pan"])
+        let xl3 = LaunchControlSetting(arguments: ["app", "--launch-control", "xl3"])
         XCTAssertEqual(xl3?.layout, .xl3)
         XCTAssertEqual(xl3?.portName, "LCXL3 1 DAW")
-        XCTAssertEqual(xl3?.rows, [.send, .pan])
+        XCTAssertEqual(xl3?.sendOutputs, [])
         XCTAssertEqual(xl3?.name, "Launch Control XL 3")
         let sim = LaunchControlSetting(arguments: ["app", "--launch-control", "lc3-sim", "--launch-control-port", "LCXL3 2 DAW"])
         XCTAssertEqual(sim?.layout, .lc3)

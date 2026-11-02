@@ -146,10 +146,12 @@ going quiet.
 
 Choose **Settings…** from the menu and open the **Channel Layout** tab.
 
-- The **Sources** and **Outputs** buttons switch between the two views.
-- Drag a channel to change its place on the hardware controllers. In the Outputs view, the **Control Room** outputs (those
-  assigned in TotalMix FX's control room: Main Out, Phones, and so on) and the **Hardware Outputs** are ordered in their
-  own sections, since control room outputs always come first.
+- The **Sources** and **Outputs** buttons switch between the two lists.
+- **Sources** are the channels the hardware controllers show. Drag a channel to change its place on them.
+- **Outputs** are the outputs the send controls can feed (Step 6). Their order is the order you step through
+  them on the hardware controllers. The **Control Room** outputs (those assigned in TotalMix FX's control room:
+  Phones, and so on) and the **Hardware Outputs** are ordered in their own sections, since control room outputs
+  always come first.
 - Click a channel's name to give it a **label** for the hardware controllers, e.g., a short name for mixing. The label shows only on the hardware controllers; TotalMix FX keeps its own name, shown dimmed beside the label. Clear the label to show TotalMix FX's name again. A playback without a label shows as "PB 1/2" and so on, since an unnamed playback has its output's hardware name, the same as an input's.
 - The order and the labels are saved, and kept when Performance Bridge restarts.
 - **Restore TotalMix FX Order** puts the view back in TotalMix FX's order. It is dimmed when the order is already TotalMix FX's.
@@ -159,14 +161,62 @@ Choose **Settings…** from the menu and open the **Channel Layout** tab.
 - **Playbacks start on a new page**, under the Sources list, puts the first playback at the start of a new
   page of strips, after blank strips that fill the inputs' last page.
 
-## Step 6: Choose the mix output
+## Step 6: Use the hardware controllers
 
-The mix output is the output whose submix the hardware controllers' levels and pans go into. Choose it from the
-menu, under **Mix Output**.
+Every hardware controller works the same way: **each column of controls is one channel**, and every control in a
+column controls that channel. Levels and pans go into Main Out, the mix TotalMix FX's control room assigns to Main
+Out (it follows Main Out if that is reassigned there). The outputs themselves (Main Out's volume, Speaker B, and so
+on) are set in TotalMix FX or with an ARC USB, not from the hardware controllers.
 
-- Main Out is the default. Choosing Main Out's output saves "follow Main Out", so the mix output moves when
-  Main Out is reassigned in TotalMix.
-- Any other output is in the **Hardware Outputs** submenu of the same menu.
+**Sends** are what make the headphone mixes. A send control sets how much of its channel goes to one other output,
+e.g., Phones 1. A row of send controls is that output's whole mix, one channel per column. The outputs a send row
+can feed are the ones in Settings → Channel Layout → Outputs, in that order, except Main Out and its B speakers
+(they carry the main mix) and the cue output (PFL uses it).
+
+### Launch Control XL 3
+
+| Control (in each column) | What it does for that column's channel |
+|---|---|
+| Fader | Level in Main Out. The ticks read +6, +3, 0, −6, −10, −20, −40, −60, and −oo, as on TotalMix FX's faders. |
+| Top encoder | Send to the top row's output (e.g., Phones 1) |
+| Middle encoder | Send to the middle row's output (e.g., Phones 2) |
+| Bottom encoder | Pan in Main Out |
+| Top button | PFL (yellow when on) |
+| Bottom button | Mute (red when on) |
+
+| Button | What it does |
+|---|---|
+| **Track >** / **Track <** | Show the next or previous eight channels. With **Shift**: the last or first eight. |
+| **Page ▼** / **Page ▲** | Change the output the **top** encoder row feeds, to the next or previous one in the Outputs list. |
+| **Shift + Page ▼** / **▲** | The same for the **middle** encoder row. |
+
+- The two send rows never feed the same output: stepping one skips the output the other has.
+- The screen names the row and its new output after each Page press (e.g., "Top row" / "> Phones 2"), and each send
+  row's lights take the color of the output it feeds.
+- Page and Track are lit where they can move, and dark at the ends. While Shift is held, Page lights for the middle
+  row.
+- Each row's output is remembered when Performance Bridge restarts.
+- Solo/Arm, Mute/Select, Record, Play, and the Novation button do nothing, so they stay free for later uses (e.g., a
+  connection to a DAW).
+
+### Launch Control 3
+
+The same, on the smaller device:
+
+| Control (in each column) | What it does |
+|---|---|
+| Bottom encoder | Level in Main Out |
+| Top encoder | Pan, or a send: **Page ▼** / **▲** steps it through Pan, then each output in the Outputs list |
+| Button | Mute, or PFL after **Function** (red for mute, yellow for PFL; Function lights yellow while the buttons are PFL) |
+
+Track works as on the XL 3. The Launch Control 3 has not been tried on a device yet (`docs/LAUNCH-CONTROL-3.md`).
+
+### Roto-Control
+
+Each of the eight knobs is a channel. Hold **SEL** to choose what the knobs control (Volume, Pan, or a send, "FX")
+and what the switches do (Mute, or Solo, which is PFL here). The < and > buttons page through the channels. Pressing
+both arrow buttons together switches the Roto-Control to its second track set ("MIX-RTN" on its screen), which shows
+the same channels.
 
 ## If something does not work
 

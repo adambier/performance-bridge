@@ -12,7 +12,7 @@ import LaunchControlDriver
 
 let lcBridgeUsage = """
     Usage:
-      sbdev lcbridge [--layout xl3 | lc3 | lc3-sim] [--rows R,R,R] [--host H] [--in-port P]
+      sbdev lcbridge [--layout xl3 | lc3 | lc3-sim] [--host H] [--in-port P]
                      [--out-port P] [--port NAME] [--home N] [--verbose]
           Connects TotalMix and a Launch Control through SurfaceCore and the Launch Control
           driver, as the app will. Prints what is sent to TotalMix, with the time since starting;
@@ -20,23 +20,21 @@ let lcBridgeUsage = """
           from the keyboard (type `help`).
           --layout: xl3 (the default) for a Launch Control XL 3; lc3 for a Launch Control 3;
           lc3-sim for the Launch Control 3's layout on a Launch Control XL 3.
-          --rows: what the XL 3's encoder rows control, top to bottom, each pan or send
-          (default send,send,pan, as in Novation's own DAW integrations).
           --port names the device's DAW ports (default "LCXL3 1 DAW", or "LC3 1 DAW" for lc3).
           --host, --in-port, and --out-port are TotalMix's, as for monitor. --home is the home
           submix's output number, counting from 1 (default: TotalMix's Main Out).
           Stop sbdev monitor, sbdev bridge, and the app first: they need the same ports.
 
-      On the device: Track < and > move by eight strips (with Shift, to the first or last
-      page); Page up and down move the send rows to the previous or next sends; Shift with Page
-      up shows the sources, with Page down the outputs. XL 3: faders are level, top buttons PFL, bottom buttons mute. Launch Control 3 (or lc3-sim): the bottom
-      encoder row is level, the top row pan or a send (Page up and down), the buttons mute, and
-      Function (Mute/Select on an XL 3) switches them to PFL.
+      On the device: Track < and > move by eight channels (with Shift, to the first or last
+      page). XL 3: faders are level, the top two encoder rows sends (Page up and down choose
+      the top row's output, Shift + Page the middle row's), the bottom row pan, the top
+      buttons PFL, and the bottom buttons mute. Launch Control 3 (or lc3-sim): the bottom
+      encoder row is level, the top row pan or a send (Page up and down), the buttons mute,
+      and Function (Mute/Select on an XL 3) switches them to PFL.
     """
 
 let lcBridgeCommandHelp = """
     Commands:
-      rows R R R           XL 3: what the encoder rows control, top to bottom (pan or send)
       home N | home main   the home submix: output N (from 1), or TotalMix's Main Out
       pbpage on | pbpage off   start the first playback on a new page, or not
       sendall              ask TotalMix for its state again
@@ -48,16 +46,9 @@ struct LaunchBridgeOptions {
     var endpoint = TotalMixEndpoint.standard
     var layout = LaunchControlModel.xl3
     var device = LaunchControlModel.xl3
-    var rows = LaunchControlDriver.defaultRows
-    var rowsGiven = false
     var portName: String?
     var home: Int?
     var verbose = false
-}
-
-func parseRowFunctions(_ words: [String]) -> [LaunchControlRowFunction]? {
-    let functions = words.compactMap { LaunchControlRowFunction(rawValue: $0.lowercased()) }
-    return functions.count == words.count && (1...3).contains(functions.count) ? functions : nil
 }
 
 func parseLaunchBridgeOptions(_ arguments: ArraySlice<String>) -> LaunchBridgeOptions {
@@ -80,12 +71,6 @@ func parseLaunchBridgeOptions(_ arguments: ArraySlice<String>) -> LaunchBridgeOp
             case "lc3-sim": (options.layout, options.device) = (.lc3, .xl3)
             default: fail("--layout is xl3, lc3, or lc3-sim.")
             }
-        case "--rows":
-            guard let rows = parseRowFunctions(value(argument).split(separator: ",").map(String.init)) else {
-                fail("--rows takes up to three of pan and send, separated by commas (e.g., send,send,pan).")
-            }
-            options.rows = rows
-            options.rowsGiven = true
         case "--host": options.endpoint.host = value(argument)
         case "--in-port": options.endpoint.incomingPort = port(argument)
         case "--out-port": options.endpoint.outgoingPort = port(argument)
@@ -140,11 +125,6 @@ final class LaunchBridgeSession: @unchecked Sendable {
         dispatch(hub.connect(now: now))
         let started = driver.start(hub: &hub, now: now)
         send(started)
-        if options.layout == .xl3 {
-            send(driver.setRowFunctions(options.rows, hub: &hub, now: now))
-        } else if options.rowsGiven {
-            log("--rows is for the XL 3's layout; the Launch Control 3's top row is stepped with Page up and down.")
-        }
 
         let ticker = Thread { [weak self] in
             while let session = self {
@@ -223,13 +203,6 @@ final class LaunchBridgeSession: @unchecked Sendable {
             return false
         case "help":
             print(lcBridgeCommandHelp)
-        case "rows":
-            guard options.layout == .xl3, let rows = parseRowFunctions(Array(words.dropFirst())) else {
-                print(options.layout == .xl3 ? "rows R R R (each pan or send)" : "rows is for the XL 3's layout")
-                return true
-            }
-            send(driver.setRowFunctions(rows, hub: &hub, now: now))
-            log("Encoder rows: \(driver.rowFunctions.map(\.rawValue).joined(separator: ", "))")
         case "home":
             if words.count == 2, words[1] == "main" {
                 dispatch(hub.setHomeSubmix(nil, now: now))
@@ -250,7 +223,7 @@ final class LaunchBridgeSession: @unchecked Sendable {
         case "sendall":
             dispatch(hub.connect(now: now))
         case "status":
-            log("Connected: \(driver.isConnected); view: \(driver.view == .sources ? "sources" : "outputs"); send step: \(driver.sendStep); buttons: \(driver.buttonsArePFL ? "PFL" : "mute" )")
+            log("Connected: \(driver.isConnected); send rows: \(driver.sendOutputs.map { $0.map { "output \($0 + 1)" } ?? "auto/pan" }); buttons: \(driver.buttonsArePFL ? "PFL" : "mute")")
             log("Home submix: \(hub.homeSubmix.map { "output \($0 + 1)" } ?? "none yet"); send targets: \(hub.sendTargets.map { "output \($0 + 1)" })")
             for layer in driver.layers {
                 let id = driver.id(layer)
