@@ -13,6 +13,9 @@ Windows.
 
 Performance Bridge is not affiliated with or endorsed by RME, Melbourne Instruments, or Novation.
 
+**To set it up,** follow the setup guide, [`docs/SETUP.md`](docs/SETUP.md): TotalMix FX's settings,
+the hardware controller, and what each control does.
+
 ## Status
 
 The app works and is in testing; it has not been released yet (version 0.1.0). Until the first
