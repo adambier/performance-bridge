@@ -12,7 +12,7 @@ statement there carries its evidence.
 | Item | Value |
 |---|---|
 | Repository | `adambier/performance-bridge` (GitHub), Swift package `performance-bridge` |
-| What it is | Performance Bridge, a macOS app (planned) that connects hardware control surfaces to RME TotalMix FX through its Global OSC interface, plus the libraries and developer tool behind it |
+| What it is | Performance Bridge, a macOS menu-bar app (working, in testing, not yet released) that connects hardware control surfaces to RME TotalMix FX through its Global OSC interface, plus the libraries and developer tool behind it |
 | Surfaces | Melbourne Instruments Roto-Control first; Novation Launch Control XL 3 and Launch Control 3 second; Mackie Control (MCU) surfaces possibly later |
 | License | MIT (`LICENSE`); not affiliated with or endorsed by RME, Melbourne Instruments, or Novation |
 | Language, tooling | Swift, `swift-tools-version:5.9`; CI uses the `swift:6.0-noble` image on Linux, Swift 6.2 on Windows, and the runner's Xcode on macOS; XCTest |
@@ -166,7 +166,7 @@ Don't:
   - `swift run sbdev roto` connects, runs the handshake, prints everything the Roto-Control sends, and takes commands (`help` lists them). `--type`, `--setup none`, and `--raw` are for the tests in `docs/ROTO-CONTROL.md` section 8.
 - **Against a Launch Control XL 3** (macOS): `swift run sbdev lcxl` puts it in DAW mode, prints what it sends, and takes commands (`help` lists them); the tests are in `docs/LAUNCH-CONTROL-XL3.md` section 8.
 - **TotalMix and a Launch Control together** (macOS): `swift run sbdev lcbridge` runs SurfaceCore and the Launch Control driver (`--layout xl3`, `lc3`, or `lc3-sim` for the Launch Control 3's layout on an XL 3; `--help` lists the rest). In the app, choose it in Settings → Connections; `swift run PerformanceBridge --launch-control xl3` (or `lc3`, `lc3-sim`; also `--launch-control-port`; `LaunchControlSetting(arguments:)`) overrides that, e.g., for the simulation.
-- **TotalMix and a Roto-Control together** (macOS): `swift run sbdev bridge --in-port 7004 --out-port 9004` runs SurfaceCore and the Roto-Control driver as the app will, and prints what goes to TotalMix (`help` lists the commands).
+- **TotalMix and a Roto-Control together** (macOS): `swift run sbdev bridge --in-port 7004 --out-port 9004` runs SurfaceCore and the Roto-Control driver as the app does, and prints what goes to TotalMix (`help` lists the commands).
 
 ## 6. House style for text (README, docs, DocC, app strings)
 
