@@ -222,7 +222,7 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertEqual(states(status)["mutemaster"], .problem)
         XCTAssertNil(steps["cue"])
         XCTAssertEqual(steps["livemode"], .instruction, "Live mode can't be read, so it's a note")
-        status.cueUnassigned = true
+        status.pflToMain = true
         XCTAssertEqual(states(status)["cue"], .problem)
     }
 

@@ -85,9 +85,9 @@ public enum MonitoringRole: String, CaseIterable, Hashable, Sendable {
     case phones3
     /// Phones 4 (`phones4`).
     case phones4
-    /// The output that cue and PFL go to (`cuechan`). That this is what `cuechan` names is an
-    /// inference from its name; only `mainout`, `phones1`, and `phones2` have been seen to match
-    /// TotalMix's window.
+    /// The output that cue and PFL go to (`cuechan`): TotalMix's "Cue/PFL to", which offers Main
+    /// (its default, reported as −1, none) and Phones 1–4 (docs/TOTALMIX-OSC.md, tests 6 and 21).
+    /// That a Phones choice reports that output's channel is an inference.
     case cue = "cuechan"
 }
 

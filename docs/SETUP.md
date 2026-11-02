@@ -96,11 +96,13 @@ Checked on screen with TotalMix FX "2.10 (1)" on a Mac (Adam, 2026-10-31); the s
    - **Live mode.** In the Control Strip, click **options** and, under **solo/pfl mode**, choose **live**. Without
      it, PFL from a hardware controller is accepted but does nothing you can see or hear (test 6). TotalMix
      doesn't send this setting over OSC, so Performance Bridge can't check it; the Setup Guide reminds you.
-   - **The Cue output.** In the Control Room section, click **assign** and assign an output to Cue, e.g., your
-     headphones. Without one, PFL takes over Main Out, so the audience hears only the channel being checked
-     (test 6). Performance Bridge reads it: while no output is assigned, the menu shows **PFL Output: None** and
-     the Setup Guide shows a warning. The menu items under "assign" have not been checked on screen (the
-     "assign → Main Out B" path was, in test 14).
+   - **Where PFL goes.** In the Control Room section, click **assign**, then **Cue/PFL to**, and choose a
+     headphone output, e.g., **Phones 1** (Adam's screenshot, 2026-11-02; `docs/TOTALMIX-OSC.md`, test 21). Its
+     default, **Main**, makes PFL take over Main Out, so the audience hears only the channel being checked (test
+     6). Performance Bridge reads it: while it is Main, the menu shows **PFL Output: Main Out** and the Setup
+     Guide shows a warning.
+
+     <img src="../App/PerformanceBridge/Resources/totalmix-cue-pfl-to.png" width="480" alt="TotalMix FX's control room, with the assign menu open at Cue/PFL to: Main (checked) and Phones 1 to 4">
 
 ## Step 2: Choose which channels the hardware controllers show
 
@@ -174,7 +176,7 @@ retrying in every state:
   DAW mode, and **Not Found** that none of the model chosen in Settings is connected.
 
 Two more lines appear only while something in TotalMix FX gets in the way (Step 1, item 9): **Mute Master: Off**
-and **PFL Output: None**.
+and **PFL Output: Main Out**.
 
 The full reason for any state goes to the log in the Terminal the app was started from.
 

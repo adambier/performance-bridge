@@ -26,6 +26,7 @@ struct SetupView: View {
         "hide": ["totalmix-channel-layout"],
         "mutemaster": ["totalmix-control-strip"],
         "livemode": ["totalmix-control-strip"],
+        "cue": ["totalmix-cue-pfl-to"],
     ]
 
     private var checks: [SetupStep] { steps.filter { !Self.noteIDs.contains($0.id) } }

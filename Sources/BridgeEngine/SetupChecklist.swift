@@ -103,9 +103,9 @@ public enum SetupChecklist {
                                    detail: "While it’s off, mutes from the hardware controller only select a channel’s mute and don’t silence it.\n\nIn TotalMix FX, turn on the “M” (Mute Master) button in the Control Strip, below the interface’s name and “undo”."))
         }
 
-        if status.cueUnassigned {
-            steps.append(SetupStep(id: "cue", title: "No PFL output in TotalMix FX", state: .problem,
-                                   detail: "No output is assigned to Cue, so PFL from the hardware controller takes over Main Out: the audience hears only the channel being checked.\n\nIn TotalMix FX, in the Control Room section, click “assign” and assign an output to Cue (e.g., your headphones)."))
+        if status.pflToMain {
+            steps.append(SetupStep(id: "cue", title: "PFL goes to Main Out", state: .problem,
+                                   detail: "TotalMix FX sends Cue and PFL to Main, so PFL from the hardware controller takes over Main Out: the audience hears only the channel being checked.\n\nIn TotalMix FX’s Control Room section, click “assign”, then “Cue/PFL to”, and choose a headphone output (e.g., “Phones 1”)."))
         }
         // Live Mode can't be read over OSC (docs/TOTALMIX-OSC.md, test 6), so it is a note.
         steps.append(SetupStep(id: "livemode", title: "PFL needs Live mode", state: .instruction,

@@ -478,9 +478,9 @@ struct MenuContent: View {
         if model.status.muteMasterOff {
             Text("Mute Master: Off")
         }
-        // Only while no output is assigned to Cue: PFL then takes over Main Out (Adam, 2026-11-02).
-        if model.status.cueUnassigned {
-            Text("PFL Output: None")
+        // Only while TotalMix's Cue/PFL goes to Main: PFL then takes over Main Out (Adam, 2026-11-02).
+        if model.status.pflToMain {
+            Text("PFL Output: Main Out")
         }
         Divider()
         // Order (Apple's HIG, Menus): what is used most first, related items grouped and separated;

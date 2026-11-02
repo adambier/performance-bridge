@@ -59,6 +59,8 @@ with neither a footnote nor a test record behind it is an inference, and says so
 [^test-17]: Test 17 (2026-11-01), section 6: [fader group 1](#test-17-2026-11-01-fader-group-1).
 [^test-20]: Test 20 (2026-11-02), section 6: [changes made in TotalMix's
     window](#test-20-2026-11-02-changes-made-in-totalmixs-window).
+[^test-21]: Test 21 (2026-11-02), section 6: [the Cue/PFL to
+    menu](#test-21-2026-11-02-the-cuepfl-to-menu).
 
 **Status.** Nineteen tests so far (section 6). Tests 1–5 cover what TotalMix sends with "Send
 faders in linear scale" off and on, and the fader messages it accepts; the later ones cover hiding,
@@ -493,4 +495,23 @@ mono channel's color and name changes were not tried.
 - After a stereo switch the app has no name for a channel split off, and still lists one joined
   to a pair, so `SurfaceHub` asks for everything again (`/sendall`, as a refresh) when a channel's
   stereo changes outside an answer.
+
+### Test 21 (2026-11-02): the Cue/PFL to menu
+
+**Setup.** TotalMix FX "2.10 (1)" with a Digiface AES. Adam opened the control room's assign menu
+and its "Cue/PFL to" submenu, and took a screenshot (published as
+`App/PerformanceBridge/Resources/totalmix-cue-pfl-to.png`).
+
+**Findings:**
+- The assign menu lists Main Out, Main Out B, Phones 1–4, and "Cue/PFL to", each with a submenu.
+- "Cue/PFL to" offers Main and Phones 1–4, with no "none". Main was checked, and is TotalMix's
+  default (Adam).
+- In test 6 and every `/sendall` answer since, `controlroom/cuechan` was −1 with this setting.
+
+**Consequences.**
+- `cuechan` −1 means "Cue/PFL to Main": PFL then replaces what Main Out plays (test 6), which on
+  stage the audience hears. The app warns while it is so ("PFL Output: Main Out" in the menu, and a
+  Setup Guide step with this screenshot).
+- What `cuechan` reports for a Phones choice hasn't been seen; the inference is that it is that
+  output's channel, as for the other assignments.
 
