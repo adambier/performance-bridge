@@ -542,4 +542,9 @@ marked "seen".
 
 **Findings:** the Roto-Control sent SET ALL TRACKS MODE with the master and return tracks (`0C 05 01`), and its screen named the set "MIX-RTN" (seen).
 
-**Consequences.** The driver shows the channels on both track sets (Adam, 2026-11-01); the outputs are no longer shown on any hardware controller.
+**Second session (2026-11-01, evening), with both sets showing the channels.** `sbdev bridge` on main after PR #53, TotalMix FX 2.10 (1), Digiface AES; logs `roto-trackset.log` and `roto-trackset2.log`.
+
+- **Run 1.** Six track-set switches in 5.3 s (2.75–8.05 s), each answered with the channels' names, then nothing more from the Roto-Control: no knob reports, no touches, and no SET MIX ALL TRACKS MODE when Adam changed the knob mode with SEL. Its screens went blank after the SEL change. The bridge was still running (stopped with Ctrl-C). Not explained; one occurrence. That the firmware stalled is an inference.
+- **Run 2** (relaunched): six switches over 54 s, one per press of both arrows; knobs moved TotalMix's faders in both sets throughout (`/mix/in/0/0/faderlin` and `/mix/in/2/0/faderlin`).
+
+**Consequences.** The driver shows the channels on both track sets (Adam, 2026-11-01); the outputs are no longer shown on any hardware controller. The second set has no TotalMix FX job of its own: TotalMix has no return tracks, and its FX returns (reverb and echo) aren't used here (Adam, 2026-11-01). Mirroring the first set makes an accidental press harmless. No host command sets or locks the track set (SET ALL TRACKS MODE goes only from the Roto-Control to the host), so the switch can't be turned off; this is a feature request.
