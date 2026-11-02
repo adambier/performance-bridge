@@ -658,7 +658,7 @@ public final class BridgeEngine: @unchecked Sendable {
         if totalMixWasAnswering, !answering { dispatch(hub.refreshChannels(now: now)) }
         totalMixWasAnswering = answering
         dispatch(hub.tick(now: now))
-        sendToRoto(driver.tick(now: now))
+        sendToRoto(driver.tick(now: now, hub: hub))
         if var lc = lcDriver {
             let step = lc.tick(hub: &hub, now: now)
             lcDriver = lc

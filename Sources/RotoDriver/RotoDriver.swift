@@ -219,18 +219,47 @@ public struct RotoDriver: Sendable {
 
     private var lastStart: Double?
 
+    /// The shortest time between two page draws, in seconds. A page changed again sooner is drawn
+    /// once, `pageDrawInterval` after the last draw, by `tick(now:hub:)`: at every connection
+    /// TotalMix's answer to `/sendall` changed the page about 33 times in 0.35 s (about 440 SysEx
+    /// messages; review of 2026-11-02), and the Roto-Control has frozen under bursts of SysEx
+    /// before (docs/ROTO-CONTROL.md, test 4, runs 17–20). That the burst could freeze it is an
+    /// inference; Adam chose to coalesce (2026-11-02). Knobs, lights, meters, and value text are not
+    /// held back, so while a draw waits they may change before their page's names (also an
+    /// inference that this is harmless: a knob's position doesn't depend on its strip's details).
+    public static let pageDrawInterval: Double = 0.1
+
+    private var lastPageDraw: Double?
+    private var pageDrawPending = false
+
     /// Starts, or restarts, the handshake: the bytes to send now. `tick(now:)` sends DAW STARTED
     /// again every `restartInterval` until the Roto-Control connects.
     public mutating func start(now: Double = 0) -> [UInt8] {
         lastStart = now
+        lastPageDraw = nil
+        pageDrawPending = false
         return handshake.start().flatMap(\.bytes)
     }
 
     /// The bytes to send as time passes: DAW STARTED again, if the handshake was started and has
-    /// not completed within `restartInterval`. The app calls this regularly, with the current time.
-    public mutating func tick(now: Double) -> [UInt8] {
-        guard !handshake.isConnected, let lastStart, now - lastStart >= Self.restartInterval else { return [] }
+    /// not completed within `restartInterval`; and, with `hub`, a page draw held back by
+    /// `pageDrawInterval` once it is due. The app calls this regularly (every 10 ms), with the
+    /// current time.
+    public mutating func tick(now: Double, hub: SurfaceHub? = nil) -> [UInt8] {
+        if handshake.isConnected {
+            guard pageDrawPending, let hub, !inPluginMode,
+                  now - (lastPageDraw ?? -Double.infinity) >= Self.pageDrawInterval else { return [] }
+            return drawPage(hub: hub, now: now)
+        }
+        guard let lastStart, now - lastStart >= Self.restartInterval else { return [] }
         return start(now: now)
+    }
+
+    /// The bytes that draw the current page now, noting the time for `pageDrawInterval`.
+    private mutating func drawPage(hub: SurfaceHub, now: Double) -> [UInt8] {
+        lastPageDraw = now
+        pageDrawPending = false
+        return pageMessages(hub: hub).flatMap(\.bytes)
     }
 
     // MARK: - From the Roto-Control
@@ -373,7 +402,11 @@ public struct RotoDriver: Sendable {
             }
         }
         guard pageChanged else { return controls }
-        return pageMessages(hub: hub).flatMap(\.bytes) + controls
+        if let last = lastPageDraw, now - last < Self.pageDrawInterval {
+            pageDrawPending = true
+            return controls
+        }
+        return drawPage(hub: hub, now: now) + controls
     }
 
     /// The messages that draw the current page: in all-tracks mode the send names and the eight

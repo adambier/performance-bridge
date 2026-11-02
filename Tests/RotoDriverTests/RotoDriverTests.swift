@@ -491,4 +491,26 @@ final class RotoDriverTests: XCTestCase {
         XCTAssertEqual(Set(RotoDriver.schemeForTotalMixColor.keys), Set(1...8))
         XCTAssertTrue(RotoDriver.schemeForTotalMixColor.values.allSatisfy { $0 <= 82 })
     }
+
+    func testPageDrawsAreCoalesced() {
+        var (driver, hub, midi) = connected()
+        XCTAssertTrue(midi.contains(RotoOutgoing.trackDetailsEnd.bytes), "the first draw goes at once")
+        let end = RotoOutgoing.trackDetailsEnd.bytes
+        // TotalMix renames and recolors channels just after the connection, as its /sendall answer does.
+        var sent: [UInt8] = []
+        for (step, name) in ["Vox", "Vox 2", "Vox 3"].enumerated() {
+            let now = 0.02 * Double(step + 1)
+            let output = hub.handle(.channel(bus: .input, channel: 0, parameter: "name", value: .text(name)), now: now)
+            sent += driver.render(output.updates[rotoID] ?? [], hub: hub, now: now)
+            sent += driver.tick(now: now, hub: hub)
+        }
+        XCTAssertEqual(sent.occurrences(end), 0, "held back within 100 ms of the last draw")
+        let due = driver.tick(now: 0.1, hub: hub)
+        XCTAssertEqual(due.occurrences(end), 1, "drawn once when due")
+        XCTAssertTrue(due.contains(Array("Vox 3".utf8)), "with the latest name")
+        XCTAssertTrue(driver.tick(now: 0.5, hub: hub).isEmpty, "nothing more to draw")
+        let later = hub.handle(.channel(bus: .input, channel: 0, parameter: "name", value: .text("Lead")), now: 1)
+        XCTAssertEqual(driver.render(later.updates[rotoID] ?? [], hub: hub, now: 1).occurrences(end), 1,
+                       "a change after a quiet spell is drawn at once")
+    }
 }

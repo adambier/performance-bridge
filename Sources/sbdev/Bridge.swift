@@ -236,8 +236,11 @@ final class BridgeSession: @unchecked Sendable {
         lock.lock()
         defer { lock.unlock() }
         dispatch(hub.tick(now: now))
-        let restart = driver.tick(now: now)
-        if !restart.isEmpty {
+        let wasConnected = driver.isConnected
+        let restart = driver.tick(now: now, hub: hub)
+        if !restart.isEmpty && wasConnected {
+            sendToRoto(restart)   // a page draw held back (RotoDriver.pageDrawInterval)
+        } else if !restart.isEmpty {
             log("No answer from the Roto-Control yet; sending DAW STARTED again")
             sendToRoto(restart)
         }
