@@ -16,6 +16,9 @@ import BridgeEngine
 #if canImport(LaunchControl)
 import LaunchControl
 #endif
+#if canImport(LaunchControlDriver)
+import LaunchControlDriver
+#endif
 
 /// Opens the app's windows, one of each, bringing the app forward (a menu-bar app is otherwise in
 /// the background).
@@ -344,7 +347,7 @@ struct LaunchControlSendRowsView: View {
                             // the "> " that marks a send (Adam, 2026-11-02); the XL 3's rows are
                             // always sends, under the "Sends" heading (Adam, 2026-11-01).
                             ForEach(choices(row), id: \.output) { choice in
-                                Text(chosen == .lc3 ? LaunchControlDriver.sendLabel(choice.name) : choice.name)
+                                Text(choiceTitle(choice.name))
                                     .tag(Int?.some(choice.output))
                             }
                         }
@@ -371,6 +374,12 @@ struct LaunchControlSendRowsView: View {
     }
 
     private var rowCount: Int { LaunchControlSendRows.rowCount(chosen) }
+
+    /// An output's title in a row's menu: "> Phones 1" on the Launch Control 3, where the row can
+    /// also be Pan; the plain name on the XL 3, under the "Sends" heading.
+    private func choiceTitle(_ name: String) -> String {
+        chosen == .lc3 ? LaunchControlDriver.sendLabel(name) : name
+    }
 
     /// The output each of the chosen model's rows feeds now, as the engine reports it.
     private var rows: [Int?] { model.status.launchControlSends[chosen] ?? [] }

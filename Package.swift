@@ -74,7 +74,7 @@ let products: [Product] = [
 
 // A first look at the menu-bar app, run with `swift run PerformanceBridge` (macOS only).
 if onMac {
-    targets.append(.executableTarget(name: "PerformanceBridge", dependencies: ["BridgeEngine", "TotalMixOSC", "SurfaceCore", "MIDITransport", "LaunchControl"],
+    targets.append(.executableTarget(name: "PerformanceBridge", dependencies: ["BridgeEngine", "TotalMixOSC", "SurfaceCore", "MIDITransport", "LaunchControl", "LaunchControlDriver"],
                                      path: "App/PerformanceBridge", resources: [.process("Resources")]))
 }
 
