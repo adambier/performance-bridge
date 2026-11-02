@@ -1,6 +1,6 @@
 import Foundation
 
-/// The three rows of TotalMix's mixer.
+/// The three rows of TotalMix FX's mixer.
 ///
 /// Global OSC spells them differently in different addresses (see docs/TOTALMIX-OSC.md):
 /// channel settings and `/sendchan` use the full words, mixer nodes use `in` and `pb`, and levels

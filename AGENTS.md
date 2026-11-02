@@ -12,13 +12,13 @@ statement there carries its evidence.
 | Item | Value |
 |---|---|
 | Repository | `adambier/performance-bridge` (GitHub), Swift package `performance-bridge` |
-| What it is | Performance Bridge, a macOS menu-bar app (working, in testing, not yet released) that connects hardware control surfaces to RME TotalMix FX through its Global OSC interface, plus the libraries and developer tool behind it |
+| What it is | Performance Bridge, a macOS menu-bar app (1.0.0, released from GitHub Releases) that connects hardware control surfaces to RME TotalMix FX through its Global OSC interface, plus the libraries and developer tool behind it |
 | Surfaces | Melbourne Instruments Roto-Control first; Novation Launch Control XL 3 and Launch Control 3 second; Mackie Control (MCU) surfaces possibly later |
 | License | MIT (`LICENSE`); not affiliated with or endorsed by RME, Melbourne Instruments, or Novation |
 | Language, tooling | Swift, `swift-tools-version:5.9`; CI uses the `swift:6.0-noble` image on Linux, Swift 6.2 on Windows, and the runner's Xcode on macOS; XCTest |
 | App platform | macOS 13 or later (`platforms: [.macOS(.v13)]`); SwiftUI plus AppKit; no Xcode project; Sparkle 2 for updates |
 | Library platforms | macOS, Linux, and Windows (CI tests all three on every push and pull request) |
-| TotalMix checked | TotalMix FX "2.10 (1)" with a Digiface AES (tests 1–5 in `docs/TOTALMIX-OSC.md`); the second target is an HDSPe MADI FX |
+| TotalMix FX checked | TotalMix FX "2.10 (1)" with a Digiface AES (tests 1–5 in `docs/TOTALMIX-OSC.md`); the second target is an HDSPe MADI FX |
 
 ## 2. Repository map
 
@@ -30,12 +30,12 @@ statement there carries its evidence.
 | `Sources/LaunchControl/` | The Launch Control XL 3's and Launch Control 3's DAW-mode protocol, from Novation's programmer's reference guides, tested on an XL 3: `LaunchControlModel` (the two models: SysEx header byte, controls, port names), `LaunchControlElement` and `LaunchControlMode` (the control map), `LaunchControlOutgoing` (DAW mode, feature controls, colors, positions, the screen), `LaunchControlText`, `LaunchControlEvent` and `LaunchControlParser` |
 | `Sources/LaunchControlDriver/` | `LaunchControlDriver`: both Launch Control models on top of SurfaceCore, as several hub surfaces ("layers") paged together; the XL 3's and the Launch Control 3's layouts, and the Launch Control 3's on an XL 3; `LaunchControlStep` |
 | `Sources/MIDITransport/` | `MIDIConnection`: a CoreMIDI connection on macOS, a placeholder that throws elsewhere; `UniversalPackets`: MIDI 1.0 bytes to and from CoreMIDI's UMP words (Foundation only, tested everywhere) |
-| `Sources/SurfaceCore/` | The surface-neutral core: `SurfaceHub` (the engine: strips, paging, the home submix, holds, pickup, thinning, meters), `MixerMirror` (TotalMix's state), `PerformanceLayout` and `ViewKind`, `SurfaceCapabilities` and `SurfaceMode`, `SurfaceUpdate` and `CoreOutput`, `MeterScale` and `ValueText` |
+| `Sources/SurfaceCore/` | The surface-neutral core: `SurfaceHub` (the engine: strips, paging, the home submix, holds, pickup, thinning, meters), `MixerMirror` (TotalMix FX's state), `PerformanceLayout` and `ViewKind`, `SurfaceCapabilities` and `SurfaceMode`, `SurfaceUpdate` and `CoreOutput`, `MeterScale` and `ValueText` |
 | `Sources/RotoDriver/` | `RotoDriver`: the Roto-Control's MIX mode on top of SurfaceCore (handshake, track sets, knob and switch modes, single-track pages, strips, knobs, lights, meters, value text); `RotoStep` |
-| `Sources/BridgeEngine/` | `BridgeEngine`: TotalMix and a Roto-Control (and a Launch Control, if `BridgeSettings.launchControl` is set: `LaunchControlSetting`) connected through SurfaceCore and the drivers, with the UDP socket, the MIDI ports, and a clock; each side connects on its own and is retried every 3 s (an unplugged Roto-Control is reopened, a silent TotalMix asked for its state again); `BridgeSettings`, `BridgeStatus`, `HomeChoice` (for the app's menu); `SetupChecklist` and `SetupStep` (the setup window's steps, checked from the status); `SetupWatch` (when the setup window opens by itself, and the menu-bar warning mark). Platform code, like the transports it uses |
+| `Sources/BridgeEngine/` | `BridgeEngine`: TotalMix FX and a Roto-Control (and a Launch Control, if `BridgeSettings.launchControl` is set: `LaunchControlSetting`) connected through SurfaceCore and the drivers, with the UDP socket, the MIDI ports, and a clock; each side connects on its own and is retried every 3 s (an unplugged Roto-Control is reopened, a silent TotalMix FX asked for its state again); `BridgeSettings`, `BridgeStatus`, `HomeChoice` (for the app's menu); `SetupChecklist` and `SetupStep` (the setup window's steps, checked from the status); `SetupWatch` (when the setup window opens by itself, and the menu-bar warning mark). Platform code, like the transports it uses |
 | `Sources/UDPTransport/` | `UDPSocket`: POSIX UDP on macOS and Linux; a placeholder that throws on Windows |
 | `Sources/sbdev/` | Developer tool: `monitor`, `send`, `roundtrip`, `curve` (main.swift), `roto` (Roto.swift), `bridge` (Bridge.swift), `midi` (MIDIMonitor.swift), `lcxl` (LaunchControl.swift), and `lcbridge` (LaunchBridge.swift) |
-| `App/PerformanceBridge/` | The menu-bar app (macOS only): `swift run PerformanceBridge` (`--in-port`/`--out-port` override the saved ports), or the bundle from `make-app.sh`. The menu, Setup Guide (opens by itself at first launch, and once per launch for a problem that has never worked with the current settings; the status lines at the top of the menu are dimmed and only report; "Refresh Channels from TotalMix FX" asks for TotalMix's whole state and drops channels its answer leaves out, also done by itself when the Channel Layout tab opens and when TotalMix returns after going quiet, since TotalMix doesn't announce hiding or showing a channel (test 11); a red dot on the menu-bar icon marks a fault (port in use, TotalMix running but silent, a Roto-Control plugged in but not connecting); TotalMix closed or the Roto-Control unplugged is idle and leaves no mark; the icon is dimmed whenever either connection is down, and normal when both are up), About (the icon at 128 points), Settings with two tabs, Connections (TotalMix's host and ports, the hardware controller, one at a time: Roto-Control, Launch Control XL 3, or Launch Control 3, with no port setting, since each model's MIDI ports have fixed names and the engine finds them (Adam, 2026-11-02); Apply, Revert, and Defaults right under those, and below them, for a Launch Control, its send rows' outputs, shown as soon as it is chosen, held by the engine for both models and taking effect at once, connected or not (Adam, 2026-11-02); kept in the user defaults; Adam, 2026-11-01) and Channel Layout (ordering channels; TotalMix FX has a Channel Layout window too, so app text names TotalMix's as "TotalMix FX's own Channel Layout window"); the menu's order follows Apple's HIG (Menus), and "Check for Updates…" when Sparkle is linked |
+| `App/PerformanceBridge/` | The menu-bar app (macOS only): `swift run PerformanceBridge` (`--in-port`/`--out-port` override the saved ports), or the bundle from `make-app.sh`. The menu, Setup Guide (opens by itself at first launch, and once per launch for a problem that has never worked with the current settings; the status lines at the top of the menu are dimmed and only report; "Refresh Channels from TotalMix FX" asks for TotalMix FX's whole state and drops channels its answer leaves out, also done by itself when the Channel Layout tab opens and when TotalMix FX returns after going quiet, since TotalMix FX doesn't announce hiding or showing a channel (test 11); a red dot on the menu-bar icon marks a fault (port in use, TotalMix FX running but silent, a Roto-Control plugged in but not connecting); TotalMix FX closed or the Roto-Control unplugged is idle and leaves no mark; the icon is dimmed whenever either connection is down, and normal when both are up), About (the icon at 128 points), Settings with two tabs, Connections (TotalMix FX's host and ports, the hardware controller, one at a time: Roto-Control, Launch Control XL 3, or Launch Control 3, with no port setting, since each model's MIDI ports have fixed names and the engine finds them (Adam, 2026-11-02); Apply, Revert, and Defaults right under those, and below them, for a Launch Control, its send rows' outputs, shown as soon as it is chosen, held by the engine for both models and taking effect at once, connected or not (Adam, 2026-11-02); kept in the user defaults; Adam, 2026-11-01) and Channel Layout (ordering channels; TotalMix FX has a Channel Layout window too, so app text names TotalMix FX's as "TotalMix FX's own Channel Layout window"); the menu's order follows Apple's HIG (Menus), and "Check for Updates…" when Sparkle is linked |
 | `make-app.sh` | Builds "Performance Bridge.app" with `swiftc` as one module, with Sparkle; signing, notarization, and `--appcast` are the owner's |
 | `Design/AppIcon/` | The app icon and menu-bar glyph: `make_icon.py` (geometry, writes the SVGs), the layered master, the legacy icon set, and its README |
 | `Tests/` | One test target per library |
@@ -46,21 +46,21 @@ statement there carries its evidence.
 
 ## 3. Architecture and what comes next
 
-The app keeps TotalMix's state in a surface-neutral core and drives each control surface through a
+The app keeps TotalMix FX's state in a surface-neutral core and drives each control surface through a
 small driver of its own.
 
 - **SurfaceCore** (`Sources/SurfaceCore/`). The aim is TotalMix FX as a performance mixer, for live use. Channel strips, each with:
   - a knob or fader: level, pan, or a send;
   - a switch: mute, PFL, or solo (off by default);
-  - a name, a color, and a meter. The name is the channel's label if the app gave it one (section 4, recorded exceptions), and otherwise TotalMix's name; playbacks without a label are named "PB 1/2" and so on, since an unnamed playback has its output's hardware name (test 15).
+  - a name, a color, and a meter. The name is the channel's label if the app gave it one (section 4, recorded exceptions), and otherwise TotalMix FX's name; playbacks without a label are named "PB 1/2" and so on, since an unnamed playback has its output's hardware name (test 15).
 
   Around the strips:
-  - two views: sources (inputs and playbacks) and outputs (the assigned monitoring outputs first, then the sends; a monitoring role with nothing assigned shows no strip). The hardware controllers show only the sources (Adam, 2026-11-01: outputs are set up in TotalMix and left alone during a performance); the outputs' order is the order the send controls step through them;
-  - a performance layout, chosen in the app and saved: the order of each view (which TotalMix can't change), whether the first playback starts a new page (blank strips after the inputs), and the labels; channels it doesn't place yet follow in TotalMix's order; the app has no hide setting of its own. Which channels TotalMix hides from this OSC remote (Options → Channel Layout…, or right-click a channel and choose Change Channel Layout) are set only in TotalMix, per OSC controller, under the rule in section 4;
-  - monitoring outputs and sends: the outputs the control room assigns to Main Out, Main Out B, Phones 1–4, and cue are monitoring outputs; every other output TotalMix doesn't hide is a send (the app's text calls monitoring outputs "Control Room" outputs and the rest "Hardware Outputs", as TotalMix FX's window does; Adam, 2026-10-31);
-  - the home submix, which source levels and pans go into: Main Out, followed when Main Out is reassigned in TotalMix's control room. The app's "Mix Output" menu for choosing another was dropped (Adam, 2026-11-01: PFL to the cue output covers previewing); `SurfaceHub.setHomeSubmix` remains for `sbdev`; send knobs reach every other output except Main Out B (it mirrors Main Out whether Speaker B and Link are on or off, tests 10 and 14) and the cue output, control room outputs first (Adam, 2026-10-31: headphone mixes are the ones changed during a performance). Main Out is followed, not fixed;
+  - two views: sources (inputs and playbacks) and outputs (the assigned monitoring outputs first, then the sends; a monitoring role with nothing assigned shows no strip). The hardware controllers show only the sources (Adam, 2026-11-01: outputs are set up in TotalMix FX and left alone during a performance); the outputs' order is the order the send controls step through them;
+  - a performance layout, chosen in the app and saved: the order of each view (which TotalMix FX can't change), whether the first playback starts a new page (blank strips after the inputs), and the labels; channels it doesn't place yet follow in TotalMix FX's order; the app has no hide setting of its own. Which channels TotalMix FX hides from this OSC remote (Options → Channel Layout…, or right-click a channel and choose Change Channel Layout) are set only in TotalMix FX, per OSC controller, under the rule in section 4;
+  - monitoring outputs and sends: the outputs the control room assigns to Main Out, Main Out B, Phones 1–4, and cue are monitoring outputs; every other output TotalMix FX doesn't hide is a send (the app's text calls monitoring outputs "Control Room" outputs and the rest "Hardware Outputs", as TotalMix FX's window does; Adam, 2026-10-31);
+  - the home submix, which source levels and pans go into: Main Out, followed when Main Out is reassigned in TotalMix FX's control room. The app's "Mix Output" menu for choosing another was dropped (Adam, 2026-11-01: PFL to the cue output covers previewing); `SurfaceHub.setHomeSubmix` remains for `sbdev`; send knobs reach every other output except Main Out B (it mirrors Main Out whether Speaker B and Link are on or off, tests 10 and 14) and the cue output, control room outputs first (Adam, 2026-10-31: headphone mixes are the ones changed during a performance). Main Out is followed, not fixed;
   - paging, and a focus mode (one source across all submixes);
-  - the feedback rules: a control the user holds (touched, or moved in the last 250 ms) is not moved by TotalMix and catches up when let go; controls without motors pick up; continuous messages are thinned to one per address per 20 ms; meters update at most 12 times per second.
+  - the feedback rules: a control the user holds (touched, or moved in the last 250 ms) is not moved by TotalMix FX and catches up when let go; controls without motors pick up; continuous messages are thinned to one per address per 20 ms; meters update at most 12 times per second.
 
   `SurfaceHub` is pure: no I/O and no clock, with time passed in.
 - **Capabilities.** Each surface declares what it has, and nothing in SurfaceCore assumes a particular controller:
@@ -69,21 +69,21 @@ small driver of its own.
   - its resolution;
   - its displays.
 - **Drivers**, one per surface:
-  - **RotoDriver** (`Sources/RotoDriver/`): the Roto-Control's SysEx API, with 14-bit motorized knobs. MIX mode drives the channel strips: both track sets show the sources, and switching keeps the page (the second, "MIX-RTN", chosen by pressing both arrow buttons, used to show the outputs; Adam, 2026-11-01); the solo switches are PFL (as TotalMix's Solo is in Live Mode) and the record-arm switches do nothing (the firmware still shows their "ARM REC" label). Sources show their TotalMix color (each of TotalMix's eight colors mapped to a Roto-Control color scheme). PLUGIN mode, for the parts of TotalMix that MIX mode can't reach (e.g., a control-room page to choose the home submix), is left to a 1.x.0 release after 1.0 (Adam, 2026-10-31); until then the driver answers PLUGIN mode with no plugins. The driver is pure, like `SurfaceHub`; the app (or `sbdev bridge`) connects it to `MIDITransport`.
+  - **RotoDriver** (`Sources/RotoDriver/`): the Roto-Control's SysEx API, with 14-bit motorized knobs. MIX mode drives the channel strips: both track sets show the sources, and switching keeps the page (the second, "MIX-RTN", chosen by pressing both arrow buttons, used to show the outputs; Adam, 2026-11-01); the solo switches are PFL (as TotalMix FX's Solo is in Live Mode) and the record-arm switches do nothing (the firmware still shows their "ARM REC" label). Sources show their TotalMix FX color (each of TotalMix FX's eight colors mapped to a Roto-Control color scheme). PLUGIN mode, for the parts of TotalMix FX that MIX mode can't reach (e.g., a control-room page to choose the home submix), is left to a 1.x.0 release after 1.0 (Adam, 2026-10-31); until then the driver answers PLUGIN mode with no plugins. The driver is pure, like `SurfaceHub`; the app (or `sbdev bridge`) connects it to `MIDITransport`.
   - **LaunchControlDriver** (`Sources/LaunchControlDriver/`, on the `LaunchControl` protocol library; chosen in Settings → Connections): the Launch Control XL 3 and Launch Control 3 in DAW mode, laid out with Adam (2026-11-01):
-    - XL 3: faders are level (7-bit, no motor: the device's own pickup holds a fader until it reaches TotalMix's level, with the hub's pickup behind it), on the printed ticks (+6, +3, 0, −6, −10, −20, −40, −60, −oo: TotalMix FX's own marks); the top two encoder rows are sends and the bottom row pan, fixed (Novation's order; Adam, 2026-11-01); Page chooses the top send row's output and Shift + Page the middle row's, each skipping the other's, remembered across launches (`LaunchControlDriver.sendOutputs`); send rows light in their output's color (an output left white in TotalMix: green for a control room output, blue for another); the top buttons are PFL and the bottom mute; on both models mute is orange and PFL yellow, the colors the Roto-Control's firmware gives mute and solo, bright when on and the dimmest shade when off (Adam, 2026-11-02).
+    - XL 3: faders are level (7-bit, no motor: the device's own pickup holds a fader until it reaches TotalMix FX's level, with the hub's pickup behind it), on the printed ticks (+6, +3, 0, −6, −10, −20, −40, −60, −oo: TotalMix FX's own marks); the top two encoder rows are sends and the bottom row pan, fixed (Novation's order; Adam, 2026-11-01); Page chooses the top send row's output and Shift + Page the middle row's, each skipping the other's, remembered across launches (`LaunchControlDriver.sendOutputs`); send rows light in their output's color (an output left white in TotalMix FX: green for a control room output, blue for another); the top buttons are PFL and the bottom mute; on both models mute is orange and PFL yellow, the colors the Roto-Control's firmware gives mute and solo, bright when on and the dimmest shade when off (Adam, 2026-11-02).
     - Launch Control 3: the bottom encoder row is level; the top row is pan or a send, stepped by Page up and down; the buttons are mute, and PFL while Function is held (orange for mute, yellow for PFL; Adam, 2026-11-02, replacing a toggle).
-    - Both, following the panel's labels and Novation's integrations: Track < and > move by eight strips (with Shift, to the first or last page); Page chooses the sends; the strips show only the sources; level and send encoders use the ARC USB wheel's scale (its detents, read in TotalMix: `docs/TOTALMIX-OSC.md`, test 19), with 0 dB at 101 as on the faders; Solo/Arm, Mute/Select (XL 3), Record, Play, and the Novation button are left free (Adam, 2026-11-01: arm and transport for a later DAW connection); both Track buttons together go to the first page, and a presence check asks a silent device for its mode every 5 s and enters DAW mode again if it appears to have restarted (Adam, 2026-11-02); Shift + turn resets an encoder, never raising a level (pan to center, a level above 0 dB down to 0 dB, a send to −oo and back on a second Shift + turn), only after Shift has been held 0.3 s with no Page or Track press (Adam, 2026-11-02; the device gives no direction with Shift held); each control's display shows its channel, function, and value, and the home screen the page's channels and where the send rows go (XL 3) or the top row's and buttons' functions (Launch Control 3).
+    - Both, following the panel's labels and Novation's integrations: Track < and > move by eight strips (with Shift, to the first or last page); Page chooses the sends; the strips show only the sources; level and send encoders use the ARC USB wheel's scale (its detents, read in TotalMix FX: `docs/TOTALMIX-OSC.md`, test 19), with 0 dB at 101 as on the faders; Solo/Arm, Mute/Select (XL 3), Record, Play, and the Novation button are left free (Adam, 2026-11-01: arm and transport for a later DAW connection); both Track buttons together go to the first page, and a presence check asks a silent device for its mode every 5 s and enters DAW mode again if it appears to have restarted (Adam, 2026-11-02); Shift + turn resets an encoder, never raising a level (pan to center, a level above 0 dB down to 0 dB, a send to −oo and back on a second Shift + turn, with Shift released and held again), only after Shift has been held 0.3 s with no Page or Track press (Adam, 2026-11-02; the device gives no direction with Shift held); each control's display shows its channel, function, and value, and the home screen the page's channels and where the send rows go (XL 3) or the top row's and buttons' functions (Launch Control 3).
     - The Launch Control 3's layout can run on an XL 3 (`sbdev lcbridge --layout lc3-sim`). The layouts are flagged for the Tier 1 UI review (efficiency and intuitiveness). Details in section 9 of `docs/LAUNCH-CONTROL-XL3.md` and of `docs/LAUNCH-CONTROL-3.md`.
   - **MackieControl**: later.
 - **Later (version 1.1.0 or after): more than one hardware controller at once** (Adam, 2026-11-02, from the Tier 3 review of that date). One at a time is enough for 1.0. The plan: a list in Settings → Connections with a "Use" checkbox per controller, opt-in only; a Launch Control is never connected automatically, since connecting leaves DAW mode and enters it again (`startBytes`), which would end a DAW's own session with the device.
 - **Later (version 1.1.0 or after): a DAW connection.** The Roto-Control's record-arm switches would arm and disarm tracks, and its transport switches would drive the transport, in the user's DAW, starting with Logic Pro and Bitwig Studio.
-- **Protocol sources.** Each driver's protocol facts go in a `docs/` file of their own, with evidence, as `TOTALMIX-OSC.md` does for TotalMix. The vendors' documents are linked, not committed:
+- **Protocol sources.** Each driver's protocol facts go in a `docs/` file of their own, with evidence, as `TOTALMIX-OSC.md` does for TotalMix FX. The vendors' documents are linked, not committed:
   - Melbourne Instruments' [SysEx and serial API documents and integration code](https://github.com/Melbourne-Instruments/roto_control) (MIT);
   - Novation's [Launch Control XL 3 programmer's reference guide](https://userguides.novationmusic.com/hc/en-gb/articles/27840466285586-About-the-Launch-Control-XL-3-programmer-s-reference-guide).
 - **The app.** A SwiftUI app modeled on pgdata Packer's (`adambier/3rd-wave-tools`):
   - `make-app.sh` compiles every library folder and the app into one module with `swiftc` (not `sbdev`); CI type-checks that build on macOS;
-  - version 0.1.0 until the first release; the build number is the commit count;
+  - version 1.0.0, the first release (Adam, 2026-11-02); the build number is the commit count;
   - Sparkle 2.10.1 is pinned with its SHA-256, and the XPC services are removed;
   - the app is signed with a Developer ID, notarized, and updated through `appcast.xml` on `main`;
   - its icon and menu-bar glyph come from `Design/AppIcon/` (the About window shows the icon at 128 points); the icon's amber, #FFB13D, is the app's accent color, used only when the user's accent color is Multicolor, as Apple's HIG (Color) has it, and the user's own accent color otherwise (Adam, 2026-10-31);
@@ -91,86 +91,86 @@ small driver of its own.
 
 ## 4. Rules (do / don't)
 
-Design rule (Adam, 2026-10-31): **whatever can be configured in TotalMix is configured only
+Design rule (Adam, 2026-10-31): **whatever can be configured in TotalMix FX is configured only
 there.** Performance Bridge reads it over OSC and offers no setting of its own for it (e.g.,
 channel names, colors, which channels a remote sees, the control room's monitoring assignments).
-The app has settings only for what TotalMix can't express, such as the order of channels on a
+The app has settings only for what TotalMix FX can't express, such as the order of channels on a
 surface. The aim is less for the user to think about: one place to set each thing, and nothing to
-keep in step between TotalMix and the app. Where this makes the app's code more complex (e.g.,
-reading a setting from TotalMix instead of asking for it), that cost is accepted.
+keep in step between TotalMix FX and the app. Where this makes the app's code more complex (e.g.,
+reading a setting from TotalMix FX instead of asking for it), that cost is accepted.
 
-The exception (Adam, 2026-10-31): a separate app setting for something TotalMix also configures is
-acceptable when there is a strong case for the surface behaving differently from TotalMix at the
+The exception (Adam, 2026-10-31): a separate app setting for something TotalMix FX also configures is
+acceptable when there is a strong case for the surface behaving differently from TotalMix FX at the
 same time. The case is made, and recorded, before the setting is added.
 
 Recorded exceptions:
 - **Labels** (Adam, 2026-11-01). The app can give any channel a label of its own, shown only on
-  the hardware controllers; a channel without one shows TotalMix's name. The case: TotalMix's names
-  serve TotalMix (routing, the matrix, recall), while a hardware controller's labels serve quick
-  mixing on a small screen; and TotalMix's default playback names repeat its inputs' hardware names
+  the hardware controllers; a channel without one shows TotalMix FX's name. The case: TotalMix FX's names
+  serve TotalMix FX (routing, the matrix, recall), while a hardware controller's labels serve quick
+  mixing on a small screen; and TotalMix FX's default playback names repeat its inputs' hardware names
   ("AES", "SPDIF", …; test 15), which Global OSC can't tell from names the user gave. A playback
   without a label keeps showing "PB 1/2". The UI and its wording get a close look in the UI review
   and Adam's own (Adam, 2026-11-01).
 
-Safety interlock, decided but not yet buildable (Adam, 2026-11-02): while TotalMix's "Cue/PFL to" is
+Safety interlock, decided but not yet buildable (Adam, 2026-11-02): while TotalMix FX's "Cue/PFL to" is
 Main (its default), PFL would replace what Main Out plays, which on stage is what the audience
-hears, so the hardware controllers should not turn PFL on then. TotalMix doesn't report that
+hears, so the hardware controllers should not turn PFL on then. TotalMix FX doesn't report that
 setting over OSC (`docs/TOTALMIX-OSC.md`, test 21), so the app can't tell; the Setup Guide has a
 note instead. Build the interlock if a way to read the setting is found (read-only; e.g.,
-TotalMix's settings file).
+TotalMix FX's settings file).
 
-Hidden channels (Adam, 2026-10-31; revised the same day). Hiding is done only in TotalMix, where
+Hidden channels (Adam, 2026-10-31; revised the same day). Hiding is done only in TotalMix FX, where
 Channel Layout can hide a channel from each OSC controller separately, and from the Mixer/Matrix and
 the other controllers. The app has no hide setting of its own, so there is nothing to keep in step.
-A channel that TotalMix hides from an OSC Controller (Channel Layout, "Hide Channel in") is not shown on any surface that uses that controller, and the app does not
+A channel that TotalMix FX hides from an OSC Controller (Channel Layout, "Hide Channel in") is not shown on any surface that uses that controller, and the app does not
 show it greyed out or offer to change it: greyed-out items take up room and cannot be acted on. The
-layout shows a note that channels hidden in TotalMix are not shown. The app cannot detect hidden
+layout shows a note that channels hidden in TotalMix FX are not shown. The app cannot detect hidden
 channels from OSC: a hidden channel sends nothing, as a missing one does (`docs/TOTALMIX-OSC.md`,
 test 8). So there is no warning, and the note stands alone.
 
-Documentation rule for TotalMix (Adam, 2026-10-31): TotalMix's menus and configuration screens are
-complex, so any text that tells the user where a TotalMix setting is (docs, app help, notes) gives
-the full path: each menu and submenu, the setting's label as TotalMix shows it, and the source for
+Documentation rule for TotalMix FX (Adam, 2026-10-31): TotalMix FX's menus and configuration screens are
+complex, so any text that tells the user where a TotalMix FX setting is (docs, app help, notes) gives
+the full path: each menu and submenu, the setting's label as TotalMix FX shows it, and the source for
 that location. Where the location has not been checked on a screen, say so.
 
 Do:
 
 - Keep `OSCCodec`, `TotalMixOSC`, `RotoControl`, `LaunchControl`, `SurfaceCore`, `RotoDriver`, `LaunchControlDriver`, and the planned drivers Foundation-only, UI-free, and building on Linux, macOS, and Windows. Platform code (CoreMIDI, sockets, SwiftUI) stays in `UDPTransport`, `MIDITransport`, or the app.
 - Write cross-library imports as `#if canImport(OSCCodec)` / `import OSCCodec` / `#endif`. The app build will compile every folder as one module, and there such an import must compile out. No two top-level declarations in the library folders may share a name.
-- Put any new or changed claim about what TotalMix does in `docs/TOTALMIX-OSC.md` with its evidence: RME's document and its revision, or a test naming the TotalMix version and the interface. Evidence goes in a named footnote (`[^rme-doc]`, `[^test-7]`), as pgdata Packer's `docs/FORMATS.md` does; each protocol doc's first section says how sure each statement is and defines its footnotes. Mark inferences as inferences, in the code comment as well as the document. Do the same for the surfaces in their own documents.
+- Put any new or changed claim about what TotalMix FX does in `docs/TOTALMIX-OSC.md` with its evidence: RME's document and its revision, or a test naming the TotalMix FX version and the interface. Evidence goes in a named footnote (`[^rme-doc]`, `[^test-7]`), as pgdata Packer's `docs/FORMATS.md` does; each protocol doc's first section says how sure each statement is and defines its footnotes. Mark inferences as inferences, in the code comment as well as the document. Do the same for the surfaces in their own documents.
 - Give every `public` declaration a `///` doc comment.
 - Add a test for anything new, and run the tests (section 5) before proposing a change.
 
 Don't:
 
 - Don't commit vendor documents (RME's protocol document, Melbourne Instruments' or Novation's PDFs) or text copied from them. Describe what this project relies on in its own words, and link the source.
-  Screenshots of TotalMix FX's windows are the exception (Adam, 2026-10-31): they may be published. They live in `App/PerformanceBridge/Resources/` (`totalmix-*.png`, Retina captures), where the Setup Guide shows them and `docs/SETUP.md` links to them. Take them from TotalMix itself, controller 1 with ports 7001 and 9001, and replace personal details such as the Mac's name ("your-mac.local").
+  Screenshots of TotalMix FX's windows are the exception (Adam, 2026-10-31): they may be published. They live in `App/PerformanceBridge/Resources/` (`totalmix-*.png`, Retina captures), where the Setup Guide shows them and `docs/SETUP.md` links to them. Take them from TotalMix FX itself, controller 1 with ports 7001 and 9001, and replace personal details such as the Mac's name ("your-mac.local").
 - Don't paste vendor code. Melbourne Instruments' integrations are MIT-licensed, so anything adapted from them keeps their copyright notice in the file.
 - Don't add dependencies to the libraries.
 - Don't use "TotalMix", "RME", "Roto-Control", or "Launch Control" in the app's name. Use them only to describe what it works with.
 - Don't touch signing, notarization, `appcast.xml`, or the Sparkle keys. The release flow is the owner's.
-- Never write to another app's preferences or files (Adam, 2026-10-31). Reading TotalMix's files is always fine (Adam, 2026-10-31): its app bundle (e.g., its version), and its settings where they can be found; where TotalMix keeps them, and whether it writes them as they change, still needs a test on the Mac.
+- Never write to another app's preferences or files (Adam, 2026-10-31). Reading TotalMix FX's files is always fine (Adam, 2026-10-31): its app bundle (e.g., its version), and its settings where they can be found; where TotalMix FX keeps them, and whether it writes them as they change, still needs a test on the Mac.
 
 ## 5. How to verify
 
 - **Tests on Linux and Windows:** `swift test`.
 - **Tests on a Mac:** `PERFORMANCE_BRIDGE_TESTS=1 swift test`. This needs full Xcode, because XCTest is not part of the Command Line Tools.
-- **Against TotalMix:**
-  - `swift run sbdev monitor --sendall` prints what TotalMix sends.
+- **Against TotalMix FX:**
+  - `swift run sbdev monitor --sendall` prints what TotalMix FX sends.
   - `swift run sbdev send /input/0/mute 1` sends one message.
-  - `swift run sbdev roundtrip /output/8/faderlin 0.5` sends one message and prints what TotalMix sends back in the next second. Stop `monitor` first; both need the outgoing port.
-  - For TotalMix's development ports, add `--in-port 7004 --out-port 9004`.
+  - `swift run sbdev roundtrip /output/8/faderlin 0.5` sends one message and prints what TotalMix FX sends back in the next second. Stop `monitor` first; both need the outgoing port.
+  - For TotalMix FX's development ports, add `--in-port 7004 --out-port 9004`.
   - `swift run sbdev curve -6dB` and `swift run sbdev curve --table` check the fader curve offline.
 - **Against a Roto-Control** (macOS):
   - `swift run sbdev roto ports` lists the MIDI ports.
   - `swift run sbdev roto` connects, runs the handshake, prints everything the Roto-Control sends, and takes commands (`help` lists them). `--type`, `--setup none`, and `--raw` are for the tests in `docs/ROTO-CONTROL.md` section 8.
 - **Against a Launch Control XL 3** (macOS): `swift run sbdev lcxl` puts it in DAW mode, prints what it sends, and takes commands (`help` lists them); the tests are in `docs/LAUNCH-CONTROL-XL3.md` section 8.
-- **TotalMix and a Launch Control together** (macOS): `swift run sbdev lcbridge` runs SurfaceCore and the Launch Control driver (`--layout xl3`, `lc3`, or `lc3-sim` for the Launch Control 3's layout on an XL 3; `--help` lists the rest). In the app, choose it in Settings → Connections; `swift run PerformanceBridge --launch-control xl3` (or `lc3`, `lc3-sim`; also `--launch-control-port`; `LaunchControlSetting(arguments:)`) overrides that, e.g., for the simulation.
-- **TotalMix and a Roto-Control together** (macOS): `swift run sbdev bridge --in-port 7004 --out-port 9004` runs SurfaceCore and the Roto-Control driver as the app does, and prints what goes to TotalMix (`help` lists the commands).
+- **TotalMix FX and a Launch Control together** (macOS): `swift run sbdev lcbridge` runs SurfaceCore and the Launch Control driver (`--layout xl3`, `lc3`, or `lc3-sim` for the Launch Control 3's layout on an XL 3; `--help` lists the rest). In the app, choose it in Settings → Connections; `swift run PerformanceBridge --launch-control xl3` (or `lc3`, `lc3-sim`; also `--launch-control-port`; `LaunchControlSetting(arguments:)`) overrides that, e.g., for the simulation.
+- **TotalMix FX and a Roto-Control together** (macOS): `swift run sbdev bridge --in-port 7004 --out-port 9004` runs SurfaceCore and the Roto-Control driver as the app does, and prints what goes to TotalMix FX (`help` lists the commands).
 
 ## 6. House style for text (README, docs, DocC, app strings)
 
-- **Names.** "TotalMix FX" at first mention in a document and "TotalMix" after. "RME", "Melbourne Instruments", and "Novation" in full. "Roto-Control" and "Launch Control XL 3" as the makers write them.
+- **Names.** "TotalMix FX" always, never the short "TotalMix" (Adam, 2026-11-02), except in code identifiers (e.g., `TotalMixOSC`) and in TotalMix FX's own labels that use it (e.g., its "TotalMix 1.96" compatibility mode). "RME", "Melbourne Instruments", and "Novation" in full. "Roto-Control" and "Launch Control XL 3" as the makers write them.
 - **Claims.** Standing behavior in the present tense. Single observations as "has been observed to …". Inferences said to be inferences. Never claim more than the evidence supports.
 - **Spelling and punctuation.** The serial (Oxford) comma. "e.g.," or "for example" before parenthetical examples. American spelling throughout, in code comments and identifiers too.
 - **Words.** Plain, short words, and one term for one thing: channel, submix, mixer node, fader position, gain, strip, surface, driver.

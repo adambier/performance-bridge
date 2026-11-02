@@ -72,11 +72,11 @@ public struct LaunchControlSetting: Equatable, Sendable {
 
 /// Where the engine finds TotalMix FX and the Roto-Control.
 public struct BridgeSettings: Equatable, Sendable {
-    /// TotalMix's host and ports.
+    /// TotalMix FX's host and ports.
     public var endpoint: TotalMixEndpoint
     /// The name, or part of the name, of the Roto-Control's MIDI ports.
     public var rotoPortName: String
-    /// The home submix's output channel (0-based), or `nil` for TotalMix's Main Out.
+    /// The home submix's output channel (0-based), or `nil` for TotalMix FX's Main Out.
     public var homeSubmix: Int?
     /// Whether the first playback starts a new page (`PerformanceLayout.playbacksOnNewPage`).
     public var playbacksOnNewPage = false
@@ -91,11 +91,11 @@ public struct BridgeSettings: Equatable, Sendable {
     /// Whether to connect the Roto-Control. The app uses one hardware controller at a time (Adam,
     /// 2026-11-01), so it turns this off when a Launch Control is chosen.
     public var rotoEnabled = true
-    /// How often the engine tries again to open TotalMix's port or the Roto-Control's MIDI ports
+    /// How often the engine tries again to open TotalMix FX's port or the Roto-Control's MIDI ports
     /// while either is not open, in seconds.
     public var retryInterval: Double = 3
 
-    /// Settings with TotalMix's default ports, the Roto-Control's usual port name, Main Out as the
+    /// Settings with TotalMix FX's default ports, the Roto-Control's usual port name, Main Out as the
     /// home submix, and a retry every 3 seconds.
     public init(endpoint: TotalMixEndpoint = .standard, rotoPortName: String = "Roto", homeSubmix: Int? = nil,
                 playbacksOnNewPage: Bool = false, retryInterval: Double = 3) {
@@ -111,7 +111,7 @@ public struct BridgeSettings: Equatable, Sendable {
 public struct HomeChoice: Equatable, Hashable, Sendable {
     /// The output channel, 0-based (the left channel of a stereo pair).
     public var output: Int
-    /// The output's name in TotalMix, or "Output n" until TotalMix has sent it.
+    /// The output's name in TotalMix FX, or "Output n" until TotalMix FX has sent it.
     public var name: String
     /// The monitoring roles assigned to it (e.g., Main Out, Phones 1); empty for other outputs.
     public var roles: [MonitoringRole]
@@ -123,7 +123,7 @@ public struct LayoutItem: Equatable, Sendable {
     public var channel: ChannelRef
     /// The name a strip shows (see `SurfaceHub.stripName`): the label if there is one.
     public var name: String
-    /// The name a strip shows without a label: TotalMix's name, or "PB 1/2" for a playback.
+    /// The name a strip shows without a label: TotalMix FX's name, or "PB 1/2" for a playback.
     public var defaultName: String
     /// The label chosen in the app, if any.
     public var label: String?
@@ -141,13 +141,13 @@ public struct LayoutItem: Equatable, Sendable {
 public struct BridgeStatus: Equatable, Sendable {
     /// Whether the engine is running.
     public var running = false
-    /// Whether something has come from TotalMix in the last `BridgeEngine.totalMixTimeout` seconds.
+    /// Whether something has come from TotalMix FX in the last `BridgeEngine.totalMixTimeout` seconds.
     public var totalMixAnswering = false
     /// Whether the engine uses a Roto-Control (`BridgeSettings.rotoEnabled`).
     public var rotoEnabled = true
     /// Whether the Roto-Control has completed the handshake.
     public var rotoConnected = false
-    /// Whether TotalMix's outgoing port is open (another program, such as `sbdev bridge`, may have
+    /// Whether TotalMix FX's outgoing port is open (another program, such as `sbdev bridge`, may have
     /// it).
     public var listening = false
     /// Whether the Roto-Control's MIDI ports are open (it is plugged in), handshake or not.
@@ -162,18 +162,18 @@ public struct BridgeStatus: Equatable, Sendable {
     public var launchControlLayout: LaunchControlModel?
     /// The output each send row of each Launch Control layout feeds now (XL 3: top and middle rows;
     /// Launch Control 3: the top row, `nil` for pan), whether or not a device is connected, from the
-    /// send targets TotalMix has shown.
+    /// send targets TotalMix FX has shown.
     public var launchControlSends: [LaunchControlModel: [Int?]] = [:]
     /// The outputs the send controls step through, in order (`SurfaceHub.sendTargets`), with their
     /// names as the strips show them, for choosing a send row's output.
     public var sendTargets: [HomeChoice] = []
-    /// Whether TotalMix has reported its Mute Master off: mutes are then only selected and don't
-    /// silence (Adam, 2026-11-02). False until TotalMix has reported it.
+    /// Whether TotalMix FX has reported its Mute Master off: mutes are then only selected and don't
+    /// silence (Adam, 2026-11-02). False until TotalMix FX has reported it.
     public var muteMasterOff = false
-    /// How many channels TotalMix has described (named or set) since the engine started: more than
+    /// How many channels TotalMix FX has described (named or set) since the engine started: more than
     /// zero once it has answered `/sendall` with its channels, not only its status.
     public var channelCount = 0
-    /// Whether TotalMix has sent any level (meter) message since the engine started. It sends
+    /// Whether TotalMix FX has sent any level (meter) message since the engine started. It sends
     /// levels only with "Send Level Data" on, and, per RME's protocol document, only when they
     /// change, so a silent mixer may send none.
     public var levelsSeen = false
@@ -183,10 +183,10 @@ public struct BridgeStatus: Equatable, Sendable {
     public var playbacksOnNewPage = false
     /// The monitoring outputs, in output order, for choosing the home submix.
     public var monitoringOutputs: [HomeChoice] = []
-    /// The other outputs TotalMix shows over OSC, in the layout's order, for choosing any output as
+    /// The other outputs TotalMix FX shows over OSC, in the layout's order, for choosing any output as
     /// the home submix.
     public var otherOutputs: [HomeChoice] = []
-    /// What the engine can't open yet (TotalMix's port, the Roto-Control's MIDI ports, or both),
+    /// What the engine can't open yet (TotalMix FX's port, the Roto-Control's MIDI ports, or both),
     /// in full, one line each, for a log or a tooltip; `nil` when both are open. The engine keeps
     /// trying. `listening` and `rotoFound` say the same in short.
     public var error: String?
@@ -199,17 +199,17 @@ public struct BridgeStatus: Equatable, Sendable {
 /// MIDI ports, and a clock. This is what the app runs; `sbdev bridge` does the same with test
 /// commands of its own.
 ///
-/// TotalMix and the Roto-Control connect independently: while either can't be opened, the engine
+/// TotalMix FX and the Roto-Control connect independently: while either can't be opened, the engine
 /// tries again every `BridgeSettings.retryInterval` seconds, and it notices a Roto-Control that is
-/// unplugged and opens it again when it comes back. When TotalMix falls silent, the engine asks it
-/// for its state until it answers, so a restarted TotalMix is mirrored again.
+/// unplugged and opens it again when it comes back. When TotalMix FX falls silent, the engine asks it
+/// for its state until it answers, so a restarted TotalMix FX is mirrored again.
 ///
 /// Every change happens with a lock held. Callbacks (`onLog`, `onStatus`) are called with the lock
 /// released, on whatever thread caused them. MIDI ports are opened and closed with the lock
 /// released, since CoreMIDI may wait for a delivery in progress, and a delivery waits for the lock.
 public final class BridgeEngine: @unchecked Sendable {
-    /// How long TotalMix may stay silent before `BridgeStatus.totalMixAnswering` turns false, in
-    /// seconds. TotalMix sends its status about once a second when "Send status" is on
+    /// How long TotalMix FX may stay silent before `BridgeStatus.totalMixAnswering` turns false, in
+    /// seconds. TotalMix FX sends its status about once a second when "Send status" is on
     /// (docs/TOTALMIX-OSC.md); without it, a quiet mixer also looks silent.
     public static let totalMixTimeout: Double = 5
 
@@ -269,9 +269,9 @@ public final class BridgeEngine: @unchecked Sendable {
 
     private var now: Double { Date().timeIntervalSince(startDate) }
 
-    /// Starts the engine: opens TotalMix's port and the Roto-Control's MIDI ports, asks TotalMix
+    /// Starts the engine: opens TotalMix FX's port and the Roto-Control's MIDI ports, asks TotalMix FX
     /// for its state, and starts the Roto-Control's handshake and the clock. Neither side has to be
-    /// there: what can't be opened (for example, TotalMix's port while another program, such as
+    /// there: what can't be opened (for example, TotalMix FX's port while another program, such as
     /// `sbdev bridge`, has it, or a Roto-Control that isn't plugged in) is named in `status.error`
     /// and tried again every `BridgeSettings.retryInterval` seconds.
     public func start() {
@@ -284,7 +284,7 @@ public final class BridgeEngine: @unchecked Sendable {
         if settings.playbacksOnNewPage { layout.playbacksOnNewPage = true }
         if layout != hub.layout { dispatch(hub.setLayout(layout, now: now)) }
         lock.unlock()
-        log("Started: TotalMix at \(settings.endpoint.host), sending to port \(settings.endpoint.incomingPort), listening on \(settings.endpoint.outgoingPort)")
+        log("Started: TotalMix FX at \(settings.endpoint.host), sending to port \(settings.endpoint.incomingPort), listening on \(settings.endpoint.outgoingPort)")
         openSocketIfDue(force: true)
         openMIDIIfDue(force: true)
         openLaunchControlIfDue(force: true)
@@ -329,7 +329,7 @@ public final class BridgeEngine: @unchecked Sendable {
 
     // MARK: Connections
 
-    /// Opens TotalMix's port if it isn't open and a try is due, then asks TotalMix for its state.
+    /// Opens TotalMix FX's port if it isn't open and a try is due, then asks TotalMix FX for its state.
     private func openSocketIfDue(force: Bool = false) {
         lock.lock()
         defer { lock.unlock() }
@@ -496,7 +496,7 @@ public final class BridgeEngine: @unchecked Sendable {
         return makeStatus()
     }
 
-    /// Makes `output` (0-based) the home submix, or TotalMix's Main Out for `nil`.
+    /// Makes `output` (0-based) the home submix, or TotalMix FX's Main Out for `nil`.
     public func setHomeSubmix(_ output: Int?) {
         lock.lock()
         dispatch(hub.setHomeSubmix(output, now: now))
@@ -520,7 +520,7 @@ public final class BridgeEngine: @unchecked Sendable {
     }
 
     /// Sets the label the hardware controllers show for `ref`; an empty or `nil` text removes it, so
-    /// the channel shows TotalMix's name again (`PerformanceLayout.withLabel`).
+    /// the channel shows TotalMix FX's name again (`PerformanceLayout.withLabel`).
     public func setLabel(_ text: String?, for ref: ChannelRef) {
         lock.lock()
         let layout = hub.layout.withLabel(text, for: ref)
@@ -547,7 +547,7 @@ public final class BridgeEngine: @unchecked Sendable {
     }
 
     /// The channels of a view for the layout editor, in the order the surfaces show them.
-    /// Channels hidden from this OSC remote in TotalMix are not here.
+    /// Channels hidden from this OSC remote in TotalMix FX are not here.
     public func layoutItems(_ view: ViewKind) -> [LayoutItem] {
         lock.lock()
         defer { lock.unlock() }
@@ -559,7 +559,7 @@ public final class BridgeEngine: @unchecked Sendable {
         }
     }
 
-    /// Whether a view shows its channels in TotalMix's own order
+    /// Whether a view shows its channels in TotalMix FX's own order
     /// (`PerformanceLayout.isTotalMixOrder`), for hiding Restore TotalMix FX Order when there is
     /// nothing to restore.
     public func isTotalMixOrder(_ view: ViewKind) -> Bool {
@@ -597,9 +597,9 @@ public final class BridgeEngine: @unchecked Sendable {
         return rows.choices
     }
 
-    /// Refreshes the channels from TotalMix (`SurfaceHub.refreshChannels`): asks for its whole
+    /// Refreshes the channels from TotalMix FX (`SurfaceHub.refreshChannels`): asks for its whole
     /// state again and drops channels its answer leaves out, so channels hidden or shown in
-    /// TotalMix since the last refresh leave or join the surfaces.
+    /// TotalMix FX since the last refresh leave or join the surfaces.
     public func refresh() {
         lock.lock()
         dispatch(hub.refreshChannels(now: now))
@@ -655,7 +655,7 @@ public final class BridgeEngine: @unchecked Sendable {
         checkLaunchControlIfDue()
         openLaunchControlIfDue()
         lock.lock()
-        // TotalMix has gone quiet (quit, restarted, or OSC turned off): refresh the channels, asking
+        // TotalMix FX has gone quiet (quit, restarted, or OSC turned off): refresh the channels, asking
         // until it answers, so the mirror is whole and current again when it comes back.
         let answering = lastFromTotalMix.map { now - $0 < Self.totalMixTimeout } ?? false
         if totalMixWasAnswering, !answering { dispatch(hub.refreshChannels(now: now)) }
@@ -723,7 +723,9 @@ public final class BridgeEngine: @unchecked Sendable {
             let name = hub.layout.label(for: ref) ?? hub.mirror.channels[ref]?.name ?? "Output \(output + 1)"
             return HomeChoice(output: output, name: name, roles: [])
         }
-        status.muteMasterOff = hub.mirror.muteMaster == false
+        // Only while TotalMix FX answers: a closed TotalMix FX shows no stale warning (review of
+        // 2026-11-02).
+        status.muteMasterOff = status.totalMixAnswering && hub.mirror.muteMaster == false
         status.channelCount = hub.mirror.channels.count
         status.levelsSeen = levelsSeen
         status.homeSubmix = hub.homeSubmix
@@ -748,7 +750,7 @@ public final class BridgeEngine: @unchecked Sendable {
     }
 
     /// The outputs of a mirror that are not monitoring outputs, in the layout's order. Outputs hidden
-    /// from this OSC remote in TotalMix are left out.
+    /// from this OSC remote in TotalMix FX are left out.
     public static func otherChoices(_ mirror: MixerMirror, layout: PerformanceLayout) -> [HomeChoice] {
         let monitoring = mirror.monitoringOutputs
         return layout.channels(.outputs, in: mirror).map(\.channel)
@@ -779,7 +781,7 @@ public final class BridgeEngine: @unchecked Sendable {
         logs.forEach(log)
         guard changed else { return }
         if status.totalMixAnswering != previous.totalMixAnswering {
-            log(status.totalMixAnswering ? "TotalMix is answering" : "No answer from TotalMix for \(Int(Self.totalMixTimeout)) s")
+            log(status.totalMixAnswering ? "TotalMix FX is answering" : "No answer from TotalMix FX for \(Int(Self.totalMixTimeout)) s")
         }
         if status.rotoConnected != previous.rotoConnected {
             log(status.rotoConnected ? "Roto-Control connected" : "Roto-Control disconnected")

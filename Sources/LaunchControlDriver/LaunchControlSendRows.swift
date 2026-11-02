@@ -10,7 +10,7 @@ import LaunchControl
 /// The outputs a layout's send rows feed, by output channel (0-based): XL 3, two rows, top first;
 /// Launch Control 3, one row, the top row, where `nil` means pan. On the XL 3 `nil` means "the
 /// first send target the other row isn't using". A choice that isn't a send target now (e.g.,
-/// hidden in TotalMix) is kept, and the row uses another until it comes back.
+/// hidden in TotalMix FX) is kept, and the row uses another until it comes back.
 public struct LaunchControlSendRows: Equatable, Sendable {
     /// The layout the rows belong to.
     public let layout: LaunchControlModel

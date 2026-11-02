@@ -1,4 +1,4 @@
-// sbdev bridge: runs SurfaceCore and the Roto-Control driver between TotalMix and a Roto-Control,
+// sbdev bridge: runs SurfaceCore and the Roto-Control driver between TotalMix FX and a Roto-Control,
 // as the app will, for trying them on the hardware before the app exists.
 
 import Foundation
@@ -13,40 +13,40 @@ import RotoDriver
 let bridgeUsage = """
     Usage:
       sbdev bridge [--host H] [--in-port P] [--out-port P] [--port NAME] [--home N] [--verbose]
-          Connects TotalMix and a Roto-Control through SurfaceCore and the Roto-Control driver,
-          as the app will. Prints what is sent to TotalMix, the SysEx messages in both directions,
-          and the names, colors, and control-room settings TotalMix sends, with the time since
-          starting; --verbose also prints everything else TotalMix sends (not /level or
+          Connects TotalMix FX and a Roto-Control through SurfaceCore and the Roto-Control driver,
+          as the app will. Prints what is sent to TotalMix FX, the SysEx messages in both directions,
+          and the names, colors, and control-room settings TotalMix FX sends, with the time since
+          starting; --verbose also prints everything else TotalMix FX sends (not /level or
           /status) and every MIDI message to the Roto-Control. Then reads commands from the
           keyboard (type `help`).
-          --host, --in-port, and --out-port are TotalMix's, as for monitor. --port names the
+          --host, --in-port, and --out-port are TotalMix FX's, as for monitor. --port names the
           Roto-Control's MIDI ports (default "Roto"). --home is the home submix's output number,
-          counting from 1 as TotalMix's window does (default: TotalMix's Main Out).
-          Meters need "Send Level Data" on in TotalMix's OSC settings. Stop sbdev monitor
+          counting from 1 as TotalMix FX's window does (default: TotalMix FX's Main Out).
+          Meters need "Send Level Data" on in TotalMix FX's OSC settings. Stop sbdev monitor
           first: both need the outgoing port.
     """
 
 let bridgeCommandHelp = """
     Commands:
-      home N | home main   the home submix: output N (from 1), or TotalMix's Main Out
+      home N | home main   the home submix: output N (from 1), or TotalMix FX's Main Out
       solo on | solo off   allow or forbid solo on the switches (off at the start)
       menu TEXT            test: send SET CURRENT TRACK NAME with TEXT, to see where it shows
       color exact          test: exact colors (SET TRACK COLOUR) on every strip
       color table          back to the color schemes alone
-      color N RRGGBB       test: set TotalMix color N (1-8) to an RGB color, and show exact colors
-      color tune N         test: tune TotalMix color N with knobs 1-3 (hue, saturation,
+      color N RRGGBB       test: set TotalMix FX color N (1-8) to an RGB color, and show exact colors
+      color tune N         test: tune TotalMix FX color N with knobs 1-3 (hue, saturation,
                            brightness), watching the screens; the knobs leave the mixer alone
       color done           stop tuning: the knobs go back to the mixer
       color                list the exact colors
-      scheme tune N        test: choose the color scheme (0-82) for TotalMix color N with knob 1,
+      scheme tune N        test: choose the color scheme (0-82) for TotalMix FX color N with knob 1,
                            watching the screens; the knobs leave the mixer alone
       scheme done          stop: the knobs go back to the mixer
-      scheme N S           use scheme S for TotalMix color N
-      scheme               list the schemes for TotalMix's colors
+      scheme N S           use scheme S for TotalMix FX color N
+      scheme               list the schemes for TotalMix FX's colors
       swatch S S ...       test: show color schemes S side by side on the first screens
       swatch done          draw the strips again
       pbpage on | pbpage off   start the first playback on a new page, or not
-      sendall              ask TotalMix for its state again
+      sendall              ask TotalMix FX for its state again
       status               the mode, the home submix, the send targets, and the strips
       quit
     """
@@ -96,10 +96,10 @@ final class BridgeSession: @unchecked Sendable {
     private var socket: UDPSocket?
     private var midi: MIDIConnection?
     private var oscDecodeErrors = 0
-    /// The TotalMix color being tuned with knobs 1–3, and its hue (0–360), saturation, and
+    /// The TotalMix FX color being tuned with knobs 1–3, and its hue (0–360), saturation, and
     /// brightness (0–1).
     private var tuning: (index: Int, hsv: HSV)?
-    /// The TotalMix color whose color scheme is being chosen with knob 1, and the scheme.
+    /// The TotalMix FX color whose color scheme is being chosen with knob 1, and the scheme.
     private var schemeTuning: (index: Int, scheme: UInt8)?
     /// SET TRACK COLOUR messages waiting to go to the Roto-Control, one per `colorGap`. Paced since
     /// run 18, when the freezes were thought to come from bursts; they are now thought to have
@@ -130,7 +130,7 @@ final class BridgeSession: @unchecked Sendable {
         } catch {
             fail("\(error)")
         }
-        log("TotalMix at \(options.endpoint.host), sending to port \(options.endpoint.incomingPort), listening on \(options.endpoint.outgoingPort). Roto-Control: \"\(midi!.source.name)\". Type `help` for commands.")
+        log("TotalMix FX at \(options.endpoint.host), sending to port \(options.endpoint.incomingPort), listening on \(options.endpoint.outgoingPort). Roto-Control: \"\(midi!.source.name)\". Type `help` for commands.")
         socket?.startReceiving { [weak self] bytes, _ in self?.fromTotalMix(bytes) }
         dispatch(hub.addSurface(driver.id, capabilities: RotoDriver.capabilities, now: now))
         if let home = options.home { dispatch(hub.setHomeSubmix(home, now: now)) }
@@ -165,7 +165,7 @@ final class BridgeSession: @unchecked Sendable {
                 settingsChange = message.address.hasPrefix("/controlroom/")
             }
             if settingsChange || (options.verbose && !message.address.hasPrefix("/level") && !message.address.hasPrefix("/status")) {
-                log("← TotalMix \(message.address) \(message.arguments.map(describe).joined(separator: " "))")
+                log("← TotalMix FX \(message.address) \(message.arguments.map(describe).joined(separator: " "))")
             }
             dispatch(hub.handle(event, now: now))
         }
@@ -315,7 +315,7 @@ final class BridgeSession: @unchecked Sendable {
             } catch {
                 log("Could not send \(message.address): \(error)")
             }
-            log("→ TotalMix \(message.address) \(message.arguments.map(describe).joined(separator: " "))")
+            log("→ TotalMix FX \(message.address) \(message.arguments.map(describe).joined(separator: " "))")
         }
         for (id, updates) in output.updates where id == driver.id {
             sendToRoto(driver.render(updates, hub: hub, now: now))
@@ -408,7 +408,7 @@ final class BridgeSession: @unchecked Sendable {
             log("→ Roto SET CURRENT TRACK NAME \"\(text)\"")
         case "color":
             // A test of exact colors: does resending all eight screens keep them from sticking,
-            // and how do TotalMix's own colors look on the screens? (docs/ROTO-CONTROL.md, test 4)
+            // and how do TotalMix FX's own colors look on the screens? (docs/ROTO-CONTROL.md, test 4)
             if words.count == 3, words[1] == "tune", let index = Int(words[2]), (1...8).contains(index) {
                 startTuning(index)
                 return true
@@ -490,7 +490,7 @@ final class BridgeSession: @unchecked Sendable {
                 let name = strip.info.map { "\($0.name) (\($0.channel))" } ?? "blank"
                 log("  strip \(index + 1): \(name); knob \(strip.knobTarget.map { "\($0)" } ?? "none"); switch \(strip.switchTarget.map { "\($0)" } ?? "none")")
             }
-            if oscDecodeErrors > 0 { log("Packets from TotalMix that were not OSC: \(oscDecodeErrors)") }
+            if oscDecodeErrors > 0 { log("Packets from TotalMix FX that were not OSC: \(oscDecodeErrors)") }
         default:
             print("Unknown command. Type `help`.")
         }
@@ -529,7 +529,7 @@ func describe(_ mode: SurfaceMode) -> String {
     }
 }
 
-/// TotalMix's color names, by index from 1.
+/// TotalMix FX's color names, by index from 1.
 let colorNames = ["white", "grey", "orange", "red", "blue", "green", "yellow", "pink"]
 
 /// A color as hue (0–360), saturation, and brightness (0–1), for tuning with knobs.

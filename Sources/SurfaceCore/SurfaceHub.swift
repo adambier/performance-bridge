@@ -6,31 +6,31 @@ import OSCCodec
 import TotalMixOSC
 #endif
 
-/// The surface-neutral core: TotalMix's state, the surfaces' strips, and the rules between them.
+/// The surface-neutral core: TotalMix FX's state, the surfaces' strips, and the rules between them.
 ///
-/// The hub does no input or output and reads no clock. The app passes in what TotalMix sends and
+/// The hub does no input or output and reads no clock. The app passes in what TotalMix FX sends and
 /// what the surfaces' drivers report, with the time in seconds, and sends on what each call
-/// returns: messages for TotalMix and updates for each surface. The app also calls `tick(now:)`
+/// returns: messages for TotalMix FX and updates for each surface. The app also calls `tick(now:)`
 /// often (e.g., every 10 ms), for thinned messages, meters, and controls let go.
 public struct SurfaceHub: Sendable {
     /// The shortest time between two meter updates of one strip, in seconds (12 per second).
     public static let meterInterval: Double = 1.0 / 12
-    /// How long to wait for TotalMix to answer `/sendall` before asking again, in seconds.
-    /// TotalMix has been observed to leave a `/sendall` unanswered while still sending status
+    /// How long to wait for TotalMix FX to answer `/sendall` before asking again, in seconds.
+    /// TotalMix FX has been observed to leave a `/sendall` unanswered while still sending status
     /// messages (docs/TOTALMIX-OSC.md, test 1), so only an answer counts (`answersSendAll`).
     public static let snapshotRetry: Double = 1
-    /// How long after TotalMix's last channel or node message a refresh counts as complete, in
-    /// seconds. TotalMix's reply to `/sendall` (962 messages) has been observed to arrive within
+    /// How long after TotalMix FX's last channel or node message a refresh counts as complete, in
+    /// seconds. TotalMix FX's reply to `/sendall` (962 messages) has been observed to arrive within
     /// 83 ms (docs/TOTALMIX-OSC.md, test 1); this leaves a wide margin.
     public static let refreshSettle: Double = 1
 
-    /// The core's copy of TotalMix's state.
+    /// The core's copy of TotalMix FX's state.
     public private(set) var mirror = MixerMirror()
     /// The channels and their order, as chosen in the app.
     public private(set) var layout: PerformanceLayout
     /// The home submix chosen in the app, or `nil` to follow the control room's Main Out.
     public private(set) var homeChoice: Int?
-    /// Whether switches may be set to solo. Off by default: what TotalMix's solo does to the rest
+    /// Whether switches may be set to solo. Off by default: what TotalMix FX's solo does to the rest
     /// of a submix is unchecked, and in live use it could silence the audience's mix.
     public private(set) var soloEnabled = false
 
@@ -38,7 +38,7 @@ public struct SurfaceHub: Sendable {
     private var order: [SurfaceID] = []
     private var thinner = OutgoingThinner()
     private var snapshotAskedAt: Double?
-    /// During a refresh: the channels TotalMix has reported since it began, and when it last
+    /// During a refresh: the channels TotalMix FX has reported since it began, and when it last
     /// reported one.
     private var refreshSeen: Set<ChannelRef>?
     private var refreshLastHeard: Double?
@@ -49,12 +49,14 @@ public struct SurfaceHub: Sendable {
 
     /// The channel settings that show a message is part of a `/sendall` answer, not an unsolicited
     /// change: every channel sends its name, stereo, and color in the answer (docs/TOTALMIX-OSC.md,
-    /// test 1), while a fader or a mute moved in TotalMix's window sends only that value. Counting
-    /// any message as the answer let one fader move end a refresh TotalMix never answered and drop
-    /// every channel (review of 2026-11-02). TotalMix also sends each of these on its own when it
+    /// test 1), while a fader or a mute moved in TotalMix FX's window sends only that value. Counting
+    /// any message as the answer let one fader move end a refresh TotalMix FX never answered and drop
+    /// every channel (review of 2026-11-02). TotalMix FX also sends each of these on its own when it
     /// changes in its window, and splitting a stereo pair sends `stereo` for both halves at once
     /// (docs/TOTALMIX-OSC.md, test 20), so an answer has to come from at least three channels
-    /// (`answerChannels`): a change names one or two channels, an answer every channel.
+    /// (`answerChannels`): a change names one or two channels, an answer every channel. A mixer
+    /// showing fewer than three channels to this OSC Controller is never counted as answering, so
+    /// `/sendall` is asked again every second; accepted, since no real setup is that small.
     static let answersSendAll: Set<String> = ["name", "stereo", "color"]
     /// How many channels must send an answer-type setting before `/sendall` counts as answered.
     static let answerChannels = 3
@@ -65,7 +67,7 @@ public struct SurfaceHub: Sendable {
     }
 
     /// The home submix: the output whose submix the level knobs and pans of sources control.
-    /// The app's choice, or else the control room's Main Out; `nil` before TotalMix has sent it.
+    /// The app's choice, or else the control room's Main Out; `nil` before TotalMix FX has sent it.
     public var homeSubmix: Int? { homeChoice ?? mirror.mainOut }
 
     /// The outputs the send knobs reach, in order: the outputs view's channels (control room
@@ -93,9 +95,9 @@ public struct SurfaceHub: Sendable {
     /// A surface's mode, or `nil` for an unknown surface.
     public func mode(of id: SurfaceID) -> SurfaceMode? { surfaces[id]?.mode }
 
-    // MARK: - TotalMix
+    // MARK: - TotalMix FX
 
-    /// Asks TotalMix for everything it has (`/sendall`), asking again in `tick(now:)` until it
+    /// Asks TotalMix FX for everything it has (`/sendall`), asking again in `tick(now:)` until it
     /// answers.
     public mutating func connect(now: Double) -> CoreOutput {
         snapshotAskedAt = now
@@ -105,9 +107,9 @@ public struct SurfaceHub: Sendable {
         return output
     }
 
-    /// Asks TotalMix for everything again, and then forgets the channels its answer leaves out, so
-    /// that channels hidden from or shown to this OSC remote in TotalMix since the last refresh
-    /// leave or join the surfaces. TotalMix sends nothing when a channel is hidden or shown
+    /// Asks TotalMix FX for everything again, and then forgets the channels its answer leaves out, so
+    /// that channels hidden from or shown to this OSC remote in TotalMix FX since the last refresh
+    /// leave or join the surfaces. TotalMix FX sends nothing when a channel is hidden or shown
     /// (docs/TOTALMIX-OSC.md, tests 8 and 11). The surfaces keep what they show until the answer
     /// is complete, so nothing blanks.
     public mutating func refreshChannels(now: Double) -> CoreOutput {
@@ -117,7 +119,7 @@ public struct SurfaceHub: Sendable {
         return connect(now: now)
     }
 
-    /// Takes one message from TotalMix.
+    /// Takes one message from TotalMix FX.
     public mutating func handle(_ event: TotalMixEvent, now: Double) -> CoreOutput {
         switch event {
         case .channel(let bus, let channel, let parameter, _):
@@ -148,7 +150,7 @@ public struct SurfaceHub: Sendable {
             return refresh(where: { $0.contains(node: key) }, now: now)
         case .channel(let ref):
             var output = refreshAll(now: now)
-            // A channel switched between mono and stereo in TotalMix's window: TotalMix sends only
+            // A channel switched between mono and stereo in TotalMix FX's window: TotalMix FX sends only
             // `stereo` (test 20), so the right half split off has no name or color here yet, and one
             // joined to a pair is still listed. Ask for everything again, as a refresh does.
             if let wasStereo, wasStereo != mirror.channels[ref]?.stereo, snapshotAskedAt == nil, refreshSeen == nil {
@@ -171,7 +173,7 @@ public struct SurfaceHub: Sendable {
             snapshotAskedAt = now
             output.messages.append(TotalMixCommand.sendAll())
         }
-        // A refresh completes only once TotalMix has answered; until then `/sendall` is asked again.
+        // A refresh completes only once TotalMix FX has answered; until then `/sendall` is asked again.
         if refreshAnswered, let seen = refreshSeen, let heard = refreshLastHeard, now - heard >= Self.refreshSettle {
             refreshSeen = nil
             refreshLastHeard = nil
@@ -335,7 +337,7 @@ public struct SurfaceHub: Sendable {
         return output
     }
 
-    // MARK: - Messages to TotalMix
+    // MARK: - Messages to TotalMix FX
 
     /// The message that sets a target to a value: a fader position (0…1), a pan (−1…+1), or 1/0.
     public static func message(for target: ControlTarget, value: Double) -> OSCMessage? {
@@ -460,7 +462,7 @@ public struct SurfaceHub: Sendable {
     /// The name a strip shows: the label chosen in the app, if any (`PerformanceLayout.labels`).
     /// Otherwise playbacks show "PB 1/2" (or "PB 3" for a mono channel), because an unnamed playback
     /// arrives with its output's hardware name (test 15), which makes playbacks hard to tell from
-    /// inputs; other channels show TotalMix's name.
+    /// inputs; other channels show TotalMix FX's name.
     public static func stripName(_ ref: ChannelRef, _ state: ChannelState?, label: String? = nil) -> String {
         if let label, !label.isEmpty { return label }
         if ref.bus == .playback {
@@ -544,7 +546,7 @@ public struct SurfaceHub: Sendable {
     /// with `force`, sends everything.
     private mutating func render(_ id: SurfaceID, force: Bool, now: Double) -> CoreOutput {
         guard var state = surfaces[id] else { return CoreOutput() }
-        // A page past the end (channels hidden in TotalMix since, then refreshed) moves back to
+        // A page past the end (channels hidden in TotalMix FX since, then refreshed) moves back to
         // the last page rather than showing blank strips (review of 2026-11-02).
         state.mode = clamped(state.mode, for: id)
         var output = CoreOutput()

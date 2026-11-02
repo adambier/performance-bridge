@@ -3,11 +3,11 @@ import Foundation
 import TotalMixOSC
 #endif
 
-/// What the core knows about one TotalMix channel.
+/// What the core knows about one TotalMix FX channel.
 public struct ChannelState: Equatable, Sendable {
-    /// The channel's name, as TotalMix sends it (`name`).
+    /// The channel's name, as TotalMix FX sends it (`name`).
     public var name: String?
-    /// TotalMix's color index (`color`): 0 for a hidden channel, 1 and up for a color (RME's
+    /// TotalMix FX's color index (`color`): 0 for a hidden channel, 1 and up for a color (RME's
     /// document). That 0 means hidden from this OSC remote is an inference (docs/TOTALMIX-OSC.md).
     public var color: Int?
     /// Whether the channel is the left half of a stereo pair (`stereo`).
@@ -24,7 +24,7 @@ public struct ChannelState: Equatable, Sendable {
     /// An empty state.
     public init() {}
 
-    /// Whether TotalMix hides the channel from this OSC remote (color index 0).
+    /// Whether TotalMix FX hides the channel from this OSC remote (color index 0).
     public var isHidden: Bool { color == 0 }
 }
 
@@ -55,7 +55,7 @@ public struct NodeState: Equatable, Sendable {
     public init() {}
 }
 
-/// What changed in the mirror after a message from TotalMix or a local change.
+/// What changed in the mirror after a message from TotalMix FX or a local change.
 public enum MirrorChange: Hashable, Sendable {
     /// A channel's settings (name, color, stereo, mute, PFL, or an output's level or pan).
     case channel(ChannelRef)
@@ -65,7 +65,7 @@ public enum MirrorChange: Hashable, Sendable {
     case meter(ChannelRef)
     /// A control-room assignment (Main Out, Phones, and the others in `MonitoringRole`).
     case controlRoom
-    /// TotalMix's Mute Master (`/globalmute`).
+    /// TotalMix FX's Mute Master (`/globalmute`).
     case muteMaster
 }
 
@@ -85,28 +85,28 @@ public enum MonitoringRole: String, CaseIterable, Hashable, Sendable {
     case phones3
     /// Phones 4 (`phones4`).
     case phones4
-    /// `cuechan`. It does not report TotalMix's "Cue/PFL to": it stayed −1 with that set to Phones 1,
+    /// `cuechan`. It does not report TotalMix FX's "Cue/PFL to": it stayed −1 with that set to Phones 1,
     /// and changing it sent nothing (docs/TOTALMIX-OSC.md, test 21). What it does report is not known;
     /// the inference is an output whose CUE button is on.
     case cue = "cuechan"
 }
 
-/// The core's copy of TotalMix's state, filled by `/sendall` and kept current by what TotalMix
-/// sends. TotalMix does not echo a command to its sender (docs/TOTALMIX-OSC.md, test 5), so local
+/// The core's copy of TotalMix FX's state, filled by `/sendall` and kept current by what TotalMix FX
+/// sends. TotalMix FX does not echo a command to its sender (docs/TOTALMIX-OSC.md, test 5), so local
 /// changes are written here too, with `set(_:to:)`.
 public struct MixerMirror: Sendable {
-    /// Every channel TotalMix has reported a setting for, by its left channel.
+    /// Every channel TotalMix FX has reported a setting for, by its left channel.
     public private(set) var channels: [ChannelRef: ChannelState] = [:]
-    /// Every mixer node TotalMix has reported.
+    /// Every mixer node TotalMix FX has reported.
     public private(set) var nodes: [NodeKey: NodeState] = [:]
     /// The last peak level in dB of each channel number (both halves of a pair).
     public private(set) var meters: [ChannelRef: Double] = [:]
     /// The output channel (its left channel) assigned to each monitoring role in the control room.
     public private(set) var monitoring: [MonitoringRole: Int] = [:]
-    /// The monitoring roles TotalMix has reported, assigned or not (−1, none): a role missing from
+    /// The monitoring roles TotalMix FX has reported, assigned or not (−1, none): a role missing from
     /// `monitoring` but here is known to be unassigned.
     public private(set) var reportedRoles: Set<MonitoringRole> = []
-    /// TotalMix's Mute Master (`/globalmute`), or `nil` until TotalMix has reported it. While it is
+    /// TotalMix FX's Mute Master (`/globalmute`), or `nil` until TotalMix FX has reported it. While it is
     /// off, a channel's mute is only selected and doesn't silence it (docs/TOTALMIX-OSC.md, the
     /// global mute recheck of 2026-10-31, and Adam, 2026-11-02).
     public private(set) var muteMaster: Bool?
@@ -115,7 +115,7 @@ public struct MixerMirror: Sendable {
     /// An empty mirror.
     public init() {}
 
-    /// Applies one message from TotalMix and returns what changed, or `nil` if nothing the core
+    /// Applies one message from TotalMix FX and returns what changed, or `nil` if nothing the core
     /// keeps changed.
     @discardableResult
     public mutating func apply(_ event: TotalMixEvent) -> MirrorChange? {
@@ -200,7 +200,7 @@ public struct MixerMirror: Sendable {
     }
 
     /// The current value of a target: a fader position (0…1), a pan (−1…+1), or 1/0 for on/off.
-    /// `nil` when TotalMix has not reported it yet.
+    /// `nil` when TotalMix FX has not reported it yet.
     public func value(of target: ControlTarget) -> Double? {
         switch target {
         case .level(let ref, let submix):
@@ -224,7 +224,7 @@ public struct MixerMirror: Sendable {
         }
     }
 
-    /// Writes a local change (one the core has sent, or is about to send, to TotalMix) and returns
+    /// Writes a local change (one the core has sent, or is about to send, to TotalMix FX) and returns
     /// what changed. Values are clamped to the target's range; on/off values count from 0.5.
     @discardableResult
     public mutating func set(_ target: ControlTarget, to value: Double) -> MirrorChange? {
@@ -283,7 +283,7 @@ public struct MixerMirror: Sendable {
     }
 
     /// Forgets every channel not in `kept`, with its meters and the mixer nodes it is the source or
-    /// output of, after a full refresh from TotalMix: a channel TotalMix no longer reports, such as
+    /// output of, after a full refresh from TotalMix FX: a channel TotalMix FX no longer reports, such as
     /// one hidden from this OSC remote since the last refresh, sends nothing to say so
     /// (docs/TOTALMIX-OSC.md, tests 8 and 11). Returns whether anything was forgotten.
     @discardableResult
@@ -299,7 +299,7 @@ public struct MixerMirror: Sendable {
         return true
     }
 
-    /// The channels of one row that a surface can show, in TotalMix's order: every channel with a
+    /// The channels of one row that a surface can show, in TotalMix FX's order: every channel with a
     /// reported setting, minus the right halves of stereo pairs and channels hidden from this OSC
     /// remote.
     public func visibleChannels(_ bus: TotalMixBus) -> [ChannelRef] {

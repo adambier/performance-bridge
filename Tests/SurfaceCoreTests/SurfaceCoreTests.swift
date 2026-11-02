@@ -3,7 +3,7 @@ import OSCCodec
 import TotalMixOSC
 @testable import SurfaceCore
 
-/// A small TotalMix setup, as `/sendall` would report it:
+/// A small TotalMix FX setup, as `/sendall` would report it:
 /// inputs 1/2 (stereo, "Keys"), 3 ("Vox"), 4 ("Gtr"); playbacks 1/2 (stereo, "Tracks");
 /// outputs 1/2 (stereo, "Main"), 3/4 (stereo, "Phones"), 5/6 (stereo, hidden from this remote);
 /// Main Out on output 1.
@@ -102,7 +102,7 @@ final class LayoutTests: XCTestCase {
                                                      ChannelRef(.input, 9)])
         XCTAssertEqual(layout.channels(.sources, in: mirror),
                        [ChannelRef(.playback, 0), ChannelRef(.input, 2), ChannelRef(.input, 0), ChannelRef(.input, 3)],
-                       "the playback first, then Vox; the rest follow in TotalMix's order; outputs and missing channels are ignored")
+                       "the playback first, then Vox; the rest follow in TotalMix FX's order; outputs and missing channels are ignored")
         XCTAssertEqual(layout.unplaced(.sources, in: mirror), [ChannelRef(.input, 0), ChannelRef(.input, 3)])
         XCTAssertEqual(PerformanceLayout().unplaced(.sources, in: mirror), [], "with no chosen order nothing is new")
     }
@@ -132,7 +132,7 @@ final class LayoutTests: XCTestCase {
         ] { _ = hub.handle(event, now: 0) }
         XCTAssertEqual(hub.mirror.visibleChannels(.input), [ChannelRef(.input, 0), ChannelRef(.input, 2)])
 
-        // ADI-2 hidden in TotalMix: the answer to the refresh leaves it out.
+        // ADI-2 hidden in TotalMix FX: the answer to the refresh leaves it out.
         let asked = hub.refreshChannels(now: 10)
         XCTAssertTrue(asked.messages.contains { $0.address == "/sendall" })
         _ = hub.handle(.channel(bus: .input, channel: 2, parameter: "name", value: .text("Sonos")), now: 10.05)
@@ -177,13 +177,13 @@ final class LayoutTests: XCTestCase {
         XCTAssertTrue(PerformanceLayout().isTotalMixOrder(.sources, in: hub.mirror))
         XCTAssertFalse(PerformanceLayout().withOrder(.sources, totalMixOrder.reversed()).isTotalMixOrder(.sources, in: hub.mirror))
         XCTAssertTrue(PerformanceLayout().withOrder(.sources, totalMixOrder).isTotalMixOrder(.sources, in: hub.mirror),
-                      "dragging channels back into TotalMix's order counts as TotalMix's order")
+                      "dragging channels back into TotalMix FX's order counts as TotalMix FX's order")
     }
 
     func testChannelsHiddenInTotalMixStayOutEvenWhenOrdered() {
         var mirror = MixerMirror()
         for event in setupEvents() { mirror.apply(event) }
-        // Output 5/6 (channel 4) is hidden from this remote in TotalMix (setupEvents).
+        // Output 5/6 (channel 4) is hidden from this remote in TotalMix FX (setupEvents).
         let layout = PerformanceLayout(outputOrder: [ChannelRef(.output, 4), ChannelRef(.output, 2)])
         XCTAssertFalse(layout.channels(.outputs, in: mirror).contains(ChannelRef(.output, 4)))
         XCTAssertFalse(layout.unplaced(.outputs, in: mirror).contains(ChannelRef(.output, 4)))
@@ -424,7 +424,7 @@ final class SurfaceHubTests: XCTestCase {
         XCTAssertEqual(hub.controlMoved(roto, strip: 1, to: 0.55, now: 1.2).messages.count, 1, "crossing 0.5 picks it up")
         XCTAssertEqual(hub.controlMoved(roto, strip: 1, to: 0.60, now: 1.3).messages.count, 1)
         _ = hub.handle(.mix(bus: .input, channel: 2, output: 0, parameter: "faderlin", value: .number(0.2)), now: 3)
-        XCTAssertTrue(hub.controlMoved(roto, strip: 1, to: 0.65, now: 4).messages.isEmpty, "a change in TotalMix drops the pickup")
+        XCTAssertTrue(hub.controlMoved(roto, strip: 1, to: 0.65, now: 4).messages.isEmpty, "a change in TotalMix FX drops the pickup")
     }
 
     func testPagingStaysInTheView() {
@@ -518,7 +518,7 @@ final class SurfaceHubTests: XCTestCase {
             _ = hub.handle(.channel(bus: .input, channel: channel, parameter: "name", value: .text("In \(channel + 1)")), now: 0.1)
         }
         XCTAssertTrue(hub.tick(now: 2).messages.isEmpty, "answered")
-        // Split in TotalMix's window: only stereo = 0 for both halves arrives (TOTALMIX-OSC.md, test 20).
+        // Split in TotalMix FX's window: only stereo = 0 for both halves arrives (TOTALMIX-OSC.md, test 20).
         let split = hub.handle(.channel(bus: .input, channel: 4, parameter: "stereo", value: .number(0)), now: 3)
         XCTAssertTrue(split.messages.contains(TotalMixCommand.sendAll()), "asks for the new channel's name")
         let again = hub.handle(.channel(bus: .input, channel: 5, parameter: "stereo", value: .number(0)), now: 3)
@@ -528,7 +528,7 @@ final class SurfaceHubTests: XCTestCase {
     }
 
     func testAnUnsolicitedChangeIsNotTheAnswerToSendAll() {
-        // Review of 2026-11-02: a refresh TotalMix never answered, plus one fader moved in its
+        // Review of 2026-11-02: a refresh TotalMix FX never answered, plus one fader moved in its
         // window, used to stop asking and drop every channel.
         var hub = loadedHub()
         let before = hub.mirror.channels.count
@@ -539,7 +539,7 @@ final class SurfaceHubTests: XCTestCase {
         XCTAssertEqual(hub.mirror.channels.count, before, "nothing dropped")
         XCTAssertTrue(hub.strips(of: roto)?.contains { $0.info != nil } ?? false, "the strips stay")
 
-        // Nor does one channel's stereo or color change, which TotalMix might send on its own.
+        // Nor does one channel's stereo or color change, which TotalMix FX might send on its own.
         _ = hub.handle(.channel(bus: .input, channel: 2, parameter: "stereo", value: .number(1)), now: 11.5)
         XCTAssertTrue(hub.tick(now: 12.6).messages.contains { $0.address == "/sendall" }, "one channel is not an answer")
         XCTAssertEqual(hub.mirror.channels.count, before)
@@ -558,7 +558,7 @@ final class SurfaceHubTests: XCTestCase {
         }
         _ = hub.addSurface(roto, capabilities: rotoCaps, mode: .strips(view: .sources, first: 8, knob: .level, switch: .mute), now: 0)
         _ = hub.refreshChannels(now: 10)
-        for number in 0..<6 {  // inputs 7-12 hidden in TotalMix
+        for number in 0..<6 {  // inputs 7-12 hidden in TotalMix FX
             _ = hub.handle(.channel(bus: .input, channel: number, parameter: "name", value: .text("In \(number + 1)")), now: 10.1)
         }
         _ = hub.tick(now: 11.2)
@@ -616,7 +616,7 @@ final class StripNameTests: XCTestCase {
         stereo.name = "Main"
         XCTAssertEqual(SurfaceHub.stripName(ChannelRef(.playback, 0), stereo), "PB 1/2")
         XCTAssertEqual(SurfaceHub.stripName(ChannelRef(.playback, 4), ChannelState()), "PB 5")
-        XCTAssertEqual(SurfaceHub.stripName(ChannelRef(.input, 0), stereo), "Main", "inputs keep TotalMix's name")
+        XCTAssertEqual(SurfaceHub.stripName(ChannelRef(.input, 0), stereo), "Main", "inputs keep TotalMix FX's name")
         XCTAssertEqual(SurfaceHub.stripName(ChannelRef(.output, 3), nil), "output 4")
     }
 }

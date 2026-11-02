@@ -1,4 +1,4 @@
-// sbdev lcbridge: runs SurfaceCore and the Launch Control driver between TotalMix and a Launch
+// sbdev lcbridge: runs SurfaceCore and the Launch Control driver between TotalMix FX and a Launch
 // Control XL 3 or Launch Control 3, as the app will, for trying them before the app has them.
 
 import Foundation
@@ -14,16 +14,16 @@ let lcBridgeUsage = """
     Usage:
       sbdev lcbridge [--layout xl3 | lc3 | lc3-sim] [--host H] [--in-port P]
                      [--out-port P] [--port NAME] [--home N] [--verbose]
-          Connects TotalMix and a Launch Control through SurfaceCore and the Launch Control
-          driver, as the app will. Prints what is sent to TotalMix, with the time since starting;
+          Connects TotalMix FX and a Launch Control through SurfaceCore and the Launch Control
+          driver, as the app will. Prints what is sent to TotalMix FX, with the time since starting;
           --verbose also prints every MIDI message to and from the device. Then reads commands
           from the keyboard (type `help`).
           --layout: xl3 (the default) for a Launch Control XL 3; lc3 for a Launch Control 3;
           lc3-sim for the Launch Control 3's layout on a Launch Control XL 3.
           --port names the device's DAW ports (default: found by name, "LCXL3 n DAW" or
           "LC3 n DAW" with the lowest device ID n).
-          --host, --in-port, and --out-port are TotalMix's, as for monitor. --home is the home
-          submix's output number, counting from 1 (default: TotalMix's Main Out).
+          --host, --in-port, and --out-port are TotalMix FX's, as for monitor. --home is the home
+          submix's output number, counting from 1 (default: TotalMix FX's Main Out).
           Stop sbdev monitor, sbdev bridge, and the app first: they need the same ports.
 
       On the device: Track < and > move by eight channels (with Shift, to the first or last
@@ -38,9 +38,9 @@ let lcBridgeUsage = """
 
 let lcBridgeCommandHelp = """
     Commands:
-      home N | home main   the home submix: output N (from 1), or TotalMix's Main Out
+      home N | home main   the home submix: output N (from 1), or TotalMix FX's Main Out
       pbpage on | pbpage off   start the first playback on a new page, or not
-      sendall              ask TotalMix for its state again
+      sendall              ask TotalMix FX for its state again
       status               the layout, the home submix, the send targets, and each layer's strips
       quit                 leave DAW mode and stop
     """
@@ -123,7 +123,7 @@ final class LaunchBridgeSession: @unchecked Sendable {
         }
         let layoutName = options.layout == options.device ? options.layout.name
             : "\(options.layout.name)'s layout on a \(options.device.name)"
-        log("TotalMix at \(options.endpoint.host), sending to port \(options.endpoint.incomingPort), listening on \(options.endpoint.outgoingPort). \(layoutName): \"\(midi!.source.name)\". Type `help` for commands.")
+        log("TotalMix FX at \(options.endpoint.host), sending to port \(options.endpoint.incomingPort), listening on \(options.endpoint.outgoingPort). \(layoutName): \"\(midi!.source.name)\". Type `help` for commands.")
         socket?.startReceiving { [weak self] bytes, _ in self?.fromTotalMix(bytes) }
         if let home = options.home { dispatch(hub.setHomeSubmix(home, now: now)) }
         dispatch(hub.connect(now: now))
@@ -181,7 +181,7 @@ final class LaunchBridgeSession: @unchecked Sendable {
             } catch {
                 log("Could not send \(message.address): \(error)")
             }
-            log("→ TotalMix \(message.address) \(message.arguments.map(describe).joined(separator: " "))")
+            log("→ TotalMix FX \(message.address) \(message.arguments.map(describe).joined(separator: " "))")
         }
         guard !step.midi.isEmpty else { return }
         do {

@@ -3,7 +3,7 @@ import Foundation
 import TotalMixOSC
 #endif
 
-/// One TotalMix channel as a strip sees it: a row (input, playback, or output) and the 0-based
+/// One TotalMix FX channel as a strip sees it: a row (input, playback, or output) and the 0-based
 /// channel number. A stereo pair is named by its left channel, as Global OSC addresses it.
 public struct ChannelRef: Hashable, Codable, Sendable, CustomStringConvertible {
     /// The row: input, playback, or output.
@@ -42,14 +42,14 @@ public enum SwitchFunction: Hashable, Codable, Sendable {
     /// The channel's PFL (`/<bus>/<channel>/pfl`): pre-listening on the control room's phones.
     case pfl
     /// A source's solo in the home submix (the mixer node's `solo`). Off by default
-    /// (`SurfaceHub.soloEnabled`): what TotalMix's solo does to the rest of the submix is unchecked,
+    /// (`SurfaceHub.soloEnabled`): what TotalMix FX's solo does to the rest of the submix is unchecked,
     /// and in live use it could silence the audience's mix.
     case solo
     /// Nothing: the switch does nothing and shows off.
     case none
 }
 
-/// One value in TotalMix that a control can be bound to.
+/// One value in TotalMix FX that a control can be bound to.
 public enum ControlTarget: Hashable, Sendable {
     /// A channel's level; for a source, its node into the given submix (an output channel).
     case level(ChannelRef, submix: Int?)

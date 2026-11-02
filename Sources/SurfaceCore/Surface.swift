@@ -18,12 +18,12 @@ public struct SurfaceID: Hashable, Sendable, CustomStringConvertible {
     public var description: String { rawValue }
 }
 
-/// How a surface's knobs or faders follow values that change in TotalMix.
+/// How a surface's knobs or faders follow values that change in TotalMix FX.
 public enum ControlFeel: Hashable, Sendable {
-    /// The control shows TotalMix's value itself: a motorized knob or fader, or an endless encoder
+    /// The control shows TotalMix FX's value itself: a motorized knob or fader, or an endless encoder
     /// with an LED ring. The core sends it every value.
     case follows
-    /// The control stays where the hand left it (e.g., a fader without a motor). After TotalMix's
+    /// The control stays where the hand left it (e.g., a fader without a motor). After TotalMix FX's
     /// value changes, the control does nothing until it reaches that value ("pickup").
     case pickup
 }
@@ -32,7 +32,7 @@ public enum ControlFeel: Hashable, Sendable {
 public struct SurfaceCapabilities: Hashable, Sendable {
     /// Strips (columns of controls) shown at once.
     public var stripCount: Int
-    /// How the strips' knobs or faders follow TotalMix.
+    /// How the strips' knobs or faders follow TotalMix FX.
     public var feel: ControlFeel
     /// Whether each strip has a switch.
     public var hasSwitches: Bool
@@ -42,7 +42,7 @@ public struct SurfaceCapabilities: Hashable, Sendable {
     /// a glitch and ignored. On the Roto-Control a knob turned past its end has been observed to
     /// report a jump across most of its range (docs/ROTO-CONTROL.md); `nil` for no guard.
     public var jumpGuard: Double?
-    /// For pickup controls: how close to TotalMix's value, as a fraction of the range, counts as
+    /// For pickup controls: how close to TotalMix FX's value, as a fraction of the range, counts as
     /// reaching it.
     public var pickupWindow: Double
 
@@ -86,9 +86,9 @@ public enum StripKind: Hashable, Sendable {
 public struct StripInfo: Hashable, Sendable {
     /// The channel on the strip.
     public var channel: ChannelRef
-    /// The channel's name, or a stand-in such as "input 3" before TotalMix has sent one.
+    /// The channel's name, or a stand-in such as "input 3" before TotalMix FX has sent one.
     public var name: String
-    /// TotalMix's color index for the channel, if TotalMix has sent one.
+    /// TotalMix FX's color index for the channel, if TotalMix FX has sent one.
     public var color: Int?
     /// Whether the channel is a stereo pair.
     public var stereo: Bool
@@ -131,9 +131,9 @@ public enum SurfaceUpdate: Hashable, Sendable {
     case meter(index: Int, value: Int)
 }
 
-/// What the core produces in answer to one call: messages for TotalMix, and updates for each surface.
+/// What the core produces in answer to one call: messages for TotalMix FX, and updates for each surface.
 public struct CoreOutput: Equatable, Sendable {
-    /// Messages to send to TotalMix, in order.
+    /// Messages to send to TotalMix FX, in order.
     public var messages: [OSCMessage] = []
     /// Updates for each surface, in order.
     public var updates: [SurfaceID: [SurfaceUpdate]] = [:]

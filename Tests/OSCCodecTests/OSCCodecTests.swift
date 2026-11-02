@@ -40,7 +40,7 @@ final class OSCCodecTests: XCTestCase {
 
     func testEveryArgumentTypeRoundTrips() throws {
         let message = OSCMessage("/all", [
-            .int(-7), .float(-0.5), .string("TotalMix"), .blob([1, 2, 3, 4, 5]),
+            .int(-7), .float(-0.5), .string("TotalMix FX"), .blob([1, 2, 3, 4, 5]),
             .bool(true), .bool(false), .null, .int64(-1 << 40), .double(0.125),
         ])
         XCTAssertEqual(try OSCPacket(decoding: message.encoded()), .message(message))

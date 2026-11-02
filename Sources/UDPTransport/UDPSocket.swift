@@ -67,7 +67,7 @@ public final class UDPSocket {
         #endif
         guard fd >= 0 else { throw UDPError.socketFailed(errno: errno) }
         // No SO_REUSEADDR: on Linux it would let two programs bind the same UDP port, and one of
-        // them would silently stop receiving TotalMix's messages. A port in use is an error instead.
+        // them would silently stop receiving TotalMix FX's messages. A port in use is an error instead.
 
         var address = sockaddr_in()
         address.sin_family = sa_family_t(AF_INET)

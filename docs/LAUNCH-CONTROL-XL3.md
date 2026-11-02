@@ -295,12 +295,12 @@ port names.
     and the `quiet` option (no display on change).
 11. **Bitmap targets** (section 7, item 5), only if a bitmap is wanted later.
 12. **Do level encoders need relative mode?** Part 1 run (2026-11-01, Launch Control 3 layout on
-    the XL 3, TotalMix's curve): "pretty smooth". Adam then asked for the ARC USB's scale for volume
+    the XL 3, TotalMix FX's curve): "pretty smooth". Adam then asked for the ARC USB's scale for volume
     encoders (section 9), which is finer near 0 dB. On it, a slow fade of a send from about −20 dB
     to off sounded smooth.[^test-11] **Decided: absolute mode** (Adam, 2026-11-01); relative mode
     has been observed to drop the first step after a reversal and gives nothing Shift could
     use.[^test-10]
-    The original test: the encoders send 128 values. With TotalMix's own
+    The original test: the encoders send 128 values. With TotalMix FX's own
     curve that is about 0.26 dB a step from −6 to +6 dB, 0.3–0.6 from −20 to −6, 0.6–0.9 from −40
     to −20, and about 1 dB below that (computed from `FaderCurve`). Relative mode would allow finer
     steps, but has been observed to drop the first step after a change of direction.[^test-2] With music playing
@@ -327,24 +327,24 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
 - **Eight strips.** Each fader is its strip's level in the home submix (Main Out). The strips
   always show sources.
 - **Fader pickup.** The driver turns on the device's pickup (feature 70) and sends each fader's
-  level as a position, so the device holds a fader back until it reaches TotalMix's level and
+  level as a position, so the device holds a fader back until it reaches TotalMix FX's level and
   shows the target meanwhile.[^test-3] SurfaceCore's own pickup stays on behind it, with a window
-  of 12/127 of TotalMix's fader travel for the first value after the device lets go (7 to 18 of
+  of 12/127 of TotalMix FX's fader travel for the first value after the device lets go (7 to 18 of
   the fader's values, depending on where on the printed scale), in case the device doesn't hold
   (as in one run of test 2).
 - **Fader scale.** The nine ticks printed beside each fader read, top to bottom, +6, +3, 0, −6,
-  −10, −20, −40, −60, and off: TotalMix's own fader marks (`TOTALMIX-OSC.md`, test 18), placed
+  −10, −20, −40, −60, and off: TotalMix FX's own fader marks (`TOTALMIX-OSC.md`, test 18), placed
   at the fader values measured at each tick.[^test-7] Between ticks the gain moves evenly in dB
   (Adam, 2026-11-01).
 - **Level and send encoders.** They use the scale of RME's ARC USB volume wheel, as volume
   controls (Adam, 2026-11-01): its 54 detents from −63.5 to +6 dB (docs/TOTALMIX-OSC.md, test 19),
   spread over the encoder's values so that 0 dB is at 101, as on the faders. That is about 0.2 dB a
   value from −5 to +5 dB, 0.4 dB from −15 to −5, and up to 1.3 dB at the bottom; value 0 is off.
-- **Pan encoders.** They are centered at 64 and land on TotalMix's whole pan steps (L100 to
+- **Pan encoders.** They are centered at 64 and land on TotalMix FX's whole pan steps (L100 to
   R100), about 1.6 steps a value, so they move in steps of 1 or 2. Each value is sent a quarter step to the right of
-  its whole step, so that TotalMix's window shows the same step as the encoder's display. TotalMix
+  its whole step, so that TotalMix FX's window shows the same step as the encoder's display. TotalMix FX
   has been observed to show the whole step below a fractional pan, toward L (Adam, 2026-11-01):
-  with plain values, one value right of center (R1.6) showed R01 in TotalMix and R2 on the device;
+  with plain values, one value right of center (R1.6) showed R01 in TotalMix FX and R2 on the device;
   with a quarter step away from the center, the R side matched and the L side was one step off
   (L2.25 as L03, inference from "off by 1"). A quarter step to the right matches on both sides.
 - **Encoder rows.** Fixed (Adam, 2026-11-01): the top two rows are sends and the bottom row pan,
@@ -354,7 +354,7 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   control room outputs first), and Shift + Page the middle row, each skipping the other row's
   output, so the two never feed the same one. The overlay names the row and its output ("Top row" /
   "> Phones 2"). Page is lit where it would move for the top row, and for the middle row while
-  Shift is held. The choices are remembered across launches. Gain is left out for now: TotalMix sends it only for inputs with a preamp, which the
+  Shift is held. The choices are remembered across launches. Gain is left out for now: TotalMix FX sends it only for inputs with a preamp, which the
   project's interfaces don't have. The encoders take positions from the driver,[^test-2] so they
   never jump.
 - **Shift + turn.** Resets the encoder (Adam, 2026-11-01; made safer 2026-11-02 after the review
@@ -363,7 +363,8 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   - a pan goes to the center;
   - a level (the Launch Control 3's) above 0 dB comes down to 0 dB, and one at or below 0 dB
     stays: a reset never raises a level;
-  - a send goes to −oo, and a second Shift + turn brings it back to where it was;
+  - a send goes to −oo, and a second Shift + turn, after Shift is released and held again, brings it
+    back to where it was;
   - only once Shift has been held 0.3 s with no Page or Track press, and once per encoder per hold
     of Shift.
 
@@ -381,13 +382,13 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   Here the order is set in the app, so moving one strip gains nothing, and pages stay on multiples
   of eight, as on the Roto-Control; Shift modifies Track rather than adding a new function; Adam,
   2026-11-01.) The strips always show the channels (inputs and playbacks), never the outputs: the
-  outputs are set up in TotalMix and left alone during a performance (Adam, 2026-11-01). Page
+  outputs are set up in TotalMix FX and left alone during a performance (Adam, 2026-11-01). Page
   and Track are lit where they would move.
 - **Free buttons.** Solo/Arm, Mute/Select, Record, Play, and the Novation button do nothing, so arm
   and the transport stay free for a later connection to a DAW (Adam, 2026-11-01). The Novation
   button was tried as a one-press "first page" and dropped as hard to find (Adam, 2026-11-02).
 - **Both Track buttons together** go to the first page (Adam, 2026-11-02).
-- **Mute Master.** While TotalMix's Mute Master is off, a mute that is on flashes between bright
+- **Mute Master.** While TotalMix FX's Mute Master is off, a mute that is on flashes between bright
   and dim orange (0.4 s each), and pressing a mute shows "Mute Master off / in TotalMix FX" on
   the screen (Adam, 2026-11-02). The medium shade was too close to the others, and no way to make
   the device flash a color by itself has been found, so the driver flashes it.[^test-15]
@@ -395,10 +396,12 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   5 s with nothing from the device. If two questions go unanswered, or the answer is a Custom Mode
   the device never announced, it assumes that the device restarted and lost DAW mode, and enters
   DAW mode again (Adam, 2026-11-02, from the review of that date). That a restarted device whose
-  port stays open answers this way is an inference; a quick unplug and replug tests it.
-- **Colors.** Level and pan encoders show their strip's TotalMix color from the palette; a blank
+  port stays open answers this way is an inference, not yet seen: the quick replug in test 15 was
+  caught by the app's port check, not by this. Whether the device answers the question in a Custom
+  Mode is untested, so the check is skipped there (review of 2026-11-02).
+- **Colors.** Level and pan encoders show their strip's TotalMix FX color from the palette; a blank
   strip is dark. A send row shows the color of the output it sends to (an output left white in
-  TotalMix: green for a control room output, blue for another), so each row reads as one send, as
+  TotalMix FX: green for a control room output, blue for another), so each row reads as one send, as
   Ableton Live's integration lights send rows in the send's color (Logic Pro's and Cubase's use a
   fixed color per row).[^ug-daw-chapters] Blue (45)
   and purple (49) are past the part of the palette seen in test 4 (inference from the guide's
@@ -499,7 +502,7 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
 - The Novation button has no LED, as the library assumed: `sbdev` refused `color novation 5` without sending.
 
 **Consequences.**
-- The driver can use palette indices for the strips' colors and RGB where a palette color is too far off, e.g., to match TotalMix's eight colors.
+- The driver can use palette indices for the strips' colors and RGB where a palette color is too far off, e.g., to match TotalMix FX's eight colors.
 - Page, Track, Record, Play, and Solo/Arm can show state, e.g., whether another page exists.
 
 ### Test 5 (2026-11-01): the screen
@@ -566,7 +569,7 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
 
 **Findings** (Adam, from the bottom tick up): −oo, −60, −40, −19.5, −10.5, −6.2, −0.7, +2.7, +6.0, against labels of −∞, −60, −40, −20, −10, −6, 0, +3, and +6.
 
-**Consequences.** Each reading, through the slope of its stretch of the scale, places its tick a little off test 7's value: 0 dB at about 99.9 (not 102), +3 at 118.2 (not 120), −6 at 83.1, −10 at 65, −20 at 46.4. Neither pass is exact (Adam's alignment by eye), so the driver takes the mean of the two: 127, 119, 101, 83.5, 65.5, 46, 29, 11, and 0. Readings still off by a few tenths of a dB at a tick are within the accuracy of setting a fader to a tick by eye. Off now shows as "-oo" on the hardware controllers' displays, as TotalMix shows it (Adam, 2026-11-01).
+**Consequences.** Each reading, through the slope of its stretch of the scale, places its tick a little off test 7's value: 0 dB at about 99.9 (not 102), +3 at 118.2 (not 120), −6 at 83.1, −10 at 65, −20 at 46.4. Neither pass is exact (Adam's alignment by eye), so the driver takes the mean of the two: 127, 119, 101, 83.5, 65.5, 46, 29, 11, and 0. Readings still off by a few tenths of a dB at a tick are within the accuracy of setting a fader to a tick by eye. Off now shows as "-oo" on the hardware controllers' displays, as TotalMix FX shows it (Adam, 2026-11-01).
 
 ### Test 9 (2026-11-01): turning an encoder with Shift held
 
@@ -596,7 +599,7 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
 **Findings** (Adam's reports):
 - The home screen's three lines ("Channels 1-8", the top row's function, the buttons') "look good".
 - Shift + turning a level encoder set it to 0 dB.
-- Pan, plain values (PR #57, a quarter step away from the center): the R side matched TotalMix's window, the L side was one step off. A quarter step to the right of each whole step (PR #58): both sides match.
+- Pan, plain values (PR #57, a quarter step away from the center): the R side matched TotalMix FX's window, the L side was one step off. A quarter step to the right of each whole step (PR #58): both sides match.
 - A slow fade of a send from about −20 dB to off, on the ARC scale, sounded smooth.
 
 **Consequences.** The layout's screen, reset, and scales stand as section 9 describes them, and the encoders stay in absolute mode.
@@ -606,7 +609,7 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
 **Setup.** This is not a separate test; it records what the logs of the evening's sessions show. `sbdev lcbridge` and the app were often stopped with Control-C, which leaves the device in DAW mode, since only a proper quit sends `9F 0C 00`. None of the five `lcbridge` logs ends with leaving DAW mode.
 
 **Findings:**
-- Three `lcbridge` sessions that followed one stopped with Control-C asked for DAW mode 3, 2, and 6 times, 3 s apart, with no echo (`lc3-arc.log`, `xl3-pan.log`, `xl3-pan2.log`). Each "answered" at 9.736, 6.167, and 18.371 s; in two of them a pan message to TotalMix followed 1 ms later, so the driver most likely took a moved control as presence (it did then). Two sessions were answered at once, at 0.03 s (`lc3-resolution.log`, `lcxl-sends.log`); what ran before them isn't recorded.
+- Three `lcbridge` sessions that followed one stopped with Control-C asked for DAW mode 3, 2, and 6 times, 3 s apart, with no echo (`lc3-arc.log`, `xl3-pan.log`, `xl3-pan2.log`). Each "answered" at 9.736, 6.167, and 18.371 s; in two of them a pan message to TotalMix FX followed 1 ms later, so the driver most likely took a moved control as presence (it did then). Two sessions were answered at once, at 0.03 s (`lc3-resolution.log`, `lcxl-sends.log`); what ran before them isn't recorded.
 - The app was twice seen stuck on "Launch Control XL 3: Connecting", each time started after a host stopped with Control-C (`app-lc3.log`; the other launch kept no log), and connected at once after a proper quit (`app-lc4.log`, with `lc-daw-trace.log` showing the echo `9F 0C 7F` at 2.728 s).
 - Leaving DAW mode, the device sent `B6 1E 06`, `B6 1F 06` (twice), then `9F 0C 00` (`lc-daw-trace.log`, at 86.767 s).
 
@@ -622,7 +625,7 @@ with `color b11 9`, `rgb b12 127 40 0`, `color b13 13`, and `rgb b14 127 127 0`.
 **Findings:**
 - Index 11 shows as a dim orange, easily told from dark, and the dim orange and dim yellow rows are
   easily told apart.
-- Mute and PFL lit and cleared as pressed. A mute took effect in TotalMix only with its Mute Master
+- Mute and PFL lit and cleared as pressed. A mute took effect in TotalMix FX only with its Mute Master
   on (as in TOTALMIX-OSC.md, the global mute recheck of 2026-10-31).
 - Bright and dim could use more contrast. Palette 9 looked the same as RGB 127, 40, 0, and palette 13
   the same as RGB 127, 127, 0, so the palette's bright shades are already at full brightness as far
@@ -665,7 +668,8 @@ leaving DAW mode and entering it again (`startBytes`), is what makes the device 
   open in DAW mode.
 - Unplugged and plugged in again within about 2 seconds, the device was found again and drawn.
 - Index 9 sent as a Control Change on channel 2 (`B1 25 09`) or channel 3 (`B2 25 09`) changed
-  nothing: no flashing or pulsing, which those channels produce on Novation's Launchpads. The programmer's guide describes
+  nothing (seen by Adam; the log kept holds only the second run, with channel 3, since the first run's
+  was overwritten by it): no flashing or pulsing, which those channels produce on Novation's Launchpads. The programmer's guide describes
   only channel 1.[^prg-coloring]
 
 **Consequences.**
@@ -680,7 +684,7 @@ leaving DAW mode and entering it again (`startBytes`), is what makes the device 
 
 **Findings.** All as intended: at rest Mute/Select was dim yellow and the top buttons dim orange
 (mute); while it was held, it lit bright yellow, the buttons turned dim yellow (PFL), and the screen
-showed "Buttons / PFL"; a button pressed then turned PFL on in TotalMix and lit bright yellow; on
+showed "Buttons / PFL"; a button pressed then turned PFL on in TotalMix FX and lit bright yellow; on
 release the buttons went back to mute and the screen showed "Buttons / Mute"; holding it again and
 pressing the button turned the PFL off. No blue at start.
 

@@ -1,8 +1,8 @@
 // The layout editor: the order of the sources and outputs on the surfaces, and labels for them.
 // Channels are hidden only in TotalMix FX, per OSC controller, so the editor has no hide setting.
-// Channels hidden from this OSC remote in TotalMix are not listed, since the app cannot see them.
+// Channels hidden from this OSC remote in TotalMix FX are not listed, since the app cannot see them.
 // Labels are the app's own, for the hardware controllers only (Adam, 2026-11-01; AGENTS.md
-// section 4); a channel without one shows TotalMix's name. The wording here is to be checked in the
+// section 4); a channel without one shows TotalMix FX's name. The wording here is to be checked in the
 // UI review (Adam, 2026-11-01).
 
 import SwiftUI
@@ -18,7 +18,7 @@ struct LayoutView: View {
     @ObservedObject var model: BridgeModel
     @State private var view: ViewKind = .sources
     @State private var items: [LayoutItem] = []
-    /// Whether the view is in TotalMix's own order, so Restore TotalMix FX Order has nothing to do.
+    /// Whether the view is in TotalMix FX's own order, so Restore TotalMix FX Order has nothing to do.
     @State private var isTotalMixOrder = true
     @AppStorage("playbacksOnNewPage") private var playbacksOnNewPage = false
 
@@ -86,7 +86,7 @@ struct LayoutView: View {
                 Spacer()
                 // Dimmed while there is nothing to restore (Adam, 2026-10-31).
                 Button("Restore TotalMix FX Order") {
-                    // An empty order is TotalMix's own (PerformanceLayout.withOrder).
+                    // An empty order is TotalMix FX's own (PerformanceLayout.withOrder).
                     model.engine.setLayout(model.engine.layout.withOrder(view, []))
                     reload()
                 }
@@ -98,7 +98,7 @@ struct LayoutView: View {
                 Text("Hide and show channels in TotalMix FX’s own Channel Layout window: right-click the channel, choose Change Channel Layout, and check or uncheck the OSC Controller box under \u{201C}Hide Channel in.\u{201D}")
                 Text("Channel colors can be set in the same window.")
                 Text("Labels show only on the hardware controllers. Clear a label to show TotalMix FX’s name again.")
-                Text("Channels that TotalMix hides from an OSC Controller are not shown on the hardware controllers connected through it.")
+                Text("Channels that TotalMix FX hides from an OSC Controller are not shown on the hardware controllers connected through it.")
             }
             .font(.callout)
             .foregroundStyle(.secondary)
@@ -108,7 +108,7 @@ struct LayoutView: View {
         .frame(height: 620)
         .onAppear {
             // A visit here usually follows changes in TotalMix FX's own Channel Layout window,
-            // which TotalMix doesn't announce over OSC: refresh the channels first.
+            // which TotalMix FX doesn't announce over OSC: refresh the channels first.
             model.engine.refresh()
             reload()
         }
@@ -137,7 +137,7 @@ struct LayoutView: View {
                     reload()
                 }
                 if item.label != nil {
-                    // TotalMix's own name, for reference, while a label replaces it.
+                    // TotalMix FX's own name, for reference, while a label replaces it.
                     Text(item.defaultName)
                         .foregroundStyle(.tertiary)
                         .lineLimit(1)
@@ -164,7 +164,7 @@ struct LayoutView: View {
         isTotalMixOrder = model.engine.isTotalMixOrder(view)
     }
 
-    /// Reads the view's channels again, after a change in the app or in TotalMix.
+    /// Reads the view's channels again, after a change in the app or in TotalMix FX.
     private func reload() {
         items = model.engine.layoutItems(view)
         isTotalMixOrder = model.engine.isTotalMixOrder(view)
@@ -172,7 +172,7 @@ struct LayoutView: View {
 }
 
 /// A channel's label for the hardware controllers, edited in place. Without a label it shows the
-/// name the strip would show anyway, dimmed (TotalMix's name, or "PB 1/2" for a playback). The label
+/// name the strip would show anyway, dimmed (TotalMix FX's name, or "PB 1/2" for a playback). The label
 /// is saved when Return is pressed or the field loses focus; an empty field removes it.
 struct LabelField: View {
     let item: LayoutItem

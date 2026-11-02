@@ -11,7 +11,7 @@ func midiMonitor(_ arguments: ArraySlice<String>) -> Never {
     let start = Date()
     let connection: MIDIConnection
     do {
-        // Reading a source does not stop other programs (e.g., TotalMix) from reading it too.
+        // Reading a source does not stop other programs (e.g., TotalMix FX) from reading it too.
         connection = try MIDIConnection(clientName: "sbdev midi", sourceName: name, destinationName: name) { bytes in
             print(String(format: "%9.3f  ", Date().timeIntervalSince(start)) + hex(bytes))
             flushOutput()

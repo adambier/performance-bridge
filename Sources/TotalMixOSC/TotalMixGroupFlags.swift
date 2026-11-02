@@ -9,10 +9,10 @@ import Foundation
 /// "12..16", taken here to be a slip for four bits. A bit means membership; whether the group is
 /// switched on comes separately, as `/fadergroup/N` and the like (test 17).
 public struct TotalMixGroupFlags: Equatable, Sendable {
-    /// The raw value, as TotalMix sent it.
+    /// The raw value, as TotalMix FX sent it.
     public var rawValue: Int
 
-    /// Reads a value as TotalMix sent it (a float holding an integer).
+    /// Reads a value as TotalMix FX sent it (a float holding an integer).
     public init(_ value: Double) {
         rawValue = Int(value.rounded())
     }

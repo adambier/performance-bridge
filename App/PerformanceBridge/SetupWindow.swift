@@ -19,7 +19,7 @@ struct SetupView: View {
 
     /// Screenshots of TotalMix FX for a step, shown under "Show in TotalMix FX" while the step
     /// needs doing. They are from TotalMix FX "2.10 (1)" on a Mac (Adam, 2026-10-31), published
-    /// with his permission; TotalMix's windows rarely change.
+    /// with his permission; TotalMix FX's windows rarely change.
     private static let screenshots: [String: [String]] = [
         "totalmix": ["totalmix-options-menu", "totalmix-osc-tab", "totalmix-osc-details"],
         "meters": ["totalmix-osc-tab"],

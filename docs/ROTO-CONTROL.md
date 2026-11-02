@@ -74,7 +74,7 @@ open.
   - A number that can exceed 127, such as a track index or a track count, takes two bytes, "two 7-bit values".[^sysex-1.6] The high seven bits come first.[^ableton][^bitwig]
   - An RGB color component (0–255) takes two bytes the same way: bit 7 first, then the low seven bits.[^logic]
 - **Names.** A name is 13 bytes of ASCII, ending in a 0 byte and padded with 0 bytes.[^sysex-1.6] That leaves 12 visible characters. Ableton cuts names to 12 characters, and clears the top bit of each byte of a value string.[^ableton] Performance Bridge replaces anything outside printable ASCII with `?`; that choice is this project's.
-- **Pacing.** Ableton waits 5 ms after each SysEx message it sends.[^ableton] The SysEx doc says nothing about pacing. With no pause at all, the Roto-Control took a full track page and a full plugin page without losing a message.[^test-3] `RotoControl` leaves pacing to the transport. `RotoDriver` draws a page at most once every 100 ms (`pageDrawInterval`); a page that changes sooner is drawn once, when the interval is up. Before this, at every connection, TotalMix's answer to `/sendall` redrew the page about 33 times in 0.35 s (review of 2026-11-02), and bursts of SysEx have preceded freezes (test 4, runs 17–19). That the burst could freeze the Roto-Control is an inference (Adam, 2026-11-02).
+- **Pacing.** Ableton waits 5 ms after each SysEx message it sends.[^ableton] The SysEx doc says nothing about pacing. With no pause at all, the Roto-Control took a full track page and a full plugin page without losing a message.[^test-3] `RotoControl` leaves pacing to the transport. `RotoDriver` draws a page at most once every 100 ms (`pageDrawInterval`); a page that changes sooner is drawn once, when the interval is up. Before this, at every connection, TotalMix FX's answer to `/sendall` redrew the page about 33 times in 0.35 s (review of 2026-11-02), and bursts of SysEx have preceded freezes (test 4, runs 17–19). That the burst could freeze the Roto-Control is an inference (Adam, 2026-11-02).
 
 ## 3. The handshake
 
@@ -93,16 +93,16 @@ Roto-Control's behavior depends on the type:
 - With Logic, the Roto-Control sends page-left and page-right commands in MIX mode while a single track is in focus, expects transport status as CCs instead of SysEx, and reserves CCs 81–127.[^sysex-1.6] Ableton's code also handles the two page commands.[^ableton]
 - Between Ableton and Bitwig, the SysEx doc names differences only in PLUGIN mode (two fields the Roto-Control ignores for Ableton), and none in MIX mode or in the general commands.[^sysex-1.6] In use they differ in MIX mode too[^test-3]:
   - With `01`, level knobs have a 0 dB indent at 13926 (0.85 of the range, where Live puts 0 dB), and the Roto-Control sends CC 64 when a knob lands in it (section 5).
-  - With `02` there is no indent at 13926 and no CC 64[^test-3]; there is an indent lower down, felt where a TotalMix fader reads "-0.8 dB", about 0.79 of the range (seen, 2026-10-30, with `sbdev bridge`). The inference is that it is Bitwig's 0 dB, which on a volume law of twice the cube of the position is at 0.5 raised to 1/3, 0.794 (count 13003); that law is from memory of Bitwig, not from Melbourne Instruments' code. Test 5 measured it at 13004. With `RotoDriver`'s scale bent to put 0.794 at TotalMix's 0 dB (below), the indent was felt at 0.0 dB (seen, 2026-10-30), which fits the inferred position to within what a hand can feel. The indent caught the knob at 0 dB reliably (seen).
+  - With `02` there is no indent at 13926 and no CC 64[^test-3]; there is an indent lower down, felt where a TotalMix FX fader reads "-0.8 dB", about 0.79 of the range (seen, 2026-10-30, with `sbdev bridge`). The inference is that it is Bitwig's 0 dB, which on a volume law of twice the cube of the position is at 0.5 raised to 1/3, 0.794 (count 13003); that law is from memory of Bitwig, not from Melbourne Instruments' code. Test 5 measured it at 13004. With `RotoDriver`'s scale bent to put 0.794 at TotalMix FX's 0 dB (below), the indent was felt at 0.0 dB (seen, 2026-10-30), which fits the inferred position to within what a hand can feel. The indent caught the knob at 0 dB reliably (seen).
   - With `01`, switches send 0 on release as well as 127 on press; with `02`, nothing on release.
   - The solo color differs: yellow with `02`, blue with `01` (seen).
 - With `03`, PLUGIN mode never settled with the Bitwig-style replies `sbdev` sends: the Roto-Control sent SET PLUGIN MODE again about every 200 ms (section 4a).[^test-3]
 
 The handshake itself, MIX mode's messages, and the stored PLUGIN-mode mappings were the same
-with `01` and `02`.[^test-3] Neither type's indent is at TotalMix's 0 dB, which is at 0.817 of the
-range: `01`'s, at 0.85, would read about +1.1 dB on a TotalMix fader, and `02`'s about −0.8 dB.
+with `01` and `02`.[^test-3] Neither type's indent is at TotalMix FX's 0 dB, which is at 0.817 of the
+range: `01`'s, at 0.85, would read about +1.1 dB on a TotalMix FX fader, and `02`'s about −0.8 dB.
 `RotoDriver` therefore bends the scale of level and send knobs, linearly on each side of the
-indent, so that the indent is TotalMix's 0 dB. The inference is that `02` suits Performance Bridge
+indent, so that the indent is TotalMix FX's 0 dB. The inference is that `02` suits Performance Bridge
 better: no CC 64 to ignore, and switches that give the same press messages without release
 messages. `RotoHandshake` takes the type as a setting.
 
@@ -171,7 +171,7 @@ table (the SysEx doc's Appendix A, not reproduced here), and `grouped` is `00` o
 In PLUGIN mode the host lists "plugins" (Ableton's devices), and the user maps the Roto-Control's
 controls to their parameters. The Roto-Control stores each mapping on the device, under a hash of
 the plugin and a hash of the parameter.[^sysex-1.6][^ableton] Performance Bridge could present parts
-of TotalMix as plugins, for example the control room or the selected channel's EQ; that use is
+of TotalMix FX as plugins, for example the control room or the selected channel's EQ; that use is
 this project's idea, not Melbourne Instruments'.
 
 **The flow, as Ableton's integration runs it**[^ableton]:
@@ -239,9 +239,9 @@ bits is from Bitwig's and Logic's code.[^bitwig][^logic] The rest:
 - **Switch values.** In MIX mode, with type `02`, a switch sends 127 on each press and nothing on release, and changes no state by itself: the host decides the new state and sets the light (section 6). This holds in record-arm, mute, and solo modes.[^test-1][^test-2][^test-3] With type `01` a switch also sends 0 on release, and still changes nothing by itself.[^test-3] In PLUGIN mode a switch sends the mapped parameter's value instead (section 4a).[^test-2] `RotoControlDecoder` reports the value as sent, and a driver reads it as a press or a value depending on the mode. Bitwig treats 127 as pressed and 0 as released.[^bitwig]
 - **Transport switches.** Ableton reads them as play, stop, record, session record, loop, punch-in, punch-out, and re-enable automation.[^ableton] That order matches TRANSPORT STATUS.[^sysex-1.6] With type `02` the Roto-Control sends them in transport mode, 127 on press and 0 on release, and asks for TRANSPORT STATUS when that mode is entered.[^test-2]
 - **CCs 36 and 37.** Ableton also listens on these, the two CCs after the transport switches, for rewind and fast-forward.[^ableton][^bitwig] The SysEx doc does not list them. `RotoControl` reports them as other CCs.
-- **CC 64.** The Roto-Control sends it, with a knob's index as the value, and Ableton then sets that knob's parameter to its default.[^ableton] The SysEx doc names it "level at 0 dB" without saying what triggers it. With type `01`, in all-tracks level mode, the Roto-Control sent it each time a knob landed in its 0 dB indent: ten times out of ten passes, always with the knob reporting exactly 13926 in the same millisecond, and the knob then said nothing for 32–601 ms. Seen: the indent was too weak to feel. With type `02` there was no CC 64 in 31 passes of knob 1 through 13926 (12 in level mode, 19 in pan mode).[^test-3] Melbourne Instruments' release notes add 0 dB indents for volume (3.0.1, Logic) and for volume and send knobs (3.1.0, all three DAWs).[^release-notes] Sends, and the exact position of the `02` indent (section 3), are untested. With type `01`, CC 64 has therefore been observed only as a notice that a knob reached the indent, not as a reset gesture; a TotalMix driver that claims `02` will not see it.
+- **CC 64.** The Roto-Control sends it, with a knob's index as the value, and Ableton then sets that knob's parameter to its default.[^ableton] The SysEx doc names it "level at 0 dB" without saying what triggers it. With type `01`, in all-tracks level mode, the Roto-Control sent it each time a knob landed in its 0 dB indent: ten times out of ten passes, always with the knob reporting exactly 13926 in the same millisecond, and the knob then said nothing for 32–601 ms. Seen: the indent was too weak to feel. With type `02` there was no CC 64 in 31 passes of knob 1 through 13926 (12 in level mode, 19 in pan mode).[^test-3] Melbourne Instruments' release notes add 0 dB indents for volume (3.0.1, Logic) and for volume and send knobs (3.1.0, all three DAWs).[^release-notes] Sends, and the exact position of the `02` indent (section 3), are untested. With type `01`, CC 64 has therefore been observed only as a notice that a knob reached the indent, not as a reset gesture; a TotalMix FX driver that claims `02` will not see it.
 - **Meters hold.** A meter has been observed to stay where it was set until the host sets it again; the host sends the falls as well as the rises.[^test-2]
-- **Meter values.** Ableton sends a track's meter as Live's meter reading (0–1) times 127, at most 12 times a second.[^ableton] How Live scales that reading is not in the integration, so the mapping from TotalMix's dB levels to 0–127 is this project's choice, still to be made.
+- **Meter values.** Ableton sends a track's meter as Live's meter reading (0–1) times 127, at most 12 times a second.[^ableton] How Live scales that reading is not in the integration, so the mapping from TotalMix FX's dB levels to 0–127 is this project's choice, still to be made.
 
 ## 6. Feedback to the Roto-Control
 
@@ -260,14 +260,14 @@ bits is from Bitwig's and Logic's code.[^bitwig][^logic] The rest:
 
   This is an inference from those events; the SysEx doc says nothing about it. The releases from 0, at 13004–13078, sit at the `02` indent's position (13004[^test-5]), so the knob may let go into its indent; another inference, from that match alone. Test 1's "bounce" (0 to 16383 and back to 0) fits as two wraps, but its log was not kept, so whether the host had set that knob is unknown.
 
-  A driver must therefore send every knob's position after each change of knob mode, and still treat a jump across most of the range as an end event, not as a new level: for a TotalMix fader, 0 to 16383 is off to +6 dB.
+  A driver must therefore send every knob's position after each change of knob mode, and still treat a jump across most of the range as an end event, not as a new level: for a TotalMix FX fader, 0 to 16383 is off to +6 dB.
 
   How large a jump is an end event: in the kept logs of tests 2 and 3, a script comparing each knob report with that knob's last found every end event at 12,690 counts or more, and every other report at 2,942 or less, apart from the 8,191- and 8,192-count steps of a stepped knob in PLUGIN mode. `RotoDriver` therefore takes a jump of more than 8,000 counts in MIX mode as an end event, ignores it, and sends the knob back to its last position.
 - **Unchanged values.** Bitwig does not resend a knob position it last sent, except that it resends all eight positions when it switches layers or modes.[^bitwig]
 - **Value text lasts about 2 seconds** on the screen before the name comes back, as the user timed it.[^test-2] It shows on a knob's screen in MIX and PLUGIN modes. On a switch's screen it showed nothing, in either mode, so a switch's state can be shown only by its light and label (seen).[^test-3]
 - **Value text.** Ableton sends SHOW CONTROL VALUE whenever a mapped parameter's value changes, from the knob or from Live, at most 12 times a second with one trailing update, and once when a knob is touched.[^ableton] Bitwig sends value text only in PLUGIN mode, within 100 ms (plugin parameters) or 300 ms (macro parameters) of the knob last moving; in MIX mode it sends none.[^bitwig]
 - **Bitwig's command for value text.** Bitwig sends value text as `0A 0F`, the number the SysEx doc gives REQUEST ROTO SYSEX API VERSION, with the same layout as SHOW CONTROL VALUE.[^bitwig][^sysex-1.6] The inference is that `0A 0F` is an older form, from before SHOW CONTROL VALUE was documented. `RotoControl` sends `0A 18`, as Ableton and Logic do.[^ableton][^logic]
-- **Hold-off for the motors.** Bitwig holds back a knob position for 100 ms after the knob last moved on its master and return layer, and has the same rule commented out on its track layer. While touch automation is on, it also ignores the knob for 500 ms after release, and it queues knob positions while it switches modes.[^bitwig] Ableton leaves knob feedback to Live's framework, so its rule is not visible in the integration.[^ableton] Performance Bridge will need its own rule, because TotalMix confirms nothing[^totalmix-test-5]: a position from TotalMix is a change made elsewhere. The planned rule, an inference, was to hold back positions for a knob while it is touched; test 1 shows a knob turning before its touch CC, so the rule will also have to count recent movement. Test 3 adds that touches often failed to register at all (seen; a double tap sent nothing), so movement is the more reliable sign. Melbourne Instruments removed the touch-sensitivity setting in 2.1.0.[^release-notes]
+- **Hold-off for the motors.** Bitwig holds back a knob position for 100 ms after the knob last moved on its master and return layer, and has the same rule commented out on its track layer. While touch automation is on, it also ignores the knob for 500 ms after release, and it queues knob positions while it switches modes.[^bitwig] Ableton leaves knob feedback to Live's framework, so its rule is not visible in the integration.[^ableton] Performance Bridge will need its own rule, because TotalMix FX confirms nothing[^totalmix-test-5]: a position from TotalMix FX is a change made elsewhere. The planned rule, an inference, was to hold back positions for a knob while it is touched; test 1 shows a knob turning before its touch CC, so the rule will also have to count recent movement. Test 3 adds that touches often failed to register at all (seen; a double tap sent nothing), so movement is the more reliable sign. Melbourne Instruments removed the touch-sensitivity setting in 2.1.0.[^release-notes]
 
 ## 7. Errata in the SysEx doc
 
@@ -380,21 +380,21 @@ buttons is the MENU window (seen).[^manual]
 - **PLUGIN mode** (run 1): per-plugin mappings, UNMAP CONTROL, learning by turning, and the stepped knob, all in section 4a.
 - **Touch** (seen): touches often did not register, and a double tap sent nothing.
 
-### Test 4 (2026-10-30): `RotoDriver` with TotalMix, through `sbdev bridge`
+### Test 4 (2026-10-30): `RotoDriver` with TotalMix FX, through `sbdev bridge`
 
 **Setup.** Firmware 3.3.0, type `02`, with `sbdev bridge` on branch `roto-driver` (commits
 `ab1eb2f` to `fde305a`), in five runs with TotalMix FX "2.10 (1)" and a Digiface AES. The logs are
 kept outside this repository; `sbdev bridge` logs SysEx from the Roto-Control and every message to
-TotalMix, and from `fde305a` also every CC other than knobs and touches. The user's notes are
+TotalMix FX, and from `fde305a` also every CC other than knobs and touches. The user's notes are
 marked "seen".
 
 **Findings:**
 
 - **Strips, lights, and meters** (seen): the eight sources drew with their names; mute and PFL (on
-  the record-arm switches) lit and followed TotalMix both ways; a meter moved with an input's level.
+  the record-arm switches) lit and followed TotalMix FX both ways; a meter moved with an input's level.
 - **The 0 dB indent:** section 3 (felt at "-0.8 dB" before the scale was bent, and at 0.0 dB after).
 - **The second track set** (seen): monitoring outputs in green, then sends in blue; a knob moved
-  an output's fader, and the knob followed the fader moved in TotalMix.
+  an output's fader, and the knob followed the fader moved in TotalMix FX.
 - **Choosing a knob mode** (seen): with SEL held, a knob mode is chosen with the switch below it;
   the switch below Send 1 is labeled "FX". Choosing it sent SET MIX ALL TRACKS MODE with knobs on
   send. While SEL is held the Roto-Control showed a send name from an earlier run, so the host must
@@ -403,12 +403,12 @@ marked "seen".
   1 and 2 sent no CC at all in single-track mode (run 5), so a host cannot use them there.
 - **Knob reports on connecting** (run 6): within 0.6 s of the driver sending knob positions on
   connecting, knobs 5–7 reported positions near the ones sent (for example 0.444, 0.458, and
-  0.456 for a position of about 0.46), and the driver passed them on to TotalMix. The user is not
+  0.456 for a position of about 0.46), and the driver passed them on to TotalMix FX. The user is not
   sure whether a hand was on those knobs. The inference is that the motors' travel was reported as
   turns; test 1 saw no echo of a host move, but there the knob was at rest. `RotoDriver` now
   ignores a knob's reports for 0.75 s after it moves the knob, and for 2 s those within 200 counts
   of where it put the knob. In run 7, with the guard and hands off the Roto-Control (seen), nothing
-  went to TotalMix on connecting, but the Roto-Control still sent ROTO SELECT TRACK for knobs 3 and
+  went to TotalMix FX on connecting, but the Roto-Control still sent ROTO SELECT TRACK for knobs 3 and
   8 about 0.6 s after the knobs were moved, which supports the inference that motor travel is
   reported like a hand's.
 - **SET CURRENT TRACK NAME** (run 7, seen): sent with "Outputs" while the second track set was
@@ -427,29 +427,29 @@ marked "seen".
   yellow from −5 dBFS (117 on a −65…0 dBFS scale) and red from −1 dBFS (125). With those
   thresholds, meter values 112, 120, and 126 showed green, a yellow end, and a red end, as expected
   (seen).
-- **Track colors against TotalMix's** (run 8, seen): with the playback pairs in TotalMix's eight
+- **Track colors against TotalMix FX's** (run 8, seen): with the playback pairs in TotalMix FX's eight
   colors and each mapped to the table color nearest in hue, schemes 9 (blue) and 61 (green)
-  matched TotalMix; 50 looked slate blue, 57 brown, 56 burgundy, 2 ochre, and 24 royal blue
+  matched TotalMix FX; 50 looked slate blue, 57 brown, 56 burgundy, 2 ochre, and 24 royal blue
   (like 66 in test 2). So the screens show some table colors darker or bluer than their RGB
   values suggest, and the driver's colors are chosen by eye. A second round (run 10) found 61
-  forest or olive green against TotalMix's lime, and 17 lemon against TotalMix's yellow-orange;
-  in a third (run 11), 18 looked fluorescent and 1 plain orange, a better match for TotalMix's
+  forest or olive green against TotalMix FX's lime, and 17 lemon against TotalMix FX's yellow-orange;
+  in a third (run 11), 18 looked fluorescent and 1 plain orange, a better match for TotalMix FX's
   orange than 15. Run 12: 47 looked olive, and 59 brownish ("peanut butter"). Run 13: 19 matched
-  TotalMix's green, and 73 was a little too green for its yellow.
+  TotalMix FX's green, and 73 was a little too green for its yellow.
 - **SET TRACK COLOUR** (run 14, seen): sent after TRACK DETAILS END, it changed the strip's color
   in MIX mode (FFC800, a yellow-orange), with the strip's name in white, where scheme 73 alone had
   black text. The host cannot choose the text color. In run 15 an exact color sent for the third
   strip on the first page stayed on the third screen after paging, over the next page's own scheme,
   and after the Roto-Control was plugged in again an exact color sent for a strip did not show.
   So an exact color belongs to a screen rather than a track, and `RotoDriver` does not use them.
-- **SOLO and ARM** (run 7, seen): with the switches on solo, a press set PFL in TotalMix and lit
+- **SOLO and ARM** (run 7, seen): with the switches on solo, a press set PFL in TotalMix FX and lit
   the switch; on record arm, a press did nothing.
 - **Modes kept across sessions** (run 16, seen): on connecting, the Roto-Control reported SET MIX
   ALL TRACKS MODE with knobs on send 1 and switches on record arm, the modes left from run 15, so
   the knobs moved the first send's submix rather than the main one. No message sets these modes
   from the host.
-- **Scheme 73** (run 16, seen): TotalMix's yellow drawn as scheme 73 looked "banana" against
-  TotalMix's "mango". `sbdev bridge` has `color` commands to try exact colors again, sent to every
+- **Scheme 73** (run 16, seen): TotalMix FX's yellow drawn as scheme 73 looked "banana" against
+  TotalMix FX's "mango". `sbdev bridge` has `color` commands to try exact colors again, sent to every
   strip on every page, and to tune a color with knobs 1–3.
 - **A hang after exact colors** (run 17, seen): on a page of 7 strips (tracks 8–14 of 15), `color
   exact` sent SET TRACK COLOUR for tracks 8–14 and black for track 15, past the track count, twice
@@ -492,17 +492,17 @@ marked "seen".
   since the Roto-Control was not plugged in again in between, so this is not yet a clean result.
   `swatch` now draws the page with TRACK DETAILS … END instead.
 - **Yellow** (run 23, seen): side by side, drawn as a page after plugging in again, schemes 3, 17,
-  59, and 73 all showed; 73 was the closest to TotalMix's yellow ("not great"), 59 closer in hue
+  59, and 73 all showed; 73 was the closest to TotalMix FX's yellow ("not great"), 59 closer in hue
   but brownish. Yellow stays scheme 73.
 - **The table's colors.** Melbourne Instruments' Bitwig integration lists an RGB value for each
   scheme (`ColorUtil.java` in [roto_control](https://github.com/Melbourne-Instruments/roto_control),
   MIT), which is a quicker guide than the SysEx doc's table to which schemes to try. By it, the
   neutral grays are 13 (white), 27, 41, 55, and 69 (darkest), with 70 black; 49, used for
-  TotalMix's gray, is a bluish gray. How each looks on the screens still has to be seen.
+  TotalMix FX's gray, is a bluish gray. How each looks on the screens still has to be seen.
 - **Choosing a send** (2026-10-30, seen): with SEL held, pressing the switch under screen 3 (the
   one labeled "FX") again and again steps through the sends; turning knob 3 with SEL held did not
   change the send.
-- **White** (run 24, seen): side by side, 13, 27, 41, 55, 69, and 49; TotalMix's default white is
+- **White** (run 24, seen): side by side, 13, 27, 41, 55, 69, and 49; TotalMix FX's default white is
   drawn as 27 (light gray). Schemes 2 and 30 were no better than 73 for yellow.
 
 ### Test 5 (2026-11-01): where the `02` indent is, and send knobs
@@ -584,16 +584,16 @@ marked "seen".
 **Second session (2026-11-01, evening), with both sets showing the channels.** `sbdev bridge` on main after PR #53, TotalMix FX 2.10 (1), Digiface AES. The logs were written to `roto-trackset.log` and `roto-trackset2.log` and both were overwritten by later runs: run 1 survives only in the Terminal output Adam pasted into the conversation (the bridge's log of run 1, up to his Ctrl-C), and run 2 not at all (the counts below were read from it before it was overwritten; review of 2026-11-02).
 
 - **Run 1.** Six track-set switches in 5.3 s (2.75–8.05 s), each answered with the channels' names, then nothing more from the Roto-Control: no knob reports, no touches, and no SET MIX ALL TRACKS MODE when Adam changed the knob mode with SEL. Its screens went blank after the SEL change. The bridge was still running (stopped with Ctrl-C). This has occurred once and is not explained. That the firmware stalled is an inference.
-- **Run 2** (relaunched): six switches over 54 s, one per press of both arrows; knobs moved TotalMix's faders in both sets throughout (`/mix/in/0/0/faderlin` and `/mix/in/2/0/faderlin`).
+- **Run 2** (relaunched): six switches over 54 s, one per press of both arrows; knobs moved TotalMix FX's faders in both sets throughout (`/mix/in/0/0/faderlin` and `/mix/in/2/0/faderlin`).
 
-**Consequences.** The driver shows the channels on both track sets (Adam, 2026-11-01); the outputs are no longer shown on any hardware controller. The second set has no TotalMix job of its own: TotalMix has no return tracks, and its FX returns (reverb and echo) aren't used here (Adam, 2026-11-01). Because the second set mirrors the first and keeps the page and the selected track when the set changes (fixed after the review of 2026-11-02, which found a switch went back to the first page), an accidental press leaves the knobs on the same channels. No host command sets or locks the track set (SET ALL TRACKS MODE goes only from the Roto-Control to the host), so the switch can't be turned off; this is a feature request.
+**Consequences.** The driver shows the channels on both track sets (Adam, 2026-11-01); the outputs are no longer shown on any hardware controller. The second set has no TotalMix FX job of its own: TotalMix FX has no return tracks, and its FX returns (reverb and echo) aren't used here (Adam, 2026-11-01). Because the second set mirrors the first and keeps the page and the selected track when the set changes (fixed after the review of 2026-11-02, which found a switch went back to the first page), an accidental press leaves the knobs on the same channels. No host command sets or locks the track set (SET ALL TRACKS MODE goes only from the Roto-Control to the host), so the switch can't be turned off; this is a feature request.
 
 ### Test 11 (2026-11-02): page draws held to one per 100 ms
 
 **Setup.** Adam's Roto-Control in MIX mode, with the app (build 250), whose `RotoDriver` draws a page
 at most once every 100 ms (`pageDrawInterval`, section 3). Log `app-roto-1102.log`. Seen by Adam.
 
-**Findings.** All as intended: on connecting, all eight screens showed their names and TotalMix
+**Findings.** All as intended: on connecting, all eight screens showed their names and TotalMix FX
 colors; after six quick presses each of the right and left arrows, the screens settled on the right
 page and the knobs responded; a knob turned within about half a second of a page change behaved as
 expected; pressing both arrows kept the page. No stall.

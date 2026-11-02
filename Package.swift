@@ -8,7 +8,7 @@ import Foundation
 //
 //   OSCCodec       OSC 1.0 messages and bundles, encoded and decoded; Foundation only, builds on
 //                  macOS, Linux, and Windows
-//   TotalMixOSC    TotalMix FX Global OSC: addresses, the values TotalMix sends and accepts, and the
+//   TotalMixOSC    TotalMix FX Global OSC: addresses, the values TotalMix FX sends and accepts, and the
 //                  fader curve; Foundation only
 //   RotoControl    Melbourne Instruments Roto-Control: SysEx messages, CCs, 14-bit knobs, and the
 //                  handshake; Foundation only
@@ -17,16 +17,16 @@ import Foundation
 //                  Foundation only
 //   MIDITransport  a MIDI connection through CoreMIDI (macOS only; elsewhere it lists no ports and
 //                  throws), and the conversion between MIDI 1.0 bytes and CoreMIDI's packets
-//   UDPTransport   a small UDP socket for talking to TotalMix (POSIX on macOS and Linux; not yet
+//   UDPTransport   a small UDP socket for talking to TotalMix FX (POSIX on macOS and Linux; not yet
 //                  implemented on Windows, where it throws)
-//   SurfaceCore    the surface-neutral core: TotalMix's state, channel strips, paging, the home
-//                  submix, and the rules between surfaces and TotalMix; Foundation only
+//   SurfaceCore    the surface-neutral core: TotalMix FX's state, channel strips, paging, the home
+//                  submix, and the rules between surfaces and TotalMix FX; Foundation only
 //   RotoDriver     the Roto-Control's driver: its MIX mode on top of SurfaceCore; Foundation only
 //   LaunchControlDriver  the Launch Controls' driver on top of SurfaceCore; Foundation only
-//   BridgeEngine   TotalMix and a Roto-Control (and, if set, a Launch Control) connected through
+//   BridgeEngine   TotalMix FX and a Roto-Control (and, if set, a Launch Control) connected through
 //                  SurfaceCore and the drivers, with the sockets, the MIDI ports, and a clock: what
 //                  the app runs
-//   sbdev          developer tool for checking the libraries against TotalMix and the surfaces
+//   sbdev          developer tool for checking the libraries against TotalMix FX and the surfaces
 //
 // The PerformanceBridge app (SwiftUI, macOS only, built by make-app.sh) is added below on a Mac.
 // Planned: the Launch Controls in the app's Settings (for now, a command-line option).

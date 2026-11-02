@@ -40,7 +40,7 @@ public struct SetupStep: Equatable, Sendable, Identifiable {
 
 /// The steps of setting up Performance Bridge with TotalMix FX and a Roto-Control, checked live
 /// from the engine's status where the app can see the result, and given as instructions where it
-/// can't. Every TotalMix location is given in full, with the labels TotalMix shows; they were
+/// can't. Every TotalMix FX location is given in full, with the labels TotalMix FX shows; they were
 /// checked on screen with TotalMix FX "2.10 (1)" (docs/SETUP.md).
 public enum SetupChecklist {
     /// The steps for a status and the settings the engine runs with. `totalMixRunning` says whether
@@ -106,7 +106,7 @@ public enum SetupChecklist {
         // Neither Live mode nor "Cue/PFL to" can be read over OSC (docs/TOTALMIX-OSC.md, tests 6
         // and 21), so they are notes.
         steps.append(SetupStep(id: "livemode", title: "PFL needs Live mode", state: .instruction,
-                               detail: "The hardware controllers’ PFL buttons work only with TotalMix FX in Live mode, which Performance Bridge can’t check. With Live mode on, the channels’ buttons read PFL instead of S.\n\nIn TotalMix FX’s Control Strip, click “options” and, under “solo/pfl mode”, choose “live”."))
+                               detail: "The hardware controllers’ PFL buttons have been seen to do nothing visible unless TotalMix FX is in Live mode, which Performance Bridge can’t check. With Live mode on, the channels’ buttons read PFL instead of S.\n\nIn TotalMix FX’s Control Strip, click “options” and, under “solo/pfl mode”, choose “live”."))
         steps.append(SetupStep(id: "cue", title: "Send PFL to your headphones", state: .instruction,
                                detail: "TotalMix FX sends PFL to Main by default, so PFL from a hardware controller replaces what Main Out plays: on stage, the audience hears only the channel being checked. Performance Bridge can’t check this setting.\n\nIn TotalMix FX’s Control Room section, click “assign”, then “Cue/PFL to”, and choose a headphone output (e.g., “Phones 1”)."))
 
@@ -143,7 +143,7 @@ public enum SetupChecklist {
 
     /// TotalMix FX's version: Global OSC needs 2.1 or later; release candidates count.
     static func versionStep(status: BridgeStatus, running: Bool, version: String?) -> SetupStep {
-        // An answer from TotalMix proves it runs, whatever the list of running apps says.
+        // An answer from TotalMix FX proves it runs, whatever the list of running apps says.
         let running = running || status.totalMixAnswering
         let needs = "Performance Bridge requires TotalMix FX 2.1 or later."
         guard running else {
@@ -161,7 +161,7 @@ public enum SetupChecklist {
                          detail: needs + " Update it from RME’s website.")
     }
 
-    /// Whether every step the surfaces need is done: TotalMix answering with its channels, the
+    /// Whether every step the surfaces need is done: TotalMix FX answering with its channels, the
     /// Roto-Control connected if it is used, and the Launch Control connected if one is set.
     public static func isComplete(_ status: BridgeStatus) -> Bool {
         status.listening && status.totalMixAnswering && status.channelCount > 0

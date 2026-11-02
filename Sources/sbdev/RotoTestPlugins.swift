@@ -1,5 +1,5 @@
 // Plugins and parameters that `sbdev roto` offers in PLUGIN mode, for testing. They are stand-ins
-// for parts of TotalMix FX; nothing here talks to TotalMix.
+// for parts of TotalMix FX; nothing here talks to TotalMix FX.
 
 import Foundation
 import RotoControl
