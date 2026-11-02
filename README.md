@@ -10,7 +10,7 @@ them against TotalMix FX. The libraries depend only on Foundation, and they buil
 Windows.
 
 Currently, Performance Bridge supports Melbourne Instruments' Roto-Control and Novation's Launch
-Control mk3 and Launch Control XL mk3.
+Control 3 and Launch Control XL 3.
 
 Performance Bridge is not affiliated with or endorsed by RME, Melbourne Instruments, or Novation.
 
