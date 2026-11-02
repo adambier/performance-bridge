@@ -101,9 +101,6 @@ enum SettingsTab: String, Hashable {
     case connections
     /// The order of the channels on the surfaces.
     case channelLayout
-    /// The Launch Control's send rows; shown only while a Launch Control is the hardware
-    /// controller (Adam, 2026-11-01).
-    case launchControl
 
     /// The tab's name, also the window's title while it shows (Apple's HIG, Settings: the title
     /// names the pane that is showing).
@@ -111,7 +108,6 @@ enum SettingsTab: String, Hashable {
         switch self {
         case .connections: return "Connections"
         case .channelLayout: return "Channel Layout"
-        case .launchControl: return "Launch Control"
         }
     }
 
@@ -123,8 +119,7 @@ enum SettingsTab: String, Hashable {
     }
 }
 
-/// The Settings window: Connections, Channel Layout, and Launch Control while one is used, in tabs
-/// (Adam, 2026-10-31; 2026-11-01). The window
+/// The Settings window: Connections and Channel Layout, in tabs (Adam, 2026-10-31). The window
 /// fits the tab that is showing, as macOS settings windows do, rather than the taller of the two
 /// (Adam, 2026-10-31): only that tab's content is built, and the other is empty, since a tab view
 /// otherwise takes the size of its largest tab.
@@ -142,18 +137,13 @@ struct SettingsWindowView: View {
             pane(.channelLayout) { LayoutView(model: model) }
                 .tabItem { Text(SettingsTab.channelLayout.title) }
                 .tag(SettingsTab.channelLayout)
-            if model.status.launchControlLayout != nil {
-                pane(.launchControl) { LaunchControlSettingsView(model: model) }
-                    .tabItem { Text(SettingsTab.launchControl.title) }
-                    .tag(SettingsTab.launchControl)
-            }
         }
         .padding(.top, 8)
         .frame(width: 480)
         .onAppear { show(tab) }
-        .onChange(of: model.status.launchControlLayout) { layout in
-            // The Launch Control tab goes when the Launch Control does.
-            if layout == nil, tab == .launchControl { tab = .connections }
+        .onChange(of: edited.controller) { _ in
+            // The Connections tab grows or shrinks with the chosen controller's settings.
+            DispatchQueue.main.async { Windows.fitToContent("settings") }
         }
         .onChange(of: tab) { tab in
             show(tab)
@@ -182,8 +172,7 @@ struct SettingsWindowView: View {
 extension BridgeModel {
     /// Opens the Settings window on `tab`, or on the tab shown last.
     func showSettings(_ tab: SettingsTab? = nil) {
-        var tab = tab ?? SettingsTab.lastShown
-        if tab == .launchControl, status.launchControlLayout == nil { tab = .connections }
+        let tab = tab ?? SettingsTab.lastShown
         Windows.show("settings", title: tab.title) {
             SettingsWindowView(model: self, tab: tab)
         }
@@ -191,7 +180,8 @@ extension BridgeModel {
 }
 
 /// The Connections tab: where to find TotalMix FX, and which hardware controller is used and its
-/// MIDI port. Only the chosen controller's settings show (Adam, 2026-11-01). Apply saves the
+/// MIDI port. Only the chosen controller's settings show, and they change as soon as another is
+/// chosen (Adam, 2026-11-01): a Launch Control's send rows appear below its port. Apply saves the
 /// settings and restarts the connections.
 struct SettingsView: View {
     @ObservedObject var model: BridgeModel
@@ -246,6 +236,10 @@ struct SettingsView: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+            }
+            if let chosen = edited.controller.launchControl {
+                LaunchControlSendRowsView(model: model, chosen: chosen)
+                    .padding(.top, 4)
             }
 
             if !edited.isValid {
@@ -363,42 +357,45 @@ struct SettingsView: View {
     }
 }
 
-/// The Launch Control tab: the outputs its send rows feed, also chosen on the device with Page
-/// (top row) and Shift + Page (the XL 3's middle row). Changes apply at once, as on the device.
-struct LaunchControlSettingsView: View {
+/// A Launch Control's send rows, at the bottom of the Connections tab while a Launch Control is
+/// chosen: the outputs they feed, also chosen on the device with Page (top row) and Shift + Page
+/// (the XL 3's middle row). Changes take effect at once, as on the device; until the chosen model
+/// is the one running (after Apply) and connected, a note says so instead.
+struct LaunchControlSendRowsView: View {
     @ObservedObject var model: BridgeModel
+    /// The model chosen in the Connections tab, applied or not.
+    var chosen: LaunchControlModel
 
     var body: some View {
         let status = model.status
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Send Rows")
-                .font(.headline)
-            if status.launchControlSends.isEmpty {
-                Text("Connect the \(status.launchControlName ?? "Launch Control") to choose its send rows.")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            } else {
-                Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 10, verticalSpacing: 8) {
-                    ForEach(status.launchControlSends.indices, id: \.self) { row in
-                        GridRow {
-                            Text(rowTitle(row))
-                                .frame(width: 110, alignment: .trailing)
-                            Picker(rowTitle(row), selection: selection(row)) {
-                                if status.launchControlLayout == .lc3 {
-                                    Text("Pan").tag(Int?.none)
-                                }
-                                ForEach(choices(row), id: \.output) { choice in
-                                    Text("> " + choice.name).tag(Int?.some(choice.output))
-                                }
+        let live = status.launchControlLayout == chosen && !status.launchControlSends.isEmpty
+        VStack(alignment: .leading, spacing: 8) {
+            Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 10, verticalSpacing: 8) {
+                ForEach(0..<rowCount, id: \.self) { row in
+                    GridRow {
+                        Text(rowTitle(row))
+                            .frame(width: 110, alignment: .trailing)
+                        Picker(rowTitle(row), selection: selection(row)) {
+                            if chosen == .lc3 {
+                                Text("Pan").tag(Int?.none)
                             }
-                            .labelsHidden()
+                            ForEach(choices(row), id: \.output) { choice in
+                                Text("> " + choice.name).tag(Int?.some(choice.output))
+                            }
                         }
+                        .labelsHidden()
+                        .disabled(!live)
                     }
                 }
             }
             VStack(alignment: .leading, spacing: 6) {
-                Text(status.launchControlLayout == .lc3
+                if !live {
+                    Text(status.launchControlLayout == chosen
+                         ? "Connect the \(chosen.name) to choose its send rows here."
+                         : "Click Apply to use the \(chosen.name), then choose its send rows here.")
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Text(chosen == .lc3
                      ? "Page ▲ and ▼ on the Launch Control step the top row through Pan and the outputs too."
                      : "Page ▲ and ▼ on the Launch Control step the top row, and Shift + Page the middle row. The two rows never feed the same output.")
                     .fixedSize(horizontal: false, vertical: true)
@@ -408,12 +405,12 @@ struct LaunchControlSettingsView: View {
             .font(.callout)
             .foregroundStyle(.secondary)
         }
-        .padding(20)
-        .fixedSize(horizontal: false, vertical: true)
     }
 
+    private var rowCount: Int { chosen == .xl3 ? 2 : 1 }
+
     private func rowTitle(_ row: Int) -> String {
-        model.status.launchControlLayout == .lc3 ? "Top row" : row == 0 ? "Top row" : "Middle row"
+        chosen == .lc3 ? "Top row" : row == 0 ? "Top row" : "Middle row"
     }
 
     /// The outputs a row can feed: every send target except the other row's.
