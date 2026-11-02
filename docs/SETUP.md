@@ -1,17 +1,5 @@
 # Setting up Performance Bridge
 
-This guide sets up Performance Bridge with TotalMix FX and a hardware controller: a Roto-Control, a
-Launch Control XL 3, or a Launch Control 3. The steps below mark what has been checked on a Mac and
-what has not.
-
-**Checked.** The settings in each step were used in the tests in `docs/TOTALMIX-OSC.md` (section 6) and
-`docs/ROTO-CONTROL.md` (section 9), and `docs/LAUNCH-CONTROL-XL3.md` (section 10), with the versions
-named there: TotalMix FX "2.10 (1)" with a Digiface AES, a Roto-Control on firmware 3.3.0, and a Launch
-Control XL 3 on firmware 1.2. No Launch Control 3 has been tried.
-
-**Not checked on screen.** Where a menu path or a label below comes from RME's manual or the project's
-notes and has not been seen in TotalMix, the step says so.
-
 ## What you need
 
 - A Mac running macOS 13 or later.
