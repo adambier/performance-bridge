@@ -38,7 +38,8 @@ jobs:
             -module-name PerformanceBridge \
             Sources/OSCCodec/*.swift Sources/TotalMixOSC/*.swift Sources/RotoControl/*.swift \
             Sources/MIDITransport/*.swift Sources/UDPTransport/*.swift Sources/SurfaceCore/*.swift \
-            Sources/RotoDriver/*.swift Sources/BridgeEngine/*.swift App/PerformanceBridge/*.swift
+            Sources/RotoDriver/*.swift Sources/LaunchControl/*.swift Sources/LaunchControlDriver/*.swift \
+            Sources/BridgeEngine/*.swift App/PerformanceBridge/*.swift
 
   windows:
     runs-on: windows-2022

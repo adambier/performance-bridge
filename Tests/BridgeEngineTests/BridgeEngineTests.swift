@@ -3,9 +3,27 @@ import OSCCodec
 import TotalMixOSC
 import SurfaceCore
 import UDPTransport
+import LaunchControl
+import LaunchControlDriver
 @testable import BridgeEngine
 
 final class BridgeEngineTests: XCTestCase {
+    func testALaunchControlCanBeChosenOnTheCommandLine() {
+        XCTAssertNil(LaunchControlSetting(arguments: ["app"]))
+        XCTAssertNil(LaunchControlSetting(arguments: ["app", "--launch-control", "mk2"]))
+        let xl3 = LaunchControlSetting(arguments: ["app", "--launch-control", "xl3", "--launch-control-rows", "send,pan"])
+        XCTAssertEqual(xl3?.layout, .xl3)
+        XCTAssertEqual(xl3?.portName, "LCXL3 1 DAW")
+        XCTAssertEqual(xl3?.rows, [.send, .pan])
+        XCTAssertEqual(xl3?.name, "Launch Control XL 3")
+        let sim = LaunchControlSetting(arguments: ["app", "--launch-control", "lc3-sim", "--launch-control-port", "LCXL3 2 DAW"])
+        XCTAssertEqual(sim?.layout, .lc3)
+        XCTAssertEqual(sim?.device, .xl3)
+        XCTAssertEqual(sim?.portName, "LCXL3 2 DAW")
+        XCTAssertEqual(sim?.name, "Launch Control 3 on a Launch Control XL 3")
+        XCTAssertEqual(LaunchControlSetting(arguments: ["app", "--launch-control", "lc3"])?.portName, "LC3 1 DAW")
+    }
+
     func testMonitoringChoicesInOutputOrderWithNamesAndRoles() {
         var mirror = MixerMirror()
         let events: [TotalMixEvent] = [

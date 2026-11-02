@@ -20,6 +20,64 @@ import SurfaceCore
 #if canImport(RotoDriver)
 import RotoDriver
 #endif
+#if canImport(LaunchControl)
+import LaunchControl
+#endif
+#if canImport(LaunchControlDriver)
+import LaunchControlDriver
+#endif
+
+/// A Launch Control for the engine to use: which layout runs on which model, its MIDI port, and
+/// (XL 3) what its encoder rows control.
+public struct LaunchControlSetting: Equatable, Sendable {
+    /// The layout that runs: the XL 3's or the Launch Control 3's.
+    public var layout: LaunchControlModel
+    /// The model connected; the XL 3 with the Launch Control 3's layout for the simulation.
+    public var device: LaunchControlModel
+    /// The name, or part of the name, of its DAW MIDI ports.
+    public var portName: String
+    /// What the XL 3's encoder rows control, top to bottom.
+    public var rows: [LaunchControlRowFunction]
+
+    /// A setting for `layout` on `device` (by default the same model), with the device's usual DAW
+    /// port name and Pan, Send, Send for the rows.
+    public init(layout: LaunchControlModel, device: LaunchControlModel? = nil, portName: String? = nil,
+                rows: [LaunchControlRowFunction] = [.pan, .send, .send]) {
+        self.layout = layout
+        self.device = device ?? layout
+        self.portName = portName ?? (device ?? layout).defaultPortName
+        self.rows = rows
+    }
+
+    /// A setting from command-line arguments, for trying a Launch Control before the app has a
+    /// setting for it: `--launch-control xl3`, `lc3`, or `lc3-sim` (the Launch Control 3's layout on
+    /// an XL 3), with `--launch-control-port NAME` and (XL 3) `--launch-control-rows R,R,R` (each
+    /// `pan` or `send`). `nil` without `--launch-control` or with a value it doesn't know.
+    public init?(arguments: [String]) {
+        func value(_ option: String) -> String? {
+            guard let index = arguments.firstIndex(of: option), index + 1 < arguments.count else { return nil }
+            return arguments[index + 1]
+        }
+        let layout: LaunchControlModel, device: LaunchControlModel
+        switch value("--launch-control")?.lowercased() {
+        case "xl3": (layout, device) = (.xl3, .xl3)
+        case "lc3": (layout, device) = (.lc3, .lc3)
+        case "lc3-sim": (layout, device) = (.lc3, .xl3)
+        default: return nil
+        }
+        var rows: [LaunchControlRowFunction] = [.pan, .send, .send]
+        if let text = value("--launch-control-rows") {
+            let parsed = text.split(separator: ",").compactMap { LaunchControlRowFunction(rawValue: $0.lowercased()) }
+            if (1...3).contains(parsed.count) { rows = parsed }
+        }
+        self.init(layout: layout, device: device, portName: value("--launch-control-port"), rows: rows)
+    }
+
+    /// The name the menu and the log use: the model, or the simulation's description.
+    public var name: String {
+        layout == device ? layout.name : "\(layout.name) on a \(device.name)"
+    }
+}
 
 /// Where the engine finds TotalMix FX and the Roto-Control.
 public struct BridgeSettings: Equatable, Sendable {
@@ -33,6 +91,8 @@ public struct BridgeSettings: Equatable, Sendable {
     public var playbacksOnNewPage = false
     /// The layout to start with: the channel order and labels saved by the app.
     public var layout = PerformanceLayout()
+    /// A Launch Control to connect as well as the Roto-Control, or `nil` for none.
+    public var launchControl: LaunchControlSetting?
     /// How often the engine tries again to open TotalMix's port or the Roto-Control's MIDI ports
     /// while either is not open, in seconds.
     public var retryInterval: Double = 3
@@ -92,6 +152,12 @@ public struct BridgeStatus: Equatable, Sendable {
     public var listening = false
     /// Whether the Roto-Control's MIDI ports are open (it is plugged in), handshake or not.
     public var rotoFound = false
+    /// The Launch Control the engine uses, by name (e.g., "Launch Control XL 3"), or `nil` for none.
+    public var launchControlName: String?
+    /// Whether the Launch Control's DAW ports are open (it is plugged in).
+    public var launchControlFound = false
+    /// Whether the Launch Control has answered (entered DAW mode).
+    public var launchControlConnected = false
     /// How many channels TotalMix has described (named or set) since the engine started: more than
     /// zero once it has answered `/sendall` with its channels, not only its status.
     public var channelCount = 0
@@ -163,6 +229,12 @@ public final class BridgeEngine: @unchecked Sendable {
     private var lastMIDITry: Double?
     private var lastMIDICheck: Double?
     private var openingMIDI = false
+    private var lcDriver: LaunchControlDriver?
+    private var lcMIDI: MIDIConnection?
+    private var lcError: String?
+    private var lastLCTry: Double?
+    private var lastLCCheck: Double?
+    private var openingLC = false
 
     /// How often the engine checks that the Roto-Control's ports are still there, in seconds.
     static let unplugCheckInterval: Double = 1
@@ -192,6 +264,7 @@ public final class BridgeEngine: @unchecked Sendable {
         log("Started: TotalMix at \(settings.endpoint.host), sending to port \(settings.endpoint.incomingPort), listening on \(settings.endpoint.outgoingPort)")
         openSocketIfDue(force: true)
         openMIDIIfDue(force: true)
+        openLaunchControlIfDue(force: true)
         let thread = Thread { [weak self] in
             while let engine = self, engine.isRunning {
                 engine.tick()
@@ -215,9 +288,16 @@ public final class BridgeEngine: @unchecked Sendable {
         let closing = midi
         midi = nil
         driver = RotoDriver(id: driver.id)
+        let closingLC = lcMIDI
+        if var lc = lcDriver {
+            try? lcMIDI?.send(lc.stop(hub: &hub))
+            lcDriver = nil
+        }
+        lcMIDI = nil
         ticker = nil
         lock.unlock()
         closing?.close()
+        closingLC?.close()
         publishStatus()
     }
 
@@ -299,6 +379,74 @@ public final class BridgeEngine: @unchecked Sendable {
         lastMIDITry = now
         midiError = "Roto-Control unplugged"
         pendingLogs.append("The Roto-Control's ports are gone (unplugged?); trying again every \(Self.seconds(settings.retryInterval))")
+        lock.unlock()
+        connection.close()
+    }
+
+    /// Opens the Launch Control's DAW ports, if one is set and they aren't open and a try is due,
+    /// and starts the driver, which asks the device for DAW mode.
+    private func openLaunchControlIfDue(force: Bool = false) {
+        lock.lock()
+        guard running, let setting = settings.launchControl, lcMIDI == nil, !openingLC else { lock.unlock(); return }
+        if !force, let last = lastLCTry, now - last < settings.retryInterval { lock.unlock(); return }
+        lastLCTry = now
+        openingLC = true
+        lock.unlock()
+
+        let result = Result {
+            try MIDIConnection(clientName: "Performance Bridge", sourceName: setting.portName,
+                               destinationName: setting.portName) { [weak self] bytes in
+                self?.fromLaunchControl(bytes)
+            }
+        }
+
+        lock.lock()
+        openingLC = false
+        var unused: MIDIConnection?
+        switch result {
+        case .success(let connection) where running:
+            lcMIDI = connection
+            var lc = LaunchControlDriver(name: "launchcontrol", layout: setting.layout, device: setting.device)
+            let started = lc.start(hub: &hub, now: now)
+            sendToLaunchControl(started.midi)
+            let rows = setting.layout == .xl3 ? lc.setRowFunctions(setting.rows, hub: &hub, now: now) : LaunchControlStep()
+            lcDriver = lc
+            sendToLaunchControl(rows.midi)
+            dispatch(started.core)
+            dispatch(rows.core)
+            pendingLogs.append("Found the \(setting.name) (\(connection.source.name)); asking for DAW mode")
+            lcError = nil
+        case .success(let connection):
+            unused = connection
+        case .failure(let error):
+            let message = "\(setting.name) not found (\(error))"
+            if message != lcError { pendingLogs.append(message + "; trying again every \(Self.seconds(settings.retryInterval))") }
+            lcError = message
+        }
+        lock.unlock()
+        unused?.close()
+    }
+
+    /// Closes the Launch Control's ports if it has been unplugged, so that
+    /// `openLaunchControlIfDue` opens them again when it comes back.
+    private func checkLaunchControlIfDue() {
+        lock.lock()
+        guard let connection = lcMIDI else { lock.unlock(); return }
+        if let last = lastLCCheck, now - last < Self.unplugCheckInterval { lock.unlock(); return }
+        lastLCCheck = now
+        lock.unlock()
+        guard !connection.isAvailable else { return }
+        lock.lock()
+        guard lcMIDI === connection else { lock.unlock(); return }
+        lcMIDI = nil
+        if var lc = lcDriver {
+            _ = lc.stop(hub: &hub)
+            lcDriver = nil
+        }
+        lastLCTry = now
+        let name = settings.launchControl?.name ?? "Launch Control"
+        lcError = "\(name) unplugged"
+        pendingLogs.append("The \(name)'s ports are gone (unplugged?); trying again every \(Self.seconds(settings.retryInterval))")
         lock.unlock()
         connection.close()
     }
@@ -425,10 +573,24 @@ public final class BridgeEngine: @unchecked Sendable {
         publishStatusIfChanged()
     }
 
+    private func fromLaunchControl(_ bytes: [UInt8]) {
+        lock.lock()
+        if var lc = lcDriver {
+            let step = lc.receive(bytes, hub: &hub, now: now)
+            lcDriver = lc
+            sendToLaunchControl(step.midi)
+            dispatch(step.core)
+        }
+        lock.unlock()
+        publishStatusIfChanged()
+    }
+
     private func tick() {
         openSocketIfDue()
         checkMIDIIfDue()
         openMIDIIfDue()
+        checkLaunchControlIfDue()
+        openLaunchControlIfDue()
         lock.lock()
         // TotalMix has gone quiet (quit, restarted, or OSC turned off): refresh the channels, asking
         // until it answers, so the mirror is whole and current again when it comes back.
@@ -437,6 +599,12 @@ public final class BridgeEngine: @unchecked Sendable {
         totalMixWasAnswering = answering
         dispatch(hub.tick(now: now))
         sendToRoto(driver.tick(now: now))
+        if var lc = lcDriver {
+            let step = lc.tick(hub: &hub, now: now)
+            lcDriver = lc
+            sendToLaunchControl(step.midi)
+            dispatch(step.core)
+        }
         lock.unlock()
         publishStatusIfChanged()
     }
@@ -444,6 +612,14 @@ public final class BridgeEngine: @unchecked Sendable {
     // MARK: Output (with the lock held)
 
     private func dispatch(_ output: CoreOutput) {
+        var output = output
+        // The Launch Control's layers first: its driver takes their updates out of the output.
+        if var lc = lcDriver {
+            let step = lc.take(output, hub: &hub, now: now)
+            lcDriver = lc
+            sendToLaunchControl(step.midi)
+            output = step.core
+        }
         for message in output.messages {
             try? socket?.send(message.encoded(), to: settings.endpoint.host, port: settings.endpoint.incomingPort)
         }
@@ -457,6 +633,11 @@ public final class BridgeEngine: @unchecked Sendable {
         try? midi?.send(bytes)
     }
 
+    private func sendToLaunchControl(_ bytes: [UInt8]) {
+        guard !bytes.isEmpty else { return }
+        try? lcMIDI?.send(bytes)
+    }
+
     // MARK: Status
 
     private func makeStatus() -> BridgeStatus {
@@ -466,13 +647,16 @@ public final class BridgeEngine: @unchecked Sendable {
         status.rotoConnected = driver.isConnected
         status.listening = socket != nil
         status.rotoFound = midi != nil
+        status.launchControlName = settings.launchControl?.name
+        status.launchControlFound = lcMIDI != nil
+        status.launchControlConnected = lcDriver?.isConnected ?? false
         status.channelCount = hub.mirror.channels.count
         status.levelsSeen = levelsSeen
         status.homeSubmix = hub.homeSubmix
         status.playbacksOnNewPage = hub.layout.playbacksOnNewPage
         status.monitoringOutputs = Self.monitoringChoices(hub.mirror)
         status.otherOutputs = Self.otherChoices(hub.mirror, layout: hub.layout)
-        let errors = [socketError, midiError].compactMap { $0 }
+        let errors = [socketError, midiError, lcError].compactMap { $0 }
         status.error = errors.isEmpty ? nil : errors.joined(separator: "\n")
         return status
     }
@@ -525,6 +709,9 @@ public final class BridgeEngine: @unchecked Sendable {
         }
         if status.rotoConnected != previous.rotoConnected {
             log(status.rotoConnected ? "Roto-Control connected" : "Roto-Control disconnected")
+        }
+        if status.launchControlConnected != previous.launchControlConnected, let name = status.launchControlName {
+            log(status.launchControlConnected ? "\(name) connected (DAW mode)" : "\(name) disconnected")
         }
         onStatus?(status)
     }
