@@ -51,12 +51,13 @@ public struct SurfaceHub: Sendable {
     /// change: every channel sends its name, stereo, and color in the answer (docs/TOTALMIX-OSC.md,
     /// test 1), while a fader or a mute moved in TotalMix's window sends only that value. Counting
     /// any message as the answer let one fader move end a refresh TotalMix never answered and drop
-    /// every channel (review of 2026-11-02). Whether TotalMix sends one of these on its own (a
-    /// stereo switch, a recolor) is untested, so an answer also has to come from at least two
-    /// channels (`answerChannels`): a change names one channel, an answer every channel.
+    /// every channel (review of 2026-11-02). TotalMix also sends each of these on its own when it
+    /// changes in its window, and splitting a stereo pair sends `stereo` for both halves at once
+    /// (docs/TOTALMIX-OSC.md, test 20), so an answer has to come from at least three channels
+    /// (`answerChannels`): a change names one or two channels, an answer every channel.
     static let answersSendAll: Set<String> = ["name", "stereo", "color"]
     /// How many channels must send an answer-type setting before `/sendall` counts as answered.
-    static let answerChannels = 2
+    static let answerChannels = 3
 
     /// A hub with no surfaces.
     public init(layout: PerformanceLayout = PerformanceLayout()) {
@@ -135,13 +136,26 @@ public struct SurfaceHub: Sendable {
             if refreshSeen != nil { refreshLastHeard = now }
         default: break
         }
+        let wasStereo: Bool? = {
+            guard case .channel(let bus, let channel, "stereo", _) = event else { return nil }
+            return mirror.channels[ChannelRef(bus, channel)]?.stereo
+        }()
         guard let change = mirror.apply(event) else { return CoreOutput() }
         switch change {
         case .meter(let ref):
             return meterChanged(ref, now: now)
         case .node(let key):
             return refresh(where: { $0.contains(node: key) }, now: now)
-        case .channel, .controlRoom:
+        case .channel(let ref):
+            var output = refreshAll(now: now)
+            // A channel switched between mono and stereo in TotalMix's window: TotalMix sends only
+            // `stereo` (test 20), so the right half split off has no name or color here yet, and one
+            // joined to a pair is still listed. Ask for everything again, as a refresh does.
+            if let wasStereo, wasStereo != mirror.channels[ref]?.stereo, snapshotAskedAt == nil, refreshSeen == nil {
+                output.append(refreshChannels(now: now))
+            }
+            return output
+        case .controlRoom:
             return refreshAll(now: now)
         case .muteMaster:
             // Nothing on the strips changes; drivers that show it read the mirror.

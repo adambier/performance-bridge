@@ -137,6 +137,7 @@ final class LayoutTests: XCTestCase {
         XCTAssertTrue(asked.messages.contains { $0.address == "/sendall" })
         _ = hub.handle(.channel(bus: .input, channel: 2, parameter: "name", value: .text("Sonos")), now: 10.05)
         _ = hub.handle(.channel(bus: .output, channel: 0, parameter: "name", value: .text("Main")), now: 10.05)
+        _ = hub.handle(.channel(bus: .output, channel: 2, parameter: "name", value: .text("Phones")), now: 10.05)
         _ = hub.tick(now: 10.5)
         XCTAssertNotNil(hub.mirror.channels[ChannelRef(.input, 0)], "kept until the answer is complete")
         _ = hub.tick(now: 11.1)
@@ -504,7 +505,26 @@ final class SurfaceHubTests: XCTestCase {
         XCTAssertEqual(hub.tick(now: 2.0).messages, [TotalMixCommand.sendAll()], "a status message is not an answer")
         _ = hub.handle(.channel(bus: .input, channel: 0, parameter: "name", value: .text("Keys")), now: 2.1)
         _ = hub.handle(.channel(bus: .input, channel: 2, parameter: "name", value: .text("Vox")), now: 2.1)
+        XCTAssertEqual(hub.tick(now: 3.0).messages, [TotalMixCommand.sendAll()], "two channels: maybe a stereo pair split")
+        _ = hub.handle(.channel(bus: .input, channel: 4, parameter: "name", value: .text("Gtr")), now: 3.1)
         XCTAssertTrue(hub.tick(now: 5).messages.isEmpty)
+    }
+
+    func testAStereoSwitchInTotalMixAsksForEverythingAgain() {
+        var hub = SurfaceHub()
+        _ = hub.connect(now: 0)
+        for channel in [0, 2, 4] {
+            _ = hub.handle(.channel(bus: .input, channel: channel, parameter: "stereo", value: .number(1)), now: 0.1)
+            _ = hub.handle(.channel(bus: .input, channel: channel, parameter: "name", value: .text("In \(channel + 1)")), now: 0.1)
+        }
+        XCTAssertTrue(hub.tick(now: 2).messages.isEmpty, "answered")
+        // Split in TotalMix's window: only stereo = 0 for both halves arrives (TOTALMIX-OSC.md, test 20).
+        let split = hub.handle(.channel(bus: .input, channel: 4, parameter: "stereo", value: .number(0)), now: 3)
+        XCTAssertTrue(split.messages.contains(TotalMixCommand.sendAll()), "asks for the new channel's name")
+        let again = hub.handle(.channel(bus: .input, channel: 5, parameter: "stereo", value: .number(0)), now: 3)
+        XCTAssertFalse(again.messages.contains(TotalMixCommand.sendAll()), "once")
+        let rename = hub.handle(.channel(bus: .input, channel: 0, parameter: "name", value: .text("Vox")), now: 4)
+        XCTAssertFalse(rename.messages.contains(TotalMixCommand.sendAll()), "a rename arrives whole")
     }
 
     func testAnUnsolicitedChangeIsNotTheAnswerToSendAll() {

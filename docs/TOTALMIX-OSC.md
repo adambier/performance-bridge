@@ -57,6 +57,8 @@ with neither a footnote nor a test record behind it is an inference, and says so
     records hiding](#test-13-2026-11-01-when-totalmix-writes-its-settings-file-and-how-it-records-hiding).
 [^test-15]: Test 15 (2026-11-01), section 6: [playback names](#test-15-2026-11-01-playback-names).
 [^test-17]: Test 17 (2026-11-01), section 6: [fader group 1](#test-17-2026-11-01-fader-group-1).
+[^test-20]: Test 20 (2026-11-02), section 6: [changes made in TotalMix's
+    window](#test-20-2026-11-02-changes-made-in-totalmixs-window).
 
 **Status.** Nineteen tests so far (section 6). Tests 1–5 cover what TotalMix sends with "Send
 faders in linear scale" off and on, and the fader messages it accepts; the later ones cover hiding,
@@ -66,7 +68,7 @@ controllers copy.
 ## 1. Connection
 
 - **Version.** Global OSC needs TotalMix FX 2.1 or later; earlier versions don't have it, and release candidates of 2.1 or later also work.[^adam-1031][^rme-doc] RME writes the version with a two-digit minor number ("1.96", "2.10"), so it reads as a decimal: "2.10 (1)" is version 2.1 (inference from the version strings seen). TotalMix doesn't send its version over Global OSC (`/status/device` gives the interface's name and ID, e.g., "Digiface AES (52103031)", but no version[^test-1][^test-9]), so the app reads it from TotalMix's app bundle (`Info.plist`; reading TotalMix's files is always allowed, Adam, 2026-10-31; which key holds the version hasn't been checked on a Mac).
-- TotalMix receives on its "incoming" port and sends to its "outgoing" port. Both ports, and the address of the computer that receives TotalMix's messages, are set in TotalMix's Mixer Settings window, on its OSC tab: Options → Mixer Settings… (shortcut F3).[^adam-screenshots] The Mixer Settings window's labels are "Port (incoming)" and "Port (outgoing)" under "TotalMix FX OSC Service" and "Remote Controller Address". Performance Bridge's defaults are localhost, incoming 7001, and outgoing 9001. RME's manual gives 7001 or 8000 (incoming) and 9001 or 9000 (outgoing) as typical values, not as defaults;[^rme-web-osc] TotalMix's own defaults haven't been checked. On Adam's Mac, controllers 1–4 are set to 7001/9001 through 7004/9004,[^settings-file] which are his choices, not evidence of a default.
+- TotalMix receives on its "incoming" port and sends to its "outgoing" port. Both ports, and the address of the computer that receives TotalMix's messages, are set in TotalMix's Mixer Settings window, on its OSC tab: Options → Mixer Settings… (shortcut F3).[^adam-screenshots] The Mixer Settings window's labels are "Port (incoming)" and "Port (outgoing)" under "Totalmix FX OSC Service" (TotalMix's capitalization, seen in Adam's screenshot of the OSC tab) and "Remote Controller Address". Performance Bridge's defaults are localhost, incoming 7001, and outgoing 9001. RME's manual gives 7001 or 8000 (incoming) and 9001 or 9000 (outgoing) as typical values, not as defaults;[^rme-web-osc] TotalMix's own defaults haven't been checked. On Adam's Mac, controllers 1–4 are set to 7001/9001 through 7004/9004,[^settings-file] which are his choices, not evidence of a default.
 - **The OSC menu items** (Options menu; checked on screen[^adam-1031]). The menu lists "Enable MIDI Control", "Submix linked to MIDI Controller", "Enable OSC Control", and "Submix linked to OSC Controller" (a submenu with items 1, 2, 3, and 4, one per controller, all checked on this Mac[^adam-screenshots]). The RME manual names the item "Enable MIDI / OSC Control" and does not list the OSC submenu; the running TotalMix's labels are the ones used here.
   - "Enable OSC Control" was checked on Adam's Mac.
   - Mixer Settings' OSC tab has "Select Controller" 1–4 with an "In Use" box, the two address groups described above, "Send Level Data", "Peak Hold", "Lock Remote to Submix", "Number of faders per bank", "Compatibility (Mode)" (set to "Global OSC"), and a "Details" button.
@@ -171,7 +173,6 @@ The three rows of the mixer are spelled three ways (`TotalMixBus`).[^rme-doc]
 - **The test 3 value.** In test 3, outputs 9/10 reported 0.499274 around the time a `faderlin` 0.5 command was sent from another window, and 0 dB 82 ms later. Given test 5, that was not an echo. The inference is that both values came from changes made in TotalMix's window.
 - **The current submix.** Input and playback channels sent no channel-level `volume` or `faderlin`: their faders in TotalMix's window arrived as mixer nodes of the selected submix.[^test-1] Whether TotalMix accepts a channel-level `volume` for inputs, and what it would act on, is untested.
 - **Unanswered `/sendall`.** One `/sendall` went unanswered: status messages arrived, but nothing else. A later one, with the same settings, was answered in full.[^test-1] The cause is unknown; the app should repeat the request if no reply comes.
-- **Settings sent on their own.** Does TotalMix send a channel's `stereo`, `color`, or `name` when it changes in its window (a stereo switch, a recolor, a rename), and not only in a `/sendall` answer? Test 11 saw nothing sent when a channel was hidden or shown. `SurfaceHub` counts a `/sendall` as answered only once two channels have sent one of these, so a change in one channel can't end a refresh (review of 2026-11-02). To check: `sbdev monitor`, then switch a mono input to stereo, recolor it, and rename it, and note what arrives.
 - **`/sologroup` and `/fadergroup`.** The document gives no value type for either. Both were sent as 0 or 1 by group.[^test-1]
 
 ## 6. Tests
@@ -465,3 +466,30 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 - RME's forum describes the default as 0.5 dB steps throughout; that holds only from −5 to +5 dB.
 
 **Consequence.** The Launch Controls' level and send encoders use this scale (`LaunchControlDriver.arcDetents`; docs/LAUNCH-CONTROL-XL3.md, section 9).
+
+### Test 20 (2026-11-02): changes made in TotalMix's window
+
+**Setup.** TotalMix FX "2.10 (1)" with a Digiface AES, controller 1 (ports 7001 and 9001).
+`sbdev monitor --sendall`, log `monitor-mutemaster-1102.log`. After the `/sendall` answer, Adam
+turned Mute Master (the M button in the Control Strip) off and on, switched the stereo input "ADAT
+7/8" (monitor input 13) to mono and back, recolored it and put the color back, and renamed it and
+named it back, pausing a few seconds between steps.
+
+**Findings:**
+- **Mute Master.** `globalmute = 0`, then `globalmute = 1`, each as it was clicked.
+- **Stereo to mono.** `stereo = 0` for monitor inputs 13 and 14 in the same millisecond, and
+  nothing else: no name or color for input 14, the half split off.
+- **Mono to stereo.** `stereo = 1` for input 13 only.
+- **Recolor.** `color = 4`, then `color = 1`, for input 13.
+- **Rename.** `name` with the new name, then with "ADAT 7/8", for input 13.
+
+**Consequences.**
+- TotalMix sends `stereo`, `color`, `name`, and `globalmute` on its own when they change in its
+  window, so the app follows a recolor, a rename, and Mute Master without asking. This settles the
+  question of settings sent on their own.
+- Splitting a pair names two channels at once, so `SurfaceHub` counts a `/sendall` as answered
+  only once three channels have sent a name, stereo, or color (`answerChannels`).
+- After a stereo switch the app has no name for a channel split off, and still lists one joined
+  to a pair, so `SurfaceHub` asks for everything again (`/sendall`, as a refresh) when a channel's
+  stereo changes outside an answer.
+
