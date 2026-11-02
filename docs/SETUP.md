@@ -189,10 +189,12 @@ can feed are the ones in Settings → Channel Layout → Outputs, in that order,
 | **Track >** / **Track <** | Show the next or previous eight channels. With **Shift**: the last or first eight. |
 | **Page ▼** / **Page ▲** | Change the output the **top** encoder row feeds, to the next or previous one in the Outputs list. |
 | **Shift + Page ▼** / **▲** | The same for the **middle** encoder row. |
+| **Shift + turn an encoder** | Reset it: a pan to the center, a send to −oo. |
 
 - The two send rows never feed the same output: stepping one skips the output the other has.
-- The screen names the row and its new output after each Page press (e.g., "Top row" / "> Phones 2"), and each send
-  row's lights take the color of the output it feeds.
+- The screen shows the channels on the page and where each send row goes (e.g., "Channels 1-8", "Top > Phones 1",
+  "Mid > Phones 2"). Moving a control shows its channel, what it does, and its value. After each Page press the
+  screen names the row and its new output, and each send row's lights take the color of the output it feeds.
 - Page and Track are lit where they can move, and dark at the ends. While Shift is held, Page lights for the middle
   row.
 - Each row's output is remembered when Performance Bridge restarts.
@@ -209,7 +211,8 @@ The same, on the smaller device:
 | Top encoder | Pan, or a send: **Page ▼** / **▲** steps it through Pan, then each output in the Outputs list |
 | Button | Mute, or PFL after **Function** (red for mute, yellow for PFL; Function lights yellow while the buttons are PFL) |
 
-Track works as on the XL 3. The Launch Control 3 has not been tried on a device yet (`docs/LAUNCH-CONTROL-3.md`).
+Track works as on the XL 3, and Shift + turn resets an encoder (a level to 0 dB). The screen shows the channels on
+the page, the top row's function (e.g., "Top: Pan"), and the buttons' ("Buttons: Mute"). The Launch Control 3 has not been tried on a device yet (`docs/LAUNCH-CONTROL-3.md`).
 
 ### Roto-Control
 

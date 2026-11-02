@@ -406,3 +406,13 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 - So TotalMix's fader scale reads +6, +3, 0, −3, −6, −10, −20, −25, −30, −40, −50, −60, and off.
 
 **Consequences.** The Launch Control XL 3's printed fader ticks are given TotalMix's marks (`LaunchControlDriver.faderTicks`; docs/LAUNCH-CONTROL-XL3.md, test 7).
+
+### Test 19 (2026-11-01): the ARC USB wheel's detents
+
+**Setup.** TotalMix FX "2.10 (1)" with a Digiface AES and RME's ARC USB. Adam turned the ARC's wheel one detent at a time and read Main Out's volume in TotalMix's window at each. The ARC's encoder setting was not recorded (RME's forum names it Options → ARC & Key Commands → ARC USB Settings → Default Encoder Function, with "Volume Main (Default)" and "Volume Main (0.1 dB)"; not checked on screen); the steps below are not 0.1 dB, so it is taken to be the default (inference).
+
+**Findings.** From off, one detent at a time: −62, −59, −56, −53, −50, −47, −44, −41.5, −39, −36.5, −34, −32, −30, −28, −26, −24, −22.5, −21, −19.5, −18, −16.5, −15, −14, −13, −12, −11, −10, −9, −8, −7, −6, −5, −4.5, −4, −3.5, −3, −2.5, −2, −1.5, −1, −0.5, 0, +0.5, +1, … +5 in 0.5 dB steps, and +6.
+- So the step is 3 dB from −62 to −44, 2.5 dB to −34, 2 dB to −24, 1.5 dB to −15, 1 dB to −5, 0.5 dB from −5 to +5, and 1 dB from +5 to +6: 53 detents above off.
+- RME's forum describes the default as 0.5 dB steps throughout; that holds only from −5 to +5 dB.
+
+**Consequence.** The Launch Controls' level and send encoders use this scale (`LaunchControlDriver.arcDetents`; docs/LAUNCH-CONTROL-XL3.md, section 9).

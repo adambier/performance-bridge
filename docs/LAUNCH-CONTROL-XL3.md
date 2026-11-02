@@ -248,7 +248,10 @@ port names.
     move fader 1. How many characters fit per field? Then `display stationary 3` with eight names,
     and the `quiet` option (no display on change).
 11. **Bitmap targets** (section 7, item 5), only if a bitmap is wanted later.
-12. **Do level encoders need relative mode?** The encoders send 128 values. With TotalMix's own
+12. **Do level encoders need relative mode?** Part 1 run (2026-11-01, Launch Control 3 layout on
+    the XL 3, TotalMix's curve): "pretty smooth". Adam then asked for the ARC USB's scale for volume
+    encoders (section 9), which is finer near 0 dB; parts 2–5 are to be run on it.
+    The original test: The encoders send 128 values. With TotalMix's own
     curve that is about 0.26 dB a step from −6 to +6 dB, 0.3–0.6 from −20 to −6, 0.6–0.9 from −40
     to −20, and about 1 dB below that (computed from `FaderCurve`). Relative mode would allow finer
     steps, but drops the first step after a change of direction (test 2). With music playing
@@ -282,7 +285,11 @@ and intuitiveness to be assessed).
 - **Fader scale.** The nine ticks printed beside each fader read, top to bottom, +6, +3, 0, −6,
   −10, −20, −40, −60, and off: TotalMix FX's own fader marks (`TOTALMIX-OSC.md`, test 18), placed
   at the fader values measured at each tick (test 7). Between ticks the gain moves evenly in dB
-  (Adam, 2026-11-01). The encoders keep TotalMix's own fader curve: they have no printed scale.
+  (Adam, 2026-11-01). Level and send encoders use the scale of RME's ARC USB volume wheel, as volume
+  controls (Adam, 2026-11-01): its 53 detents from −62 to +6 dB (docs/TOTALMIX-OSC.md, test 19),
+  spread over the encoder's values so that 0 dB is at 101, as on the faders. That is about 0.2 dB a
+  value from −5 to +5 dB, 0.4 dB from −15 to −5, and up to 1.2 dB at the bottom; value 0 is off.
+  Pan encoders keep a plain scale, centered at 64.
 - **Encoder rows.** Fixed (Adam, 2026-11-01): the top two rows are sends and the bottom row pan,
   the order of Novation's own DAW integrations (Live, Logic Pro, and Cubase in the user guide's "DAW
   Mixer mode" sections), with pan just above the fader. Each send row feeds one output, chosen on
@@ -293,6 +300,10 @@ and intuitiveness to be assessed).
   Shift is held. The choices are remembered across launches. Gain is left out for now: TotalMix sends it only for inputs with a preamp, which the
   project's interfaces don't have. The encoders take positions from the driver (test 2), so they
   never jump.
+- **Shift + turn.** Resets the encoder: a pan to the center, a send to −oo (Adam, 2026-11-01). With
+  Shift held the device reports only that an encoder turned, not which way (tests 9 and 10), so a
+  reset is all it can do. The driver also sends the encoder its new position, since the turn with
+  Shift held left the device's own value where it was (test 9).
 - **Buttons.** The top row is PFL (yellow; dark yellow when off), as on the Roto-Control; the bottom
   row is mute (red; dark red when off). Solo/Arm and Mute/Select do nothing for now: in DAW mode
   the device leaves them to the host (test 6).
@@ -313,10 +324,12 @@ and intuitiveness to be assessed).
   picture).
 - **Screen.** Each fader and encoder has a three-line display (arrangement 2): the channel's name,
   what the control does ("Level", "Pan", "> Phones 1"), and the value in dB or as a pan, sent by
-  the driver (test 5). The stationary display (arrangement 3) shows the view and the strips on the
-  page as its title, and the eight names, packed to four characters so that the columns stay apart
-  (e.g., "Mic1"). Page shows the new send on the overlay; that the overlay comes up as other
-  displays do is untested.
+  the driver (test 5). The stationary display, the home screen, has three lines (arrangement 2): the
+  channels on the page ("Channels 1-8") and where each send row goes ("Top > Phones 1", "Mid >
+  Phones 2"), which nothing else on the device shows (Adam, 2026-11-01). The eight names packed to
+  four characters (arrangement 3, e.g., "ADI2SonoM1/2Tonv") were tried first and were unreadable
+  (Adam, 2026-11-01); each strip's name shows on its control's display when the control moves.
+  Page shows the new send on the overlay.
 - **Port.** The DAW port, so the MIDI port and the Custom Modes stay free for other uses. Choosing
   a Custom Mode on the device stops the driver drawing until DAW Mixer or DAW Control is chosen
   again.
