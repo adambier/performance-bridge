@@ -136,6 +136,7 @@ final class LayoutTests: XCTestCase {
         let asked = hub.refreshChannels(now: 10)
         XCTAssertTrue(asked.messages.contains { $0.address == "/sendall" })
         _ = hub.handle(.channel(bus: .input, channel: 2, parameter: "name", value: .text("Sonos")), now: 10.05)
+        _ = hub.handle(.channel(bus: .output, channel: 0, parameter: "name", value: .text("Main")), now: 10.05)
         _ = hub.tick(now: 10.5)
         XCTAssertNotNil(hub.mirror.channels[ChannelRef(.input, 0)], "kept until the answer is complete")
         _ = hub.tick(now: 11.1)
@@ -502,6 +503,7 @@ final class SurfaceHubTests: XCTestCase {
         _ = hub.handle(.other(path: "status/1", value: .number(0)), now: 1.2)
         XCTAssertEqual(hub.tick(now: 2.0).messages, [TotalMixCommand.sendAll()], "a status message is not an answer")
         _ = hub.handle(.channel(bus: .input, channel: 0, parameter: "name", value: .text("Keys")), now: 2.1)
+        _ = hub.handle(.channel(bus: .input, channel: 2, parameter: "name", value: .text("Vox")), now: 2.1)
         XCTAssertTrue(hub.tick(now: 5).messages.isEmpty)
     }
 
@@ -516,6 +518,11 @@ final class SurfaceHubTests: XCTestCase {
         XCTAssertTrue(hub.tick(now: 11.4).messages.contains { $0.address == "/sendall" }, "still asking")
         XCTAssertEqual(hub.mirror.channels.count, before, "nothing dropped")
         XCTAssertTrue(hub.strips(of: roto)?.contains { $0.info != nil } ?? false, "the strips stay")
+
+        // Nor does one channel's stereo or color change, which TotalMix might send on its own.
+        _ = hub.handle(.channel(bus: .input, channel: 2, parameter: "stereo", value: .number(1)), now: 11.5)
+        XCTAssertTrue(hub.tick(now: 12.6).messages.contains { $0.address == "/sendall" }, "one channel is not an answer")
+        XCTAssertEqual(hub.mirror.channels.count, before)
 
         // At connect too: a stray mute doesn't stop the retry.
         var fresh = SurfaceHub()

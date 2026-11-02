@@ -17,8 +17,7 @@ public struct SurfaceHub: Sendable {
     public static let meterInterval: Double = 1.0 / 12
     /// How long to wait for TotalMix to answer `/sendall` before asking again, in seconds.
     /// TotalMix has been observed to leave a `/sendall` unanswered while still sending status
-    /// messages (docs/TOTALMIX-OSC.md, test 1), so only a channel setting or a mixer node counts as
-    /// an answer.
+    /// messages (docs/TOTALMIX-OSC.md, test 1), so only an answer counts (`answersSendAll`).
     public static let snapshotRetry: Double = 1
     /// How long after TotalMix's last channel or node message a refresh counts as complete, in
     /// seconds. TotalMix's reply to `/sendall` (962 messages) has been observed to arrive within
@@ -45,13 +44,19 @@ public struct SurfaceHub: Sendable {
     private var refreshLastHeard: Double?
     /// Whether the `/sendall` asked for by a refresh has been answered (`answersSendAll`).
     private var refreshAnswered = false
+    /// The channels that have sent an answer-type setting since `/sendall` was last asked for.
+    private var answeringChannels: Set<ChannelRef> = []
 
     /// The channel settings that show a message is part of a `/sendall` answer, not an unsolicited
     /// change: every channel sends its name, stereo, and color in the answer (docs/TOTALMIX-OSC.md,
     /// test 1), while a fader or a mute moved in TotalMix's window sends only that value. Counting
     /// any message as the answer let one fader move end a refresh TotalMix never answered and drop
-    /// every channel (review of 2026-11-02).
+    /// every channel (review of 2026-11-02). Whether TotalMix sends one of these on its own (a
+    /// stereo switch, a recolor) is untested, so an answer also has to come from at least two
+    /// channels (`answerChannels`): a change names one channel, an answer every channel.
     static let answersSendAll: Set<String> = ["name", "stereo", "color"]
+    /// How many channels must send an answer-type setting before `/sendall` counts as answered.
+    static let answerChannels = 2
 
     /// A hub with no surfaces.
     public init(layout: PerformanceLayout = PerformanceLayout()) {
@@ -93,6 +98,7 @@ public struct SurfaceHub: Sendable {
     /// answers.
     public mutating func connect(now: Double) -> CoreOutput {
         snapshotAskedAt = now
+        answeringChannels = []
         var output = CoreOutput()
         output.messages.append(TotalMixCommand.sendAll())
         return output
@@ -114,9 +120,12 @@ public struct SurfaceHub: Sendable {
     public mutating func handle(_ event: TotalMixEvent, now: Double) -> CoreOutput {
         switch event {
         case .channel(let bus, let channel, let parameter, _):
-            if Self.answersSendAll.contains(parameter) {
-                snapshotAskedAt = nil
-                if refreshSeen != nil { refreshAnswered = true }
+            if Self.answersSendAll.contains(parameter), snapshotAskedAt != nil || refreshSeen != nil {
+                answeringChannels.insert(ChannelRef(bus, channel))
+                if answeringChannels.count >= Self.answerChannels {
+                    snapshotAskedAt = nil
+                    if refreshSeen != nil { refreshAnswered = true }
+                }
             }
             if refreshSeen != nil {
                 refreshSeen?.insert(ChannelRef(bus, channel))

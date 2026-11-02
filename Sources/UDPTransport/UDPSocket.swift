@@ -160,7 +160,8 @@ public final class UDPSocket {
         let receiver = thread
         thread = nil
         lock.unlock()
-        if let done, Thread.current !== receiver { done.wait() }
+        // A poll lasts at most 200 ms; the timeout only guards against a handler that never returns.
+        if let done, Thread.current !== receiver { _ = done.wait(timeout: .now() + 1) }
     }
 
     private var isRunning: Bool {

@@ -171,6 +171,7 @@ The three rows of the mixer are spelled three ways (`TotalMixBus`).[^rme-doc]
 - **The test 3 value.** In test 3, outputs 9/10 reported 0.499274 around the time a `faderlin` 0.5 command was sent from another window, and 0 dB 82 ms later. Given test 5, that was not an echo. The inference is that both values came from changes made in TotalMix's window.
 - **The current submix.** Input and playback channels sent no channel-level `volume` or `faderlin`: their faders in TotalMix's window arrived as mixer nodes of the selected submix.[^test-1] Whether TotalMix accepts a channel-level `volume` for inputs, and what it would act on, is untested.
 - **Unanswered `/sendall`.** One `/sendall` went unanswered: status messages arrived, but nothing else. A later one, with the same settings, was answered in full.[^test-1] The cause is unknown; the app should repeat the request if no reply comes.
+- **Settings sent on their own.** Does TotalMix send a channel's `stereo`, `color`, or `name` when it changes in its window (a stereo switch, a recolor, a rename), and not only in a `/sendall` answer? Test 11 saw nothing sent when a channel was hidden or shown. `SurfaceHub` counts a `/sendall` as answered only once two channels have sent one of these, so a change in one channel can't end a refresh (review of 2026-11-02). To check: `sbdev monitor`, then switch a mono input to stereo, recolor it, and rename it, and note what arrives.
 - **`/sologroup` and `/fadergroup`.** The document gives no value type for either. Both were sent as 0 or 1 by group.[^test-1]
 
 ## 6. Tests

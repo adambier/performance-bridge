@@ -268,7 +268,9 @@ When a unit is available:
 
 1. **Ports.** `swift run sbdev roto ports` (it lists every MIDI port): are the DAW ports "LC3 1
    DAW Out" and "LC3 1 DAW In"?
-2. **DAW mode.** Does the device echo `9F 0C 7F`, and show DAW Mixer? Is there a "DAW Connect"
+2. **DAW mode.** Does the device echo `9F 0C 7F`, and show DAW Mixer? The driver takes only that
+   echo, a DAW mode report, or a control moved or pressed as a sign the device is there, not other
+   feature replies (as on the XL 3, test 12 of its doc); check that the Launch Control 3 connects. Is there a "DAW Connect"
    setting (firmware 1.2), and with "Connect Only", does the driver's DAW Mixer selection work?
 3. **Numbers.** Press Page up and down, Track < and >, Function, and the Novation button: which
    numbers do they send (expected 106, 107, 103, 102, 66, and 104)?
