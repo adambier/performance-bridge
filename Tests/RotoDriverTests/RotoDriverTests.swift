@@ -337,6 +337,23 @@ final class RotoDriverTests: XCTestCase {
         XCTAssertTrue(step.midi.contains(RotoOutgoing.trackCount(4).bytes), "the four channels")
     }
 
+    func testSwitchingTrackSetsKeepsTheSelectedTrack() {
+        var (driver, hub, _) = connected()
+        _ = driver.receive(sysEx(.general, 0x09, RotoSysEx.encode14(1)), hub: &hub, now: 1)  // Vox selected
+        let step = driver.receive(sysEx(.mix, 0x05, [0x01]), hub: &hub, now: 2)
+        XCTAssertTrue(step.midi.contains(RotoOutgoing.trackCount(4).bytes), "the page is drawn again for the new set")
+        _ = driver.receive(sysEx(.mix, 0x02, [0x00]), hub: &hub, now: 3)
+        XCTAssertEqual(hub.mode(of: rotoID), .focus(channel: ChannelRef(.input, 2), first: 0),
+                       "single-track mode still focuses the track selected before the switch")
+    }
+
+    func testSendNamesUseTheAppsLabels() {
+        var (driver, hub, _) = connected()
+        _ = hub.setLayout(hub.layout.withLabel("Cans", for: ChannelRef(.output, 2)), now: 1)
+        let step = driver.receive(sysEx(.mix, 0x02, [0x00]), hub: &hub, now: 2)
+        XCTAssertTrue(step.midi.contains(RotoOutgoing.sendNames(start: 0, names: ["> Cans"]).bytes))
+    }
+
     func testSingleTrackModeFocusesTheSelectedTrack() {
         var (driver, hub, _) = connected()
         _ = driver.receive(sysEx(.general, 0x09, RotoSysEx.encode14(1)), hub: &hub, now: 1)

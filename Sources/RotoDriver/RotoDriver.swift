@@ -276,9 +276,13 @@ public struct RotoDriver: Sendable {
             take(hub.setMode(id, next, now: now), hub: hub, now: now, into: &step)
         case .trackSet(let set):
             trackSet = set
-            selectedTrack = 0
-            guard case .strips(_, _, let knob, let switchFunction)? = hub.mode(of: id) else { return }
-            take(hub.setMode(id, .strips(view: Self.view(set), first: 0, knob: knob, switch: switchFunction), now: now),
+            guard case .strips(let view, let first, let knob, let switchFunction)? = hub.mode(of: id) else { return }
+            // Both sets show the channels, so a switch keeps the page and the selected track: an
+            // accidental press of both arrows changes nothing (review of 2026-11-02).
+            let same = view == Self.view(set)
+            if !same { selectedTrack = 0 }
+            take(hub.setMode(id, .strips(view: Self.view(set), first: same ? first : 0, knob: knob, switch: switchFunction),
+                             now: now),
                  hub: hub, now: now, into: &step)
         case .setFirstTrack(let first):
             guard case .strips(let view, _, let knob, let switchFunction)? = hub.mode(of: id) else { return }
@@ -412,7 +416,8 @@ public struct RotoDriver: Sendable {
         let targets = hub.sendTargets
         let names = (start..<max(start, min(start + 8, targets.count))).map { index -> String in
             let ref = ChannelRef(.output, targets[index])
-            return Self.sendLabel(hub.mirror.channels[ref]?.name ?? ref.description)
+            // The app's label first, as on every hardware controller (AGENTS.md, section 4: Labels).
+            return Self.sendLabel(hub.layout.label(for: ref) ?? hub.mirror.channels[ref]?.name ?? ref.description)
         }
         return .sendNames(start: start, names: names)
     }
