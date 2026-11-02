@@ -43,6 +43,15 @@ public struct SurfaceHub: Sendable {
     /// reported one.
     private var refreshSeen: Set<ChannelRef>?
     private var refreshLastHeard: Double?
+    /// Whether the `/sendall` asked for by a refresh has been answered (`answersSendAll`).
+    private var refreshAnswered = false
+
+    /// The channel settings that show a message is part of a `/sendall` answer, not an unsolicited
+    /// change: every channel sends its name, stereo, and color in the answer (docs/TOTALMIX-OSC.md,
+    /// test 1), while a fader or a mute moved in TotalMix's window sends only that value. Counting
+    /// any message as the answer let one fader move end a refresh TotalMix never answered and drop
+    /// every channel (review of 2026-11-02).
+    static let answersSendAll: Set<String> = ["name", "stereo", "color"]
 
     /// A hub with no surfaces.
     public init(layout: PerformanceLayout = PerformanceLayout()) {
@@ -97,20 +106,23 @@ public struct SurfaceHub: Sendable {
     public mutating func refreshChannels(now: Double) -> CoreOutput {
         refreshSeen = []
         refreshLastHeard = nil
+        refreshAnswered = false
         return connect(now: now)
     }
 
     /// Takes one message from TotalMix.
     public mutating func handle(_ event: TotalMixEvent, now: Double) -> CoreOutput {
         switch event {
-        case .channel(let bus, let channel, _, _):
-            snapshotAskedAt = nil
+        case .channel(let bus, let channel, let parameter, _):
+            if Self.answersSendAll.contains(parameter) {
+                snapshotAskedAt = nil
+                if refreshSeen != nil { refreshAnswered = true }
+            }
             if refreshSeen != nil {
                 refreshSeen?.insert(ChannelRef(bus, channel))
                 refreshLastHeard = now
             }
         case .mix:
-            snapshotAskedAt = nil
             if refreshSeen != nil { refreshLastHeard = now }
         default: break
         }
@@ -133,9 +145,11 @@ public struct SurfaceHub: Sendable {
             snapshotAskedAt = now
             output.messages.append(TotalMixCommand.sendAll())
         }
-        if let seen = refreshSeen, let heard = refreshLastHeard, now - heard >= Self.refreshSettle {
+        // A refresh completes only once TotalMix has answered; until then `/sendall` is asked again.
+        if refreshAnswered, let seen = refreshSeen, let heard = refreshLastHeard, now - heard >= Self.refreshSettle {
             refreshSeen = nil
             refreshLastHeard = nil
+            refreshAnswered = false
             if mirror.keepOnly(seen) { output.append(refreshAll(now: now)) }
         }
         output.messages += thinner.flush(now: now)
@@ -504,6 +518,9 @@ public struct SurfaceHub: Sendable {
     /// with `force`, sends everything.
     private mutating func render(_ id: SurfaceID, force: Bool, now: Double) -> CoreOutput {
         guard var state = surfaces[id] else { return CoreOutput() }
+        // A page past the end (channels hidden in TotalMix since, then refreshed) moves back to
+        // the last page rather than showing blank strips (review of 2026-11-02).
+        state.mode = clamped(state.mode, for: id)
         var output = CoreOutput()
         let (first, count, bindings) = layoutSlots(state)
         if force || state.page?.first != first || state.page?.count != count {

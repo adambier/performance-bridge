@@ -505,6 +505,41 @@ final class SurfaceHubTests: XCTestCase {
         XCTAssertTrue(hub.tick(now: 5).messages.isEmpty)
     }
 
+    func testAnUnsolicitedChangeIsNotTheAnswerToSendAll() {
+        // Review of 2026-11-02: a refresh TotalMix never answered, plus one fader moved in its
+        // window, used to stop asking and drop every channel.
+        var hub = loadedHub()
+        let before = hub.mirror.channels.count
+        _ = hub.refreshChannels(now: 10)
+        _ = hub.handle(.mix(bus: .input, channel: 2, output: 0, parameter: "faderlin", value: .number(0.6)), now: 10.3)
+        _ = hub.handle(.channel(bus: .input, channel: 3, parameter: "mute", value: .number(1)), now: 10.4)
+        XCTAssertTrue(hub.tick(now: 11.4).messages.contains { $0.address == "/sendall" }, "still asking")
+        XCTAssertEqual(hub.mirror.channels.count, before, "nothing dropped")
+        XCTAssertTrue(hub.strips(of: roto)?.contains { $0.info != nil } ?? false, "the strips stay")
+
+        // At connect too: a stray mute doesn't stop the retry.
+        var fresh = SurfaceHub()
+        _ = fresh.connect(now: 0)
+        _ = fresh.handle(.channel(bus: .input, channel: 0, parameter: "mute", value: .number(1)), now: 0.5)
+        XCTAssertEqual(fresh.tick(now: 2).messages, [TotalMixCommand.sendAll()])
+    }
+
+    func testAPagePastTheEndAfterARefreshMovesBack() {
+        var hub = SurfaceHub()
+        for number in 0..<12 {
+            _ = hub.handle(.channel(bus: .input, channel: number, parameter: "name", value: .text("In \(number + 1)")), now: 0)
+        }
+        _ = hub.addSurface(roto, capabilities: rotoCaps, mode: .strips(view: .sources, first: 8, knob: .level, switch: .mute), now: 0)
+        _ = hub.refreshChannels(now: 10)
+        for number in 0..<6 {  // inputs 7-12 hidden in TotalMix
+            _ = hub.handle(.channel(bus: .input, channel: number, parameter: "name", value: .text("In \(number + 1)")), now: 10.1)
+        }
+        _ = hub.tick(now: 11.2)
+        guard case .strips(_, let first, _, _)? = hub.mode(of: roto) else { return XCTFail("no mode") }
+        XCTAssertEqual(first, 0, "back to the last page, not blank strips")
+        XCTAssertEqual(hub.strips(of: roto)?.first?.info?.name, "In 1")
+    }
+
     func testNameChangeUpdatesTheStrip() {
         var hub = loadedHub()
         let output = hub.handle(.channel(bus: .input, channel: 2, parameter: "name", value: .text("Lead")), now: 1)
