@@ -407,15 +407,20 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   Cubase's integrations use a fixed color per row: cyan (37) for the top row and magenta (53) for
   the middle, neither one of TotalMix FX's eight colors, so the rows can be told apart from each
   other and from the sources (Adam, 2026-11-02, from the Tier 3 review of that date; before 1.0.1, a
-  white output was green in the control room and blue otherwise). Blue (45), purple (49), cyan
-  (37), and magenta (53) are past the part of the palette seen in test 4 (inference from the
-  guide's picture), so that 37 and 53 show as cyan and magenta is still to be checked (section 8,
-  item 9).
+  white output was green in the control room and blue otherwise). Blue (45), purple (49), and
+  magenta (53) are past the part of the palette seen in test 4, and cyan (37) is in it but was not
+  matched to the guide's picture one by one (the run ended in cyans and blues), so that 37 and 53
+  show as cyan and magenta is an inference still to be checked (section 8, item 9).
 - **Level by brightness** (Adam, 2026-11-02, from the Tier 3 review of that date). A setting in
   Settings → Connections, off by default, shades each send encoder by its level, in four steps at
   TotalMix FX's own fader marks:[^tm-marks] bright above −10 dB, medium from −40 to −10 dB, dim below
   −40 dB, and dark at −oo. A shade is the third or fourth color of the hue's group of four in the
-  palette (test 4); white dims to grey and dim grey, and grey stays as it is. Pan encoders keep full
+  palette: seen to run bright to dim for red, orange, and yellow (tests 4 and 13);[^test-4][^test-13]
+  for green and cyan, test 4's photo shows the picture's order, but the shades were not matched one
+  by one; for blue, purple, and magenta, past index 39, it is an inference from the guide's
+  picture. White dims to 2 and 1, grey and dim grey in the picture, which looked near white in
+  test 4's photo, so how white's shades read on the device is not yet known. Grey (1) has no dimmer
+  shade, so a grey channel shows only lit and dark. Pan encoders keep full
   brightness, and the faders, which carry the level, have no lights. Whether four steps read on the
   device is not yet known: orange's medium shade (10) was too close to its neighbors to read in
   test 15,[^test-15] so three steps may be needed.

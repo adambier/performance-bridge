@@ -358,6 +358,7 @@ public struct LaunchControlDriver: Sendable {
             guard let (layer, strip) = control(for: element) else { return }
             let position = devicePosition(layer, value)
             take(hub.controlMoved(id(layer), strip: strip, to: position, now: now), hub: hub, into: &step)
+            step.midi += drawOwnMove(layer, strip, hub: hub)
         case .touch(let element, let touched):
             guard let (layer, strip) = control(for: element) else { return }
             if touched, shiftHeld, case .encoder = element, resetAllowed(now: now),
@@ -626,6 +627,7 @@ public struct LaunchControlDriver: Sendable {
             if position == 0 { sendsBeforeReset[target] = current } else { sendsBeforeReset[target] = nil }
         }
         take(hub.controlMoved(id(layer), strip: strip, to: position, now: now), hub: hub, into: &step)
+        step.midi += drawOwnMove(layer, strip, hub: hub)
         let value = deviceValue(layer, position)
         guard connected, !inCustomMode, sentPositions[element.controlNumber] != value else { return }
         sentPositions[element.controlNumber] = value
@@ -874,6 +876,23 @@ public struct LaunchControlDriver: Sendable {
             }
         }
         return bytes
+    }
+
+    /// After the device moved a control, or Shift + turn reset it: the hub doesn't send a surface
+    /// its own move back (`SurfaceHub.controlMoved` records the position as already shown), so the
+    /// driver notes the level itself, from the mirror (which pickup leaves alone for a move it
+    /// doesn't take), and redraws the light's shade when `levelBrightness` is on (review of
+    /// 2026-11-02, for 1.0.1).
+    private mutating func drawOwnMove(_ layer: Layer, _ strip: Int, hub: SurfaceHub) -> [UInt8] {
+        guard levelBrightness, connected, !inCustomMode, let strips = hub.strips(of: id(layer)),
+              strips.indices.contains(strip), let target = strips[strip].knobTarget else { return [] }
+        if case .pan = target { return [] }
+        var values = knobValues[layer] ?? Array(repeating: nil, count: Self.stripCount)
+        guard values.indices.contains(strip) else { return [] }
+        values[strip] = hub.mirror.value(of: target)
+        knobValues[layer] = values
+        let element = self.element(layer, strip)
+        return element.hasLight ? color(element, lightColor(layer, strip, hub: hub)) : []
     }
 
     /// An encoder's light: dark for a strip with no channel; else a send row's output color
@@ -1183,9 +1202,9 @@ public struct LaunchControlDriver: Sendable {
     public static let functionIdle: UInt8 = 15
     /// The hue of a send row whose output is left white in TotalMix FX: cyan (37) for the top row,
     /// magenta (53) for the XL 3's middle row; neither is one of TotalMix FX's eight colors (Adam,
-    /// 2026-11-02, from the Tier 3 review of that date). Both are bright shades from the guide's
-    /// palette picture, past the part seen on the device (test 4); that they show as cyan and
-    /// magenta is an inference until checked.
+    /// 2026-11-02, from the Tier 3 review of that date). 37 was lit in test 4 but not matched to
+    /// the guide's palette picture one by one, and 53 is past the part seen on the device; that
+    /// they show as cyan and magenta is an inference until checked.
     public static let sendRowHues: [UInt8] = [37, 53]
 
     /// How bright a level or send encoder shows its level, when `levelBrightness` is on: split at
@@ -1206,16 +1225,20 @@ public struct LaunchControlDriver: Sendable {
     public static func levelShade(position: Double) -> LevelShade {
         guard let gain = FaderCurve.gainDB(position: position) else { return .off }
         if gain < -40 { return .dim }
-        if gain <= -10 { return .medium }
+        // The marks themselves belong to the middle step; the small tolerance keeps −10 dB there
+        // after its round trip through `FaderCurve` (−9.999999999999993; review of 2026-11-02).
+        if gain <= -10 + 1e-9 { return .medium }
         return .bright
     }
 
     /// A palette color in a shade. The palette runs in groups of four, the second the bright
-    /// shade and the third and fourth dimmer ones (test 4; test 13 for orange's dimmest), so a
-    /// color's medium shade is its group's third and its dim shade the fourth. White (3) dims to
-    /// grey (2) and dim grey (1); grey (1) has no dimmer shade and stays. The medium shade has
-    /// been seen to be hard to tell from the others for orange (test 15), so whether four states
-    /// read on the device is not yet known.
+    /// shade and the third and fourth dimmer ones: seen for red, orange, and yellow (tests 4 and
+    /// 13), in the picture's order for green and cyan (test 4), and an inference from the guide's
+    /// picture for blue, purple, and magenta (past index 39, not yet lit). So a color's medium
+    /// shade is its group's third and its dim shade the fourth. White (3) dims to 2 and 1, grey and
+    /// dim grey in the picture, which test 4's photo showed as near white (unchecked); grey (1) has
+    /// no dimmer shade and stays. The medium shade has been seen to be hard to tell from the others
+    /// for orange (test 15), so whether four states read on the device is not yet known.
     public static func shade(_ color: UInt8, _ shade: LevelShade) -> UInt8 {
         switch shade {
         case .off: return 0
@@ -1244,7 +1267,8 @@ public struct LaunchControlDriver: Sendable {
 
     /// The palette color for a strip: its TotalMix FX color; an output left white (TotalMix FX's
     /// default) by its kind instead, monitoring outputs green and sends blue, as on the
-    /// Roto-Control.
+    /// Roto-Control. The by-kind colors are for output strips, which this driver doesn't show (its
+    /// strips are always sources); send rows take their colors from `sendColor`.
     public static func color(for info: StripInfo?) -> UInt8 {
         guard let info else { return 0 }
         let white = info.color == nil || info.color == 1

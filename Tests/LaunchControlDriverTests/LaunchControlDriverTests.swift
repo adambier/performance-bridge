@@ -425,8 +425,10 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertEqual(shade(nil), .off)
         XCTAssertEqual(shade(-60), .dim)
         XCTAssertEqual(shade(-40.5), .dim)
+        XCTAssertEqual(shade(-40), .medium, "the marks belong to the middle step")
         XCTAssertEqual(shade(-39.5), .medium)
         XCTAssertEqual(shade(-10.5), .medium)
+        XCTAssertEqual(shade(-10), .medium)
         XCTAssertEqual(shade(-9.5), .bright)
         XCTAssertEqual(shade(0), .bright)
         XCTAssertEqual(shade(6), .bright)
@@ -474,10 +476,25 @@ final class LaunchControlDriverTests: XCTestCase {
             now += 1
             let step = driver.take(keysLevel(&hub, db, now: now), hub: &hub, now: now)
             XCTAssertTrue(step.midi.contains(level(expected)), why)
-            XCTAssertFalse(step.midi.contains([0xB0, 0x0D]) && !step.midi.contains(top(5)), "the pan row keeps full color")
         }
         _ = driver.take(keysLevel(&hub, -50, now: 10), hub: &hub, now: 10)
         XCTAssertTrue(driver.setLevelBrightness(false, hub: hub).contains(level(5)), "turned off: full color again")
+
+        // The user's own turn shades the encoder too: the hub doesn't echo a surface's own move
+        // (review of 2026-11-02).
+        _ = driver.take(keysLevel(&hub, 0, now: 11), hub: &hub, now: 11)
+        _ = driver.setLevelBrightness(true, hub: hub)
+        XCTAssertTrue(driver.receive([0xBF, 0x15, 10], hub: &hub, now: 12).midi.contains(level(7)), "turned to about −52 dB: dim")
+        XCTAssertTrue(driver.receive([0xBF, 0x15, 0], hub: &hub, now: 13).midi.contains(level(0)), "turned to −oo: dark")
+
+        // On, from the start (as after a reconnect): the level shaded, the pan row at full color.
+        var hubOn = hub
+        var fromStart = LaunchControlDriver(name: "lc2", layout: .lc3, levelBrightness: true)
+        _ = fromStart.start(hub: &hubOn, now: 20)
+        _ = fromStart.take(keysLevel(&hubOn, -20, now: 20), hub: &hubOn, now: 20)
+        let drawn = fromStart.receive([0x9F, 0x0C, 0x7F], hub: &hubOn, now: 21).midi
+        XCTAssertTrue(drawn.contains(level(6)), "Keys at −20 dB: medium red")
+        XCTAssertTrue(drawn.contains(top(5)), "Keys's pan: full red")
 
         // A send row shades by the send's level: the top row sending to Phones, Keys's send at −50 dB.
         var (sending, sendHub, _) = connected(layout: .lc3, device: .lc3, sendOutputs: [2])
@@ -561,6 +578,16 @@ final class LaunchControlDriverTests: XCTestCase {
         _ = driver.receive([0xB0, 0x6B, 0x7F], hub: &hub, now: 7.1)
         XCTAssertEqual(driver.receive([0xBE, 0x1D, 0x7F], hub: &hub, now: 7.5).core.messages, [],
                        "no reset once Page or Track has been pressed in this hold of Shift")
+        _ = driver.receive([0xB6, 0x3F, 0x00], hub: &hub, now: 8)
+
+        // With level by brightness on, the reset darkens the send's light and the restore lights it.
+        _ = driver.setLevelBrightness(true, hub: hub)
+        _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 9)
+        XCTAssertTrue(driver.receive([0xBE, 0x0D, 0x7F], hub: &hub, now: 9.4).midi.contains([0xB0, 0x0D, 0]), "−oo: dark")
+        _ = driver.receive([0xB6, 0x3F, 0x00], hub: &hub, now: 10)
+        _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 11)
+        let lit = driver.receive([0xBE, 0x0D, 0x7F], hub: &hub, now: 11.4).midi
+        XCTAssertTrue((37...39).contains { lit.contains([0xB0, 0x0D, UInt8($0)]) }, "restored: cyan, in its level's shade")
     }
 
     func testShiftAndTurnNeverRaisesALevel() {

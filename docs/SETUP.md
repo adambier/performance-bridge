@@ -125,7 +125,8 @@ With a Launch Control chosen, the Connections tab also shows its send rows below
 be chosen there at any time while TotalMix FX is open, with the Launch Control connected or not, and a
 change takes effect at once (Step 6). Below them, **Show levels by brightness** (off by default) dims each
 level and send encoder's light as its level falls: bright above −10 dB, dimmer down to −40 dB, dimmest below,
-and dark at −oo. Pan encoders keep full brightness; the XL 3's faders have no lights.
+and dark at −oo. Pan encoders keep full brightness; the XL 3's faders have no lights; a channel colored grey
+in TotalMix FX shows only lit and dark.
 
 ## Step 4: Check the connections
 
