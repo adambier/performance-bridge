@@ -128,7 +128,7 @@ The three rows of the mixer are spelled three ways (`TotalMixBus`).[^rme-doc]
 
 **Mixer nodes** have the form `/mix/<in|pb>/<channel>/<output>/<parameter>`. A node is the send from an input or playback to an output, that is, its level in that output's submix.[^rme-doc] The parameters are:
 
-- `fader`, in dB, going down to −300 dB for off (in fader groups);
+- `fader`, in dB, where −300 dB, the bottom of its range, means off (in fader groups);
 - `faderlin`, the position from 0 to 1;
 - `balpan`, from −1 to +1;
 - `solo`;
