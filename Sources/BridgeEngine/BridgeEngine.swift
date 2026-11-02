@@ -170,10 +170,6 @@ public struct BridgeStatus: Equatable, Sendable {
     /// Whether TotalMix has reported its Mute Master off: mutes are then only selected and don't
     /// silence (Adam, 2026-11-02). False until TotalMix has reported it.
     public var muteMasterOff = false
-    /// Whether TotalMix's "Cue/PFL to" is set to Main (`controlroom/cuechan` −1, its default): PFL
-    /// then takes over Main Out, cutting what the audience hears (docs/TOTALMIX-OSC.md, tests 6
-    /// and 21). False until TotalMix has reported it.
-    public var pflToMain = false
     /// How many channels TotalMix has described (named or set) since the engine started: more than
     /// zero once it has answered `/sendall` with its channels, not only its status.
     public var channelCount = 0
@@ -728,7 +724,6 @@ public final class BridgeEngine: @unchecked Sendable {
             return HomeChoice(output: output, name: name, roles: [])
         }
         status.muteMasterOff = hub.mirror.muteMaster == false
-        status.pflToMain = hub.mirror.pflGoesToMain
         status.channelCount = hub.mirror.channels.count
         status.levelsSeen = levelsSeen
         status.homeSubmix = hub.homeSubmix

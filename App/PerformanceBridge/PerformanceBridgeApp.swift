@@ -478,10 +478,6 @@ struct MenuContent: View {
         if model.status.muteMasterOff {
             Text("Mute Master: Off")
         }
-        // Only while TotalMix's Cue/PFL goes to Main: PFL then takes over Main Out (Adam, 2026-11-02).
-        if model.status.pflToMain {
-            Text("PFL Output: Main Out")
-        }
         Divider()
         // Order (Apple's HIG, Menus): what is used most first, related items grouped and separated;
         // then the rarely used items in the order of a Mac app menu: the Setup Guide (mostly at

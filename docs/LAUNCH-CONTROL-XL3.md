@@ -389,9 +389,6 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   and dim orange (0.4 s each), and pressing a mute shows "Mute Master off / in TotalMix FX" on
   the screen (Adam, 2026-11-02). The medium shade was too close to the others, and the device
   can't flash by itself, so the driver flashes it.[^test-15]
-- **PFL to Main.** While TotalMix's "Cue/PFL to" is Main, PFL buttons are dark and do nothing but
-  show "PFL to Main Out / blocked"; one already on can be turned off (Adam, 2026-11-02; AGENTS.md,
-  section 4).
 - **Presence.** While connected, the driver asks for the surface mode (feature control 30) after
   5 s with nothing from the device. If two questions go unanswered, or the answer is a Custom Mode
   the device never announced, it takes it that the device restarted and lost DAW mode, and enters

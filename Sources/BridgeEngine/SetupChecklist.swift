@@ -103,13 +103,12 @@ public enum SetupChecklist {
                                    detail: "While it’s off, mutes from the hardware controller only select a channel’s mute and don’t silence it.\n\nIn TotalMix FX, turn on the “M” (Mute Master) button in the Control Strip, below the interface’s name and “undo”."))
         }
 
-        if status.pflToMain {
-            steps.append(SetupStep(id: "cue", title: "PFL goes to Main Out", state: .problem,
-                                   detail: "TotalMix FX sends Cue and PFL to Main, so PFL from the hardware controller would take over Main Out: the audience would hear only the channel being checked. Until this is changed, the hardware controllers’ PFL buttons do nothing.\n\nIn TotalMix FX’s Control Room section, click “assign”, then “Cue/PFL to”, and choose a headphone output (e.g., “Phones 1”)."))
-        }
-        // Live Mode can't be read over OSC (docs/TOTALMIX-OSC.md, test 6), so it is a note.
+        // Neither Live mode nor "Cue/PFL to" can be read over OSC (docs/TOTALMIX-OSC.md, tests 6
+        // and 21), so they are notes.
         steps.append(SetupStep(id: "livemode", title: "PFL needs Live mode", state: .instruction,
-                               detail: "The hardware controllers’ PFL buttons work only with TotalMix FX in Live mode, which Performance Bridge can’t check.\n\nIn TotalMix FX’s Control Strip, click “options” and, under “solo/pfl mode”, choose “live”."))
+                               detail: "The hardware controllers’ PFL buttons work only with TotalMix FX in Live mode, which Performance Bridge can’t check. With Live mode on, the channels’ buttons read PFL instead of S.\n\nIn TotalMix FX’s Control Strip, click “options” and, under “solo/pfl mode”, choose “live”."))
+        steps.append(SetupStep(id: "cue", title: "Send PFL to your headphones", state: .instruction,
+                               detail: "TotalMix FX sends PFL to Main by default, so PFL from a hardware controller replaces what Main Out plays: on stage, the audience hears only the channel being checked. Performance Bridge can’t check this setting.\n\nIn TotalMix FX’s Control Room section, click “assign”, then “Cue/PFL to”, and choose a headphone output (e.g., “Phones 1”)."))
 
         if !status.rotoEnabled {
             // Another hardware controller is in use.

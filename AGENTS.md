@@ -112,12 +112,12 @@ Recorded exceptions:
   without a label keeps showing "PB 1/2". The UI and its wording get a close look in the UI review
   and Adam's own (Adam, 2026-11-01).
 
-Safety interlock (Adam, 2026-11-02): while TotalMix's "Cue/PFL to" is Main (its default, `cuechan`
-−1), the hardware controllers don't turn PFL on, since PFL would then replace what Main Out plays,
-which on stage is what the audience hears (`docs/TOTALMIX-OSC.md`, tests 6 and 21). Turning a PFL
-off still works. This changes nothing in TotalMix, and TotalMix's own window is unaffected, so the
-design rule above holds. The menu shows "PFL Output: Main Out", the Setup Guide says how to change
-it, and the Launch Controls show their PFL buttons dark and "PFL to Main Out / blocked" on a press.
+Safety interlock, decided but not buildable (Adam, 2026-11-02): while TotalMix's "Cue/PFL to" is
+Main (its default), PFL would replace what Main Out plays, which on stage is what the audience
+hears, so the hardware controllers should not turn PFL on then. TotalMix doesn't report that
+setting over OSC (`docs/TOTALMIX-OSC.md`, test 21), so the app can't tell; the Setup Guide has a
+note instead. Build the interlock if a way to read the setting turns up (read-only; e.g.,
+TotalMix's settings file).
 
 Hidden channels (Adam, 2026-10-31; revised the same day). Hiding is done only in TotalMix, where
 Channel Layout can hide a channel from each OSC controller separately, and from the Mixer/Matrix and

@@ -506,12 +506,15 @@ and its "Cue/PFL to" submenu, and took a screenshot (published as
 - The assign menu lists Main Out, Main Out B, Phones 1–4, and "Cue/PFL to", each with a submenu.
 - "Cue/PFL to" offers Main and Phones 1–4, with no "none". Main was checked, and is TotalMix's
   default (Adam).
-- In test 6 and every `/sendall` answer since, `controlroom/cuechan` was −1 with this setting.
+- In test 6 and every `/sendall` answer since, `controlroom/cuechan` was −1 with this set to Main.
+- With it set to Phones 1, a refresh from the app left the app's reading unchanged, and a
+  `sbdev monitor --sendall` run (`monitor-cue-1102.log`) got `controlroom/cuechan = -1` in the
+  answer. Switching it to Main and back to Phones 1 during that run sent nothing.
 
 **Consequences.**
-- `cuechan` −1 means "Cue/PFL to Main": PFL then replaces what Main Out plays (test 6), which on
-  stage the audience hears. The app warns while it is so ("PFL Output: Main Out" in the menu, and a
-  Setup Guide step with this screenshot).
-- What `cuechan` reports for a Phones choice hasn't been seen; the inference is that it is that
-  output's channel, as for the other assignments.
+- `cuechan` does not report "Cue/PFL to", and TotalMix sends nothing when it changes, so Performance
+  Bridge can't read it. With Main, PFL replaces what Main Out plays (test 6), so the Setup Guide has
+  a note saying to choose a headphone output. A planned interlock that would block PFL while it is
+  Main (Adam, 2026-11-02) waits for a way to read the setting.
+- What `cuechan` does report is not known; the inference is an output whose CUE button is on.
 

@@ -99,9 +99,8 @@ Checked on screen with TotalMix FX "2.10 (1)" on a Mac (Adam, 2026-10-31); the s
    - **Where PFL goes.** In the Control Room section, click **assign**, then **Cue/PFL to**, and choose a
      headphone output, e.g., **Phones 1** (Adam's screenshot, 2026-11-02; `docs/TOTALMIX-OSC.md`, test 21). Its
      default, **Main**, makes PFL take over Main Out, so the audience hears only the channel being checked (test
-     6). Performance Bridge reads it: while it is Main, the hardware controllers' PFL buttons do nothing (they
-     can still turn a PFL off), the menu shows **PFL Output: Main Out**, the Setup Guide shows a warning, and on a
-     Launch Control the PFL buttons are dark and pressing one shows "PFL to Main Out / blocked" (Adam, 2026-11-02).
+     6). TotalMix doesn't send this setting over OSC (test 21), so Performance Bridge can't check it; the Setup
+     Guide reminds you.
 
      <img src="../App/PerformanceBridge/Resources/totalmix-cue-pfl-to.png" width="480" alt="TotalMix FX's control room, with the assign menu open at Cue/PFL to: Main (checked) and Phones 1 to 4">
 
@@ -176,8 +175,7 @@ retrying in every state:
   means the device has entered DAW mode, **Connecting** that its DAW port is open and the app is asking for
   DAW mode, and **Not Found** that none of the model chosen in Settings is connected.
 
-Two more lines appear only while something in TotalMix FX gets in the way (Step 1, item 9): **Mute Master: Off**
-and **PFL Output: Main Out**.
+One more line appears only while TotalMix FX's Mute Master is off (Step 1, item 9): **Mute Master: Off**.
 
 The full reason for any state goes to the log in the Terminal the app was started from.
 
@@ -223,7 +221,7 @@ the main mix) and the cue output (PFL uses it).
 | Top encoder | Send to the top row's output (e.g., Phones 1) |
 | Middle encoder | Send to the middle row's output (e.g., Phones 2) |
 | Bottom encoder | Pan in Main Out |
-| Top button | PFL (bright yellow when on, dim yellow when off; dark while TotalMix sends PFL to Main, Step 1) |
+| Top button | PFL (bright yellow when on, dim yellow when off) |
 | Bottom button | Mute (bright orange when on, dim orange when off; flashing while TotalMix's Mute Master is off) |
 
 | Button | What it does |

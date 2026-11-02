@@ -85,9 +85,9 @@ public enum MonitoringRole: String, CaseIterable, Hashable, Sendable {
     case phones3
     /// Phones 4 (`phones4`).
     case phones4
-    /// The output that cue and PFL go to (`cuechan`): TotalMix's "Cue/PFL to", which offers Main
-    /// (its default, reported as −1, none) and Phones 1–4 (docs/TOTALMIX-OSC.md, tests 6 and 21).
-    /// That a Phones choice reports that output's channel is an inference.
+    /// `cuechan`. It does not report TotalMix's "Cue/PFL to": it stayed −1 with that set to Phones 1,
+    /// and changing it sent nothing (docs/TOTALMIX-OSC.md, test 21). What it does report is not known;
+    /// the inference is an output whose CUE button is on.
     case cue = "cuechan"
 }
 
@@ -106,9 +106,6 @@ public struct MixerMirror: Sendable {
     /// The monitoring roles TotalMix has reported, assigned or not (−1, none): a role missing from
     /// `monitoring` but here is known to be unassigned.
     public private(set) var reportedRoles: Set<MonitoringRole> = []
-    /// Whether TotalMix's "Cue/PFL to" is Main (`cuechan` −1, its default), as reported: PFL then
-    /// replaces what Main Out plays (docs/TOTALMIX-OSC.md, tests 6 and 21). False until reported.
-    public var pflGoesToMain: Bool { reportedRoles.contains(.cue) && monitoring[.cue] == nil }
     /// TotalMix's Mute Master (`/globalmute`), or `nil` until TotalMix has reported it. While it is
     /// off, a channel's mute is only selected and doesn't silence it (docs/TOTALMIX-OSC.md, the
     /// global mute recheck of 2026-10-31, and Adam, 2026-11-02).
