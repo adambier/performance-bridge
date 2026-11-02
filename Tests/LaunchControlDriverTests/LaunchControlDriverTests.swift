@@ -298,7 +298,7 @@ final class LaunchControlDriverTests: XCTestCase {
             let pan = LaunchControlDriver.panPosition(value) * 2 - 1
             XCTAssertEqual(ValueText.pan(pan), steps == 0 ? "C" : steps < 0 ? "L\(-steps)" : "R\(steps)",
                            "the display shows the whole step sent, at \(value)")
-            XCTAssertEqual(Int(pan * 100), steps, "cut off, the step is the same, at \(value)")
+            XCTAssertEqual(Int((pan * 100).rounded(.down)), steps, "TotalMix's step (the one below) is the same, at \(value)")
             XCTAssertEqual(LaunchControlDriver.panValue(LaunchControlDriver.panPosition(value)), value)
             if value > 0 {
                 let gap = steps - LaunchControlDriver.panSteps(value - 1)

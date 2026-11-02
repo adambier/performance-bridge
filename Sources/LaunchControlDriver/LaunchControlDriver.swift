@@ -517,16 +517,17 @@ public struct LaunchControlDriver: Sendable {
         return Int((offset < 0 ? offset * 100 / 64 : offset * 100 / 63).rounded())
     }
 
-    /// The hub position (0…1, the center at 0.5) for a pan encoder's value. It lands on one of
-    /// TotalMix's whole pan steps, plus a quarter step away from the center, so that TotalMix's
-    /// window and the encoder's display show the same step: a step of about 1.6 showed as R01 in
-    /// TotalMix and R2 on the Launch Control (Adam, 2026-11-01; docs/LAUNCH-CONTROL-XL3.md, section 9).
-    /// Whether TotalMix rounds or cuts off a fractional step is untested; the quarter step gives the
-    /// same whole step either way (inference).
+    /// The hub position (0…1, the center at 0.5) for a pan encoder's value. It lands a quarter step
+    /// to the right of one of TotalMix's whole pan steps, so that TotalMix's window and the
+    /// encoder's display show the same step. TotalMix has been observed to show the whole step
+    /// below a fractional pan, toward L (R1.6 as R01, L2.25 as L03; Adam, 2026-11-01;
+    /// docs/LAUNCH-CONTROL-XL3.md, section 9), and the display rounds, so a quarter step to the
+    /// right gives the same step in both.
     public static func panPosition(_ value: UInt8) -> Double {
         let steps = panSteps(value)
         guard steps != 0 else { return 0.5 }
-        let pan = min((Double(abs(steps)) + 0.25) / 100, 1) * (steps < 0 ? -1 : 1)
+        guard steps > -100 else { return 0 }  // L100 is the end, exactly
+        let pan = min((Double(steps) + 0.25) / 100, 1)
         return (pan + 1) / 2
     }
 
