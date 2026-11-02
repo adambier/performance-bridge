@@ -478,6 +478,10 @@ struct MenuContent: View {
         if model.status.muteMasterOff {
             Text("Mute Master: Off")
         }
+        // Only while no output is assigned to Cue: PFL then takes over Main Out (Adam, 2026-11-02).
+        if model.status.cueUnassigned {
+            Text("PFL Output: None")
+        }
         Divider()
         // Order (Apple's HIG, Menus): what is used most first, related items grouped and separated;
         // then the rarely used items in the order of a Mac app menu: the Setup Guide (mostly at

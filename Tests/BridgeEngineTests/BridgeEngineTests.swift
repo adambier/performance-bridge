@@ -220,6 +220,10 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertNil(steps["mutemaster"], "no Mute Master step while it is on or unknown")
         status.muteMasterOff = true
         XCTAssertEqual(states(status)["mutemaster"], .problem)
+        XCTAssertNil(steps["cue"])
+        XCTAssertEqual(steps["livemode"], .instruction, "Live mode can't be read, so it's a note")
+        status.cueUnassigned = true
+        XCTAssertEqual(states(status)["cue"], .problem)
     }
 
     func testSetupChecklistNamesTheEnginesPortsAndTotalMixsLabels() throws {

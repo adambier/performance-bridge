@@ -687,4 +687,15 @@ final class ScaleAndTextTests: XCTestCase {
         XCTAssertEqual(hub.channel(at: 4, of: .sources, on: id), ChannelRef(.playback, 0))
         XCTAssertEqual(hub.strips(of: id)?.compactMap { $0.info }.count, 1, "first page: the input, then blanks")
     }
+
+    func testAnUnassignedCueIsKnownOnlyOnceReported() {
+        var mirror = MixerMirror()
+        XCTAssertFalse(mirror.reportedRoles.contains(.cue))
+        XCTAssertEqual(mirror.apply(.other(path: "controlroom/cuechan", value: .number(-1))), .controlRoom)
+        XCTAssertTrue(mirror.reportedRoles.contains(.cue))
+        XCTAssertNil(mirror.monitoring[.cue], "reported as none")
+        XCTAssertNil(mirror.apply(.other(path: "controlroom/cuechan", value: .number(-1))), "no change")
+        XCTAssertEqual(mirror.apply(.other(path: "controlroom/cuechan", value: .number(6))), .controlRoom)
+        XCTAssertEqual(mirror.monitoring[.cue], 6)
+    }
 }

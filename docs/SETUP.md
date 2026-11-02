@@ -84,6 +84,23 @@ Checked on screen with TotalMix FX "2.10 (1)" on a Mac (Adam, 2026-10-31); the s
    this submenu is inferred to be that setting, since TotalMix has no item by that name. The tests ran with it
    checked and Global OSC worked (`docs/TOTALMIX-OSC.md`, section 1); a run with it unchecked hasn't been
    compared, so leave it as it is.
+9. **Mute and PFL.** The hardware controllers' mute and PFL buttons depend on three settings in TotalMix FX's
+   window (Adam's screenshot of the Control Strip, 2026-11-02):
+
+   <img src="../App/PerformanceBridge/Resources/totalmix-control-strip.png" width="160" alt="TotalMix FX's Control Strip: the M, S, and F buttons, and the options panel with solo/pfl mode set to live">
+
+   - **Mute Master.** Turn on the **M** button in the Control Strip, below the interface's name and "undo". While
+     it is off, a mute only selects the channel's mute and doesn't silence it (`docs/TOTALMIX-OSC.md`, the global
+     mute recheck of 2026-10-31). Performance Bridge reads it: while it is off, the menu shows **Mute Master:
+     Off**, the Setup Guide shows a warning, and on a Launch Control a mute that is on flashes.
+   - **Live mode.** In the Control Strip, click **options** and, under **solo/pfl mode**, choose **live**. Without
+     it, PFL from a hardware controller is accepted but does nothing you can see or hear (test 6). TotalMix
+     doesn't send this setting over OSC, so Performance Bridge can't check it; the Setup Guide reminds you.
+   - **The Cue output.** In the Control Room section, click **assign** and assign an output to Cue, e.g., your
+     headphones. Without one, PFL takes over Main Out, so the audience hears only the channel being checked
+     (test 6). Performance Bridge reads it: while no output is assigned, the menu shows **PFL Output: None** and
+     the Setup Guide shows a warning. The menu items under "assign" have not been checked on screen (the
+     "assign → Main Out B" path was, in test 14).
 
 ## Step 2: Choose which channels the hardware controllers show
 
@@ -156,6 +173,9 @@ retrying in every state:
   means the device has entered DAW mode, **Connecting** that its DAW port is open and the app is asking for
   DAW mode, and **Not Found** that none of the model chosen in Settings is connected.
 
+Two more lines appear only while something in TotalMix FX gets in the way (Step 1, item 9): **Mute Master: Off**
+and **PFL Output: None**.
+
 The full reason for any state goes to the log in the Terminal the app was started from.
 
 After hiding or showing channels in TotalMix FX's own Channel Layout window, choose **Refresh Channels from
@@ -201,7 +221,7 @@ the main mix) and the cue output (PFL uses it).
 | Middle encoder | Send to the middle row's output (e.g., Phones 2) |
 | Bottom encoder | Pan in Main Out |
 | Top button | PFL (bright yellow when on, dim yellow when off) |
-| Bottom button | Mute (bright orange when on, dim orange when off) |
+| Bottom button | Mute (bright orange when on, dim orange when off; flashing while TotalMix's Mute Master is off) |
 
 | Button | What it does |
 |---|---|

@@ -75,6 +75,7 @@ seen").
     [10](#test-11-2026-11-01-the-home-screen-shift--turn-pan-steps-and-the-arc-scale).
 [^test-13]: Test 13 (2026-11-02), section [10](#test-13-2026-11-02-button-shades-and-brightness).
 [^test-14]: Test 14 (2026-11-02), section [10](#test-14-2026-11-02-asking-for-daw-mode-twice).
+[^test-15]: Test 15 (2026-11-02), section [10](#test-15-2026-11-02-mute-master-shades-and-flashing).
 
 ## 2. MIDI ports
 
@@ -384,6 +385,10 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   and the transport stay free for a later connection to a DAW (Adam, 2026-11-01). The Novation
   button was tried as a one-press "first page" and dropped as hard to find (Adam, 2026-11-02).
 - **Both Track buttons together** go to the first page (Adam, 2026-11-02).
+- **Mute Master.** While TotalMix's Mute Master is off, a mute that is on flashes between bright
+  and dim orange (0.4 s each), and pressing a mute shows "Mute Master off / in TotalMix FX" on
+  the screen (Adam, 2026-11-02). The medium shade was too close to the others, and the device
+  can't flash by itself, so the driver flashes it.[^test-15]
 - **Presence.** While connected, the driver asks for the surface mode (feature control 30) after
   5 s with nothing from the device. If two questions go unanswered, or the answer is a Custom Mode
   the device never announced, it takes it that the device restarted and lost DAW mode, and enters
@@ -645,4 +650,25 @@ mode). `sbdev lcxl --raw`, which enters DAW mode as it starts; then `daw on`, `d
 **Consequence.** The device echoes the DAW mode note only when the mode changes, as test 12
 inferred. So a host asking a device already in DAW mode gets no answer, and the driver's start,
 leaving DAW mode and entering it again (`startBytes`), is what makes the device answer.
+
+### Test 15 (2026-11-02): Mute Master, shades, and flashing
+
+**Setup.** Adam's Launch Control XL 3 with the app (build 245), then `sbdev lcxl` (log
+`lcxl-flash-1102.log`), and TotalMix FX's Mute Master (the M button in its Control Strip).
+
+**Findings:**
+- With Mute Master off, a mute pressed on the XL 3 lit index 10, the medium orange: barely brighter
+  than index 11, and hard to tell from it or from index 9. Turning Mute Master on brought it to 9,
+  and off again back to 10, as the app intended; the menu showed "Mute Master: Off".
+- Track < and > pressed together went to the first page, and the device's Settings page did not
+  open in DAW mode.
+- Unplugged and plugged in again within about 2 seconds, the device was found again and drawn.
+- Index 9 sent as a Control Change on channel 2 (`B1 25 09`) or channel 3 (`B2 25 09`) changed
+  nothing: no flashing or pulsing, as on Novation's Launchpads. The programmer's guide describes
+  only channel 1.[^prg-coloring]
+
+**Consequences.**
+- The medium shade is not used. A mute that is on while Mute Master is off flashes instead, drawn by
+  the driver (`LaunchControlDriver.blinkPeriod`).
+- In DAW mode, both Track buttons together are free for the app.
 

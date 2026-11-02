@@ -88,6 +88,8 @@ public struct LaunchControlDriver: Sendable {
     /// When the device last sent anything, and when the driver last asked it for its surface mode,
     /// for the presence check (`presenceInterval`).
     private var lastHeard: Double?
+    /// Whether flashing buttons are in their bright half now (`blinkPeriod`).
+    private var blinkLit = true
     private var lastQuery: Double?
     private var awaitingModeReply = false
 
@@ -224,7 +226,14 @@ public struct LaunchControlDriver: Sendable {
         if !connected, let lastStart, now - lastStart >= Self.restartInterval {
             self.lastStart = now
             step.midi += startBytes()
-        } else if connected, let heard = lastHeard, now - heard >= Self.presenceInterval {
+        }
+        // Mutes selected while Mute Master is off flash; the lights are sent only when they change.
+        let lit = Int((now / Self.blinkPeriod).rounded(.down)) % 2 == 0
+        if connected, !inCustomMode, lit != blinkLit, hub.mirror.muteMaster == false {
+            blinkLit = lit
+            step.midi += drawButtons(hub: hub)
+        }
+        if connected, let heard = lastHeard, now - heard >= Self.presenceInterval {
             if now - heard >= 2 * Self.presenceInterval + 1 {
                 restart(now: now, into: &step)   // two questions unanswered
             } else if now - (lastQuery ?? -Double.infinity) >= Self.presenceInterval {
@@ -920,7 +929,7 @@ public struct LaunchControlDriver: Sendable {
         } else if isPFLLayer(layer, hub: hub) {
             colorIndex = on ? Self.pflOn : Self.pflOff
         } else if on {
-            colorIndex = hub.mirror.muteMaster == false ? Self.muteSelected : Self.muteOn
+            colorIndex = hub.mirror.muteMaster == false && !blinkLit ? Self.muteOff : Self.muteOn
         } else {
             colorIndex = Self.muteOff
         }
@@ -1096,9 +1105,11 @@ public struct LaunchControlDriver: Sendable {
     public static let muteOn: UInt8 = 9
     /// A mute button that is off: the dimmest orange.
     public static let muteOff: UInt8 = 11
-    /// A mute that is on while TotalMix's Mute Master is off: the medium orange, between the two
-    /// (inference from the palette's runs of four, test 13; not yet seen).
-    public static let muteSelected: UInt8 = 10
+    /// How a mute that is on while TotalMix's Mute Master is off shows: it flashes between bright
+    /// and dim orange, `blinkPeriod` seconds each, drawn by the driver. The medium shade (10) was
+    /// tried and was too close to the others to read, and the device has no flashing of its own
+    /// (docs/LAUNCH-CONTROL-XL3.md, test 15; Adam, 2026-11-02).
+    public static let blinkPeriod: Double = 0.4
     /// A PFL button that is on: yellow.
     public static let pflOn: UInt8 = 13
     /// A PFL button that is off: the dimmest yellow.

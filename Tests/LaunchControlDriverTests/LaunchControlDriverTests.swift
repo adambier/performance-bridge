@@ -151,11 +151,19 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(off.midi.isEmpty, "no mute on yet: nothing to redraw")
 
         let mute = driver.receive([0xB0, 0x2D, 0x7F], hub: &hub, now: 2)
-        XCTAssertTrue(mute.midi.contains([0xB0, 0x2D, LaunchControlDriver.muteSelected]), "medium orange")
+        XCTAssertTrue(mute.midi.contains([0xB0, 0x2D, LaunchControlDriver.muteOn]))
+        // It flashes: dim, then bright again, a blink period each (the device can't flash, test 15).
+        // Halves of 0.4 s from time 0: 2.4–2.8 bright, 2.8–3.2 dim, 3.2–3.6 bright.
+        XCTAssertTrue(driver.tick(hub: &hub, now: 2.45).midi.isEmpty, "still the bright half")
+        XCTAssertTrue(driver.tick(hub: &hub, now: 2.85).midi.contains([0xB0, 0x2D, LaunchControlDriver.muteOff]), "flash: dim")
+        XCTAssertTrue(driver.tick(hub: &hub, now: 2.9).midi.isEmpty, "once a half, and an unmuted button doesn't flash")
+        XCTAssertTrue(driver.tick(hub: &hub, now: 3.25).midi.contains([0xB0, 0x2D, LaunchControlDriver.muteOn]), "flash: bright")
         XCTAssertTrue(mute.midi.contains(LaunchControlOutgoing.text(.overlay, field: 0, "Mute Master off", model: .xl3) ?? []),
                       "the screen says why")
-        let on = driver.take(hub.handle(.other(path: "globalmute", value: .number(1)), now: 3), hub: &hub, now: 3)
-        XCTAssertTrue(on.midi.contains([0xB0, 0x2D, LaunchControlDriver.muteOn]), "Mute Master on: bright")
+        _ = driver.tick(hub: &hub, now: 3.65)   // the dim half
+        let on = driver.take(hub.handle(.other(path: "globalmute", value: .number(1)), now: 3.7), hub: &hub, now: 3.7)
+        XCTAssertTrue(on.midi.contains([0xB0, 0x2D, LaunchControlDriver.muteOn]), "Mute Master on: steady bright")
+        XCTAssertTrue(driver.tick(hub: &hub, now: 4.1).midi.isEmpty, "no more flashing")
         let pfl = driver.receive([0xB0, 0x25, 0x7F], hub: &hub, now: 4)
         XCTAssertFalse(pfl.midi.contains(LaunchControlOutgoing.text(.overlay, field: 0, "Mute Master off", model: .xl3) ?? []))
     }
