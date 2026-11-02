@@ -32,7 +32,7 @@ public struct RotoStep: Equatable, Sendable {
 /// this surface to `render(_:hub:now:)` and sends the bytes to the Roto-Control.
 ///
 /// How the Roto-Control's MIX mode maps onto the core (docs/ROTO-CONTROL.md):
-/// - the audio track set is the sources view, and the master and return set the outputs view;
+/// - both track sets show the sources (the channels); the outputs are not shown (Adam, 2026-11-01);
 /// - the level, pan, and send knob modes are the core's `level`, `pan`, and `send(n)`;
 /// - the mute switch mode is mute; solo is PFL, as TotalMix's own Solo button is in its Live Mode
 ///   (docs/TOTALMIX-OSC.md, test 6); the record-arm switches do nothing (arming tracks in a DAW is planned for a later version; the
@@ -431,9 +431,13 @@ public struct RotoDriver: Sendable {
 
     // MARK: - Mapping
 
-    /// The core's view for a Roto-Control track set.
+    /// The core's view for a Roto-Control track set: the channels (sources) for both. The second
+    /// set (the Roto-Control's "MIX-RTN", chosen by pressing both arrow buttons; Adam, 2026-11-01)
+    /// used to show the outputs; outputs are now set up in TotalMix FX and left alone during a
+    /// performance (Adam, 2026-11-01), so it shows the channels too, and pressing it changes nothing
+    /// surprising. It may later hold a control-room page (PLUGIN mode, 1.x).
     public static func view(_ set: RotoTrackSet) -> ViewKind {
-        set == .audio ? .sources : .outputs
+        .sources
     }
 
     /// The core's knob function for a Roto-Control knob mode.

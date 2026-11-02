@@ -216,6 +216,9 @@ final class BridgeModel: ObservableObject {
     let portOverrides: (incoming: UInt16?, outgoing: UInt16?)
 
     private static let homeSubmixKey = "homeSubmix"
+    /// The Launch Control's send rows, as output channels (−1 for none), saved when changed on the
+    /// device.
+    nonisolated private static let launchControlSendsKey = "launchControlSends"
 
     init() {
         let arguments = CommandLine.arguments
@@ -317,8 +320,13 @@ final class BridgeModel: ObservableObject {
         settings.rotoPortName = saved.rotoPortName.trimmingCharacters(in: .whitespaces)
         settings.playbacksOnNewPage = UserDefaults.standard.bool(forKey: "playbacksOnNewPage")
         settings.layout = savedLayout()
-        settings.homeSubmix = UserDefaults.standard.object(forKey: homeSubmixKey) as? Int
+        // Level and pan always go to Main Out (the Mix Output menu was dropped; Adam, 2026-11-01),
+        // so a choice saved by an earlier build is ignored.
+        UserDefaults.standard.removeObject(forKey: homeSubmixKey)
         settings.launchControl = LaunchControlSetting(arguments: CommandLine.arguments)
+        if let saved = UserDefaults.standard.array(forKey: launchControlSendsKey) as? [Int] {
+            settings.launchControl?.sendOutputs = saved.map { $0 < 0 ? nil : $0 }
+        }
         return settings
     }
 
@@ -337,6 +345,9 @@ final class BridgeModel: ObservableObject {
         let engine = self.engine
         engine.onLayoutChange = { layout in
             if let data = try? JSONEncoder().encode(layout) { UserDefaults.standard.set(data, forKey: Self.layoutKey) }
+        }
+        engine.onLaunchControlSendsChange = { outputs in
+            UserDefaults.standard.set(outputs.map { $0 ?? -1 }, forKey: Self.launchControlSendsKey)
         }
         // For now the log goes to the Terminal the app was started from.
         engine.onLog = { line in
@@ -361,19 +372,6 @@ final class BridgeModel: ObservableObject {
         status = BridgeStatus()
         watch = makeWatch()
         start()
-    }
-
-    /// Makes `output` the home submix and remembers it. The output Main Out is assigned to is
-    /// saved as "follow Main Out", so a later change of Main Out in TotalMix moves the home too.
-    func setHomeSubmix(_ output: Int) {
-        let followsMainOut = status.monitoringOutputs.first { $0.roles.contains(.mainOut) }?.output == output
-        if followsMainOut {
-            UserDefaults.standard.removeObject(forKey: Self.homeSubmixKey)
-            engine.setHomeSubmix(nil)
-        } else {
-            UserDefaults.standard.set(output, forKey: Self.homeSubmixKey)
-            engine.setHomeSubmix(output)
-        }
     }
 }
 
@@ -412,28 +410,6 @@ struct MenuContent: View {
             Text(name + ": " + launchControlState)
         }
         Divider()
-        // "Mix Output" (Adam, 2026-10-31): the output whose submix the level knobs and pans go into;
-        // the code calls it the home submix.
-        Menu("Mix Output") {
-            ForEach(model.status.monitoringOutputs, id: \.output) { choice in
-                Button(label(for: choice)) { model.setHomeSubmix(choice.output) }
-            }
-            if model.status.monitoringOutputs.isEmpty {
-                Text("No monitoring outputs yet")
-            }
-            // Every other output TotalMix shows, always offered in a submenu (Adam, 2026-10-31).
-            if !model.status.otherOutputs.isEmpty {
-                Divider()
-                Menu("Hardware Outputs") {   // TotalMix FX's name for these outputs (Adam, 2026-10-31)
-                    ForEach(model.status.otherOutputs, id: \.output) { choice in
-                        Button(label(for: choice)) { model.setHomeSubmix(choice.output) }
-                    }
-                }
-            }
-            // Choosing Main Out's output saves "follow Main Out" (BridgeModel.setHomeSubmix), so
-            // the home moves when Main Out is reassigned in TotalMix. The menu no longer says so:
-            // the note wasn't actionable (Adam, 2026-10-31); the setup guide (docs/SETUP.md) does.
-        }
         // Order (Apple's HIG, Menus): what is used most first, related items grouped and separated;
         // then the rarely used items in the order of a Mac app menu: the Setup Guide (mostly at
         // first launch, Adam, 2026-10-31), About and Check for Updates, Settings, Quit. Labels in
@@ -456,24 +432,6 @@ struct MenuContent: View {
             NSApplication.shared.terminate(nil)
         }
         .keyboardShortcut("q")
-    }
-
-    private func label(for choice: HomeChoice) -> String {
-        let mark = choice.output == model.status.homeSubmix ? "✓ " : "    "
-        let roles = choice.roles.map(roleName).joined(separator: ", ")
-        return roles.isEmpty ? "\(mark)\(choice.name)" : "\(mark)\(choice.name) (\(roles))"
-    }
-
-    private func roleName(_ role: MonitoringRole) -> String {
-        switch role {
-        case .mainOut: return "Main Out"
-        case .mainOutB: return "Main Out B"
-        case .phones1: return "Phones 1"
-        case .phones2: return "Phones 2"
-        case .phones3: return "Phones 3"
-        case .phones4: return "Phones 4"
-        case .cue: return "Cue"
-        }
     }
 }
 
