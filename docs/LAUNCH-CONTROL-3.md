@@ -200,8 +200,9 @@ own (Adam asked for its efficiency and intuitiveness to be assessed).
   change.
 - **Paging.** Track < and > move by eight strips, and with Shift to the first or last page
   (`LAUNCH-CONTROL-XL3.md`, section 9). The strips always show the channels, never the outputs.
-- **Levels.** The encoders keep TotalMix's own fader curve (0.26 dB a step near 0 dB);
-  `LAUNCH-CONTROL-XL3.md`, section 8, item 12, tests whether relative mode is needed.
+- **Levels.** Level and send encoders use the ARC USB's scale, as on the XL 3 (about 0.2 dB a
+  value near 0 dB; `LAUNCH-CONTROL-XL3.md`, section 9). `LAUNCH-CONTROL-XL3.md`, section 8,
+  item 12, tests whether relative mode is needed.
 - **Shift + turn.** As on the XL 3: resets the encoder (a level to 0 dB, a pan to the center, a
   send to −oo).
 - **Screen and colors.** As on the XL 3 (`LAUNCH-CONTROL-XL3.md`, section 9): each encoder's display

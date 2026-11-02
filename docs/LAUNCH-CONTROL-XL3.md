@@ -248,7 +248,10 @@ port names.
     move fader 1. How many characters fit per field? Then `display stationary 3` with eight names,
     and the `quiet` option (no display on change).
 11. **Bitmap targets** (section 7, item 5), only if a bitmap is wanted later.
-12. **Do level encoders need relative mode?** The encoders send 128 values. With TotalMix's own
+12. **Do level encoders need relative mode?** Part 1 run (2026-11-01, Launch Control 3 layout on
+    the XL 3, TotalMix's curve): "pretty smooth". Adam then asked for the ARC USB's scale for volume
+    encoders (section 9), which is finer near 0 dB; parts 2–5 are to be run on it.
+    The original test: The encoders send 128 values. With TotalMix's own
     curve that is about 0.26 dB a step from −6 to +6 dB, 0.3–0.6 from −20 to −6, 0.6–0.9 from −40
     to −20, and about 1 dB below that (computed from `FaderCurve`). Relative mode would allow finer
     steps, but drops the first step after a change of direction (test 2). With music playing
@@ -282,7 +285,11 @@ and intuitiveness to be assessed).
 - **Fader scale.** The nine ticks printed beside each fader read, top to bottom, +6, +3, 0, −6,
   −10, −20, −40, −60, and off: TotalMix FX's own fader marks (`TOTALMIX-OSC.md`, test 18), placed
   at the fader values measured at each tick (test 7). Between ticks the gain moves evenly in dB
-  (Adam, 2026-11-01). The encoders keep TotalMix's own fader curve: they have no printed scale.
+  (Adam, 2026-11-01). Level and send encoders use the scale of RME's ARC USB volume wheel, as volume
+  controls (Adam, 2026-11-01): its 53 detents from −62 to +6 dB (docs/TOTALMIX-OSC.md, test 19),
+  spread over the encoder's values so that 0 dB is at 101, as on the faders. That is about 0.2 dB a
+  value from −5 to +5 dB, 0.4 dB from −15 to −5, and up to 1.2 dB at the bottom; value 0 is off.
+  Pan encoders keep a plain scale, centered at 64.
 - **Encoder rows.** Fixed (Adam, 2026-11-01): the top two rows are sends and the bottom row pan,
   the order of Novation's own DAW integrations (Live, Logic Pro, and Cubase in the user guide's "DAW
   Mixer mode" sections), with pan just above the fader. Each send row feeds one output, chosen on

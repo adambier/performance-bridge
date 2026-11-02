@@ -241,7 +241,7 @@ public struct LaunchControlDriver: Sendable {
             // be sent, so the driver's record of what it sent follows the device.
             sentPositions[element.controlNumber] = value
             guard let (layer, strip) = control(for: element) else { return }
-            let position = usesFaderScale(layer) ? Self.faderPosition(value) : Self.position(value)
+            let position = devicePosition(layer, value)
             take(hub.controlMoved(id(layer), strip: strip, to: position, now: now), hub: hub, into: &step)
         case .touch(let element, let touched):
             guard let (layer, strip) = control(for: element) else { return }
@@ -436,7 +436,7 @@ public struct LaunchControlDriver: Sendable {
               hub.strips(of: id(layer))?.indices.contains(strip) == true,
               hub.strips(of: id(layer))?[strip].knobTarget != nil else { return }
         take(hub.controlMoved(id(layer), strip: strip, to: position, now: now), hub: hub, into: &step)
-        let value = Self.value(position)
+        let value = deviceValue(layer, position)
         guard connected, !inCustomMode, sentPositions[element.controlNumber] != value else { return }
         sentPositions[element.controlNumber] = value
         step.midi += LaunchControlOutgoing.position(element, value) ?? []
@@ -488,6 +488,79 @@ public struct LaunchControlDriver: Sendable {
     /// Whether a layer's controls are the XL 3's faders, which use the printed scale
     /// (`faderTicks`).
     private func usesFaderScale(_ layer: Layer) -> Bool { layout == .xl3 && device == .xl3 && layer == .faders }
+
+    /// Whether a layer's encoders set a level or a send, and so use the ARC USB's scale
+    /// (`encoderPosition(_:)`); pan encoders don't.
+    private func usesVolumeScale(_ layer: Layer) -> Bool {
+        guard !usesFaderScale(layer), case .strips(_, _, let knob, _) = mode(for: layer, first: 0) else { return false }
+        if case .pan = knob { return false }
+        return true
+    }
+
+    /// TotalMix's position (0…1) for a value from a layer's controls.
+    private func devicePosition(_ layer: Layer, _ value: UInt8) -> Double {
+        usesFaderScale(layer) ? Self.faderPosition(value)
+            : usesVolumeScale(layer) ? Self.encoderPosition(value) : Self.position(value)
+    }
+
+    /// The value to send a layer's control for TotalMix's position (0…1).
+    private func deviceValue(_ layer: Layer, _ position: Double) -> UInt8 {
+        usesFaderScale(layer) ? Self.faderValue(position)
+            : usesVolumeScale(layer) ? Self.encoderValue(position) : Self.value(position)
+    }
+
+    /// The gains of the ARC USB's wheel, one per detent from the bottom (after off) to the top, as
+    /// TotalMix FX shows them (Adam, 2026-11-01; docs/TOTALMIX-OSC.md, test 19): 3 dB steps at the
+    /// bottom, then 2.5, 2, 1.5, and 1 dB, and 0.5 dB from −5 to +5 dB. Level and send encoders use
+    /// this scale, as volume controls (Adam, 2026-11-01).
+    public static let arcDetents: [Double] = [
+        -62, -59, -56, -53, -50, -47, -44, -41.5, -39, -36.5, -34, -32, -30, -28, -26, -24, -22.5, -21,
+        -19.5, -18, -16.5, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4.5, -4, -3.5, -3, -2.5,
+        -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 6,
+    ]
+
+    /// The encoder value at 0 dB on the ARC scale: 101, as on the XL 3's faders (`faderTicks`).
+    /// Values 1–101 spread the detents from −62 to 0 dB evenly, and 101–127 those from 0 to +6 dB
+    /// (about 0.41 and 0.42 detents a value: 0.2 dB a value near 0 dB, 1.2 dB at the bottom).
+    /// Value 0 is off.
+    public static let encoderUnityValue = 101
+
+    /// The gain in dB for an encoder value on the ARC scale (fractional values between whole ones),
+    /// or `nil` for off.
+    static func encoderGain(exactly value: Double) -> Double? {
+        guard value >= 1 else { return nil }
+        let unity = Double(encoderUnityValue)
+        let zero = Double(arcDetents.firstIndex(of: 0) ?? 0)
+        let top = Double(arcDetents.count - 1)
+        let index = value <= unity ? (value - 1) * zero / (unity - 1) : zero + (min(value, 127) - unity) * (top - zero) / (127 - unity)
+        let lower = Int(index.rounded(.down))
+        guard lower + 1 < arcDetents.count else { return arcDetents.last }
+        let fraction = index - Double(lower)
+        return arcDetents[lower] + fraction * (arcDetents[lower + 1] - arcDetents[lower])
+    }
+
+    /// TotalMix's fader position (0…1) for a level or send encoder's value, on the ARC scale.
+    public static func encoderPosition(_ value: UInt8) -> Double {
+        guard let gain = encoderGain(exactly: Double(min(value, 127))) else { return 0 }
+        return FaderCurve.position(gainDB: gain)
+    }
+
+    /// The encoder value for TotalMix's fader position (0…1) on the ARC scale: the inverse of
+    /// `encoderPosition(_:)`, rounded. A gain between off and the lowest detent is value 1.
+    public static func encoderValue(_ position: Double) -> UInt8 {
+        guard position.isFinite, let gain = FaderCurve.gainDB(position: min(max(position, 0), 1)) else { return 0 }
+        guard let first = arcDetents.first, gain > first else { return 1 }
+        let zero = Double(arcDetents.firstIndex(of: 0) ?? 0)
+        let top = Double(arcDetents.count - 1)
+        var index = top
+        for (offset, pair) in zip(arcDetents, arcDetents.dropFirst()).enumerated() where gain <= pair.1 {
+            index = Double(offset) + (gain - pair.0) / (pair.1 - pair.0)
+            break
+        }
+        let unity = Double(encoderUnityValue)
+        let value = index <= zero ? 1 + index * (unity - 1) / zero : unity + (index - zero) * (127 - unity) / (top - zero)
+        return UInt8(min(max(value.rounded(), 1), 127))
+    }
 
     /// The XL 3's fader scale (Adam, 2026-11-01): the gain at each of the nine ticks printed beside
     /// each fader, top to bottom, with the fader value measured at each tick
@@ -596,7 +669,7 @@ public struct LaunchControlDriver: Sendable {
                     touched.insert(index)
                     if let value {
                         let control = self.element(layer, index)
-                        let position = usesFaderScale(layer) ? Self.faderValue(value) : Self.value(value)
+                        let position = deviceValue(layer, value)
                         if sentPositions[control.controlNumber] != position {
                             sentPositions[control.controlNumber] = position
                             bytes += LaunchControlOutgoing.position(control, position) ?? []
