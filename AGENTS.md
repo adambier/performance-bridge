@@ -83,7 +83,7 @@ small driver of its own.
   - Novation's [Launch Control XL 3 programmer's reference guide](https://userguides.novationmusic.com/hc/en-gb/articles/27840466285586-About-the-Launch-Control-XL-3-programmer-s-reference-guide).
 - **The app.** A SwiftUI app modeled on pgdata Packer's (`adambier/3rd-wave-tools`):
   - `make-app.sh` compiles every library folder and the app into one module with `swiftc` (not `sbdev`); CI type-checks that build on macOS;
-  - version 0.1.0 until the first release; the build number is the commit count;
+  - version 1.0.0, the first release (Adam, 2026-11-02); the build number is the commit count;
   - Sparkle 2.10.1 is pinned with its SHA-256, and the XPC services are removed;
   - the app is signed with a Developer ID, notarized, and updated through `appcast.xml` on `main`;
   - its icon and menu-bar glyph come from `Design/AppIcon/` (the About window shows the icon at 128 points); the icon's amber, #FFB13D, is the app's accent color, used only when the user's accent color is Multicolor, as Apple's HIG (Color) has it, and the user's own accent color otherwise (Adam, 2026-10-31);
