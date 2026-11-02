@@ -79,7 +79,8 @@ final class LaunchControlDriverTests: XCTestCase {
         var hub = loadedHub()
         var driver = LaunchControlDriver(name: "lc", layout: .xl3)
         let start = driver.start(hub: &hub, now: 0)
-        XCTAssertTrue(start.midi.contains([0x9F, 0x0C, 0x7F]))
+        XCTAssertEqual(Array(start.midi.prefix(6)), [0x9F, 0x0C, 0x00, 0x9F, 0x0C, 0x7F],
+                       "leave DAW mode first, so the device answers even if a host left it in DAW mode")
         XCTAssertTrue(start.midi.contains([0xB6, 0x47, 0x7F]), "touch reports on")
         XCTAssertTrue(start.midi.contains([0xB6, 0x46, 0x7F]), "the device's fader pickup on")
         XCTAssertFalse(start.midi.contains([0xBF, 0x05]), "no positions before the device answers")
@@ -330,8 +331,11 @@ final class LaunchControlDriverTests: XCTestCase {
         _ = driver.start(hub: &hub, now: 0)
         _ = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0)
         XCTAssertEqual(driver.stationaryLines(hub: hub)[0], "Inputs 1-3")
-        _ = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 1)
+        let track = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(driver.stationaryLines(hub: hub)[0], "Playback 1", "not 'Channels 9-9'")
+        XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.stationary, field: 0, "Playback 1") ?? []))
+        XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.showDisplay(.stationary, true, model: .xl3) ?? []),
+                      "the home screen brought up again with its new title")
     }
 
     func testTheAppCanSetASendRow() {

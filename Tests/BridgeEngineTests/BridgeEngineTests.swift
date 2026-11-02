@@ -146,6 +146,8 @@ final class BridgeEngineTests: XCTestCase {
         _ = watch.update(status: status, totalMixRunning: true, now: 0)
         _ = watch.update(status: status, totalMixRunning: true, now: 11)
         XCTAssertTrue(watch.needsAttention(status: status, now: 11), "plugged in but not in DAW mode: the mark")
+        XCTAssertEqual(watch.update(status: status, totalMixRunning: true, now: 15), .launchControlNotConnecting,
+                       "never worked with these settings: the Setup Guide opens")
         status.launchControlConnected = true
         _ = watch.update(status: status, totalMixRunning: true, now: 12)
         XCTAssertFalse(watch.needsAttention(status: status, now: 12))
