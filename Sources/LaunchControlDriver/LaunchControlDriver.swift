@@ -354,11 +354,16 @@ public struct LaunchControlDriver: Sendable {
         switch element {
         case .button:
             guard let (layer, strip) = switchControl(for: element) else { return }
+            let wasOn = switchOn[layer]?[strip] ?? false
             take(hub.switchPressed(id(layer), strip: strip, now: now), hub: hub, into: &step)
             // A mute does nothing in the audio while TotalMix's Mute Master is off: say so where
             // the eyes are (Adam, 2026-11-02).
             if hub.mirror.muteMaster == false, !isPFLLayer(layer, hub: hub), infos[layer]?[strip] ?? nil != nil {
                 step.midi += overlay("Mute Master off", "in TotalMix FX")
+            }
+            if hub.mirror.pflGoesToMain, isPFLLayer(layer, hub: hub), infos[layer]?[strip] ?? nil != nil,
+               !wasOn {
+                step.midi += overlay("PFL to Main Out", "blocked")
             }
         case .pageUp, .pageDown:
             if shiftHeld { shiftUsedForNavigation = true }
@@ -927,7 +932,8 @@ public struct LaunchControlDriver: Sendable {
         if info == nil {
             colorIndex = 0
         } else if isPFLLayer(layer, hub: hub) {
-            colorIndex = on ? Self.pflOn : Self.pflOff
+            // Dark while PFL is blocked (TotalMix sends it to Main; SurfaceHub.switchPressed).
+            colorIndex = on ? Self.pflOn : hub.mirror.pflGoesToMain ? 0 : Self.pflOff
         } else if on {
             colorIndex = hub.mirror.muteMaster == false && !blinkLit ? Self.muteOff : Self.muteOn
         } else {

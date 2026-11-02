@@ -728,7 +728,7 @@ public final class BridgeEngine: @unchecked Sendable {
             return HomeChoice(output: output, name: name, roles: [])
         }
         status.muteMasterOff = hub.mirror.muteMaster == false
-        status.pflToMain = hub.mirror.reportedRoles.contains(.cue) && hub.mirror.monitoring[.cue] == nil
+        status.pflToMain = hub.mirror.pflGoesToMain
         status.channelCount = hub.mirror.channels.count
         status.levelsSeen = levelsSeen
         status.homeSubmix = hub.homeSubmix

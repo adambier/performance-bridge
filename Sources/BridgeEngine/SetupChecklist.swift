@@ -105,7 +105,7 @@ public enum SetupChecklist {
 
         if status.pflToMain {
             steps.append(SetupStep(id: "cue", title: "PFL goes to Main Out", state: .problem,
-                                   detail: "TotalMix FX sends Cue and PFL to Main, so PFL from the hardware controller takes over Main Out: the audience hears only the channel being checked.\n\nIn TotalMix FX’s Control Room section, click “assign”, then “Cue/PFL to”, and choose a headphone output (e.g., “Phones 1”)."))
+                                   detail: "TotalMix FX sends Cue and PFL to Main, so PFL from the hardware controller would take over Main Out: the audience would hear only the channel being checked. Until this is changed, the hardware controllers’ PFL buttons do nothing.\n\nIn TotalMix FX’s Control Room section, click “assign”, then “Cue/PFL to”, and choose a headphone output (e.g., “Phones 1”)."))
         }
         // Live Mode can't be read over OSC (docs/TOTALMIX-OSC.md, test 6), so it is a note.
         steps.append(SetupStep(id: "livemode", title: "PFL needs Live mode", state: .instruction,

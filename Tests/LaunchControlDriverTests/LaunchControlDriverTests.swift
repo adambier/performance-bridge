@@ -680,4 +680,26 @@ final class LaunchControlDriverTests: XCTestCase {
         _ = driver.receive([0xB0, 0x68, 0x7F], hub: &hub, now: 4)   // the Novation button
         XCTAssertEqual(first(), 0, "the Novation button does nothing")
     }
+
+    func testPFLIsBlockedWhileTotalMixSendsItToMain() {
+        var (driver, hub, _) = connected(layout: .xl3)
+        let toMain = driver.take(hub.handle(.other(path: "controlroom/cuechan", value: .number(-1)), now: 1), hub: &hub, now: 1)
+        XCTAssertTrue(toMain.midi.contains([0xB0, 0x25, 0]), "PFL buttons go dark")
+        let press = driver.receive([0xB0, 0x25, 0x7F], hub: &hub, now: 2)
+        XCTAssertEqual(press.core.messages, [], "nothing sent to TotalMix")
+        XCTAssertTrue(press.midi.contains(LaunchControlOutgoing.text(.overlay, field: 0, "PFL to Main Out", model: .xl3) ?? []))
+        XCTAssertEqual(driver.receive([0xB0, 0x2D, 0x7F], hub: &hub, now: 3).core.messages,
+                       [TotalMixCommand.set(.input, 0, "mute", 1)], "mute still works")
+
+        let toPhones = driver.take(hub.handle(.other(path: "controlroom/cuechan", value: .number(2)), now: 4), hub: &hub, now: 4)
+        XCTAssertTrue(toPhones.midi.contains([0xB0, 0x25, LaunchControlDriver.pflOff]), "dim yellow again")
+        XCTAssertEqual(driver.receive([0xB0, 0x25, 0x7F], hub: &hub, now: 5).core.messages,
+                       [TotalMixCommand.set(.input, 0, "pfl", 1)])
+
+        // A PFL already on can still be turned off after Cue/PFL goes back to Main.
+        _ = driver.take(hub.handle(.other(path: "controlroom/cuechan", value: .number(-1)), now: 6), hub: &hub, now: 6)
+        let off = driver.receive([0xB0, 0x25, 0x7F], hub: &hub, now: 7)
+        XCTAssertEqual(off.core.messages, [TotalMixCommand.set(.input, 0, "pfl", 0)])
+        XCTAssertFalse(off.midi.contains(LaunchControlOutgoing.text(.overlay, field: 0, "PFL to Main Out", model: .xl3) ?? []))
+    }
 }

@@ -328,6 +328,10 @@ public struct SurfaceHub: Sendable {
         guard let state = surfaces[id], state.slots.indices.contains(index),
               let target = state.slots[index].binding.switchTarget else { return CoreOutput() }
         let value: Double = (mirror.value(of: target) ?? 0) >= 0.5 ? 0 : 1
+        // PFL is not turned on while TotalMix sends it to Main: on stage that replaces what the
+        // audience hears (Adam, 2026-11-02). Turning one off still works. TotalMix's own window is
+        // unaffected; nothing in TotalMix is changed.
+        if case .pfl = target, value == 1, mirror.pflGoesToMain { return CoreOutput() }
         mirror.set(target, to: value)
         var output = CoreOutput()
         if let message = Self.message(for: target, value: value) { output.messages.append(message) }
