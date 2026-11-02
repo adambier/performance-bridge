@@ -250,7 +250,9 @@ port names.
 11. **Bitmap targets** (section 7, item 5), only if a bitmap is wanted later.
 12. **Do level encoders need relative mode?** Part 1 run (2026-11-01, Launch Control 3 layout on
     the XL 3, TotalMix's curve): "pretty smooth". Adam then asked for the ARC USB's scale for volume
-    encoders (section 9), which is finer near 0 dB; parts 2–5 are to be run on it.
+    encoders (section 9), which is finer near 0 dB. On it, a slow fade of a send from about −20 dB
+    to off sounded smooth (test 11). **Decided: absolute mode** (Adam, 2026-11-01); relative mode
+    would drop the first step after each reversal and gives nothing Shift could use (test 10).
     The original test: The encoders send 128 values. With TotalMix's own
     curve that is about 0.26 dB a step from −6 to +6 dB, 0.3–0.6 from −20 to −6, 0.6–0.9 from −40
     to −20, and about 1 dB below that (computed from `FaderCurve`). Relative mode would allow finer
@@ -513,3 +515,14 @@ and intuitiveness to be assessed).
 
 **Consequences.** Relative mode doesn't help: with Shift held, the host learns only that an encoder was turned, never which way. Shift + turn can reset a control (e.g., a pan to the center), but it can't make coarse steps.
 
+### Test 11 (2026-11-01): the home screen, Shift + turn, pan steps, and the ARC scale
+
+**Setup.** `sbdev lcbridge` on main after PRs #55–#58, TotalMix FX "2.10 (1)" with a Digiface AES; the Launch Control 3's layout (`--layout lc3-sim`), then the XL 3's. Logs `lc3-arc.log`, `xl3-pan.log`, `xl3-pan2.log`.
+
+**Findings** (Adam's reports):
+- The home screen's three lines ("Channels 1-8", the top row's function, the buttons') "look good".
+- Shift + turning a level encoder set it to 0 dB.
+- Pan, plain values (PR #57, a quarter step away from the center): the R side matched TotalMix's window, the L side was one step off. A quarter step to the right of each whole step (PR #58): both sides match.
+- A slow fade of a send from about −20 dB to off, on the ARC scale, sounded smooth.
+
+**Consequences.** The layout's screen, reset, and scales stand as section 9 describes them, and the encoders stay in absolute mode.
