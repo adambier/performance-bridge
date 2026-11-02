@@ -495,9 +495,10 @@ final class BridgeSession: @unchecked Sendable {
     }
 
     func close() {
+        // The socket waits for its receive thread, which may be waiting for the lock.
+        socket?.stop()
         lock.lock()
         defer { lock.unlock() }
-        socket?.stop()
         midi?.close()
     }
 }

@@ -241,12 +241,13 @@ final class LaunchBridgeSession: @unchecked Sendable {
     }
 
     func close() {
+        // The socket waits for its receive thread, which may be waiting for the lock.
+        socket?.stop()
         lock.lock()
         defer { lock.unlock() }
         let bytes = driver.stop(hub: &hub)
         try? midi?.send(bytes)
         Thread.sleep(forTimeInterval: 0.1)
-        socket?.stop()
         midi?.close()
     }
 }

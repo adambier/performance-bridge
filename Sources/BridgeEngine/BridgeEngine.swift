@@ -296,7 +296,9 @@ public final class BridgeEngine: @unchecked Sendable {
     public func stop() {
         lock.lock()
         running = false
-        socket?.stop()
+        // Stopped outside the lock: the socket waits for its receive thread, which may be waiting
+        // for the lock in `fromTotalMix`.
+        let closingSocket = socket
         socket = nil
         let closing = midi
         midi = nil
@@ -309,6 +311,7 @@ public final class BridgeEngine: @unchecked Sendable {
         lcMIDI = nil
         ticker = nil
         lock.unlock()
+        closingSocket?.stop()
         closing?.close()
         closingLC?.close()
         publishStatus()

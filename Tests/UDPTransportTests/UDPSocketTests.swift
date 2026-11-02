@@ -20,6 +20,24 @@ final class UDPSocketTests: XCTestCase {
         receiver.stop()
     }
 
+    func testAReplacementSocketGetsItsOwnDatagrams() throws {
+        // Review of 2026-11-02: an old socket's receive thread must be gone before its descriptor
+        // is closed, or a new socket given the same number loses datagrams to the old handler.
+        var old: UDPSocket? = try UDPSocket(listeningOn: 0, localOnly: true)
+        let port = old!.localPort
+        let oldCalls = Counter()
+        old!.startReceiving { _, _ in oldCalls.add() }
+        old = nil  // stops, waits for the thread, closes
+        let replacement = try UDPSocket(listeningOn: port, localOnly: true)
+        let sender = try UDPSocket(listeningOn: 0, localOnly: true)
+        let delivered = expectation(description: "the replacement receives")
+        replacement.startReceiving { _, _ in delivered.fulfill() }
+        try sender.send([1, 2, 3, 4], to: "localhost", port: port)
+        wait(for: [delivered], timeout: 5)
+        replacement.stop()
+        XCTAssertEqual(oldCalls.value, 0)
+    }
+
     func testBindingAPortInUseFails() throws {
         let first = try UDPSocket(listeningOn: 0, localOnly: true)
         XCTAssertThrowsError(try UDPSocket(listeningOn: first.localPort, localOnly: true)) { error in
@@ -35,4 +53,12 @@ final class UDPSocketTests: XCTestCase {
         }
     }
     #endif
+}
+
+/// A thread-safe count, for handlers called on a socket's thread.
+private final class Counter: @unchecked Sendable {
+    private let lock = NSLock()
+    private var count = 0
+    func add() { lock.lock(); count += 1; lock.unlock() }
+    var value: Int { lock.lock(); defer { lock.unlock() }; return count }
 }
