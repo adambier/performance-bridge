@@ -202,9 +202,12 @@ own (Adam asked for its efficiency and intuitiveness to be assessed).
   (`LAUNCH-CONTROL-XL3.md`, section 9). The strips always show the channels, never the outputs.
 - **Levels.** The encoders keep TotalMix's own fader curve (0.26 dB a step near 0 dB);
   `LAUNCH-CONTROL-XL3.md`, section 8, item 12, tests whether relative mode is needed.
+- **Shift + turn.** As on the XL 3: resets the encoder (a level to 0 dB, a pan to the center, a
+  send to −oo).
 - **Screen and colors.** As on the XL 3 (`LAUNCH-CONTROL-XL3.md`, section 9): each encoder's display
-  shows its channel, what it does, and the value; the stationary display the page and the names;
-  the encoders their channel's color.
+  shows its channel, what it does, and the value; the encoders show their channel's color. The home
+  screen shows the channels on the page, the top row's function ("Top: Pan" or "Top > Phones 1"),
+  and the buttons' ("Buttons: Mute" or "Buttons: PFL").
 - **Simulation on an XL 3.** The driver can run the Launch Control 3's layout on an XL 3: the top
   two encoder rows, the top button row, Page, Track, Shift, and Mute/Select as Function (the same
   number, 66). The faders, the bottom encoder row, the bottom button row, Solo/Arm, Record, and

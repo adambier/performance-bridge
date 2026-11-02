@@ -245,6 +245,9 @@ public struct LaunchControlDriver: Sendable {
             take(hub.controlMoved(id(layer), strip: strip, to: position, now: now), hub: hub, into: &step)
         case .touch(let element, let touched):
             guard let (layer, strip) = control(for: element) else { return }
+            if touched, shiftHeld, case .encoder = element {
+                reset(element, layer: layer, strip: strip, hub: &hub, now: now, into: &step)
+            }
             take(hub.touched(id(layer), strip: strip, touched, now: now), hub: hub, into: &step)
         case .button(.shift, let pressed):
             shiftHeld = pressed
@@ -411,6 +414,34 @@ public struct LaunchControlDriver: Sendable {
 
     // MARK: - Controls
 
+    /// Where Shift + turn puts an encoder: a pan at the center, a level at 0 dB, a send at −oo
+    /// (Adam, 2026-11-01). With Shift held the device reports only that an encoder turned, not
+    /// which way, in absolute and relative mode alike (docs/LAUNCH-CONTROL-XL3.md, tests 9 and 10),
+    /// so a reset is all Shift + turn can do; `nil` for a layer that controls nothing.
+    func resetPosition(_ layer: Layer) -> Double? {
+        guard case .strips(_, _, let knob, _) = mode(for: layer, first: 0) else { return nil }
+        switch knob {
+        case .pan: return 0.5
+        case .level: return FaderCurve.position(gainDB: 0)
+        case .send(let index): return index == Int.max ? nil : 0
+        }
+    }
+
+    /// Resets an encoder turned with Shift held, and moves the device's own value there too, since
+    /// the turn left it where it was (test 9), so the next turn without Shift carries on from the
+    /// reset.
+    private mutating func reset(_ element: LaunchControlElement, layer: Layer, strip: Int,
+                                hub: inout SurfaceHub, now: Double, into step: inout LaunchControlStep) {
+        guard let position = resetPosition(layer),
+              hub.strips(of: id(layer))?.indices.contains(strip) == true,
+              hub.strips(of: id(layer))?[strip].knobTarget != nil else { return }
+        take(hub.controlMoved(id(layer), strip: strip, to: position, now: now), hub: hub, into: &step)
+        let value = Self.value(position)
+        guard connected, !inCustomMode, sentPositions[element.controlNumber] != value else { return }
+        sentPositions[element.controlNumber] = value
+        step.midi += LaunchControlOutgoing.position(element, value) ?? []
+    }
+
     /// The layer and strip of a fader or encoder, in this layout on this device; `nil` for a control
     /// the layout doesn't use.
     func control(for element: LaunchControlElement) -> (Layer, Int)? {
@@ -545,7 +576,6 @@ public struct LaunchControlDriver: Sendable {
 
     private mutating func render(_ updates: [(Layer, [SurfaceUpdate])], hub: SurfaceHub) -> [UInt8] {
         var bytes: [UInt8] = []
-        var pageChanged = false
         for (layer, list) in updates {
             var layerInfos = infos[layer] ?? Array(repeating: nil, count: Self.stripCount)
             var layerKnobs = knobOn[layer] ?? Array(repeating: false, count: Self.stripCount)
@@ -555,15 +585,11 @@ public struct LaunchControlDriver: Sendable {
             for update in list {
                 switch update {
                 case .page(let first, let count):
-                    if layer == layers[0] {
-                        page = (first, count)
-                        pageChanged = true
-                    }
+                    if layer == layers[0] { page = (first, count) }
                 case .strip(let index, let info):
                     guard layerInfos.indices.contains(index) else { continue }
                     layerInfos[index] = info
                     touched.insert(index)
-                    if layer == layers[0] { pageChanged = true }
                 case .knob(let index, let value):
                     guard layerKnobs.indices.contains(index) else { continue }
                     layerKnobs[index] = value != nil
@@ -596,7 +622,9 @@ public struct LaunchControlDriver: Sendable {
                 bytes += text(.control(element(layer, index)), 2, value)
             }
         }
-        if pageChanged { bytes += drawStationary() }
+        // Every time (the texts are sent only when they change): the send rows and the buttons'
+        // function show there too.
+        bytes += drawStationary(hub: hub)
         // Every time: Page's ends change with the send targets, not only with the page (the
         // lights are sent only when they change).
         return bytes + drawNavigation(hub: hub)
@@ -660,19 +688,29 @@ public struct LaunchControlDriver: Sendable {
         return ValueText.level(position: value)
     }
 
-    /// The stationary display: the channels on the page as its title, and the strips'
-    /// names, cut to `stationaryNameLength`, in the two rows of four (docs/LAUNCH-CONTROL-XL3.md,
-    /// test 5).
-    private mutating func drawStationary() -> [UInt8] {
-        var bytes = configure(.stationary, .titleAndEightNames, quiet: false)
+    /// The stationary display (the home screen): the channels on the page, then what isn't shown
+    /// anywhere else on the device (Adam, 2026-11-01). XL 3: where each send row goes ("Top >
+    /// Phones 1", "Mid > ADI-2 3/4"). Launch Control 3: the top row ("Top: Pan" or "Top > Phones 1")
+    /// and the buttons ("Buttons: Mute" or "Buttons: PFL"). Each strip's own name shows on its
+    /// control's display when the control moves. (Four-letter names in two rows of four were tried
+    /// first and were unreadable; docs/LAUNCH-CONTROL-XL3.md, test 5.)
+    func stationaryLines(hub: SurfaceHub) -> [String] {
         let shown = (infos[layers[0]] ?? []).filter { $0 != nil }.count
         let title = shown == 0 ? "Channels" : "Channels \(page.first + 1)-\(page.first + shown)"
-        bytes += text(.stationary, 0, title)
-        let names = infos[layers[0]] ?? []
-        for index in 0..<Self.stripCount {
-            let name = names.indices.contains(index) ? names[index]?.name ?? "" : ""
-            bytes += text(.stationary, index + 1, Self.shortName(name))
+        func row(_ prefix: String, _ index: Int?, none: String) -> String {
+            guard let index, hub.sendTargets.indices.contains(index) else { return prefix + ": " + none }
+            return prefix + " " + Self.sendLabel(sendName(index, hub: hub))
         }
+        let send = { (row: Int) -> Int? in self.sendIndices.indices.contains(row) ? self.sendIndices[row] : nil }
+        if layout == .xl3 {
+            return [title, row("Top", send(0), none: "none"), row("Mid", send(1), none: "none")]
+        }
+        return [title, row("Top", send(0), none: "Pan"), "Buttons: " + (buttonsArePFL ? "PFL" : "Mute")]
+    }
+
+    private mutating func drawStationary(hub: SurfaceHub) -> [UInt8] {
+        var bytes = configure(.stationary, .titleNameAndValue, quiet: false)
+        for (field, line) in stationaryLines(hub: hub).enumerated() { bytes += text(.stationary, field, line) }
         return bytes
     }
 
@@ -733,22 +771,6 @@ public struct LaunchControlDriver: Sendable {
 
     /// The most characters a display field keeps: 20 (inference from the XL 3, test 5).
     public static let fieldLength = 20
-    /// The characters of a name kept on the stationary display, whose columns hold about four
-    /// capitals and run together when full ("Mic 1Mic 2"; docs/LAUNCH-CONTROL-XL3.md, test 5).
-    public static let stationaryNameLength = 4
-
-    /// A name cut to `stationaryNameLength` for the stationary display. A longer name loses its
-    /// spaces first, and then letters from before its number, so that numbered channels stay
-    /// apart: "Mic 1" → "Mic1", "Phones 2" → "Pho2", "PB 1/2" → "P1/2", "Tracks" → "Trac".
-    public static func shortName(_ name: String) -> String {
-        let limit = stationaryNameLength
-        guard name.count > limit else { return name }
-        let packed = name.filter { $0 != " " }
-        guard packed.count > limit else { return packed }
-        let number = String(packed.reversed().prefix { $0.isNumber || $0 == "/" }.reversed())
-        guard !number.isEmpty, number.count < limit else { return String(packed.prefix(limit)) }
-        return String(packed.prefix(limit - number.count)) + number
-    }
 
     /// The label for a send: "> " and the output's name (AGENTS.md, house style).
     public static func sendLabel(_ name: String) -> String { "> " + name }

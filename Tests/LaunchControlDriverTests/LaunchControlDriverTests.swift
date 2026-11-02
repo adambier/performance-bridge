@@ -253,12 +253,50 @@ final class LaunchControlDriverTests: XCTestCase {
         output.kind = .send
         XCTAssertEqual(LaunchControlDriver.color(for: output), 45, "a white send shows blue")
         XCTAssertEqual(LaunchControlDriver.color(for: nil), 0)
-        XCTAssertEqual(LaunchControlDriver.shortName("Keys"), "Keys")
-        XCTAssertEqual(LaunchControlDriver.shortName("Mic 1"), "Mic1")
-        XCTAssertEqual(LaunchControlDriver.shortName("Phones 2"), "Pho2")
-        XCTAssertEqual(LaunchControlDriver.shortName("PB 1/2"), "P1/2")
-        XCTAssertEqual(LaunchControlDriver.shortName("Tracks"), "Trac")
-        XCTAssertEqual(LaunchControlDriver.shortName("ADAT 12"), "AD12")
+    }
+
+    func testTheHomeScreenShowsWhereTheRowsGo() {
+        var (driver, hub, midi) = connected(layout: .xl3, outputs: [(4, "ADAT 1/2"), (6, "ADAT 3/4")])
+        XCTAssertEqual(driver.stationaryLines(hub: hub), ["Channels 1-4", "Top > Phones", "Mid > ADAT 1/2"])
+        XCTAssertTrue(midi.contains(LaunchControlOutgoing.text(.stationary, field: 1, "Top > Phones") ?? []))
+        _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 1)
+        let shiftPage = driver.receive([0xB0, 0x6B, 0x7F], hub: &hub, now: 1)
+        XCTAssertEqual(driver.stationaryLines(hub: hub)[2], "Mid > ADAT 3/4")
+        XCTAssertTrue(shiftPage.midi.contains(LaunchControlOutgoing.text(.stationary, field: 2, "Mid > ADAT 3/4") ?? []),
+                      "the home screen follows the row")
+
+        var (lc3, lc3Hub, _) = connected(layout: .lc3)
+        XCTAssertEqual(lc3.stationaryLines(hub: lc3Hub), ["Channels 1-4", "Top: Pan", "Buttons: Mute"])
+        _ = lc3.receive([0xB0, 0x6B, 0x7F], hub: &lc3Hub, now: 1)
+        let function = lc3.receive([0xB0, 0x42, 0x7F], hub: &lc3Hub, now: 2)
+        XCTAssertEqual(lc3.stationaryLines(hub: lc3Hub), ["Channels 1-4", "Top > Phones", "Buttons: PFL"])
+        XCTAssertTrue(function.midi.contains(LaunchControlOutgoing.text(.stationary, field: 2, "Buttons: PFL", model: .lc3) ?? []))
+    }
+
+    func testShiftAndTurnResetsAnEncoder() {
+        var (driver, hub, _) = connected(layout: .xl3)
+        _ = driver.receive([0xBF, 0x1D, 127], hub: &hub, now: 1)  // pan right
+        _ = driver.receive([0xBF, 0x0D, 100], hub: &hub, now: 1)  // send up
+        XCTAssertEqual(driver.receive([0xBE, 0x1D, 0x7F], hub: &hub, now: 2).core.messages, [],
+                       "a turn without Shift resets nothing")
+        _ = driver.receive([0xBE, 0x1D, 0x00], hub: &hub, now: 2)
+
+        _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 3)
+        let pan = driver.receive([0xBE, 0x1D, 0x7F], hub: &hub, now: 3)
+        XCTAssertEqual(pan.core.messages, [TotalMixCommand.setMix(from: .input, 0, to: 0, "balpan", 0)], "pan to the center")
+        XCTAssertTrue(pan.midi.contains([0xBF, 0x1D, 64]), "the encoder told the center, to carry on from there")
+        let send = driver.receive([0xBE, 0x0D, 0x7F], hub: &hub, now: 3)
+        XCTAssertEqual(send.core.messages, [TotalMixCommand.setMix(from: .input, 0, to: 2, "faderlin", 0)], "a send to -oo")
+        XCTAssertTrue(send.midi.contains([0xBF, 0x0D, 0]))
+        XCTAssertEqual(driver.receive([0xBE, 0x05, 0x7F], hub: &hub, now: 3).core.messages, [],
+                       "a fader moved with Shift held isn't reset")
+
+        var (lc3, lc3Hub, _) = connected(layout: .lc3, device: .xl3)
+        _ = lc3.receive([0xB6, 0x3F, 0x7F], hub: &lc3Hub, now: 1)
+        let level = lc3.receive([0xBE, 0x15, 0x7F], hub: &lc3Hub, now: 1)
+        XCTAssertEqual(level.core.messages,
+                       [TotalMixCommand.setMix(from: .input, 0, to: 0, "faderlin", Float(FaderCurve.position(gainDB: 0)))],
+                       "a level to 0 dB")
     }
 
     // From the review of 2026-11-01.

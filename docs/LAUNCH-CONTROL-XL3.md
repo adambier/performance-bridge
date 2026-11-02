@@ -293,6 +293,10 @@ and intuitiveness to be assessed).
   Shift is held. The choices are remembered across launches. Gain is left out for now: TotalMix sends it only for inputs with a preamp, which the
   project's interfaces don't have. The encoders take positions from the driver (test 2), so they
   never jump.
+- **Shift + turn.** Resets the encoder: a pan to the center, a send to −oo (Adam, 2026-11-01). With
+  Shift held the device reports only that an encoder turned, not which way (tests 9 and 10), so a
+  reset is all it can do. The driver also sends the encoder its new position, since the turn with
+  Shift held left the device's own value where it was (test 9).
 - **Buttons.** The top row is PFL (yellow; dark yellow when off), as on the Roto-Control; the bottom
   row is mute (red; dark red when off). Solo/Arm and Mute/Select do nothing for now: in DAW mode
   the device leaves them to the host (test 6).
@@ -313,10 +317,12 @@ and intuitiveness to be assessed).
   picture).
 - **Screen.** Each fader and encoder has a three-line display (arrangement 2): the channel's name,
   what the control does ("Level", "Pan", "> Phones 1"), and the value in dB or as a pan, sent by
-  the driver (test 5). The stationary display (arrangement 3) shows the view and the strips on the
-  page as its title, and the eight names, packed to four characters so that the columns stay apart
-  (e.g., "Mic1"). Page shows the new send on the overlay; that the overlay comes up as other
-  displays do is untested.
+  the driver (test 5). The stationary display, the home screen, has three lines (arrangement 2): the
+  channels on the page ("Channels 1-8") and where each send row goes ("Top > Phones 1", "Mid >
+  Phones 2"), which nothing else on the device shows (Adam, 2026-11-01). The eight names packed to
+  four characters (arrangement 3, e.g., "ADI2SonoM1/2Tonv") were tried first and were unreadable
+  (Adam, 2026-11-01); each strip's name shows on its control's display when the control moves.
+  Page shows the new send on the overlay.
 - **Port.** The DAW port, so the MIDI port and the Custom Modes stay free for other uses. Choosing
   a Custom Mode on the device stops the driver drawing until DAW Mixer or DAW Control is chosen
   again.
