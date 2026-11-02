@@ -191,14 +191,18 @@ own (Adam asked for its efficiency and intuitiveness to be assessed).
 
 - **Eight strips.** The bottom encoder row is each strip's level, into the mix output (the home
   submix) for sources and the output's own level in the outputs view.
-- **Top encoder row.** Pan or a send, chosen on the device: Track < and > step it through Pan,
-  then each send in order (control room outputs first). The screen names the choice ("Pan",
-  "> Phones 1").
+- **Top encoder row.** Pan or a send, chosen on the device: Page up and down step it through Pan,
+  then each send in order (control room outputs first), as Page does in Novation's own DAW
+  integrations [User guide, "DAW Mixer encoder mode" in each DAW's chapter]. The screen names the
+  choice ("Pan", "> Phones 1"), and a send row lights in its output's color.
 - **Buttons.** Mute, switched to PFL by Function. The buttons are red for mute and yellow for PFL,
   Function is lit while they are on PFL (if it has an LED, section 4), and the screen names the
   change.
-- **Paging and views.** Page up and down move by eight strips; Shift with Page up shows the
-  sources and Shift with Page down the outputs.
+- **Paging and views.** Track < and > move by eight strips, and with Shift to the first or last
+  page (`LAUNCH-CONTROL-XL3.md`, section 9); Shift with Page up shows the sources and
+  Shift with Page down the outputs.
+- **Levels.** The encoders keep TotalMix's own fader curve (0.26 dB a step near 0 dB);
+  `LAUNCH-CONTROL-XL3.md`, section 8, item 12, tests whether relative mode is needed.
 - **Screen and colors.** As on the XL 3 (`LAUNCH-CONTROL-XL3.md`, section 9): each encoder's display
   shows its channel, what it does, and the value; the stationary display the page and the names;
   the encoders their channel's color.

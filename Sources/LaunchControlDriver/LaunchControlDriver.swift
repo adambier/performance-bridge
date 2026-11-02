@@ -17,7 +17,7 @@ public enum LaunchControlRowFunction: String, Codable, Sendable, CaseIterable {
     /// Each strip's pan (in the mix output, for a source).
     case pan
     /// A send: each strip's level into one of the send targets (`SurfaceHub.sendTargets`). Send
-    /// rows take consecutive targets, and Track < and > step them together.
+    /// rows take consecutive targets, and Page up and down step them together.
     case send
 }
 
@@ -47,11 +47,13 @@ public struct LaunchControlStep: Equatable, Sendable {
 /// - XL 3: the faders (level) with the top buttons (PFL); each encoder row (pan or a send, from
 ///   `rowFunctions`), the top row with the bottom buttons (mute).
 /// - Launch Control 3: the bottom encoder row (level) with the buttons (mute, or PFL after
-///   Function); the top encoder row (pan or a send, stepped by Track < and >).
+///   Function); the top encoder row (pan or a send, stepped by Page up and down).
 ///
 /// **Controls** (decided with Adam, 2026-11-01; docs/LAUNCH-CONTROL-XL3.md, section 9, and
-/// docs/LAUNCH-CONTROL-3.md, section 9): Page up and down move by eight strips; Shift with Page up
-/// shows the sources and with Page down the outputs; Track < and > step the sends.
+/// docs/LAUNCH-CONTROL-3.md, section 9), following the labels and Novation's own DAW integrations:
+/// Track < and > move by eight strips, or with Shift to the first or last page; Page up and down
+/// step the sends; Shift
+/// with Page up shows the sources and with Page down the outputs.
 ///
 /// **Simulation.** With `layout` `.lc3` and `device` `.xl3`, the Launch Control 3's layout runs on
 /// an XL 3: its top two encoder rows, top button row, Page, Track, Shift, and Mute/Select as
@@ -79,7 +81,12 @@ public struct LaunchControlDriver: Sendable {
 
     /// What the XL 3's three encoder rows control, top to bottom (Pan, Send, Send by default).
     /// Ignored in the Launch Control 3's layout. Set it with `setRowFunctions(_:hub:now:)`.
-    public private(set) var rowFunctions: [LaunchControlRowFunction] = [.pan, .send, .send]
+    public private(set) var rowFunctions: [LaunchControlRowFunction] = Self.defaultRows
+
+    /// The XL 3's encoder rows unless the app sets them: Send, Send, Pan, as in Novation's own DAW
+    /// integrations (XL 3 user guide, "DAW Mixer mode" in each DAW's chapter), with pan just above
+    /// the fader (Adam, 2026-11-01).
+    public static let defaultRows: [LaunchControlRowFunction] = [.send, .send, .pan]
 
     /// XL 3: the first send target of the send rows. Launch Control 3: what the top row controls,
     /// −1 for pan and n ≥ 0 for send n.
@@ -245,7 +252,8 @@ public struct LaunchControlDriver: Sendable {
             // be sent, so the driver's record of what it sent follows the device.
             sentPositions[element.controlNumber] = value
             guard let (layer, strip) = control(for: element) else { return }
-            take(hub.controlMoved(id(layer), strip: strip, to: Self.position(value), now: now), hub: hub, into: &step)
+            let position = usesFaderScale(layer) ? Self.faderPosition(value) : Self.position(value)
+            take(hub.controlMoved(id(layer), strip: strip, to: position, now: now), hub: hub, into: &step)
         case .touch(let element, let touched):
             guard let (layer, strip) = control(for: element) else { return }
             take(hub.touched(id(layer), strip: strip, touched, now: now), hub: hub, into: &step)
@@ -271,17 +279,27 @@ public struct LaunchControlDriver: Sendable {
                 view = next
                 setModes(first: 0, hub: &hub, now: now, into: &step)
             } else {
-                let primary = id(layers[0])
-                var output = hub.page(primary, by: element == .pageUp ? -1 : 1, now: now)
-                if case .strips(_, let first, _, _)? = hub.mode(of: primary) {
-                    for layer in layers.dropFirst() {
-                        output.append(hub.setMode(id(layer), mode(for: layer, first: first), now: now))
-                    }
-                }
-                take(output, hub: hub, into: &step)
+                stepSends(by: element == .pageUp ? -1 : 1, hub: &hub, now: now, into: &step)
             }
         case .trackLeft, .trackRight:
-            stepSends(by: element == .trackLeft ? -1 : 1, hub: &hub, now: now, into: &step)
+            // Eight strips a press; with Shift, the first or the last page. Pages always start at
+            // a multiple of eight, as on the Roto-Control: the order is set in the app, so there is
+            // nothing to gain from moving one strip (Adam, 2026-11-01).
+            let direction = element == .trackLeft ? -1 : 1
+            let primary = id(layers[0])
+            var output: CoreOutput
+            if shiftHeld {
+                // Past the end, the hub goes to the start of the last page.
+                output = hub.setMode(primary, mode(for: layers[0], first: direction < 0 ? 0 : Int(Int32.max)), now: now)
+            } else {
+                output = hub.page(primary, by: direction, now: now)
+            }
+            if case .strips(_, let first, _, _)? = hub.mode(of: primary) {
+                for layer in layers.dropFirst() {
+                    output.append(hub.setMode(id(layer), mode(for: layer, first: first), now: now))
+                }
+            }
+            take(output, hub: hub, into: &step)
         case Self.functionButton where layout == .lc3:
             buttonsArePFL.toggle()
             setModes(first: page.first, hub: &hub, now: now, into: &step)
@@ -437,6 +455,51 @@ public struct LaunchControlDriver: Sendable {
         }
     }
 
+    /// Whether a layer's controls are the XL 3's faders, which use the printed scale
+    /// (`faderTicks`).
+    private func usesFaderScale(_ layer: Layer) -> Bool { layout == .xl3 && device == .xl3 && layer == .faders }
+
+    /// The XL 3's fader scale (Adam, 2026-11-01): the gain at each of the nine ticks printed beside
+    /// each fader, top to bottom, with the fader value measured at each tick
+    /// (docs/LAUNCH-CONTROL-XL3.md, test 7). The labels are TotalMix FX's own fader marks: +6 (the
+    /// top), +3, 0, −6, −10, −20, −40, −60 (docs/TOTALMIX-OSC.md, test 18); the bottom tick, value 0,
+    /// is off. Between ticks the gain moves evenly in dB; below −60 it follows TotalMix's fader
+    /// position down to off.
+    public static let faderTicks: [(value: Double, gainDB: Double)] = [
+        (127, 6), (120, 3), (102, 0), (84, -6), (66, -10), (46, -20), (29, -40), (11, -60),
+    ]
+
+    /// TotalMix's fader position (0…1) for an XL 3 fader value, on the printed scale.
+    public static func faderPosition(_ value: UInt8) -> Double {
+        let value = Double(min(value, 127))
+        guard let lowest = faderTicks.last else { return value / 127 }
+        if value <= lowest.value {
+            return value / lowest.value * FaderCurve.position(gainDB: lowest.gainDB)
+        }
+        for (upper, lower) in zip(faderTicks, faderTicks.dropFirst()) where value >= lower.value {
+            let fraction = (value - lower.value) / (upper.value - lower.value)
+            return FaderCurve.position(gainDB: lower.gainDB + fraction * (upper.gainDB - lower.gainDB))
+        }
+        return 1
+    }
+
+    /// The XL 3 fader value for TotalMix's fader position (0…1): the inverse of
+    /// `faderPosition(_:)`, rounded.
+    public static func faderValue(_ position: Double) -> UInt8 {
+        let position = min(max(position.isFinite ? position : 0, 0), 1)
+        guard let lowest = faderTicks.last else { return UInt8((position * 127).rounded()) }
+        let lowestPosition = FaderCurve.position(gainDB: lowest.gainDB)
+        if position <= lowestPosition {
+            return UInt8((position / lowestPosition * lowest.value).rounded())
+        }
+        guard let gain = FaderCurve.gainDB(position: position) else { return 0 }
+        for (upper, lower) in zip(faderTicks, faderTicks.dropFirst()) where gain >= lower.gainDB {
+            let fraction = min((gain - lower.gainDB) / (upper.gainDB - lower.gainDB), 1)
+            return UInt8(min(max((lower.value + fraction * (upper.value - lower.value)).rounded(), 0), 127))
+        }
+        return 127
+    }
+
     /// A position (0…1) for a 7-bit value, with 64 as the exact middle, so that a pan can be
     /// centered: 0–64 map to 0–0.5 and 64–127 to 0.5–1.
     public static func position(_ value: UInt8) -> Double {
@@ -506,7 +569,7 @@ public struct LaunchControlDriver: Sendable {
                     touched.insert(index)
                     if let value {
                         let control = self.element(layer, index)
-                        let position = Self.value(value)
+                        let position = usesFaderScale(layer) ? Self.faderValue(value) : Self.value(value)
                         if sentPositions[control.controlNumber] != position {
                             sentPositions[control.controlNumber] = position
                             bytes += LaunchControlOutgoing.position(control, position) ?? []
@@ -533,7 +596,7 @@ public struct LaunchControlDriver: Sendable {
             }
         }
         if pageChanged { bytes += drawStationary() }
-        // Every time: Track's ends change with the send targets, not only with the page (the
+        // Every time: Page's ends change with the send targets, not only with the page (the
         // lights are sent only when they change).
         return bytes + drawNavigation(hub: hub)
     }
@@ -553,7 +616,7 @@ public struct LaunchControlDriver: Sendable {
             bytes += configure(target, .titleNameAndValue, quiet: true)
         }
         if element.hasLight {
-            bytes += color(element, active ? Self.color(for: info) : 0)
+            bytes += color(element, active ? (sendColor(layer, hub: hub) ?? Self.color(for: info)) : 0)
         }
         if let button = button(layer, index) {
             let on = switchOn[layer]?[index] ?? false
@@ -563,6 +626,21 @@ public struct LaunchControlDriver: Sendable {
             bytes += color(button, colorIndex)
         }
         return bytes
+    }
+
+    /// For a layer of sends, the palette color of the output it sends to, so that each send row
+    /// reads as one send, as in Novation's integrations (Adam, 2026-11-01): the output's TotalMix
+    /// color, or, if left white, green for a control room output and blue for another; `nil` for
+    /// any other layer.
+    private func sendColor(_ layer: Layer, hub: SurfaceHub) -> UInt8? {
+        guard case .strips(_, _, .send(let index), _) = mode(for: layer, first: 0) else { return nil }
+        let targets = hub.sendTargets
+        guard targets.indices.contains(index) else { return nil }
+        let ref = ChannelRef(.output, targets[index])
+        let state = hub.mirror.channels[ref]
+        let kind: StripKind = hub.mirror.monitoringOutputs.contains(ref.channel) ? .monitoring : .send
+        return Self.color(for: StripInfo(channel: ref, name: "", color: state?.color, stereo: state?.stereo ?? false,
+                                         kind: kind, knobLabel: "", switchLabel: ""))
     }
 
     /// What a layer's controls do, as its displays' second line: "Level", "Pan", or "> " and the
@@ -602,18 +680,18 @@ public struct LaunchControlDriver: Sendable {
     /// Launch Control 3's layout) is yellow while the buttons are PFL and dim otherwise.
     private mutating func drawNavigation(hub: SurfaceHub) -> [UInt8] {
         var bytes: [UInt8] = []
-        bytes += color(.pageUp, page.first > 0 ? Self.navigationOn : 0)
-        bytes += color(.pageDown, page.first + Self.stripCount < page.count ? Self.navigationOn : 0)
+        bytes += color(.trackLeft, page.first > 0 ? Self.navigationOn : 0)
+        bytes += color(.trackRight, page.first + Self.stripCount < page.count ? Self.navigationOn : 0)
         let range = sendStepRange(hub)
         let steps = layout == .lc3 || rowFunctions.contains(.send)
-        bytes += color(.trackLeft, steps && sendStep > range.lowerBound ? Self.navigationOn : 0)
-        bytes += color(.trackRight, steps && sendStep < range.upperBound ? Self.navigationOn : 0)
+        bytes += color(.pageUp, steps && sendStep > range.lowerBound ? Self.navigationOn : 0)
+        bytes += color(.pageDown, steps && sendStep < range.upperBound ? Self.navigationOn : 0)
         if layout == .lc3 { bytes += color(Self.functionButton, buttonsArePFL ? Self.pflOn : Self.functionIdle) }
         return bytes
     }
 
     /// Shows two lines on the overlay (a temporary display not tied to a control), e.g., after
-    /// Function or Track. That the overlay comes up with SysEx 04h 7Fh, as other displays do, is
+    /// Function or Page. That the overlay comes up with SysEx 04h 7Fh, as other displays do, is
     /// an inference (not yet tried on the device).
     private mutating func overlay(_ first: String, _ second: String) -> [UInt8] {
         guard connected else { return [] }

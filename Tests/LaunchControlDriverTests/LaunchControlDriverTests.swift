@@ -45,13 +45,17 @@ private extension Array where Element == UInt8 {
 }
 
 /// A driver that has started and been answered by the device, with the bytes of both steps.
-private func connected(layout: LaunchControlModel, device: LaunchControlModel? = nil)
+/// XL 3 tests use Pan, Send, Send for the rows (the default is Send, Send, Pan) unless they say
+/// otherwise, so that the top row's encoders and the bottom buttons share a layer's strip.
+private func connected(layout: LaunchControlModel, device: LaunchControlModel? = nil,
+                       rows: [LaunchControlRowFunction] = [.pan, .send, .send])
     -> (driver: LaunchControlDriver, hub: SurfaceHub, midi: [UInt8]) {
     var hub = loadedHub()
     var driver = LaunchControlDriver(name: "lc", layout: layout, device: device)
     let start = driver.start(hub: &hub, now: 0)
+    let rowStep = layout == .xl3 ? driver.setRowFunctions(rows, hub: &hub, now: 0) : LaunchControlStep()
     let answer = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0)
-    return (driver, hub, start.midi + answer.midi)
+    return (driver, hub, start.midi + rowStep.midi + answer.midi)
 }
 
 final class LaunchControlDriverTests: XCTestCase {
@@ -79,18 +83,22 @@ final class LaunchControlDriverTests: XCTestCase {
         let answer = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 4)
         XCTAssertTrue(driver.isConnected)
         XCTAssertTrue(answer.midi.contains([0xB6, 0x1E, 0x01]), "DAW Mixer selected, for the Connect Only setting")
-        XCTAssertTrue(answer.midi.contains([0xBF, 0x05, 64]), "fader 1 told its level, for the device's pickup")
-        XCTAssertTrue(answer.midi.contains([0xBF, 0x0D, 64]), "encoder 1 (pan) told the middle")
-        XCTAssertTrue(answer.midi.contains([0xB0, 0x0D, 5]), "Keys is red in TotalMix")
-        XCTAssertTrue(answer.midi.contains([0xB0, 0x0E, 3]), "Vox is white")
-        XCTAssertTrue(answer.midi.contains([0xB0, 0x11, 0]), "a blank strip's encoder is dark")
+        XCTAssertTrue(answer.midi.contains([0xBF, 0x05, LaunchControlDriver.faderValue(0.5)]),
+                      "fader 1 told its level, on the printed scale, for the device's pickup")
+        XCTAssertEqual(driver.rowFunctions, [.send, .send, .pan], "Novation's own order by default")
+        XCTAssertTrue(answer.midi.contains([0xBF, 0x1D, 64]), "encoder 1 of the bottom row (pan) told the middle")
+        XCTAssertTrue(answer.midi.contains([0xB0, 0x1D, 5]), "Keys is red in TotalMix")
+        XCTAssertTrue(answer.midi.contains([0xB0, 0x1E, 3]), "Vox is white")
+        XCTAssertTrue(answer.midi.contains([0xB0, 0x21, 0]), "a blank strip's encoder is dark")
+        XCTAssertTrue(answer.midi.contains([0xB0, 0x0D, 45]),
+                      "the top row sends to Phones, a white output that isn't in the control room: blue")
         XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.stationary, field: 0, "Sources 1-4") ?? []))
         XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.control(.fader(0)), field: 0, "Keys") ?? []))
         XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.control(.fader(0)), field: 1, "Level") ?? []))
-        XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.control(.encoder(row: 1, column: 0)), field: 1, "> Phones") ?? []))
+        XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.control(.encoder(row: 0, column: 0)), field: 1, "> Phones") ?? []))
         XCTAssertTrue(answer.midi.contains([0xB0, 0x25, 15]), "top buttons: PFL off, dark yellow")
         XCTAssertTrue(answer.midi.contains([0xB0, 0x2D, 7]), "bottom buttons: mute off, dark red")
-        XCTAssertTrue(answer.midi.contains([0xB0, 0x6B, 0]), "no next page with four sources")
+        XCTAssertTrue(answer.midi.contains([0xB0, 0x66, 0]), "Track >: no more strips with four sources")
     }
 
     func testXL3LayersBindFadersRowsAndButtons() {
@@ -106,8 +114,10 @@ final class LaunchControlDriverTests: XCTestCase {
 
     func testXL3ControlsReachTotalMix() {
         var (driver, hub, _) = connected(layout: .xl3)
-        let fader = driver.receive([0xBF, 0x05, 64], hub: &hub, now: 1)
-        XCTAssertEqual(fader.core.messages, [TotalMixCommand.setMix(from: .input, 0, to: 0, "faderlin", 0.5)],
+        let sent = LaunchControlDriver.faderValue(0.5)
+        let fader = driver.receive([0xBF, 0x05, sent], hub: &hub, now: 1)
+        XCTAssertEqual(fader.core.messages,
+                       [TotalMixCommand.setMix(from: .input, 0, to: 0, "faderlin", Float(LaunchControlDriver.faderPosition(sent)))],
                        "fader 1 at the level it was sent is caught")
 
         let pan = driver.receive([0xBF, 0x0D, 127], hub: &hub, now: 2)
@@ -132,7 +142,7 @@ final class LaunchControlDriverTests: XCTestCase {
 
     func testShiftAndPageSwitchViewsAndPageDownStopsAtTheEnd() {
         var (driver, hub, _) = connected(layout: .xl3)
-        XCTAssertTrue(driver.receive([0xB0, 0x6B, 0x7F], hub: &hub, now: 1).midi.isEmpty, "one page of sources only")
+        XCTAssertTrue(driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 1).midi.isEmpty, "Track >: one page of sources only")
         _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 2)
         let outputs = driver.receive([0xB0, 0x6B, 0x7F], hub: &hub, now: 2)
         XCTAssertEqual(driver.view, .outputs)
@@ -140,14 +150,14 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertEqual(hub.strips(of: driver.id(.faders))?[0].knobTarget, .level(ChannelRef(.output, 0), submix: nil))
         _ = driver.receive([0xB6, 0x3F, 0x00], hub: &hub, now: 3)
         _ = driver.receive([0xB0, 0x6A, 0x7F], hub: &hub, now: 3)
-        XCTAssertEqual(driver.view, .outputs, "Page up without Shift pages; it doesn't switch views")
+        XCTAssertEqual(driver.view, .outputs, "Page up without Shift steps the sends; it doesn't switch views")
     }
 
     func testRowFunctionsAndTrackStepTheSends() {
         var (driver, hub, _) = connected(layout: .xl3)
         let keys = ChannelRef(.input, 0)
-        XCTAssertTrue(driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 1).midi.isEmpty,
-                      "Track >: two send rows and one send target, so nothing to step")
+        XCTAssertTrue(driver.receive([0xB0, 0x6B, 0x7F], hub: &hub, now: 1).midi.isEmpty,
+                      "Page down: two send rows and one send target, so nothing to step")
         _ = driver.setRowFunctions([.send, .pan, .pan], hub: &hub, now: 2)
         XCTAssertEqual(hub.strips(of: driver.id(.row0))?[0].knobTarget, .level(keys, submix: 2))
         XCTAssertEqual(hub.strips(of: driver.id(.row1))?[0].knobTarget, .pan(keys, submix: 0))
@@ -165,11 +175,11 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertFalse(midi.contains([0xB6, 0x46]), "no fader pickup on a device without faders")
         XCTAssertTrue(midi.contains([0xB0, 0x42, LaunchControlDriver.functionIdle]))
 
-        let track = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 1)
+        let track = driver.receive([0xB0, 0x6B, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(hub.strips(of: driver.id(.row0))?[0].knobTarget, .level(keys, submix: 2), "Track >: send 1")
         XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, "> Phones", model: .lc3) ?? []))
-        XCTAssertTrue(driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 2).midi.isEmpty, "no second send")
-        _ = driver.receive([0xB0, 0x67, 0x7F], hub: &hub, now: 3)
+        XCTAssertTrue(driver.receive([0xB0, 0x6B, 0x7F], hub: &hub, now: 2).midi.isEmpty, "no second send")
+        _ = driver.receive([0xB0, 0x6A, 0x7F], hub: &hub, now: 3)
         XCTAssertEqual(hub.strips(of: driver.id(.row0))?[0].knobTarget, .pan(keys, submix: 0), "Track <: back to pan")
 
         let function = driver.receive([0xB0, 0x42, 0x7F], hub: &hub, now: 4)
@@ -204,7 +214,7 @@ final class LaunchControlDriverTests: XCTestCase {
         let change = hub.handle(.mix(bus: .input, channel: 0, output: 0, parameter: "faderlin", value: .number(0.25)), now: 2)
         XCTAssertTrue(driver.take(change, hub: &hub, now: 2).midi.isEmpty, "nothing drawn in a Custom Mode")
         let back = driver.receive([0xB6, 0x1E, 0x01], hub: &hub, now: 3)
-        XCTAssertTrue(back.midi.contains([0xBF, 0x05, LaunchControlDriver.value(0.25)]), "everything sent again")
+        XCTAssertTrue(back.midi.contains([0xBF, 0x05, LaunchControlDriver.faderValue(0.25)]), "everything sent again")
     }
 
     func testStopLeavesDAWModeAndTheHub() {
@@ -267,19 +277,19 @@ final class LaunchControlDriverTests: XCTestCase {
 
     func testTrackLightsFollowTheSendTargets() {
         var (driver, hub, _) = connected(layout: .lc3)
-        XCTAssertTrue(driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 1).midi.contains([0xB0, 0x66, 0]),
+        XCTAssertTrue(driver.receive([0xB0, 0x6B, 0x7F], hub: &hub, now: 1).midi.contains([0xB0, 0x6B, 0]),
                       "Track > dark at the last send")
         var output = CoreOutput()
         for event in [TotalMixEvent.channel(bus: .output, channel: 4, parameter: "stereo", value: .number(1)),
                       .channel(bus: .output, channel: 4, parameter: "name", value: .text("Phones 2"))] {
             output.append(hub.handle(event, now: 2))
         }
-        XCTAssertTrue(driver.take(output, hub: &hub, now: 2).midi.contains([0xB0, 0x66, LaunchControlDriver.navigationOn]))
+        XCTAssertTrue(driver.take(output, hub: &hub, now: 2).midi.contains([0xB0, 0x6B, LaunchControlDriver.navigationOn]))
     }
 
     func testTheSendStepStaysInRangeWhenTargetsGo() {
         var (driver, hub, _) = connected(layout: .lc3)
-        _ = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 1)
+        _ = driver.receive([0xB0, 0x6B, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(driver.sendStep, 0)
         _ = driver.take(hub.setHomeSubmix(2, now: 2), hub: &hub, now: 2)
         XCTAssertEqual(hub.sendTargets, [0])
@@ -287,5 +297,54 @@ final class LaunchControlDriverTests: XCTestCase {
         let main = driver.take(hub.setHomeSubmix(nil, now: 3), hub: &hub, now: 3)
         XCTAssertEqual(driver.sendStep, 0)
         XCTAssertNotNil(main)
+    }
+
+    func testTheFaderScaleMatchesTheTicks() {
+        for tick in LaunchControlDriver.faderTicks {
+            let position = LaunchControlDriver.faderPosition(UInt8(tick.value))
+            XCTAssertEqual(FaderCurve.gainDB(position: position) ?? -999, tick.gainDB, accuracy: 0.01, "tick \(tick.value)")
+        }
+        XCTAssertNil(FaderCurve.gainDB(position: LaunchControlDriver.faderPosition(0)), "the bottom is off")
+        XCTAssertEqual(LaunchControlDriver.faderPosition(127), 1, accuracy: 1e-9)
+        var previous = -1.0
+        for value in UInt8(0)...127 {
+            let position = LaunchControlDriver.faderPosition(value)
+            XCTAssertGreaterThan(position, previous, "rising at \(value)")
+            previous = position
+            XCTAssertEqual(LaunchControlDriver.faderValue(position), value, "round trip at \(value)")
+        }
+        XCTAssertEqual(LaunchControlDriver.faderValue(FaderCurve.unityPosition), 102, "0 dB sits on the third tick")
+    }
+
+    func testFadersUseTheScaleAndEncodersDoNot() {
+        var (driver, hub, midi) = connected(layout: .xl3)
+        XCTAssertTrue(midi.contains([0xBF, 0x05, LaunchControlDriver.faderValue(0.5)]), "fader 1 told its level on the scale")
+        XCTAssertTrue(midi.contains([0xBF, 0x0D, 64]), "encoders keep the plain scale")
+        let unity = driver.receive([0xBF, 0x05, LaunchControlDriver.faderValue(0.5)], hub: &hub, now: 1)
+        XCTAssertEqual(unity.core.messages.count, 1)
+        let top = driver.receive([0xBF, 0x05, 102], hub: &hub, now: 2)
+        XCTAssertEqual(top.core.messages, [TotalMixCommand.setMix(from: .input, 0, to: 0, "faderlin", Float(FaderCurve.unityPosition))])
+    }
+
+    func testTrackMovesTheStripsByEightOrWithShiftToTheEnds() {
+        var hub = loadedHub()
+        var layout = hub.layout
+        layout.playbacksOnNewPage = true  // inputs 1-3, five blanks, then the playback: two pages
+        _ = hub.setLayout(layout, now: 0)
+        var driver = LaunchControlDriver(name: "lc", layout: .xl3)
+        _ = driver.start(hub: &hub, now: 0)
+        _ = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0)
+        _ = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 1)
+        XCTAssertEqual(hub.strips(of: driver.id(.faders))?[0].knobTarget, .level(ChannelRef(.playback, 0), submix: 0),
+                       "Track >: the next eight")
+        XCTAssertEqual(hub.strips(of: driver.id(.row2))?[0].knobTarget, .pan(ChannelRef(.playback, 0), submix: 0),
+                       "every layer moves together")
+        _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 2)
+        _ = driver.receive([0xB0, 0x67, 0x7F], hub: &hub, now: 2)
+        XCTAssertEqual(hub.strips(of: driver.id(.faders))?[0].knobTarget, .level(ChannelRef(.input, 0), submix: 0),
+                       "Shift + Track <: the first page")
+        _ = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 3)
+        XCTAssertEqual(hub.strips(of: driver.id(.faders))?[0].knobTarget, .level(ChannelRef(.playback, 0), submix: 0),
+                       "Shift + Track >: the last page, starting on a multiple of eight")
     }
 }
