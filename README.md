@@ -1,20 +1,20 @@
 # Performance Bridge
 
 **Performance Bridge** is a macOS menu-bar app that connects hardware controllers to RME TotalMix FX
-through TotalMix FX's Global OSC interface. With it, the knobs, faders, buttons, and displays of the
-hardware controller show and control TotalMix FX's mixer, in both directions.
-
-Its aim is TotalMix FX as a performance mixer: for mixing live, in practice or on stage, with the
-hands on the hardware controller rather than the mouse.
+bidirectionally through TotalMix FX's Global OSC interface. With it, TotalMix FX functions as a live
+performance mixer, with the knobs, faders, buttons, and displays of the hardware controller showing
+and controlling the mix.
 
 The repository also holds the Swift libraries behind the app and a developer tool for checking
 them against TotalMix FX. The libraries depend only on Foundation, and they build on macOS, Linux, and
 Windows.
 
+Currently, Performance Bridge supports Melbourne Instruments' Roto-Control and Novation's Launch
+Control mk3 and Launch Control XL mk3.
+
 Performance Bridge is not affiliated with or endorsed by RME, Melbourne Instruments, or Novation.
 
-**To set it up,** follow the setup guide, [`docs/SETUP.md`](docs/SETUP.md): TotalMix FX's settings,
-the hardware controller, and what each control does.
+To set it up, follow the setup guide, [`docs/SETUP.md`](docs/SETUP.md).
 
 ## Status
 
