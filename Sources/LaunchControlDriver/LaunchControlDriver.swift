@@ -98,7 +98,8 @@ public struct LaunchControlDriver: Sendable {
     private var sentConfig: [UInt8: UInt8] = [:]  // target byte → arrangement and flags
 
     /// How close to the level a fader's first value must be for the hub's pickup to take it, as a
-    /// fraction of the range: 12 steps of 127. The device holds a fader back until it crosses the
+    /// fraction of TotalMix's fader travel (0…1): 12/127 of it, which on the printed scale is 7 to
+    /// 18 of the fader's values depending on where the fader is (review of 2026-11-02). The device holds a fader back until it crosses the
     /// level, and then sends its first value just past it (one step past in test 3's slow moves),
     /// but the hub has no earlier position to see the crossing with; a fast move may land a few
     /// steps further (inference), and the window has to take it. If the device didn't hold the
@@ -235,9 +236,17 @@ public struct LaunchControlDriver: Sendable {
             }
             return
         }
-        // Anything else from the device also shows that it is there: the Launch Control 3's echo
-        // of the DAW mode note is an inference (docs/LAUNCH-CONTROL-3.md).
-        if !connected { connect(hub: &hub, now: now, into: &step) }
+        // A control moved or pressed also shows that the device is there in DAW mode (the Launch
+        // Control 3's echo of the DAW mode note is an inference, docs/LAUNCH-CONTROL-3.md). Feature
+        // replies don't: leaving DAW mode, the device sends CC 30 and 31 before its 9F 0C 00, and
+        // taking those as presence drew everything on a device on its way out (review of
+        // 2026-11-02; docs/LAUNCH-CONTROL-XL3.md, test 12).
+        switch event {
+        case .moved, .turned, .touch, .button:
+            if !connected { connect(hub: &hub, now: now, into: &step) }
+        default:
+            return
+        }
         guard !inCustomMode else { return }
 
         switch event {
@@ -310,16 +319,19 @@ public struct LaunchControlDriver: Sendable {
     /// using; on the Launch Control 3, pan if its choice isn't a target.
     private mutating func resolveSends(_ hub: SurfaceHub) {
         let targets = hub.sendTargets
+        // Each row's own choice first, so that a row whose output has gone never takes the other
+        // row's chosen output (review of 2026-11-02); a duplicate loses. Then, on the XL 3, the
+        // rows left without one take the first target neither row uses.
+        var indices: [Int?] = sendOutputs.map { $0.flatMap { targets.firstIndex(of: $0) } }
         var used = Set<Int>()
-        var indices: [Int?] = []
-        for choice in sendOutputs {
-            var index = choice.flatMap { targets.firstIndex(of: $0) }
-            if let found = index, used.contains(found) { index = nil }
-            if index == nil, layout == .xl3 {
-                index = targets.indices.first { !used.contains($0) }
+        for row in indices.indices {
+            if let index = indices[row], !used.insert(index).inserted { indices[row] = nil }
+        }
+        if layout == .xl3 {
+            for row in indices.indices where indices[row] == nil {
+                indices[row] = targets.indices.first { !used.contains($0) }
+                if let index = indices[row] { used.insert(index) }
             }
-            if let index { used.insert(index) }
-            indices.append(index)
         }
         sendIndices = indices
     }
@@ -391,6 +403,7 @@ public struct LaunchControlDriver: Sendable {
 
     private mutating func connect(hub: inout SurfaceHub, now: Double, into step: inout LaunchControlStep) {
         connected = true
+        inCustomMode = false
         lastStart = nil
         sentPositions = [:]
         sentColors = [:]
@@ -443,7 +456,13 @@ public struct LaunchControlDriver: Sendable {
 
     private mutating func setModes(first: Int, hub: inout SurfaceHub, now: Double, into step: inout LaunchControlStep) {
         var output = CoreOutput()
-        for layer in layers { output.append(hub.setMode(id(layer), mode(for: layer, first: first), now: now)) }
+        // Only the layers whose mode changes: setting a mode redraws the layer and resets its
+        // holds and pickup, which a Page press has no reason to do to the faders (review of
+        // 2026-11-02).
+        for layer in layers {
+            let mode = mode(for: layer, first: first)
+            if hub.mode(of: id(layer)) != mode { output.append(hub.setMode(id(layer), mode, now: now)) }
+        }
         take(output, hub: hub, into: &step)
     }
 
@@ -698,8 +717,27 @@ public struct LaunchControlDriver: Sendable {
         let before = sendIndices
         resolveSends(hub)
         if sendIndices != before { setModes(first: page.first, hub: &hub, now: now, into: &step) }
-        if connected && !inCustomMode { step.midi += drawNavigation(hub: hub) }
+        // Each time, since they depend on the outputs, not on this surface's strips: a send row's
+        // color and the home screen follow an output recolored or renamed in TotalMix (review of
+        // 2026-11-02). All three send only what changed.
+        if connected && !inCustomMode {
+            step.midi += drawNavigation(hub: hub) + drawSendColors(hub: hub) + drawStationary(hub: hub)
+        }
         return step
+    }
+
+    /// The send rows' lights, in their outputs' colors, for the strips that show a channel.
+    private mutating func drawSendColors(hub: SurfaceHub) -> [UInt8] {
+        var bytes: [UInt8] = []
+        for layer in layers {
+            guard let color = sendColor(layer, hub: hub) else { continue }
+            for index in 0..<Self.stripCount {
+                let element = self.element(layer, index)
+                let active = (infos[layer]?[index] ?? nil) != nil && (knobOn[layer]?[index] ?? false)
+                if element.hasLight, active { bytes += self.color(element, color) }
+            }
+        }
+        return bytes
     }
 
     private mutating func take(_ output: CoreOutput, hub: SurfaceHub, into step: inout LaunchControlStep) {

@@ -196,11 +196,11 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(midi.contains([0xB0, 0x42, LaunchControlDriver.functionIdle]))
 
         let track = driver.receive([0xB0, 0x6B, 0x7F], hub: &hub, now: 1)
-        XCTAssertEqual(hub.strips(of: driver.id(.row0))?[0].knobTarget, .level(keys, submix: 2), "Track >: send 1")
+        XCTAssertEqual(hub.strips(of: driver.id(.row0))?[0].knobTarget, .level(keys, submix: 2), "Page ▼: send 1")
         XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, "> Phones", model: .lc3) ?? []))
         XCTAssertTrue(driver.receive([0xB0, 0x6B, 0x7F], hub: &hub, now: 2).midi.isEmpty, "no second send")
         _ = driver.receive([0xB0, 0x6A, 0x7F], hub: &hub, now: 3)
-        XCTAssertEqual(hub.strips(of: driver.id(.row0))?[0].knobTarget, .pan(keys, submix: 0), "Track <: back to pan")
+        XCTAssertEqual(hub.strips(of: driver.id(.row0))?[0].knobTarget, .pan(keys, submix: 0), "Page ▲: back to pan")
 
         let function = driver.receive([0xB0, 0x42, 0x7F], hub: &hub, now: 4)
         XCTAssertTrue(driver.buttonsArePFL)
@@ -338,6 +338,37 @@ final class LaunchControlDriverTests: XCTestCase {
                       "the home screen brought up again with its new title")
     }
 
+    func testARowWhoseOutputIsGoneDoesNotTakeTheOtherRowsChoice() {
+        // Review of 2026-11-02: rows [6, 2], then output 6 becomes the cue output.
+        var (driver, hub, _) = connected(layout: .xl3, outputs: [(4, "ADAT 1/2"), (6, "ADAT 3/4")], sendOutputs: [6, 2])
+        XCTAssertEqual(driver.currentSendOutputs(hub: hub), [6, 2])
+        let cue = hub.handle(.other(path: "controlroom/cuechan", value: .number(6)), now: 1)
+        _ = driver.take(cue, hub: &hub, now: 1)
+        XCTAssertEqual(driver.currentSendOutputs(hub: hub), [4, 2], "the middle row keeps Phones; the top row takes what's free")
+        XCTAssertEqual(driver.sendOutputs, [6, 2], "the saved choices stay, for when output 6 comes back")
+    }
+
+    func testLeavingDAWModeDoesNotLookLikeAnAnswer() {
+        var hub = loadedHub()
+        var driver = LaunchControlDriver(name: "lc", layout: .xl3)
+        _ = driver.start(hub: &hub, now: 0)
+        // The device's replies when a host leaves DAW mode, then its echo of the new request.
+        let leaving = driver.receive([0xB6, 0x1E, 0x06, 0xB6, 0x1F, 0x06, 0x9F, 0x0C, 0x00], hub: &hub, now: 0.01)
+        XCTAssertFalse(driver.isConnected)
+        XCTAssertTrue(leaving.midi.isEmpty, "nothing drawn on a device on its way out")
+        let entering = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0.02)
+        XCTAssertTrue(driver.isConnected)
+        XCTAssertTrue(entering.midi.contains(LaunchControlOutgoing.text(.stationary, field: 0, "In 1-3, PB 1") ?? []), "one full draw")
+    }
+
+    func testAnOutputsNewColorReachesItsSendRow() {
+        var (driver, hub, midi) = connected(layout: .xl3)
+        XCTAssertTrue(midi.contains([0xB0, 0x0D, 45]), "Phones, white in TotalMix, is blue")
+        let recolor = hub.handle(.channel(bus: .output, channel: 2, parameter: "color", value: .number(4)), now: 1)
+        let step = driver.take(recolor, hub: &hub, now: 1)
+        XCTAssertTrue(step.midi.contains([0xB0, 0x0D, 5]), "TotalMix's red reaches the top row at once")
+    }
+
     func testTheAppCanSetASendRow() {
         var (driver, hub, _) = connected(layout: .xl3, outputs: [(4, "ADAT 1/2"), (6, "ADAT 3/4")])
         XCTAssertEqual(driver.currentSendOutputs(hub: hub), [2, 4])
@@ -436,10 +467,10 @@ final class LaunchControlDriverTests: XCTestCase {
     func testAFastFirstFaderMoveIsTaken() {
         var (driver, hub, _) = connected(layout: .xl3)
         let first = driver.receive([0xBF, 0x05, 72], hub: &hub, now: 1)
-        XCTAssertEqual(first.core.messages.count, 1, "8 steps past the level, let through by the device")
+        XCTAssertEqual(first.core.messages.count, 1, "11 values past the level, let through by the device")
     }
 
-    func testTrackLightsFollowTheSendTargets() {
+    func testPageLightsFollowTheSendTargets() {
         var (driver, hub, _) = connected(layout: .lc3)
         XCTAssertTrue(driver.receive([0xB0, 0x6B, 0x7F], hub: &hub, now: 1).midi.contains([0xB0, 0x6B, 0]),
                       "Track > dark at the last send")
