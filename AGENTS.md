@@ -129,7 +129,7 @@ Do:
 
 - Keep `OSCCodec`, `TotalMixOSC`, `RotoControl`, `LaunchControl`, `SurfaceCore`, `RotoDriver`, `LaunchControlDriver`, and the planned drivers Foundation-only, UI-free, and building on Linux, macOS, and Windows. Platform code (CoreMIDI, sockets, SwiftUI) stays in `UDPTransport`, `MIDITransport`, or the app.
 - Write cross-library imports as `#if canImport(OSCCodec)` / `import OSCCodec` / `#endif`. The app build will compile every folder as one module, and there such an import must compile out. No two top-level declarations in the library folders may share a name.
-- Put any new or changed claim about what TotalMix does in `docs/TOTALMIX-OSC.md` with its evidence: RME's document and its revision, or a test naming the TotalMix version and the interface. Mark inferences as inferences, in the code comment as well as the document. Do the same for the surfaces in their own documents.
+- Put any new or changed claim about what TotalMix does in `docs/TOTALMIX-OSC.md` with its evidence: RME's document and its revision, or a test naming the TotalMix version and the interface. Evidence goes in a named footnote (`[^rme-doc]`, `[^test-7]`), as pgdata Packer's `docs/FORMATS.md` does; each protocol doc's first section says how sure each statement is and defines its footnotes. Mark inferences as inferences, in the code comment as well as the document. Do the same for the surfaces in their own documents.
 - Give every `public` declaration a `///` doc comment.
 - Add a test for anything new, and run the tests (section 5) before proposing a change.
 

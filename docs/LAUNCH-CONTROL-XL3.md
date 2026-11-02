@@ -15,37 +15,82 @@ are built on them.
 Novation's documents are linked, not committed (AGENTS.md, section 4). Adam has local copies in
 the project folder (`Novation Docs/`).
 
-- **[Programmer's reference guide]** "Launch Control XL 3 programmer's reference guide", version
+- **Programmer's reference guide.** "Launch Control XL 3 programmer's reference guide", version
   1.0, PDF dated April 17, 2026, 17 pages
   ([Novation](https://userguides.novationmusic.com/hc/en-gb/articles/27840466285586-About-the-Launch-Control-XL-3-programmer-s-reference-guide)).
   This is the main source. Its control map (page 9) and color palette (page 12) are pictures,
   read from the PDF.
-- **[User guide]** "Launch Control XL 3 user guide" (PDF, English). It describes the controls and
+- **User guide.** "Launch Control XL 3 user guide" (PDF, English). It describes the controls and
   the DAW modes as a user sees them.
-- **[Bitwig setup]** "Launch Control XL Mk3, Bitwig Studio controller extension, setup": Bitwig's
+- **Bitwig setup.** "Launch Control XL Mk3, Bitwig Studio controller extension, setup": Bitwig's
   PDF (its branding), shipped with the Bitwig extension for the device. It gives the DAW port
   names on macOS (in a screenshot), Windows, and Linux.
 
-Bracketed tags below name the source. "Inference" marks anything the sources don't say outright.
+**How sure each statement is.** A plain statement describes what was found, in Novation's
+documents or on the device. A statement that rests on a source has a footnote saying where it
+comes from: one of the documents above, with its section or page, or a test on the device, whose
+record is in section [10](#10-test-records). "Inference" marks anything the sources don't say
+outright, and anything not yet checked on the device is said in words ("untested", "not yet
+seen").
+
+[^prg]: Novation's "Launch Control XL 3 programmer's reference guide", version 1.0.
+[^prg-midi]: The programmer's reference guide (version 1.0), "MIDI on Launch Control XL 3".
+[^prg-bootloader]: The programmer's reference guide (version 1.0), "Entering … bootloader".
+[^prg-daw-mode]: The programmer's reference guide (version 1.0), "DAW mode".
+[^prg-daw-mode-control]: The programmer's reference guide (version 1.0), "DAW mode control".
+[^prg-sysex]: The programmer's reference guide (version 1.0), "SysEx message format".
+[^prg-map]: The programmer's reference guide (version 1.0), page 9, the decimal picture.
+[^prg-encoder-modes]: The programmer's reference guide (version 1.0), "Absolute and relative
+    encoder modes".
+[^prg-touch]: The programmer's reference guide (version 1.0), "Continuous control touch events".
+[^prg-coloring]: The programmer's reference guide (version 1.0), "Colouring the surface".
+[^prg-rgb]: The programmer's reference guide (version 1.0), "RGB Colour".
+[^prg-displays]: The programmer's reference guide (version 1.0), "Configure displays".
+[^prg-text]: The programmer's reference guide (version 1.0), "Setting text".
+[^prg-bitmap]: The programmer's reference guide (version 1.0), "Bitmap".
+[^prg-features]: The programmer's reference guide (version 1.0), "Launch Control XL 3 feature
+    Controls".
+[^prg-feature-table]: The programmer's reference guide (version 1.0), the feature control table.
+[^ug]: Novation's "Launch Control XL 3 user guide" (PDF, English).
+[^ug-daw-chapters]: The user guide, the chapters for each DAW.
+[^ug-pickup]: The user guide, "Fader pickup" and Settings.
+[^bitwig]: Bitwig's "Launch Control XL Mk3, Bitwig Studio controller extension, setup" (PDF,
+    shipped with the Bitwig extension for the device).
+[^bitwig-p2]: Bitwig's setup PDF for the device, page 2.
+[^test-1]: Test 1 (2026-11-01), section
+    [10](#test-1-2026-11-01-ports-daw-mode-and-the-control-map).
+[^test-2]: Test 2 (2026-11-01), section
+    [10](#test-2-2026-11-01-encoder-positions-relative-mode-and-fader-pickup).
+[^test-3]: Test 3 (2026-11-01), section [10](#test-3-2026-11-01-fader-pickup).
+[^test-4]: Test 4 (2026-11-01), section [10](#test-4-2026-11-01-colors).
+[^test-5]: Test 5 (2026-11-01), section [10](#test-5-2026-11-01-the-screen).
+[^test-6]: Test 6 (2026-11-01), section [10](#test-6-2026-11-01-daw-mixer-and-daw-control).
+[^test-7]: Test 7 (2026-11-01), section
+    [10](#test-7-2026-11-01-the-fader-values-at-the-printed-ticks).
+[^test-9]: Test 9 (2026-11-01), section
+    [10](#test-9-2026-11-01-turning-an-encoder-with-shift-held).
+[^test-10]: Test 10 (2026-11-01), section
+    [10](#test-10-2026-11-01-turning-a-relative-encoder-with-shift-held).
+[^test-11]: Test 11 (2026-11-01), section
+    [10](#test-11-2026-11-01-the-home-screen-shift--turn-pan-steps-and-the-arc-scale).
 
 ## 2. MIDI ports
 
 - Over USB the device has a MIDI port pair, a DAW port pair, and two "To DIN" outputs. A host
-  that uses DAW mode talks to the DAW pair. [Programmer's reference guide, "MIDI on Launch
-  Control XL 3"]
+  that uses DAW mode talks to the DAW pair.[^prg-midi]
 - Port names include the device ID (1–8, set in the bootloader), so several units can be told
-  apart. [Programmer's reference guide, "Entering … bootloader"]
+  apart.[^prg-bootloader]
 - On Linux the DAW ports are "LCXL3 1 LCXL3 1 DAW Out" (the device's output, the host's input)
   and "LCXL3 1 LCXL3 1 DAW In". On Windows they are "MIDIIN2 (LCXL3 1 MIDI)" and "MIDIOUT2
-  (LCXL3 1 MIDI)". [Bitwig setup]
+  (LCXL3 1 MIDI)".[^bitwig]
 - On macOS, Bitwig's screenshot shows the input as "LCXL3 1 DAW Out" and the output as "LCXL3 1
-  DAW In". [Bitwig setup, page 2] Bitwig may show names that differ from CoreMIDI's (inference),
+  DAW In".[^bitwig-p2] Bitwig may show names that differ from CoreMIDI's (inference),
   so `sbdev lcxl` matches by part of the name, "LCXL3 1 DAW", which picks one source and one
   destination if the CoreMIDI names follow the same pattern.
 - **Seen on macOS** (Adam's Mac, firmware 1.2, 2026-11-01): CoreMIDI lists the sources "LCXL3 1
   MIDI Out" and "LCXL3 1 DAW Out", and the destinations "LCXL3 1 MIDI In", "LCXL3 1 DAW In",
   "LCXL3 1 To DIN Out", and "LCXL3 1 To DIN Out 2". So "LCXL3 1 DAW" picks the DAW pair.
-- In DAW mode the DIN outputs send nothing. [Programmer's reference guide, "DAW mode"]
+- In DAW mode the DIN outputs send nothing.[^prg-daw-mode]
 
 ## 2a. Firmware
 
@@ -70,28 +115,27 @@ the choice to the user; test 2 checks both settings.
 
 - **Entering and leaving.** A host enters DAW mode on connecting and leaves it on quitting, which
   returns the device to standalone mode. Either form works: note 12 on channel 16 (velocity 127
-  to enter, 0 to leave), or SysEx command 02h with 7Fh or 00h. [Programmer's reference guide,
-  "DAW mode control"]
+  to enter, 0 to leave), or SysEx command 02h with 7Fh or 00h.[^prg-daw-mode-control]
 - **SysEx header.** Every SysEx message starts F0h 00h 20h 29h 02h 15h, in both directions, then
-  a command byte. [Programmer's reference guide, "SysEx message format"]
+  a command byte.[^prg-sysex]
 - **Modes.** DAW mode offers two surface modes, DAW Mixer and DAW Control. The device reports a
   mode change on channel 7, Control Change 30, and a host can select a mode the same way. Values:
   - 1 is DAW Mixer and 2 is DAW Control;
   - 6–9 are Custom Modes 1–4;
   - 18–29 are Custom Modes 5–16.
 
-  [Programmer's reference guide, feature control table; its prose differs, section 7]
+  From the feature control table; its prose differs (section 7).[^prg-feature-table]
 - **What the modes change.** On the device, Mode plus Mute/Select or Solo/Arm chooses between
   them. The user guide gives the pairing both ways round (section 7). For Ableton Live, Logic
   Pro, Cubase, and Bitwig Studio the faders and buttons stay the same, and only what the encoders
-  control changes; in FL Studio the modes change the buttons too. [User guide, the chapters for
-  each DAW] So, for Performance Bridge, the two modes are two encoder pages
-  that the device switches for us (inference).
+  control changes; in FL Studio the modes change the buttons too.[^ug-daw-chapters] So, for
+  Performance Bridge, the two modes are two encoder pages that the device switches for us
+  (inference).
 
 ## 4. The controls
 
-From the control map. [Programmer's reference guide, page 9, the decimal picture] Faders and
-encoders report on channel 16, buttons on channel 1, and Shift on channel 7.
+From the control map.[^prg-map] Faders and encoders report on channel 16, buttons on channel 1,
+and Shift on channel 7.
 
 | Control | Control Change | Notes |
 |---|---|---|
@@ -103,7 +147,7 @@ encoders report on channel 16, buttons on channel 1, and Shift on channel 7.
 | Buttons, bottom row 1–8 | 45–52 | Novation's Mute or Select row |
 | Solo/Arm | 65 | left of the top row |
 | Mute/Select | 66 | left of the bottom row |
-| Novation logo button | 104 | "nothing… yet" [User guide] |
+| Novation logo button | 104 | "nothing… yet"[^ug] |
 | Page up, Page down | 106, 107 | |
 | Track <, Track > | 103, 102 | the left button has the higher number |
 | Record | 118 | |
@@ -114,43 +158,41 @@ encoders report on channel 16, buttons on channel 1, and Shift on channel 7.
 - **Button values.** The guide doesn't say what a button sends. The library reads 64 or more as
   pressed and less as released (inference: 127 and 0, as is usual).
 - **Encoders, absolute.** By default an encoder sends 0–127, and takes on any position a host
-  sends it. [Programmer's reference guide, "Absolute and relative encoder modes"] The guide doesn't say in which message; the encoder's own Control
-  Change back on channel 16 works (test 2).
+  sends it.[^prg-encoder-modes] The guide doesn't say in which message; the encoder's own Control
+  Change back on channel 16 works.[^test-2]
 - **Encoders, relative.** Each row can be switched to relative output separately, with feature
   controls 69, 72, and 73 for rows 1–3. A relative row then reports Control Changes 64 higher
   (77–84, 85–92, and 93–100). The value is 64 for no movement, above 64 for clockwise steps, and
-  below 64 for anticlockwise. [Programmer's reference guide]
+  below 64 for anticlockwise.[^prg]
 - **Touch.** With touch reports on (feature control 71), a "touch" sends the control's Control
   Change on channel 15, with 127 for touch on and 0 for off. The guide's only example is a fader:
-  BEh 05h 7Fh for the leftmost. [Programmer's reference guide, "Continuous control touch events"]
+  BEh 05h 7Fh for the leftmost.[^prg-touch]
   - What a touch is remains open. The guide describes the display's touch setting as "this is
     the Shift + rotate" (section 5), and the user guide never mentions touch sensing. So a
     "touch" may be moving a control with Shift held, not a touch sensor (inference).
   - It matters for SurfaceCore, which holds a control while it is touched. Test 5 checks both.
   - Whether encoders report touch too is also open.
 - **Fader pickup.** The programmer's reference guide lists feature control 70 as "DAW Fader
-  Pickup", on or off, with no description. [Programmer's reference guide, feature controls]
+  Pickup", on or off, with no description.[^prg-features]
   - The user guide's pickup, where a moved fader takes over only once it reaches the parameter's
-    value, is the Settings menu's, which leaves DAW modes alone. [User guide, "Fader pickup" and
-    Settings]
+    value, is the Settings menu's, which leaves DAW modes alone.[^ug-pickup]
   - That feature 70 works the same way in DAW mode is an inference. So is that the device learns
     the parameter's value from the position message above. Test 7 checks both.
 
 ## 5. Lights and the screen
 
 - **Palette colors.** A Control Change on channel 1, with the control's own number, lights it in
-  one of 128 palette colors. [Programmer's reference guide, "Colouring the surface"] The guide
-  says encoder LEDs use their absolute numbers even in relative mode, under "RGB Colour"; that the
-  same holds for palette colors is an inference. The palette is a picture in the guide
-  (page 12). Index 0 is off and 5 is red (test 4); indices 0–39 have been seen to match the picture's
-  run of colors, as far as a photo can show.
+  one of 128 palette colors.[^prg-coloring] The guide says encoder LEDs use their absolute
+  numbers even in relative mode, under "RGB Colour"; that the same holds for palette colors is an
+  inference. The palette is a picture in the guide (page 12). Index 0 is off and 5 is
+  red;[^test-4] indices 0–39 have been seen to match the picture's run of colors, as far as a
+  photo can show.
 - **RGB.** SysEx 01h 53h, then the control, red, green, and blue, lights a button or an encoder in
-  a color of its own. [Programmer's reference guide, "RGB Colour"] SysEx data bytes are 7-bit, so
-  each part is 0–127. That this covers the LED's full range is an inference.
-- **The screen** is 128 × 64 pixels. [Programmer's reference guide, "Bitmap"]
+  a color of its own.[^prg-rgb] SysEx data bytes are 7-bit, so each part is 0–127. That this
+  covers the LED's full range is an inference.
+- **The screen** is 128 × 64 pixels.[^prg-bitmap]
   - **Display targets.** Each fader and encoder has a temporary display (target = its Control
-    Change, 5–36). There is also a stationary display (53) and an overlay (54). [Programmer's
-    reference guide, "Configure displays"]
+    Change, 5–36). There is also a stationary display (53) and an overlay (54).[^prg-displays]
   - **Setting up a display.** SysEx 04h, then the target and a config byte, sets up a display:
     - bits 0–4 are the arrangement;
     - bit 6 lets the device bring it up by itself when the control changes;
@@ -163,20 +205,19 @@ encoders report on channel 16, buttons on channel 1, and Shift on channel 7.
     - 4: name and the device's own numeric value, the default.
   - **Text.** SysEx 06h, then the target, the field (from 0), and the text, fills one field.
     Text is ASCII 20h–7Eh, plus four symbols in place of control codes: 1Bh empty box, 1Ch filled
-    box, 1Dh flat sign, and 1Eh heart. [Programmer's reference guide, "Setting text"] How many
-    characters a field shows is not given.
+    box, 1Dh flat sign, and 1Eh heart.[^prg-text] How many characters a field shows is not
+    given.
   - **Bitmap.** SysEx 09h sends a whole picture: 64 rows of 19 bytes, 7 pixels per byte, highest
     bit leftmost. The device answers when it is ready for the next one. It holds one bitmap at a
-    time. [Programmer's reference guide, "Bitmap"]
+    time.[^prg-bitmap]
 
 ## 6. Feature controls
 
 Control Changes on channel 7 to the DAW port set them. The same Control Change on channel 8 asks
 for one, and replies come on channel 7. In DAW mode all of them listen, but only a few reply.
 Note 11 on channel 16 (velocity 127 or 0) enables every feature control, or goes back to DAW
-mode's own set. The inference is that this means their replies, since in DAW mode they all
-listen already.
-[Programmer's reference guide, "Launch Control XL 3 feature Controls"]
+mode's own set.[^prg-features] The inference is that this means their replies, since in DAW
+mode they all listen already.
 
 | CC | Feature | Values |
 |---|---|---|
@@ -207,9 +248,9 @@ Each is resolved here as stated, until the device settles it.
    a Default mode in the sixteenth slot.
 3. **Which button chooses which DAW mode.** The user guide says Mode plus Mute/Select is DAW Mixer
    and Solo/Arm is DAW Control six times, in the Ableton Live, Logic Pro, Cubase, and Bitwig
-   Studio chapters. Twice, in the DAW Control tips, it says the reverse. Test 6: Mode plus
-   Solo/Arm shows "DAW Control" on the screen, so the six are right; but the device doesn't
-   switch by itself (test 6).
+   Studio chapters. Twice, in the DAW Control tips, it says the reverse. Mode plus Solo/Arm
+   shows "DAW Control" on the screen, so the six are right; but the device doesn't switch by
+   itself.[^test-6]
 4. **Display targets for names.** The programmer's reference guide's note on arrangements mentions
    targets that only set names, 22h–28h (34–40), a range that overlaps encoder targets (34–36) and
    button numbers (37–40). The target list gives no such range.
@@ -227,36 +268,36 @@ Each is resolved here as stated, until the device settles it.
 Run with `swift run sbdev lcxl` (macOS; `sbdev lcxl --help`). First, `sbdev lcxl ports` lists the
 port names.
 
-1. **Ports.** Done (test 1). The macOS names of the DAW ports. Does `--port "LCXL3 1 DAW"` connect?
+1. **Ports.** Done.[^test-1] The macOS names of the DAW ports. Does `--port "LCXL3 1 DAW"` connect?
 2. **DAW mode.** Does the device show DAW mode on entering, and return to standalone on `quit`? With firmware 1.2's "DAW Connection" set to Switch (the default), does entering DAW mode move it to DAW Mixer? With "Connect Only", does it stay in its Custom Mode, and does `mode mixer` then move it?
-3. **The control map.** Done (test 1). Move every control and check its name and value against section 4,
+3. **The control map.** Done.[^test-1] Move every control and check its name and value against section 4,
    including Track < and > (103, 102) and the Novation button. What do buttons send: 127 and 0?
-4. **Modes.** Done (test 6). Mode plus Mute/Select, then plus Solo/Arm: which reports 1 and which 2 (section 7,
+4. **Modes.** Done.[^test-6] Mode plus Mute/Select, then plus Solo/Arm: which reports 1 and which 2 (section 7,
    item 3)? Does `mode control` switch the device?
-5. **Touch.** Done (test 1): movement, not a sensor. With `touch on`: touch a fader and an encoder without moving them, then move each
+5. **Touch.** Done: movement, not a sensor.[^test-1] With `touch on`: touch a fader and an encoder without moving them, then move each
    with Shift held. Which sends channel 15 reports?
-6. **Encoder position.** Done (test 2): taken. `pos e11 0`, then turn the encoder one step: does it continue from 0
+6. **Encoder position.** Done: taken.[^test-2] `pos e11 0`, then turn the encoder one step: does it continue from 0
    (taken) or from where it was (not)? The same with `pos e11 127`.
-7. **Fader pickup.** Done (tests 2 and 3): the device's pickup works; one unexplained run in test 2. `pickup on`, `pos f1 64`, then move fader 1 from the bottom. Does it send
+7. **Fader pickup.** Done: the device's pickup works;[^test-3] one unexplained run in test 2.[^test-2] `pickup on`, `pos f1 64`, then move fader 1 from the bottom. Does it send
    nothing until it passes the middle?
-8. **Relative encoders.** Done (test 2): as the guide says. `relative 1 on`: do encoders 1–8 report 77–84 with 65 and 63 for single
+8. **Relative encoders.** Done: as the guide says.[^test-2] `relative 1 on`: do encoders 1–8 report 77–84 with 65 and 63 for single
    steps?
-9. **Colors.** Done (test 4) for indices 0–39 and RGB; 40–127 not yet seen. `palette 0`, `palette 40`, and `palette 80`. Compare with the guide's palette. Is 0
+9. **Colors.** Done for indices 0–39 and RGB;[^test-4] 40–127 not yet seen. `palette 0`, `palette 40`, and `palette 80`. Compare with the guide's palette. Is 0
    off? Then `rgb b11 127 0 0`, and check the Track, Page, Record, Play, and Novation buttons for
    lights.
-10. **Screen.** Done (test 5). `display f1 2`, then `text f1 0 Mix`, `text f1 1 ADI-2`, `text f1 2 -6.0 dB`, and
+10. **Screen.** Done.[^test-5] `display f1 2`, then `text f1 0 Mix`, `text f1 1 ADI-2`, `text f1 2 -6.0 dB`, and
     move fader 1. How many characters fit per field? Then `display stationary 3` with eight names,
     and the `quiet` option (no display on change).
 11. **Bitmap targets** (section 7, item 5), only if a bitmap is wanted later.
 12. **Do level encoders need relative mode?** Part 1 run (2026-11-01, Launch Control 3 layout on
     the XL 3, TotalMix's curve): "pretty smooth". Adam then asked for the ARC USB's scale for volume
     encoders (section 9), which is finer near 0 dB. On it, a slow fade of a send from about −20 dB
-    to off sounded smooth (test 11). **Decided: absolute mode** (Adam, 2026-11-01); relative mode
-    would drop the first step after each reversal and gives nothing Shift could use (test 10).
+    to off sounded smooth.[^test-11] **Decided: absolute mode** (Adam, 2026-11-01); relative mode
+    would drop the first step after each reversal and gives nothing Shift could use.[^test-10]
     The original test: The encoders send 128 values. With TotalMix's own
     curve that is about 0.26 dB a step from −6 to +6 dB, 0.3–0.6 from −20 to −6, 0.6–0.9 from −40
     to −20, and about 1 dB below that (computed from `FaderCurve`). Relative mode would allow finer
-    steps, but drops the first step after a change of direction (test 2). With music playing
+    steps, but drops the first step after a change of direction.[^test-2] With music playing
     through one playback, and `sbdev lcbridge --layout lc3-sim --in-port 7004 --out-port 9004`
     (the bottom encoder row is level):
     1. **Trim.** Set the playback to about −10 dB, then turn up one step at a time to −5. Do the
@@ -281,12 +322,12 @@ and intuitiveness to be assessed).
   source, or the output's own level in the outputs view.
 - **Fader pickup.** The driver turns on the device's pickup (feature 70) and sends each fader's
   level as a position, so the device holds a fader back until it reaches TotalMix's level and
-  shows the target meanwhile (test 3). SurfaceCore's own pickup stays on behind it, with a window
+  shows the target meanwhile.[^test-3] SurfaceCore's own pickup stays on behind it, with a window
   of 12 steps for the first value after the device lets go, in case the device doesn't hold (as in
   one run of test 2).
 - **Fader scale.** The nine ticks printed beside each fader read, top to bottom, +6, +3, 0, −6,
   −10, −20, −40, −60, and off: TotalMix FX's own fader marks (`TOTALMIX-OSC.md`, test 18), placed
-  at the fader values measured at each tick (test 7). Between ticks the gain moves evenly in dB
+  at the fader values measured at each tick.[^test-7] Between ticks the gain moves evenly in dB
   (Adam, 2026-11-01). Level and send encoders use the scale of RME's ARC USB volume wheel, as volume
   controls (Adam, 2026-11-01): its 54 detents from −63.5 to +6 dB (docs/TOTALMIX-OSC.md, test 19),
   spread over the encoder's values so that 0 dB is at 101, as on the faders. That is about 0.2 dB a
@@ -306,15 +347,15 @@ and intuitiveness to be assessed).
   output, so the two never feed the same one. The overlay names the row and its output ("Top row" /
   "> Phones 2"). Page is lit where it would move for the top row, and for the middle row while
   Shift is held. The choices are remembered across launches. Gain is left out for now: TotalMix sends it only for inputs with a preamp, which the
-  project's interfaces don't have. The encoders take positions from the driver (test 2), so they
+  project's interfaces don't have. The encoders take positions from the driver,[^test-2] so they
   never jump.
 - **Shift + turn.** Resets the encoder: a pan to the center, a send to −oo (Adam, 2026-11-01). With
-  Shift held the device reports only that an encoder turned, not which way (tests 9 and 10), so a
-  reset is all it can do. The driver also sends the encoder its new position, since the turn with
-  Shift held left the device's own value where it was (test 9).
+  Shift held the device reports only that an encoder turned, not which way,[^test-9][^test-10] so
+  a reset is all it can do. The driver also sends the encoder its new position, since the turn
+  with Shift held left the device's own value where it was.[^test-9]
 - **Buttons.** The top row is PFL (yellow; dark yellow when off), as on the Roto-Control; the bottom
   row is mute (red; dark red when off). Solo/Arm and Mute/Select do nothing for now: in DAW mode
-  the device leaves them to the host (test 6).
+  the device leaves them to the host.[^test-6]
 - **Paging and views.** Track < and > move by eight strips, as the panel's labels say, and with
   Shift to the first or last page. (Novation's integrations move one track, and eight with Shift.
   Here the order is set in the app, so moving one strip gains nothing, and pages stay on multiples
@@ -332,7 +373,7 @@ and intuitiveness to be assessed).
   picture).
 - **Screen.** Each fader and encoder has a three-line display (arrangement 2): the channel's name,
   what the control does ("Level", "Pan", "> Phones 1"), and the value in dB or as a pan, sent by
-  the driver (test 5). The stationary display, the home screen, has three lines (arrangement 2): the
+  the driver.[^test-5] The stationary display, the home screen, has three lines (arrangement 2): the
   channels on the page, each kind counted on its own ("Inputs 1-7", then "Playbacks 1-8"; "In 6-7, PB
   1-6" for a page with both; Adam, 2026-11-01), and where each send row goes ("Top > Phones 1", "Mid >
   Phones 2"), which nothing else on the device shows (Adam, 2026-11-01). The eight names packed to
@@ -462,7 +503,7 @@ and intuitiveness to be assessed).
 **Consequences.**
 - In DAW mode the device leaves the choice between DAW Mixer and DAW Control to the host: it names the mode on the screen and passes the press on. That the host is meant to answer with a mode message is an inference.
 - The two modes change nothing the device sends, so the driver can ignore them, or treat Solo/Arm and Mute/Select as buttons of its own (e.g., to switch what the encoders control) and send a mode message only to keep the device's screen in step.
-- Custom Modes chosen on the device do switch it, and are reported (test 1).
+- Custom Modes chosen on the device do switch it, and are reported.[^test-1]
 
 ### Test 7 (2026-11-01): the fader values at the printed ticks
 
