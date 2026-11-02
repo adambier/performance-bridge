@@ -118,7 +118,9 @@ the choice to the user; test 2 checks both settings.
 
 - **Entering and leaving.** A host enters DAW mode on connecting and leaves it on quitting, which
   returns the device to standalone mode. Either form works: note 12 on channel 16 (velocity 127
-  to enter, 0 to leave), or SysEx command 02h with 7Fh or 00h.[^prg-daw-mode-control]
+  to enter, 0 to leave), or SysEx command 02h with 7Fh or 00h.[^prg-daw-mode-control] The device
+  echoes the note when the mode changes, and only then: asked for DAW mode while already in it, it
+  sends nothing.[^test-1][^test-14]
 - **SysEx header.** Every SysEx message starts F0h 00h 20h 29h 02h 15h, in both directions, then
   a command byte.[^prg-sysex]
 - **Modes.** DAW mode offers two surface modes, DAW Mixer and DAW Control. The device reports a
@@ -360,7 +362,7 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   encoder and reset it):
   - a pan goes to the center;
   - a level (the Launch Control 3's) above 0 dB comes down to 0 dB, and one at or below 0 dB
-    stays: a reset never makes anything louder;
+    stays: a reset never raises a level;
   - a send goes to −oo, and a second Shift + turn brings it back to where it was;
   - only once Shift has been held 0.3 s with no Page or Track press, and once per encoder per hold
     of Shift.
@@ -371,8 +373,8 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
 - **Buttons.** The top row is PFL (yellow) and the bottom row mute (orange), the colors the
   Roto-Control's firmware gives solo and mute, so every hardware controller shows them alike (Adam,
   2026-11-02). A button that is off shows the dimmest shade of its color, so the two rows stay
-  recognizable (Adam, 2026-11-02). Orange's dimmest shade is index 11.[^test-13] The bright shades are
-  at full brightness; more contrast is left to the device's own LED brightness setting.[^test-13] Solo/Arm and Mute/Select do nothing for now: in DAW mode
+  recognizable (Adam, 2026-11-02). Orange's dimmest shade is index 11.[^test-13] The bright shades
+  have been observed to look as bright as full RGB values; more contrast is left to the device's own LED brightness setting.[^test-13] Solo/Arm and Mute/Select do nothing for now: in DAW mode
   the device leaves them to the host.[^test-6]
 - **Paging and views.** Track < and > move by eight strips, as the panel's labels say, and with
   Shift to the first or last page. (Novation's integrations move one track, and eight with Shift.
@@ -387,11 +389,11 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
 - **Both Track buttons together** go to the first page (Adam, 2026-11-02).
 - **Mute Master.** While TotalMix's Mute Master is off, a mute that is on flashes between bright
   and dim orange (0.4 s each), and pressing a mute shows "Mute Master off / in TotalMix FX" on
-  the screen (Adam, 2026-11-02). The medium shade was too close to the others, and the device
-  can't flash by itself, so the driver flashes it.[^test-15]
+  the screen (Adam, 2026-11-02). The medium shade was too close to the others, and no way to make
+  the device flash a color by itself has been found, so the driver flashes it.[^test-15]
 - **Presence.** While connected, the driver asks for the surface mode (feature control 30) after
   5 s with nothing from the device. If two questions go unanswered, or the answer is a Custom Mode
-  the device never announced, it takes it that the device restarted and lost DAW mode, and enters
+  the device never announced, it assumes that the device restarted and lost DAW mode, and enters
   DAW mode again (Adam, 2026-11-02, from the review of that date). That a restarted device whose
   port stays open answers this way is an inference; a quick unplug and replug tests it.
 - **Colors.** Level and pan encoders show their strip's TotalMix color from the palette; a blank
@@ -610,7 +612,6 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
 
 **Consequences.**
 - Inference (confirmed by test 14): the device echoes the DAW mode note only when the mode changes, so a host asking a device already in DAW mode gets no answer. The driver therefore leaves DAW mode and enters it again when it starts (`startBytes`), which makes a change either way, and it takes only a control moved or pressed as a sign of presence, not the feature replies sent on the way out.
-- Settled by test 14: the device echoes only a change.
 
 ### Test 13 (2026-11-02): button shades and brightness
 
@@ -664,7 +665,7 @@ leaving DAW mode and entering it again (`startBytes`), is what makes the device 
   open in DAW mode.
 - Unplugged and plugged in again within about 2 seconds, the device was found again and drawn.
 - Index 9 sent as a Control Change on channel 2 (`B1 25 09`) or channel 3 (`B2 25 09`) changed
-  nothing: no flashing or pulsing, as on Novation's Launchpads. The programmer's guide describes
+  nothing: no flashing or pulsing, which those channels produce on Novation's Launchpads. The programmer's guide describes
   only channel 1.[^prg-coloring]
 
 **Consequences.**

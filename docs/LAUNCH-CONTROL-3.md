@@ -243,7 +243,8 @@ by Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   lights in its output's color.
 - **Buttons.** Mute, and PFL while Function is held (Adam, 2026-11-02, from the review of that date:
   a toggle could leave the buttons on PFL by mistake on stage). The buttons are orange for mute and
-  yellow for PFL, Function is lit while they are on PFL (if it has an LED, section 4), and the
+  yellow for PFL, Function rests dim yellow and lights bright yellow while they are on PFL (if it
+  has an LED, section 4), and the
   screen names the change. This needs Function to send its release, as the XL 3's buttons do
   (XL 3 test 1; for the Launch Control 3, an inference).
 - **Paging.** Track < and > move by eight strips, and with Shift to the first or last

@@ -84,7 +84,7 @@ Checked on screen with TotalMix FX "2.10 (1)" on a Mac (Adam, 2026-10-31); the s
    this submenu is inferred to be that setting, since TotalMix has no item by that name. The tests ran with it
    checked and Global OSC worked (`docs/TOTALMIX-OSC.md`, section 1); a run with it unchecked hasn't been
    compared, so leave it as it is.
-9. **Mute and PFL.** The hardware controllers' mute and PFL buttons depend on three settings in TotalMix FX's
+9. **Mute and PFL.** The hardware controllers' mute and PFL buttons depend on three settings in TotalMix's
    window (Adam's screenshot of the Control Strip, 2026-11-02):
 
    <img src="../App/PerformanceBridge/Resources/totalmix-control-strip.png" width="160" alt="TotalMix FX's Control Strip: the M, S, and F buttons, and the options panel with solo/pfl mode set to live">
@@ -94,12 +94,13 @@ Checked on screen with TotalMix FX "2.10 (1)" on a Mac (Adam, 2026-10-31); the s
      mute recheck of 2026-10-31). Performance Bridge reads it: while it is off, the menu shows **Mute Master:
      Off**, the Setup Guide shows a warning, and on a Launch Control a mute that is on flashes.
    - **Live mode.** In the Control Strip, click **options** and, under **solo/pfl mode**, choose **live**. Without
-     it, PFL from a hardware controller is accepted but does nothing you can see or hear (test 6). TotalMix
+     it, PFL from a hardware controller is accepted but has been observed to show nothing in TotalMix's window
+     (`docs/TOTALMIX-OSC.md`, test 6). TotalMix
      doesn't send this setting over OSC, so Performance Bridge can't check it; the Setup Guide reminds you.
    - **Where PFL goes.** In the Control Room section, click **assign**, then **Cue/PFL to**, and choose a
      headphone output, e.g., **Phones 1** (Adam's screenshot, 2026-11-02; `docs/TOTALMIX-OSC.md`, test 21). Its
-     default, **Main**, makes PFL take over Main Out, so the audience hears only the channel being checked (test
-     6). TotalMix doesn't send this setting over OSC (test 21), so Performance Bridge can't check it; the Setup
+     default, **Main**, makes PFL replace what Main Out plays, so on stage the audience hears only the channel
+     being checked (test 6). TotalMix doesn't send this setting over OSC (test 21), so Performance Bridge can't check it; the Setup
      Guide reminds you.
 
      <img src="../App/PerformanceBridge/Resources/totalmix-cue-pfl-to.png" width="480" alt="TotalMix FX's control room, with the assign menu open at Cue/PFL to: Main (checked) and Phones 1 to 4">
@@ -146,8 +147,8 @@ the device ID). With more than one Launch Control of the same model connected, i
 lowest device ID.
 
 With a Launch Control chosen, the Connections tab also shows its send rows below Apply. Their outputs can
-be chosen there at any time while TotalMix FX is open, with the Launch Control connected or not, and
-take effect at once (Step 6).
+be chosen there at any time while TotalMix is open, with the Launch Control connected or not, and a
+change takes effect at once (Step 6).
 
 ## Step 4: Start the app
 
@@ -173,9 +174,9 @@ retrying in every state:
   the handshake is under way. **Not Found** means no Roto-Control is connected.
 - With a Launch Control chosen, its line takes the Roto-Control's place: **Launch Control XL 3: Connected**
   means the device has entered DAW mode, **Connecting** that its DAW port is open and the app is asking for
-  DAW mode, and **Not Found** that none of the model chosen in Settings is connected.
+  DAW mode, and **Not Found** that no Launch Control of the model chosen in Settings is connected.
 
-One more line appears only while TotalMix FX's Mute Master is off (Step 1, item 9): **Mute Master: Off**.
+One more line appears only while TotalMix's Mute Master is off (Step 1, item 9): **Mute Master: Off**.
 
 The full reason for any state goes to the log in the Terminal the app was started from.
 
@@ -229,7 +230,7 @@ the main mix) and the cue output (PFL uses it).
 | **Track >** / **Track <** | Show the next or previous eight channels. With **Shift**: the last or first eight. |
 | **Page ▼** / **Page ▲** | Change the output the **top** encoder row feeds, to the next or previous one in the Outputs list. |
 | **Shift + Page ▼** / **▲** | The same for the **middle** encoder row. |
-| **Shift + turn an encoder** | Reset it: a pan to the center, a send to −oo (Shift + turn again to bring it back). Hold Shift for a moment first; after Page or Track in the same hold, turning does nothing. |
+| **Shift + turn an encoder** | Reset it: a pan to the center, a send to −oo (Shift + turn again to bring it back). Hold Shift for a moment (0.3 s) first; after Page or Track in the same hold, turning does nothing. |
 
 - The two send rows never feed the same output: stepping one skips the output the other has.
 - The screen shows the channels on the page, counted in the order of Settings → Channel Layout with a stereo pair
@@ -254,11 +255,11 @@ The Launch Control 3 works the same way, with fewer controls:
 |---|---|
 | Bottom encoder | Level in Main Out |
 | Top encoder | Pan, or a send: **Page ▼** / **▲** steps it through Pan, then each output in the Outputs list |
-| Button | Mute; PFL while **Function** (labeled "DAW" underneath) is held (orange for mute, yellow for PFL, dim when off; Function lights yellow while the buttons are PFL) |
+| Button | Mute; PFL while **Function** (labeled "DAW" underneath) is held (orange for mute, yellow for PFL, dim when off; Function rests dim yellow and lights bright yellow while held) |
 
-Track works as on the XL 3, and Shift + turn resets an encoder as there; a level above 0 dB comes down to 0 dB, and
-one below 0 dB stays. The screen shows the channels on
-the page, the top row's function (e.g., "Top: Pan"), and the buttons' ("Buttons: Mute"). The Launch Control 3 has not been tried on a device yet (`docs/LAUNCH-CONTROL-3.md`).
+Track works as on the XL 3, and Shift + turn resets an encoder as it does there; a level above 0 dB comes down to 0 dB,
+and one at or below 0 dB stays. The screen shows the channels on
+the page, the top row's function (e.g., "Top: Pan"), and the buttons' ("Buttons: Mute"; briefly "Buttons" over "PFL" while Function is held). The Launch Control 3 has not been tried on a device yet (`docs/LAUNCH-CONTROL-3.md`).
 
 ### Roto-Control
 

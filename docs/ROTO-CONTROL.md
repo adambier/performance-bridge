@@ -74,7 +74,7 @@ open.
   - A number that can exceed 127, such as a track index or a track count, takes two bytes, "two 7-bit values".[^sysex-1.6] The high seven bits come first.[^ableton][^bitwig]
   - An RGB color component (0–255) takes two bytes the same way: bit 7 first, then the low seven bits.[^logic]
 - **Names.** A name is 13 bytes of ASCII, ending in a 0 byte and padded with 0 bytes.[^sysex-1.6] That leaves 12 visible characters. Ableton cuts names to 12 characters, and clears the top bit of each byte of a value string.[^ableton] Performance Bridge replaces anything outside printable ASCII with `?`; that choice is this project's.
-- **Pacing.** Ableton waits 5 ms after each SysEx message it sends.[^ableton] The SysEx doc says nothing about pacing. With no pause at all, the Roto-Control took a full track page and a full plugin page without losing a message.[^test-3] `RotoControl` leaves pacing to the transport. `RotoDriver` draws a page at most once every 100 ms (`pageDrawInterval`), drawing a page changed sooner once when due: at every connection, TotalMix's answer to `/sendall` used to redraw the page about 33 times in 0.35 s (review of 2026-11-02), and bursts of SysEx have preceded freezes (test 4, runs 17–20). That the burst could freeze the Roto-Control is an inference (Adam, 2026-11-02).
+- **Pacing.** Ableton waits 5 ms after each SysEx message it sends.[^ableton] The SysEx doc says nothing about pacing. With no pause at all, the Roto-Control took a full track page and a full plugin page without losing a message.[^test-3] `RotoControl` leaves pacing to the transport. `RotoDriver` draws a page at most once every 100 ms (`pageDrawInterval`); a page that changes sooner is drawn once, when the interval is up. Before this, at every connection, TotalMix's answer to `/sendall` redrew the page about 33 times in 0.35 s (review of 2026-11-02), and bursts of SysEx have preceded freezes (test 4, runs 17–19). That the burst could freeze the Roto-Control is an inference (Adam, 2026-11-02).
 
 ## 3. The handshake
 
@@ -598,7 +598,7 @@ colors; after six quick presses each of the right and left arrows, the screens s
 page and the knobs responded; a knob turned within about half a second of a page change behaved as
 expected; pressing both arrows kept the page. No stall.
 
-**Consequence.** Holding page draws back doesn't show on the device. Whether it prevents the
+**Consequence.** Holding page draws back has no visible effect on the device. Whether it prevents the
 freezes seen in test 4 and test 10's run 1 can't be shown by one session; that it helps stays an
 inference.
 

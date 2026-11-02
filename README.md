@@ -31,8 +31,8 @@ hardware controller at a time:
 
 The app has a menu with the connection states, a Setup Guide that checks the setup as it goes, and
 Settings for TotalMix's host and ports, the hardware controller, a Launch Control's send rows, and
-the order and labels of the channels. Everything TotalMix can configure itself (names, colors,
-which channels a controller sees) is set in TotalMix and read from it.
+the order and labels of the channels. Everything TotalMix can configure itself (e.g., names, colors,
+and which channels a controller sees) is set in TotalMix and read from it.
 
 Planned for later releases: the Roto-Control's PLUGIN mode, for the parts of TotalMix that MIX mode
 can't reach (e.g., the control room); more than one hardware controller at once; and a connection to

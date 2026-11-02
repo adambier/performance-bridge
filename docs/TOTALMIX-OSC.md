@@ -62,7 +62,7 @@ with neither a footnote nor a test record behind it is an inference, and says so
 [^test-21]: Test 21 (2026-11-02), section 6: [the Cue/PFL to
     menu](#test-21-2026-11-02-the-cuepfl-to-menu).
 
-**Status.** Nineteen tests so far (section 6). Tests 1–5 cover what TotalMix sends with "Send
+**Status.** Twenty-one tests so far (section 6). Tests 1–5 cover what TotalMix sends with "Send
 faders in linear scale" off and on, and the fader messages it accepts; the later ones cover hiding,
 the control room, settings files, names, groups, and the marks and wheel scales the hardware
 controllers copy.
@@ -76,6 +76,7 @@ controllers copy.
   - Mixer Settings' OSC tab has "Select Controller" 1–4 with an "In Use" box, the two address groups described above, "Send Level Data", "Peak Hold", "Lock Remote to Submix", "Number of faders per bank", "Compatibility (Mode)" (set to "Global OSC"), and a "Details" button.
   - The Details window is titled "Gobal OSC - Detailed Settings" (TotalMix's spelling). Its options are "Send changes", "Send all data on start (enable)", "Send status", "Receive to hidden channels", "Set all faders in group", "Send faders in linear scale", "Re-send received", "Re-send if different", and a bandwidth limit ("None", "500kByte/s", "200kByte/s").
   - On the setup machine, with controller 4, "Send changes", "Send status", and "Send faders in linear scale" were on; "Send all data on start", "Receive to hidden channels", and "Re-send received" were off; the bandwidth limit was 500kByte/s.[^adam-screenshots] Test 1 had "Send faders in linear scale" off, and test 2 had it on.
+  - With "Send changes" on, TotalMix sends a channel's `stereo`, `color`, and `name`, and `/globalmute`, as they change in its window; it sends nothing when "Cue/PFL to" changes.[^test-20][^test-21]
 - **TotalMix's settings files** (read only; Performance Bridge never writes them). On a Mac they are in `~/Library/Application Support/RME TotalMix FX`, one `last.<Model><ID>.xml` file per interface (e.g., `last.DigifaceAES52103031.xml`), next to `rme.totalmix.preferences.xml`, `rme.totalmix.presets.xml`, and workspaces (`.tmws`).[^settings-copy] macOS doesn't let this project's tools read that folder, so Adam copied it into the project folder. TotalMix writes an interface's file when it quits, and at some other moments, but not on every change.[^test-13] So the file can lag what TotalMix shows.
   - Each interface's file has four `OscRemote0` to `OscRemote3` groups, one per OSC controller, with `OSCRemoteInUse`, `OSCOwnPort` (TotalMix's incoming port), `OSCRemotePort` (its outgoing port), `OSCRemoteHost`, `OSCSendLevel`, `OSCChannelsPerBank`, and `OSCCompatibility`. On Adam's Mac the Digiface AES's four were 7001/9001 to 7004/9004. `OSCCompatibility` is 1 for "TotalMix 1.96" and 2 for "Global OSC" (the MADIface's controller 1 read 1 in the file and showed TotalMix 1.96 on screen; the Digiface's Global OSC controllers read 2).[^test-12]
   - Each channel (sections `Inputs`, `Playbacks`, and `Outputs`) has a `Hide State NN` entry and a `Remote Controls NN` entry, among many others. Most entries hold nine numbers; what the nine stand for is unknown (an inference is the current state and eight layouts or snapshots, since the file names eight of each).
@@ -110,7 +111,7 @@ controllers copy.
   - fader groups 1–4 in bits 12–15. The document writes "12..16", taken here to be a slip.
 
   The mute bit[^test-1] and fader group 1's bit (outputs 3/4 and 7/8 are in fader group 1 in TotalMix's window)[^test-17] are confirmed; the solo positions follow from the document. A `groupflags` bit says a channel belongs to a group, whether or not the group is switched on; `/fadergroup/N` (and likewise `/mutegroup`, `/sologroup`) says whether it is on.[^test-17] `TotalMixGroupFlags` decodes the value.
-- **Control-room assignments.** `mainout`, `mainoutb`, `phones1`–`phones4`, `cuechan`, `extinchannel`, and `talkchannel` hold the 0-based number of the assigned channel's left channel, and −1 for none. Main Out = 0 ("Monitors", outputs 1/2), Phones 1 = 2 ("ADI-2 3/4"), and Phones 2 = 6 ("Phones 2", outputs 7/8) were sent and match TotalMix's window.[^test-1] The same reading for the other assignments is an inference.
+- **Control-room assignments.** `mainout`, `mainoutb`, `phones1`–`phones4`, `cuechan`, `extinchannel`, and `talkchannel` hold the 0-based number of the assigned channel's left channel, and −1 for none. Main Out = 0 ("Monitors", outputs 1/2), Phones 1 = 2 ("ADI-2 3/4"), and Phones 2 = 6 ("Phones 2", outputs 7/8) were sent and match TotalMix's window.[^test-1] The same reading for the other assignments is an inference. `cuechan` is the exception: it doesn't report "Cue/PFL to", which TotalMix doesn't send over OSC at all.[^test-21]
 - **Triggers.** For trigger messages (`/undo`, `/sendall`, and so on), a value is optional. A value below 0.5 makes TotalMix ignore the message, so `TotalMixCommand` always sends 1.0.[^rme-doc]
 
 ## 3. Addresses this project uses
@@ -277,7 +278,7 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 
 - **PFL shows only in Live Mode.** `/input/<n>/pfl` 1 was sent and accepted, but the user found no sign of it in TotalMix's window until "Live Mode, PFL replaces Solo" (PFL Mode, in Settings) was turned on; then the channel's Solo/PFL button lit, and clicking it in TotalMix was sent back as `pfl` (seen).[^manual-live-mode]
 - **Live Mode cannot be read.** Turning Live Mode off and on sent nothing, and the reply to `/sendsettings` does not mention it. RME's document lists only the device name, the connection, and the DSP load as status.[^rme-doc]
-- **PFL goes to Main when Cue/PFL to is unassigned.** With `controlroom/cuechan` reported as −1, PFL on a silent input silenced Main, which had been playing another input (seen).[^manual-cue-pfl]
+- **PFL goes to Main when Cue/PFL to is unassigned** (corrected by test 21: "Cue/PFL to" has no unassigned choice; it was set to Main, its default, and `cuechan` doesn't report it). With `controlroom/cuechan` reported as −1, PFL on a silent input silenced Main, which had been playing another input (seen).[^manual-cue-pfl]
 
 ### Test 7 (2026-10-30): color indexes
 
@@ -489,7 +490,7 @@ mono channel's color and name changes were not tried.
 **Consequences.**
 - TotalMix sends `stereo`, `color`, `name`, and `globalmute` on its own when they change in its
   window, so the app follows a recolor, a rename, and Mute Master without asking. This settles the
-  question of settings sent on their own.
+  question of settings sent on their own (formerly in section 5).
 - Splitting a pair names two channels at once, so `SurfaceHub` counts a `/sendall` as answered
   only once three channels have sent a name, stereo, or color (`answerChannels`).
 - After a stereo switch the app has no name for a channel split off, and still lists one joined
