@@ -12,15 +12,6 @@ import LaunchControl
 import SurfaceCore
 #endif
 
-/// What an encoder row of the Launch Control XL 3 controls, chosen in the app.
-public enum LaunchControlRowFunction: String, Codable, Sendable, CaseIterable {
-    /// Each strip's pan (in the mix output, for a source).
-    case pan
-    /// A send: each strip's level into one of the send targets (`SurfaceHub.sendTargets`). Send
-    /// rows take consecutive targets, and Page up and down step them together.
-    case send
-}
-
 /// What the Launch Control driver produces in answer to MIDI or a call: MIDI bytes for the device,
 /// and the core's output for TotalMix and the other surfaces.
 public struct LaunchControlStep: Equatable, Sendable {
@@ -44,16 +35,16 @@ public struct LaunchControlStep: Equatable, Sendable {
 /// **Layers.** The hub gives a surface one knob and one switch per strip. A Launch Control strip
 /// has more (on the XL 3, a fader, three encoders, and two buttons), so the driver adds one hub
 /// surface per layer of controls, all paged together:
-/// - XL 3: the faders (level) with the top buttons (PFL); each encoder row (pan or a send, from
-///   `rowFunctions`), the top row with the bottom buttons (mute).
+/// - XL 3: the faders (level) with the top buttons (PFL); the top encoder row (a send) with the
+///   bottom buttons (mute); the middle encoder row (another send); the bottom encoder row (pan).
 /// - Launch Control 3: the bottom encoder row (level) with the buttons (mute, or PFL after
 ///   Function); the top encoder row (pan or a send, stepped by Page up and down).
 ///
 /// **Controls** (decided with Adam, 2026-11-01; docs/LAUNCH-CONTROL-XL3.md, section 9, and
 /// docs/LAUNCH-CONTROL-3.md, section 9), following the labels and Novation's own DAW integrations:
 /// Track < and > move by eight strips, or with Shift to the first or last page; Page up and down
-/// step the sends; Shift
-/// with Page up shows the sources and with Page down the outputs.
+/// choose the top send row's output, and on the XL 3 Shift + Page the middle row's, each skipping
+/// the other row's. The strips always show the channels (inputs and playbacks), never the outputs.
 ///
 /// **Simulation.** With `layout` `.lc3` and `device` `.xl3`, the Launch Control 3's layout runs on
 /// an XL 3: its top two encoder rows, top button row, Page, Track, Shift, and Mute/Select as
@@ -79,22 +70,18 @@ public struct LaunchControlDriver: Sendable {
     /// The start of the hub surfaces' names; each layer adds its own (e.g., "lcxl-1.faders").
     public let name: String
 
-    /// What the XL 3's three encoder rows control, top to bottom (Pan, Send, Send by default).
-    /// Ignored in the Launch Control 3's layout. Set it with `setRowFunctions(_:hub:now:)`.
-    public private(set) var rowFunctions: [LaunchControlRowFunction] = Self.defaultRows
-
-    /// The XL 3's encoder rows unless the app sets them: Send, Send, Pan, as in Novation's own DAW
-    /// integrations (XL 3 user guide, "DAW Mixer mode" in each DAW's chapter), with pan just above
-    /// the fader (Adam, 2026-11-01).
-    public static let defaultRows: [LaunchControlRowFunction] = [.send, .send, .pan]
-
-    /// XL 3: the first send target of the send rows. Launch Control 3: what the top row controls,
-    /// −1 for pan and n ≥ 0 for send n.
-    public private(set) var sendStep = 0
+    /// The output each send row sends to, by output channel (0-based), as the user last chose it
+    /// with Page (top row) and Shift + Page (middle row): XL 3, two entries, top row first; Launch
+    /// Control 3, one entry, the top row, where `nil` means pan. On the XL 3 `nil` means "the first
+    /// send target the other row isn't using". A choice that isn't a send target now (e.g., hidden
+    /// in TotalMix) is kept, and the row uses another until it comes back. The app can save these
+    /// and pass them back to `init`.
+    public private(set) var sendOutputs: [Int?]
     /// Launch Control 3: whether the buttons are PFL (`true`) or mute.
     public private(set) var buttonsArePFL = false
-    /// The view the strips show.
-    public private(set) var view: ViewKind = .sources
+    /// The send target (an index into `SurfaceHub.sendTargets`) each send row uses now, from
+    /// `sendOutputs` (`resolveSends(_:)`); `nil` for none, or pan on the Launch Control 3.
+    private var sendIndices: [Int?] = []
 
     private var connected = false
     private var inCustomMode = false
@@ -128,11 +115,12 @@ public struct LaunchControlDriver: Sendable {
 
     /// A driver for one device. `name` starts the hub surfaces' names; `layout` is the model whose
     /// layout runs and `device` the model connected (by default the same).
-    public init(name: String, layout: LaunchControlModel, device: LaunchControlModel? = nil) {
+    public init(name: String, layout: LaunchControlModel, device: LaunchControlModel? = nil, sendOutputs: [Int?] = []) {
         self.name = name
         self.layout = layout
         self.device = device ?? layout
-        sendStep = layout == .lc3 ? -1 : 0
+        let rows = layout == .xl3 ? 2 : 1
+        self.sendOutputs = (0..<rows).map { sendOutputs.indices.contains($0) ? sendOutputs[$0] : nil }
     }
 
     /// Whether the device has answered.
@@ -167,6 +155,7 @@ public struct LaunchControlDriver: Sendable {
     /// Adds the layers to the hub, and returns the bytes that start DAW mode. Until the device
     /// answers, `tick(hub:now:)` asks again every `restartInterval`.
     public mutating func start(hub: inout SurfaceHub, now: Double) -> LaunchControlStep {
+        resolveSends(hub)
         for layer in layers {
             _ = hub.addSurface(id(layer), capabilities: capabilities(layer), mode: mode(for: layer, first: page.first), now: now)
         }
@@ -275,15 +264,11 @@ public struct LaunchControlDriver: Sendable {
             guard let (layer, strip) = switchControl(for: element) else { return }
             take(hub.switchPressed(id(layer), strip: strip, now: now), hub: hub, into: &step)
         case .pageUp, .pageDown:
-            if shiftHeld {
-                let next: ViewKind = element == .pageUp ? .sources : .outputs
-                guard next != view else { return }
-                view = next
-                setModes(first: 0, hub: &hub, now: now, into: &step)
-                step.midi += overlay("View", next == .sources ? "Sources" : "Outputs")
-            } else {
-                stepSends(by: element == .pageUp ? -1 : 1, hub: &hub, now: now, into: &step)
-            }
+            // Page steps the top send row's output; on the XL 3, Shift + Page the middle row's
+            // (Adam, 2026-11-01).
+            let row = shiftHeld && layout == .xl3 ? 1 : 0
+            guard !shiftHeld || layout == .xl3 else { return }
+            stepSend(row: row, by: element == .pageUp ? -1 : 1, hub: &hub, now: now, into: &step)
         case .trackLeft, .trackRight:
             // Eight strips a press; with Shift, the first or the last page. Pages always start at
             // a multiple of eight, as on the Roto-Control: the order is set in the app, so there is
@@ -312,54 +297,51 @@ public struct LaunchControlDriver: Sendable {
         }
     }
 
-    /// The range `sendStep` may take: XL 3, so that every send row has a target; Launch Control 3,
-    /// from pan (−1) to the last send.
-    private func sendStepRange(_ hub: SurfaceHub) -> ClosedRange<Int> {
-        let targets = hub.sendTargets.count
-        if layout == .lc3 { return -1...max(targets - 1, -1) }
-        let rows = max(sendRowCount, 1)
-        return 0...(max(targets - 1, 0) / rows * rows)
+    /// Resolves `sendOutputs` against the send targets now: a row's chosen output if it is a
+    /// target and the other row isn't using it, else (XL 3) the first target the other row isn't
+    /// using; on the Launch Control 3, pan if its choice isn't a target.
+    private mutating func resolveSends(_ hub: SurfaceHub) {
+        let targets = hub.sendTargets
+        var used = Set<Int>()
+        var indices: [Int?] = []
+        for choice in sendOutputs {
+            var index = choice.flatMap { targets.firstIndex(of: $0) }
+            if let found = index, used.contains(found) { index = nil }
+            if index == nil, layout == .xl3 {
+                index = targets.indices.first { !used.contains($0) }
+            }
+            if let index { used.insert(index) }
+            indices.append(index)
+        }
+        sendIndices = indices
     }
 
-    /// XL 3: how many encoder rows are sends.
-    private var sendRowCount: Int { rowFunctions.filter { $0 == .send }.count }
+    /// The next send target from `index` in direction `delta` (±1), skipping the other row's;
+    /// `nil` past the end. On the Launch Control 3 the top row runs from pan (−1) to the last send.
+    private func nextSend(row: Int, by delta: Int, hub: SurfaceHub) -> Int?? {
+        let count = hub.sendTargets.count
+        let others = Set(sendIndices.enumerated().filter { $0.offset != row }.compactMap(\.element))
+        let lowest = layout == .lc3 ? -1 : 0
+        var next = (sendIndices.indices.contains(row) ? sendIndices[row] : nil) ?? (layout == .lc3 ? -1 : -delta)
+        repeat { next += delta } while others.contains(next)
+        guard next >= lowest, next < count else { return nil }
+        return .some(next < 0 ? nil : next)
+    }
 
-    /// How far Page moves the sends: a page of them on the XL 3 (as many as there are send rows,
-    /// so that Page shows sends 1–2, then 3–4, and so on), one at a time on the Launch Control 3's
-    /// single top row (Pan, then each send).
-    private var sendPageSize: Int { layout == .lc3 ? 1 : max(sendRowCount, 1) }
-
-    /// Whether Page steps anything in the current view: outputs have no sends.
-    private var pageSteps: Bool { view == .sources && (layout == .lc3 || rowFunctions.contains(.send)) }
-
-    private mutating func stepSends(by delta: Int, hub: inout SurfaceHub, now: Double, into step: inout LaunchControlStep) {
-        guard pageSteps else { return }
-        let range = sendStepRange(hub)
-        let next = min(max(sendStep + delta * sendPageSize, range.lowerBound), range.upperBound)
-        guard next != sendStep else { return }
-        sendStep = next
+    private mutating func stepSend(row: Int, by delta: Int, hub: inout SurfaceHub, now: Double,
+                                   into step: inout LaunchControlStep) {
+        guard sendOutputs.indices.contains(row), let next = nextSend(row: row, by: delta, hub: hub) else { return }
+        // The other rows keep the outputs they show now, so that one row moving never moves
+        // another (a row left to choose for itself would otherwise take the freed output).
+        let targets = hub.sendTargets
+        for (index, resolved) in sendIndices.enumerated() where layout == .xl3 && sendOutputs[index] == nil {
+            sendOutputs[index] = resolved.map { targets[$0] }
+        }
+        sendOutputs[row] = next.map { targets[$0] }
+        resolveSends(hub)
         setModes(first: page.first, hub: &hub, now: now, into: &step)
-        if layout == .lc3 {
-            step.midi += overlay("Top row", sendStep < 0 ? "Pan" : Self.sendLabel(sendName(sendStep, hub: hub)))
-        } else {
-            step.midi += sendOverlay(hub: hub)
-        }
-    }
-
-    /// The overlay after Page on the XL 3: which sends are shown, and on which rows, e.g.
-    /// "Sends 3-4" / "Top: > Phones 1" / "Middle: > Phones 2".
-    private mutating func sendOverlay(hub: SurfaceHub) -> [UInt8] {
-        let rowNames = ["Top", "Middle", "Bottom"]
-        var lines: [String] = []
-        var index = sendStep
-        for (row, function) in rowFunctions.enumerated() where function == .send {
-            let name = hub.sendTargets.indices.contains(index) ? Self.sendLabel(sendName(index, hub: hub)) : "-"
-            lines.append("\(rowNames[row]): \(name)")
-            index += 1
-        }
-        let last = min(sendStep + sendRowCount, hub.sendTargets.count)
-        let title = last > sendStep + 1 ? "Sends \(sendStep + 1)-\(last)" : "Send \(sendStep + 1)"
-        return overlay(title, lines.first ?? "", lines.count > 1 ? lines[1] : nil)
+        let label = next.map { Self.sendLabel(sendName($0, hub: hub)) } ?? "Pan"
+        step.midi += overlay(layout == .lc3 ? "Top row" : row == 0 ? "Top row" : "Middle row", label)
     }
 
     private func sendName(_ index: Int, hub: SurfaceHub) -> String {
@@ -402,36 +384,23 @@ public struct LaunchControlDriver: Sendable {
         case (.xl3, .faders):
             knob = .level
             switchFunction = .pfl
-        case (.xl3, .row0), (.xl3, .row1), (.xl3, .row2):
-            let row = layer == .row0 ? 0 : layer == .row1 ? 1 : 2
-            knob = rowKnob(row)
+        case (.xl3, .row0), (.xl3, .row1):
+            // The two send rows (Adam, 2026-11-01). A row with no target controls nothing.
+            let row = layer == .row0 ? 0 : 1
+            // A row with no target gets a send number past the end, which the hub binds to nothing.
+            knob = (sendIndices.indices.contains(row) ? sendIndices[row] : nil).map { .send($0) } ?? .send(Int.max)
             if layer == .row0 { switchFunction = .mute }
+        case (.xl3, _):
+            knob = .pan
         case (.lc3, .row1):
             knob = .level
             switchFunction = buttonsArePFL ? .pfl : .mute
         case (.lc3, _):
-            knob = sendStep < 0 ? .pan : .send(sendStep)
+            knob = (sendIndices.first ?? nil).map { .send($0) } ?? .pan
         }
-        return .strips(view: view, first: first, knob: knob, switch: switchFunction)
-    }
-
-    /// XL 3: the knob function of encoder row `row`: pan, or the next send after the send rows
-    /// above it.
-    private func rowKnob(_ row: Int) -> KnobFunction {
-        guard rowFunctions.indices.contains(row), rowFunctions[row] == .send else { return .pan }
-        let before = rowFunctions.prefix(row).filter { $0 == .send }.count
-        return .send(sendStep + before)
-    }
-
-    /// Sets what the XL 3's encoder rows control, top to bottom (three values; missing rows are pan).
-    public mutating func setRowFunctions(_ functions: [LaunchControlRowFunction], hub: inout SurfaceHub,
-                                         now: Double) -> LaunchControlStep {
-        rowFunctions = (0..<3).map { functions.indices.contains($0) ? functions[$0] : .pan }
-        let range = sendStepRange(hub)
-        sendStep = min(max(sendStep, range.lowerBound), range.upperBound)
-        var step = LaunchControlStep()
-        setModes(first: page.first, hub: &hub, now: now, into: &step)
-        return step
+        // Always the sources: the outputs are set up in TotalMix FX and left alone during a
+        // performance (Adam, 2026-11-01).
+        return .strips(view: .sources, first: first, knob: knob, switch: switchFunction)
     }
 
     private mutating func setModes(first: Int, hub: inout SurfaceHub, now: Double, into step: inout LaunchControlStep) {
@@ -551,16 +520,14 @@ public struct LaunchControlDriver: Sendable {
     // MARK: - To the device
 
     /// Moves this driver's updates out of a core output (e.g., the hub's answer to TotalMix) and
-    /// into MIDI. If the send targets have changed so that the send step is out of range, the step
-    /// moves back into it.
+    /// into MIDI. If the send targets have changed, the send rows are resolved again
+    /// (`sendOutputs`).
     public mutating func take(_ output: CoreOutput, hub: inout SurfaceHub, now: Double) -> LaunchControlStep {
         var step = LaunchControlStep()
         take(output, hub: hub, into: &step)
-        let range = sendStepRange(hub)
-        if !range.contains(sendStep) {
-            sendStep = min(max(sendStep, range.lowerBound), range.upperBound)
-            setModes(first: page.first, hub: &hub, now: now, into: &step)
-        }
+        let before = sendIndices
+        resolveSends(hub)
+        if sendIndices != before { setModes(first: page.first, hub: &hub, now: now, into: &step) }
         if connected && !inCustomMode { step.midi += drawNavigation(hub: hub) }
         return step
     }
@@ -693,14 +660,13 @@ public struct LaunchControlDriver: Sendable {
         return ValueText.level(position: value)
     }
 
-    /// The stationary display: the view and the strips on the page as its title, and the strips'
+    /// The stationary display: the channels on the page as its title, and the strips'
     /// names, cut to `stationaryNameLength`, in the two rows of four (docs/LAUNCH-CONTROL-XL3.md,
     /// test 5).
     private mutating func drawStationary() -> [UInt8] {
         var bytes = configure(.stationary, .titleAndEightNames, quiet: false)
         let shown = (infos[layers[0]] ?? []).filter { $0 != nil }.count
-        let viewName = view == .sources ? "Sources" : "Outputs"
-        let title = shown == 0 ? viewName : "\(viewName) \(page.first + 1)-\(page.first + shown)"
+        let title = shown == 0 ? "Channels" : "Channels \(page.first + 1)-\(page.first + shown)"
         bytes += text(.stationary, 0, title)
         let names = infos[layers[0]] ?? []
         for index in 0..<Self.stripCount {
@@ -716,15 +682,11 @@ public struct LaunchControlDriver: Sendable {
         var bytes: [UInt8] = []
         bytes += color(.trackLeft, page.first > 0 ? Self.navigationOn : 0)
         bytes += color(.trackRight, page.first + Self.stripCount < page.count ? Self.navigationOn : 0)
-        if shiftHeld {
-            // Shift + Page switches the view: lit toward the other one.
-            bytes += color(.pageUp, view == .outputs ? Self.navigationOn : 0)
-            bytes += color(.pageDown, view == .sources ? Self.navigationOn : 0)
-        } else {
-            let range = sendStepRange(hub)
-            bytes += color(.pageUp, pageSteps && sendStep > range.lowerBound ? Self.navigationOn : 0)
-            bytes += color(.pageDown, pageSteps && sendStep < range.upperBound ? Self.navigationOn : 0)
-        }
+        // Page for the top send row; while Shift is held (XL 3), for the middle row.
+        let row = shiftHeld && layout == .xl3 ? 1 : 0
+        let usable = !shiftHeld || layout == .xl3
+        bytes += color(.pageUp, usable && nextSend(row: row, by: -1, hub: hub) != nil ? Self.navigationOn : 0)
+        bytes += color(.pageDown, usable && nextSend(row: row, by: 1, hub: hub) != nil ? Self.navigationOn : 0)
         if layout == .lc3 { bytes += color(Self.functionButton, buttonsArePFL ? Self.pflOn : Self.functionIdle) }
         return bytes
     }

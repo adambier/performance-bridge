@@ -535,3 +535,11 @@ marked "seen".
 - Earlier tests found 13004–13078 from 0 and 3325–3693 from 16383 (section 6), so from the top the range across all tests is 3256–3693.
 
 **Consequences.** Section 6's hold rule stands, with two additions: a forced release leaves the hold in place, and a knob forced on from 0 lands in the indent. A knob forced past either end in Performance Bridge therefore jumps to near 0 dB (from the bottom) or to about −37 dB (from the top). `SurfaceHub`'s guard against sudden jumps of more than 8,000 counts (`jumpGuard`) catches both (inference from its setting).
+
+### Test 10 (2026-11-01): choosing the second track set
+
+**Setup.** `sbdev bridge`, Roto-Control firmware 3.3.0, MIX mode. Adam pressed both arrow buttons at once; log kept.
+
+**Findings:** the Roto-Control sent SET ALL TRACKS MODE with the master and return tracks (`0C 05 01`), and its screen named the set "MIX-RTN" (seen).
+
+**Consequences.** The driver shows the channels on both track sets (Adam, 2026-11-01); the outputs are no longer shown on any hardware controller.

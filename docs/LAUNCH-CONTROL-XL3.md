@@ -283,13 +283,14 @@ and intuitiveness to be assessed).
   −10, −20, −40, −60, and off: TotalMix FX's own fader marks (`TOTALMIX-OSC.md`, test 18), placed
   at the fader values measured at each tick (test 7). Between ticks the gain moves evenly in dB
   (Adam, 2026-11-01). The encoders keep TotalMix's own fader curve: they have no printed scale.
-- **Encoder rows.** Each row is Pan or Send, set in the app. The default is Send, Send, Pan, the
-  order of Novation's own DAW integrations (Live, Logic Pro, and Cubase in the user guide's "DAW
-  Mixer mode" sections), with pan just above the fader. Send rows take consecutive send targets
-  (control room outputs first). Page up and down move the send rows a page at a time (sends 1–2,
-  then 3–4, and so on, with two send rows), as Page steps the sends in Novation's integrations, and
-  the overlay names the send on each row ("Sends 3-4" / "Top: > ADAT 3/4" / "Middle: > ADAT 5/6").
-  Page is lit where it would move, and dark in the outputs view, which has no sends. Gain is left out for now: TotalMix sends it only for inputs with a preamp, which the
+- **Encoder rows.** Fixed (Adam, 2026-11-01): the top two rows are sends and the bottom row pan,
+  the order of Novation's own DAW integrations (Live, Logic Pro, and Cubase in the user guide's "DAW
+  Mixer mode" sections), with pan just above the fader. Each send row feeds one output, chosen on
+  the device: Page up and down step the top row through the send targets (the Outputs list's order,
+  control room outputs first), and Shift + Page the middle row, each skipping the other row's
+  output, so the two never feed the same one. The overlay names the row and its output ("Top row" /
+  "> Phones 2"). Page is lit where it would move for the top row, and for the middle row while
+  Shift is held. The choices are remembered across launches. Gain is left out for now: TotalMix sends it only for inputs with a preamp, which the
   project's interfaces don't have. The encoders take positions from the driver (test 2), so they
   never jump.
 - **Buttons.** The top row is PFL (yellow; dark yellow when off), as on the Roto-Control; the bottom
@@ -299,9 +300,11 @@ and intuitiveness to be assessed).
   Shift to the first or last page. (Novation's integrations move one track, and eight with Shift.
   Here the order is set in the app, so moving one strip gains nothing, and pages stay on multiples
   of eight, as on the Roto-Control; Shift modifies Track rather than adding a new function; Adam,
-  2026-11-01.) Shift with Page up
-  shows the sources, and with Page down the outputs, and the overlay names the view. While Shift is
-  held, Page lights toward the other view. Page and Track are lit where they would move.
+  2026-11-01.) The strips always show the channels (inputs and playbacks), never the outputs: the
+  outputs are set up in TotalMix FX and left alone during a performance (Adam, 2026-11-01). Page
+  and Track are lit where they would move.
+- **Free buttons.** Solo/Arm, Mute/Select, Record, Play, and the Novation button do nothing, so arm
+  and the transport stay free for a later connection to a DAW (Adam, 2026-11-01).
 - **Colors.** Level and pan encoders show their strip's TotalMix color from the palette (an output
   left white: green for monitoring, blue for sends, as on the Roto-Control); a blank strip is dark.
   A send row shows the color of the output it sends to, the same way, so each row reads as one

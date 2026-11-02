@@ -28,7 +28,7 @@ import LaunchControlDriver
 #endif
 
 /// A Launch Control for the engine to use: which layout runs on which model, its MIDI port, and
-/// (XL 3) what its encoder rows control.
+/// the outputs its send rows were last set to.
 public struct LaunchControlSetting: Equatable, Sendable {
     /// The layout that runs: the XL 3's or the Launch Control 3's.
     public var layout: LaunchControlModel
@@ -36,23 +36,23 @@ public struct LaunchControlSetting: Equatable, Sendable {
     public var device: LaunchControlModel
     /// The name, or part of the name, of its DAW MIDI ports.
     public var portName: String
-    /// What the XL 3's encoder rows control, top to bottom.
-    public var rows: [LaunchControlRowFunction]
+    /// The output each send row was last set to (`LaunchControlDriver.sendOutputs`), as the app
+    /// saved it.
+    public var sendOutputs: [Int?]
 
     /// A setting for `layout` on `device` (by default the same model), with the device's usual DAW
-    /// port name and the driver's default rows (Send, Send, Pan).
+    /// port name and the send rows left to the driver.
     public init(layout: LaunchControlModel, device: LaunchControlModel? = nil, portName: String? = nil,
-                rows: [LaunchControlRowFunction] = LaunchControlDriver.defaultRows) {
+                sendOutputs: [Int?] = []) {
         self.layout = layout
         self.device = device ?? layout
         self.portName = portName ?? (device ?? layout).defaultPortName
-        self.rows = rows
+        self.sendOutputs = sendOutputs
     }
 
     /// A setting from command-line arguments, for trying a Launch Control before the app has a
     /// setting for it: `--launch-control xl3`, `lc3`, or `lc3-sim` (the Launch Control 3's layout on
-    /// an XL 3), with `--launch-control-port NAME` and (XL 3) `--launch-control-rows R,R,R` (each
-    /// `pan` or `send`). `nil` without `--launch-control` or with a value it doesn't know.
+    /// an XL 3), with `--launch-control-port NAME`. `nil` without `--launch-control` or with a value it doesn't know.
     public init?(arguments: [String]) {
         func value(_ option: String) -> String? {
             guard let index = arguments.firstIndex(of: option), index + 1 < arguments.count else { return nil }
@@ -65,12 +65,7 @@ public struct LaunchControlSetting: Equatable, Sendable {
         case "lc3-sim": (layout, device) = (.lc3, .xl3)
         default: return nil
         }
-        var rows = LaunchControlDriver.defaultRows
-        if let text = value("--launch-control-rows") {
-            let parsed = text.split(separator: ",").compactMap { LaunchControlRowFunction(rawValue: $0.lowercased()) }
-            if (1...3).contains(parsed.count) { rows = parsed }
-        }
-        self.init(layout: layout, device: device, portName: value("--launch-control-port"), rows: rows)
+        self.init(layout: layout, device: device, portName: value("--launch-control-port"))
     }
 
     /// The name the menu and the log use: the model, or the simulation's description.
@@ -207,6 +202,9 @@ public final class BridgeEngine: @unchecked Sendable {
     public var onLog: (@Sendable (String) -> Void)?
     /// Called when the status changes.
     public var onStatus: (@Sendable (BridgeStatus) -> Void)?
+    /// Called with the Launch Control's send rows (`LaunchControlDriver.sendOutputs`) whenever the
+    /// user changes them on the device, so the app can save them. Called with the lock released.
+    public var onLaunchControlSendsChange: (@Sendable ([Int?]) -> Void)?
     /// Called with the new layout whenever the app changes it (order, new-page option, or labels),
     /// so the app can save it. Set it before `start()`.
     public var onLayoutChange: (@Sendable (PerformanceLayout) -> Void)?
@@ -235,6 +233,8 @@ public final class BridgeEngine: @unchecked Sendable {
     private var lastLCTry: Double?
     private var lastLCCheck: Double?
     private var openingLC = false
+    /// The Launch Control's send rows as last seen, kept across a reconnection.
+    private var lcSendOutputs: [Int?]?
 
     /// How often the engine checks that the Roto-Control's ports are still there, in seconds.
     static let unplugCheckInterval: Double = 1
@@ -406,14 +406,12 @@ public final class BridgeEngine: @unchecked Sendable {
         switch result {
         case .success(let connection) where running:
             lcMIDI = connection
-            var lc = LaunchControlDriver(name: "launchcontrol", layout: setting.layout, device: setting.device)
+            var lc = LaunchControlDriver(name: "launchcontrol", layout: setting.layout, device: setting.device,
+                                         sendOutputs: lcSendOutputs ?? setting.sendOutputs)
             let started = lc.start(hub: &hub, now: now)
             sendToLaunchControl(started.midi)
-            let rows = setting.layout == .xl3 ? lc.setRowFunctions(setting.rows, hub: &hub, now: now) : LaunchControlStep()
             lcDriver = lc
-            sendToLaunchControl(rows.midi)
             dispatch(started.core)
-            dispatch(rows.core)
             pendingLogs.append("Found the \(setting.name) (\(connection.source.name)); asking for DAW mode")
             lcError = nil
         case .success(let connection):
@@ -575,13 +573,21 @@ public final class BridgeEngine: @unchecked Sendable {
 
     private func fromLaunchControl(_ bytes: [UInt8]) {
         lock.lock()
+        var changedSends: [Int?]?
         if var lc = lcDriver {
             let step = lc.receive(bytes, hub: &hub, now: now)
             lcDriver = lc
             sendToLaunchControl(step.midi)
             dispatch(step.core)
+            if lc.sendOutputs != lcSendOutputs {
+                if lcSendOutputs != nil || lc.sendOutputs != (settings.launchControl?.sendOutputs ?? []) {
+                    changedSends = lc.sendOutputs
+                }
+                lcSendOutputs = lc.sendOutputs
+            }
         }
         lock.unlock()
+        if let changedSends { onLaunchControlSendsChange?(changedSends) }
         publishStatusIfChanged()
     }
 
