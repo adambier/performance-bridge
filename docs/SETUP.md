@@ -232,7 +232,7 @@ The Launch Control 3 works the same way, with fewer controls:
 |---|---|
 | Bottom encoder | Level in Main Out |
 | Top encoder | Pan, or a send: **Page ▼** / **▲** steps it through Pan, then each output in the Outputs list |
-| Button | Mute, or PFL after **Function** (red for mute, yellow for PFL; Function lights yellow while the buttons are PFL) |
+| Button | Mute; PFL while **Function** (labeled "DAW" underneath) is held (red for mute, yellow for PFL; Function lights yellow while the buttons are PFL) |
 
 Track works as on the XL 3, and Shift + turn resets an encoder as there; a level above 0 dB comes down to 0 dB, and
 one below 0 dB stays. The screen shows the channels on

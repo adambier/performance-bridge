@@ -31,7 +31,7 @@ let lcBridgeUsage = """
       the top row's output, Shift + Page the middle row's), the bottom row pan, the top
       buttons PFL, and the bottom buttons mute. Launch Control 3 (or lc3-sim): the bottom
       encoder row is level, the top row pan or a send (Page up and down), the buttons mute,
-      and Function (Mute/Select on an XL 3) switches them to PFL. Holding Shift for 0.3 s
+      and holding Function (Mute/Select on an XL 3) makes them PFL. Holding Shift for 0.3 s
       and turning an encoder resets it: pan to center, a level above 0 dB down to 0 dB, a
       send to -oo and back again.
     """

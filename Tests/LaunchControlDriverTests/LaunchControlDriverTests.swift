@@ -209,6 +209,10 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(function.midi.contains([0xB0, 0x25, LaunchControlDriver.pflOff]), "buttons dark yellow")
         XCTAssertEqual(driver.receive([0xB0, 0x25, 0x7F], hub: &hub, now: 5).core.messages,
                        [TotalMixCommand.set(.input, 0, "pfl", 1)])
+        let release = driver.receive([0xB0, 0x42, 0x00], hub: &hub, now: 5.5)
+        XCTAssertFalse(driver.buttonsArePFL, "PFL only while Function is held")
+        XCTAssertEqual(hub.strips(of: driver.id(.row1))?[0].switchTarget, .mute(keys))
+        XCTAssertTrue(release.midi.contains([0xB0, 0x42, LaunchControlDriver.functionIdle]))
         let level = driver.receive([0xBF, 0x15, 127], hub: &hub, now: 6)
         XCTAssertEqual(level.core.messages.count, 1, "the bottom row's encoders follow, with no pickup")
     }
@@ -226,6 +230,8 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertFalse(driver.buttonsArePFL, "Solo/Arm does nothing")
         _ = driver.receive([0xB0, 0x42, 0x7F], hub: &hub, now: 2)
         XCTAssertTrue(driver.buttonsArePFL, "Mute/Select is Function (66)")
+        _ = driver.receive([0xB0, 0x42, 0x00], hub: &hub, now: 3)
+        XCTAssertFalse(driver.buttonsArePFL)
     }
 
     func testACustomModeStopsDrawingAndDAWMixerDrawsAgain() {

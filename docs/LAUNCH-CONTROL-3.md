@@ -241,9 +241,11 @@ by Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   then each send in order (control room outputs first), as Page does in Novation's own DAW
   integrations.[^ug-daw-mixer] The screen names the choice ("Pan", "> Phones 1"), and a send row
   lights in its output's color.
-- **Buttons.** Mute, switched to PFL by Function. The buttons are red for mute and yellow for PFL,
-  Function is lit while they are on PFL (if it has an LED, section 4), and the screen names the
-  change.
+- **Buttons.** Mute, and PFL while Function is held (Adam, 2026-11-02, from the review of that date:
+  a toggle could leave the buttons on PFL by mistake on stage). The buttons are red for mute and
+  yellow for PFL, Function is lit while they are on PFL (if it has an LED, section 4), and the
+  screen names the change. This needs Function to send its release, as the XL 3's buttons do
+  (XL 3 test 1; for the Launch Control 3, an inference).
 - **Paging.** Track < and > move by eight strips, and with Shift to the first or last
   page.[^xl3-use] The strips always show the channels, never the outputs.
 - **Levels.** Level and send encoders use the ARC USB's scale, as on the XL 3 (about 0.2 dB a

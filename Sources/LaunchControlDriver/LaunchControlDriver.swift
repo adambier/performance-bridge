@@ -37,8 +37,8 @@ public struct LaunchControlStep: Equatable, Sendable {
 /// surface per layer of controls, all paged together:
 /// - XL 3: the faders (level) with the top buttons (PFL); the top encoder row (a send) with the
 ///   bottom buttons (mute); the middle encoder row (another send); the bottom encoder row (pan).
-/// - Launch Control 3: the bottom encoder row (level) with the buttons (mute, or PFL after
-///   Function); the top encoder row (pan or a send, stepped by Page up and down).
+/// - Launch Control 3: the bottom encoder row (level) with the buttons (mute, or PFL while
+///   Function is held); the top encoder row (pan or a send, stepped by Page up and down).
 ///
 /// **Controls** (decided with Adam, 2026-11-01; docs/LAUNCH-CONTROL-XL3.md, section 9, and
 /// docs/LAUNCH-CONTROL-3.md, section 9), following the labels and Novation's own DAW integrations:
@@ -76,7 +76,7 @@ public struct LaunchControlDriver: Sendable {
     /// The output each send row was chosen to send to (`LaunchControlSendRows.choices`). The app
     /// can save these and pass them back to `init`.
     public var sendOutputs: [Int?] { sendRows.choices }
-    /// Launch Control 3: whether the buttons are PFL (`true`) or mute.
+    /// Launch Control 3: whether the buttons are PFL (`true`, while Function is held) or mute.
     public private(set) var buttonsArePFL = false
     /// The send target (an index into `SurfaceHub.sendTargets`) each send row uses now, from
     /// `sendOutputs` (`resolveSends(_:)`); `nil` for none, or pan on the Launch Control 3.
@@ -283,6 +283,14 @@ public struct LaunchControlDriver: Sendable {
             resetThisShift = []
             // Page and Track light for what they do with Shift held, and back on release.
             step.midi += drawNavigation(hub: hub)
+        case .button(Self.functionButton, let pressed) where layout == .lc3:
+            // PFL only while Function is held, so the buttons can't be left on PFL by mistake on
+            // stage (Adam, 2026-11-02, from the review of that date; it was a toggle). Buttons send
+            // 0 on release (XL 3, test 1).
+            guard pressed != buttonsArePFL else { return }
+            buttonsArePFL = pressed
+            setModes(first: page.first, hub: &hub, now: now, into: &step)
+            step.midi += overlay("Buttons", buttonsArePFL ? "PFL" : "Mute")
         case .button(let element, pressed: true):
             pressed(element, hub: &hub, now: now, into: &step)
         default:
@@ -323,10 +331,6 @@ public struct LaunchControlDriver: Sendable {
                 }
             }
             take(output, hub: hub, into: &step)
-        case Self.functionButton where layout == .lc3:
-            buttonsArePFL.toggle()
-            setModes(first: page.first, hub: &hub, now: now, into: &step)
-            step.midi += overlay("Buttons", buttonsArePFL ? "PFL" : "Mute")
         default:
             break
         }
