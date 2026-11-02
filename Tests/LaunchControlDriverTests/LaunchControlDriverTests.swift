@@ -571,4 +571,25 @@ final class LaunchControlDriverTests: XCTestCase {
                        "Shift + Track >: the last page, starting on a multiple of eight")
     }
 
+
+    func testSendRowsResolveAndSetWithoutADriver() {
+        let targets = [2, 4, 6]
+        var xl3 = LaunchControlSendRows(layout: .xl3)
+        XCTAssertEqual(xl3.choices, [nil, nil])
+        XCTAssertEqual(xl3.outputs(targets: targets), [2, 4], "each row takes the first output free")
+        XCTAssertEqual(xl3.available(row: 0, targets: targets), [2, 6])
+        XCTAssertFalse(xl3.set(row: 0, to: 4, targets: targets), "the other row's output")
+        XCTAssertFalse(xl3.set(row: 0, to: nil, targets: targets), "no pan on the XL 3")
+        XCTAssertFalse(xl3.set(row: 0, to: 8, targets: targets), "not a send target")
+        XCTAssertTrue(xl3.set(row: 0, to: 6, targets: targets))
+        XCTAssertEqual(xl3.choices, [6, 4], "the other row is pinned to what it fed")
+        XCTAssertEqual(xl3.outputs(targets: [2, 6]), [6, 2], "an output gone: the row takes a free one")
+        XCTAssertEqual(xl3.choices, [6, 4], "and its choice is kept for when it returns")
+
+        var lc3 = LaunchControlSendRows(layout: .lc3, choices: [4, 6])
+        XCTAssertEqual(lc3.choices, [4], "one row")
+        XCTAssertEqual(lc3.outputs(targets: [2, 6]), [nil], "pan while its output is gone")
+        XCTAssertTrue(lc3.set(row: 0, to: nil, targets: targets))
+        XCTAssertEqual(lc3.outputs(targets: targets), [nil])
+    }
 }

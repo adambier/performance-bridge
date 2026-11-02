@@ -117,13 +117,18 @@ Launch Control 3.
 1. Connect the hardware controller to the Mac by USB. It can be connected before or after the app starts.
 2. In Performance Bridge, open **Settings… → Connections** and choose it from the **Controller** menu
    under Hardware Controller. The Roto-Control is the default.
-3. The app finds the controller by the name of its MIDI port, shown in the **MIDI port** menu below it.
-   The defaults match the usual names: "Roto" for the Roto-Control's port "Roto-Control", and the Launch
-   Controls' DAW ports, "LCXL3 1 DAW" and "LC3 1 DAW" (the part their "… Out" and "… In" ports share).
-   The menu lists the ports connected when Settings opens; choose another one if yours is named
-   differently.
-4. Click **Apply**. With a Launch Control chosen, the Connections tab also shows its send rows, whose outputs
-   can be chosen there once it is connected (Step 6).
+3. Click **Apply**, just below the menu. Apply, **Revert**, and **Defaults** cover TotalMix's settings and the
+   controller; the send rows below them don't need Apply.
+
+The app finds the controller by the names of its MIDI ports, which are fixed for each model, so there is
+no port to choose: the Roto-Control's port "Roto-Control", and a Launch Control's DAW ports ("LCXL3 1 DAW
+In" and "Out" on a Launch Control XL 3, "LC3 1 DAW In" and "Out" on a Launch Control 3, the number being
+the device ID). With more than one Launch Control of the same model connected, it uses the one with the
+lowest device ID.
+
+With a Launch Control chosen, the Connections tab also shows its send rows below Apply. Their outputs can
+be chosen there at any time while TotalMix FX is open, with the Launch Control connected or not, and
+take effect at once (Step 6).
 
 ## Step 4: Start the app
 
@@ -146,10 +151,10 @@ retrying in every state:
   again every 3 seconds. **Port N in Use** means another program has the port the app sends from, so quit
   that program, such as `sbdev`.
 - **Roto-Control: Connected** means the handshake is complete. **Connecting** means the device was found and
-  the handshake is under way. **Not Found** means no MIDI port matches the one in Settings.
+  the handshake is under way. **Not Found** means no Roto-Control is connected.
 - With a Launch Control chosen, its line takes the Roto-Control's place: **Launch Control XL 3: Connected**
   means the device has entered DAW mode, **Connecting** that its DAW port is open and the app is asking for
-  DAW mode, and **Not Found** that no MIDI port matches the one in Settings.
+  DAW mode, and **Not Found** that none of the model chosen in Settings is connected.
 
 The full reason for any state goes to the log in the Terminal the app was started from.
 
@@ -212,8 +217,8 @@ the main mix) and the cue output (PFL uses it).
   screen names the row and its new output, and each send row's lights take the color of the output it feeds.
 - Page and Track are lit where they can move and dark at the ends. While Shift is held, Page lights for the middle
   row.
-- Each row's output is remembered when Performance Bridge restarts and can also be chosen in Settings, at the
-  bottom of the Connections tab.
+- Each row's output is remembered when Performance Bridge restarts. It can also be chosen in Settings, at the
+  bottom of the Connections tab, with the Launch Control connected or not; the change takes effect at once.
 - Solo/Arm, Mute/Select, Record, Play, and the Novation button do nothing, so they stay free for later uses (e.g., a
   connection to a DAW).
 - Level and pan are Main Out's. In TotalMix each submix has its own level and pan for every channel, so TotalMix's
@@ -245,7 +250,8 @@ the same channels.
 - **TotalMix FX: Port N in Use.** Another program has the port. Quit `sbdev` or any other OSC remote.
 - **TotalMix FX: No Answer.** Check that Global OSC is on and that the ports in Settings match TotalMix's
   (Step 1). Then choose **Refresh Channels from TotalMix FX**.
-- **Roto-Control: Not Found.** Check the cable and the MIDI port in Settings (Step 3).
+- **Roto-Control or Launch Control: Not Found.** Check the cable, and that the model chosen in Settings is the
+  one connected (Step 3).
 - **A channel is missing from the hardware controllers.** Check whether TotalMix hides it from the OSC Controller the app uses
   (Step 2).
 

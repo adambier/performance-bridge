@@ -27,27 +27,23 @@ import LaunchControl
 import LaunchControlDriver
 #endif
 
-/// A Launch Control for the engine to use: which layout runs on which model, its MIDI port, and
-/// the outputs its send rows were last set to.
+/// A Launch Control for the engine to use: which layout runs on which model, and its MIDI port.
 public struct LaunchControlSetting: Equatable, Sendable {
     /// The layout that runs: the XL 3's or the Launch Control 3's.
     public var layout: LaunchControlModel
     /// The model connected; the XL 3 with the Launch Control 3's layout for the simulation.
     public var device: LaunchControlModel
-    /// The name, or part of the name, of its DAW MIDI ports.
-    public var portName: String
-    /// The output each send row was last set to (`LaunchControlDriver.sendOutputs`), as the app
-    /// saved it.
-    public var sendOutputs: [Int?]
+    /// The name, or part of the name, of its DAW MIDI ports; `nil` to find them by the model's
+    /// port names (`LaunchControlModel.dawPort(among:)`), as the app does (Adam, 2026-11-02: each
+    /// model's DAW port has a fixed name, so there is nothing for the user to choose).
+    public var portName: String?
 
-    /// A setting for `layout` on `device` (by default the same model), with the device's usual DAW
-    /// port name and the send rows left to the driver.
-    public init(layout: LaunchControlModel, device: LaunchControlModel? = nil, portName: String? = nil,
-                sendOutputs: [Int?] = []) {
+    /// A setting for `layout` on `device` (by default the same model); with no port name, the
+    /// device's DAW ports are found by their names.
+    public init(layout: LaunchControlModel, device: LaunchControlModel? = nil, portName: String? = nil) {
         self.layout = layout
         self.device = device ?? layout
-        self.portName = portName ?? (device ?? layout).defaultPortName
-        self.sendOutputs = sendOutputs
+        self.portName = portName
     }
 
     /// A setting from command-line arguments, for trying a Launch Control before the app has a
@@ -88,6 +84,10 @@ public struct BridgeSettings: Equatable, Sendable {
     public var layout = PerformanceLayout()
     /// A Launch Control to connect, or `nil` for none.
     public var launchControl: LaunchControlSetting?
+    /// Each Launch Control layout's send rows as the app saved them (`LaunchControlSendRows.choices`).
+    /// The engine holds both layouts' rows, connected or not, so the app can set them with no
+    /// device plugged in (Adam, 2026-11-02).
+    public var launchControlSends: [LaunchControlModel: [Int?]] = [:]
     /// Whether to connect the Roto-Control. The app uses one hardware controller at a time (Adam,
     /// 2026-11-01), so it turns this off when a Launch Control is chosen.
     public var rotoEnabled = true
@@ -160,9 +160,10 @@ public struct BridgeStatus: Equatable, Sendable {
     public var launchControlConnected = false
     /// The layout the Launch Control runs (the XL 3's or the Launch Control 3's), or `nil` for none.
     public var launchControlLayout: LaunchControlModel?
-    /// The output each Launch Control send row feeds now (XL 3: top and middle rows; Launch Control
-    /// 3: the top row, `nil` for pan); empty until the driver has started.
-    public var launchControlSends: [Int?] = []
+    /// The output each send row of each Launch Control layout feeds now (XL 3: top and middle rows;
+    /// Launch Control 3: the top row, `nil` for pan), whether or not a device is connected, from the
+    /// send targets TotalMix has shown.
+    public var launchControlSends: [LaunchControlModel: [Int?]] = [:]
     /// The outputs the send controls step through, in order (`SurfaceHub.sendTargets`), with their
     /// names as the strips show them, for choosing a send row's output.
     public var sendTargets: [HomeChoice] = []
@@ -215,9 +216,10 @@ public final class BridgeEngine: @unchecked Sendable {
     public var onLog: (@Sendable (String) -> Void)?
     /// Called when the status changes.
     public var onStatus: (@Sendable (BridgeStatus) -> Void)?
-    /// Called with the Launch Control's send rows (`LaunchControlDriver.sendOutputs`) whenever the
-    /// user changes them on the device, so the app can save them. Called with the lock released.
-    public var onLaunchControlSendsChange: (@Sendable ([Int?]) -> Void)?
+    /// Called with a layout and its send rows' choices (`LaunchControlSendRows.choices`) whenever
+    /// the user changes them, on the device or in the app, so the app can save them. Called with the
+    /// lock released.
+    public var onLaunchControlSendsChange: (@Sendable (LaunchControlModel, [Int?]) -> Void)?
     /// Called with the new layout whenever the app changes it (order, new-page option, or labels),
     /// so the app can save it. Set it before `start()`.
     public var onLayoutChange: (@Sendable (PerformanceLayout) -> Void)?
@@ -246,10 +248,8 @@ public final class BridgeEngine: @unchecked Sendable {
     private var lastLCTry: Double?
     private var lastLCCheck: Double?
     private var openingLC = false
-    /// The Launch Control's send rows as last seen, kept across a reconnection.
-    private var lcSendOutputs: [Int?]?
-    /// The send rows the driver first started with, normalized (`fromLaunchControl`).
-    private var lcInitialSends: [Int?] = []
+    /// Each layout's send rows, kept across a reconnection and while no device is connected.
+    private var sendRows: [LaunchControlModel: LaunchControlSendRows]
 
     /// How often the engine checks that the Roto-Control's ports are still there, in seconds.
     static let unplugCheckInterval: Double = 1
@@ -257,6 +257,11 @@ public final class BridgeEngine: @unchecked Sendable {
     /// An engine for these settings; nothing starts until `start()`.
     public init(settings: BridgeSettings = BridgeSettings()) {
         self.settings = settings
+        var rows: [LaunchControlModel: LaunchControlSendRows] = [:]
+        for model in LaunchControlModel.allCases {
+            rows[model] = LaunchControlSendRows(layout: model, choices: settings.launchControlSends[model] ?? [])
+        }
+        self.sendRows = rows
     }
 
     private var now: Double { Date().timeIntervalSince(startDate) }
@@ -411,9 +416,13 @@ public final class BridgeEngine: @unchecked Sendable {
         openingLC = true
         lock.unlock()
 
-        let result = Result {
-            try MIDIConnection(clientName: "Performance Bridge", sourceName: setting.portName,
-                               destinationName: setting.portName) { [weak self] bytes in
+        let result = Result { () throws -> MIDIConnection in
+            let sources = MIDIConnection.sources().map(\.name)
+            guard let port = setting.portName ?? setting.device.dawPort(among: sources) else {
+                throw MIDIConnectionError.endpointNotFound(setting.device.portPrefix + " … DAW")
+            }
+            return try MIDIConnection(clientName: "Performance Bridge", sourceName: port,
+                                      destinationName: port) { [weak self] bytes in
                 self?.fromLaunchControl(bytes)
             }
         }
@@ -425,8 +434,7 @@ public final class BridgeEngine: @unchecked Sendable {
         case .success(let connection) where running:
             lcMIDI = connection
             var lc = LaunchControlDriver(name: "launchcontrol", layout: setting.layout, device: setting.device,
-                                         sendOutputs: lcSendOutputs ?? setting.sendOutputs)
-            if lcSendOutputs == nil { lcInitialSends = lc.sendOutputs }
+                                         sendOutputs: sendRows[setting.layout]?.choices ?? [])
             let started = lc.start(hub: &hub, now: now)
             sendToLaunchControl(started.midi)
             lcDriver = lc
@@ -557,25 +565,33 @@ public final class BridgeEngine: @unchecked Sendable {
         return hub.layout.isTotalMixOrder(view, in: hub.mirror)
     }
 
-    /// Sets a Launch Control send row's output from the app, as Page does on the device
-    /// (`LaunchControlDriver.setSendOutput`): `nil` is pan, on the Launch Control 3's top row. Does
-    /// nothing while the Launch Control isn't open, or for an output the other row has.
-    public func setLaunchControlSend(row: Int, to output: Int?) {
+    /// Sets a send row's output for a Launch Control layout from the app, as Page does on the device
+    /// (`LaunchControlSendRows.set`): `nil` is pan, on the Launch Control 3's top row. Takes effect
+    /// at once on a connected device running that layout, and is kept for the layout otherwise.
+    /// Does nothing for an output another row feeds or that isn't a send target.
+    public func setLaunchControlSend(layout: LaunchControlModel, row: Int, to output: Int?) {
         lock.lock()
-        var changedSends: [Int?]?
-        if var lc = lcDriver {
+        let before = sendRows[layout]
+        if var lc = lcDriver, lc.layout == layout {
             let step = lc.setSendOutput(row: row, to: output, hub: &hub, now: now)
             lcDriver = lc
             sendToLaunchControl(step.midi)
             dispatch(step.core)
-            if lc.sendOutputs != lcSendOutputs {
-                changedSends = lc.sendOutputs
-                lcSendOutputs = lc.sendOutputs
-            }
+        } else {
+            sendRows[layout]?.set(row: row, to: output, targets: hub.sendTargets)
         }
+        let changed = takeSendRowChange(layout, before: before)
         lock.unlock()
-        if let changedSends { onLaunchControlSendsChange?(changedSends) }
+        if let changed { onLaunchControlSendsChange?(layout, changed) }
         publishStatusIfChanged()
+    }
+
+    /// The layout's new choices, if they changed since `before`: for the layout the driver runs,
+    /// the driver's, copied into `sendRows`. Called with the lock held.
+    private func takeSendRowChange(_ layout: LaunchControlModel, before: LaunchControlSendRows?) -> [Int?]? {
+        if let lc = lcDriver, lc.layout == layout { sendRows[layout] = lc.sendRows }
+        guard let rows = sendRows[layout], rows != before else { return nil }
+        return rows.choices
     }
 
     /// Refreshes the channels from TotalMix (`SurfaceHub.refreshChannels`): asks for its whole
@@ -613,23 +629,19 @@ public final class BridgeEngine: @unchecked Sendable {
 
     private func fromLaunchControl(_ bytes: [UInt8]) {
         lock.lock()
-        var changedSends: [Int?]?
+        var changed: (LaunchControlModel, [Int?])?
         if var lc = lcDriver {
+            let before = sendRows[lc.layout]
             let step = lc.receive(bytes, hub: &hub, now: now)
             lcDriver = lc
             sendToLaunchControl(step.midi)
             dispatch(step.core)
-            if lc.sendOutputs != lcSendOutputs {
-                // Compared with what the driver started with (it fills missing rows with nil), so
-                // that nothing is saved before a row actually changes (review of 2026-11-02).
-                if lcSendOutputs != nil || lc.sendOutputs != lcInitialSends {
-                    changedSends = lc.sendOutputs
-                }
-                lcSendOutputs = lc.sendOutputs
-            }
+            // Compared with the rows the driver started from (both padded to the layout's rows),
+            // so nothing is saved before a row actually changes (review of 2026-11-02).
+            changed = takeSendRowChange(lc.layout, before: before).map { (lc.layout, $0) }
         }
         lock.unlock()
-        if let changedSends { onLaunchControlSendsChange?(changedSends) }
+        if let changed { onLaunchControlSendsChange?(changed.0, changed.1) }
         publishStatusIfChanged()
     }
 
@@ -700,7 +712,9 @@ public final class BridgeEngine: @unchecked Sendable {
         status.launchControlFound = lcMIDI != nil
         status.launchControlConnected = lcDriver?.isConnected ?? false
         status.launchControlLayout = settings.launchControl?.layout
-        status.launchControlSends = lcDriver?.currentSendOutputs(hub: hub) ?? []
+        for (layout, rows) in sendRows {
+            status.launchControlSends[layout] = rows.outputs(targets: hub.sendTargets)
+        }
         status.sendTargets = hub.sendTargets.map { output in
             let ref = ChannelRef(.output, output)
             let name = hub.layout.label(for: ref) ?? hub.mirror.channels[ref]?.name ?? "Output \(output + 1)"

@@ -192,18 +192,16 @@ struct SavedSettings: Equatable {
     var host = TotalMixEndpoint.standard.host
     var incomingPort = Int(TotalMixEndpoint.standard.incomingPort)
     var outgoingPort = Int(TotalMixEndpoint.standard.outgoingPort)
+    /// The hardware controller. Its MIDI ports are found by their names, which are fixed for each
+    /// model (Adam, 2026-11-02), so there is no port setting; port names saved by earlier builds
+    /// are ignored.
     var controller = ControllerChoice.roto
-    var rotoPortName = BridgeSettings().rotoPortName
-    /// The Launch Control's DAW ports, by name or part of it; the model's usual name by default.
-    var launchControlPortName = LaunchControlModel.xl3.defaultPortName
 
     private enum Key {
         static let host = "totalMixHost"
         static let incomingPort = "totalMixIncomingPort"
         static let outgoingPort = "totalMixOutgoingPort"
         static let controller = "hardwareController"
-        static let rotoPortName = "rotoPortName"
-        static let launchControlPortName = "launchControlPortName"
     }
 
     static func load(_ defaults: UserDefaults = .standard) -> SavedSettings {
@@ -212,9 +210,6 @@ struct SavedSettings: Equatable {
         if let port = defaults.object(forKey: Key.incomingPort) as? Int, SavedSettings.isPort(port) { saved.incomingPort = port }
         if let port = defaults.object(forKey: Key.outgoingPort) as? Int, SavedSettings.isPort(port) { saved.outgoingPort = port }
         if let raw = defaults.string(forKey: Key.controller), let choice = ControllerChoice(rawValue: raw) { saved.controller = choice }
-        if let name = defaults.string(forKey: Key.rotoPortName), !name.isEmpty { saved.rotoPortName = name }
-        if let model = saved.controller.launchControl { saved.launchControlPortName = model.defaultPortName }
-        if let name = defaults.string(forKey: Key.launchControlPortName), !name.isEmpty { saved.launchControlPortName = name }
         return saved
     }
 
@@ -223,38 +218,15 @@ struct SavedSettings: Equatable {
         defaults.set(incomingPort, forKey: Key.incomingPort)
         defaults.set(outgoingPort, forKey: Key.outgoingPort)
         defaults.set(controller.rawValue, forKey: Key.controller)
-        defaults.set(rotoPortName, forKey: Key.rotoPortName)
-        defaults.set(launchControlPortName, forKey: Key.launchControlPortName)
     }
 
     static func isPort(_ value: Int) -> Bool { (1...65_535).contains(value) }
 
-    /// Chooses a hardware controller; a Launch Control port left at the previous model's usual
-    /// name follows the new model's.
-    mutating func choose(_ choice: ControllerChoice) {
-        let usual = LaunchControlModel.allPortDefaults
-        if let model = choice.launchControl, usual.contains(launchControlPortName) {
-            launchControlPortName = model.defaultPortName
-        }
-        controller = choice
-    }
-
-    /// The port name of the chosen hardware controller.
-    var portName: String {
-        get { controller == .roto ? rotoPortName : launchControlPortName }
-        set { if controller == .roto { rotoPortName = newValue } else { launchControlPortName = newValue } }
-    }
-
     /// Whether every field can be used.
     var isValid: Bool {
         !host.trimmingCharacters(in: .whitespaces).isEmpty && Self.isPort(incomingPort) && Self.isPort(outgoingPort)
-            && incomingPort != outgoingPort && !portName.trimmingCharacters(in: .whitespaces).isEmpty
+            && incomingPort != outgoingPort
     }
-}
-
-extension LaunchControlModel {
-    /// Both models' usual DAW port names.
-    static var allPortDefaults: Set<String> { [LaunchControlModel.xl3.defaultPortName, LaunchControlModel.lc3.defaultPortName] }
 }
 
 /// The engine and its latest status, for the menu.
@@ -329,7 +301,7 @@ final class BridgeModel: ObservableObject {
     private var rotoWorkedKey: String { "rotoWorked \(engine.settings.rotoPortName)" }
     private var launchControlWorkedKey: String {
         let setting = engine.settings.launchControl
-        return "launchControlWorked \(setting?.name ?? "") \(setting?.portName ?? "")"
+        return "launchControlWorked \(setting?.name ?? "")"
     }
 
     /// A new watch for the engine's settings, with what has worked with them before.
@@ -401,7 +373,6 @@ final class BridgeModel: ObservableObject {
         settings.endpoint = TotalMixEndpoint(host: saved.host.trimmingCharacters(in: .whitespaces),
                                              incomingPort: overrides.incoming ?? UInt16(saved.incomingPort),
                                              outgoingPort: overrides.outgoing ?? UInt16(saved.outgoingPort))
-        settings.rotoPortName = saved.rotoPortName.trimmingCharacters(in: .whitespaces)
         settings.playbacksOnNewPage = UserDefaults.standard.bool(forKey: "playbacksOnNewPage")
         settings.layout = savedLayout()
         // Level and pan always go to Main Out (the Mix Output menu was dropped; Adam, 2026-11-01),
@@ -410,13 +381,13 @@ final class BridgeModel: ObservableObject {
         // One hardware controller at a time: the one chosen in Settings, or a Launch Control from the
         // command line.
         settings.launchControl = LaunchControlSetting(arguments: CommandLine.arguments)
-            ?? saved.controller.launchControl.map {
-                LaunchControlSetting(layout: $0, portName: saved.launchControlPortName.trimmingCharacters(in: .whitespaces))
-            }
+            ?? saved.controller.launchControl.map { LaunchControlSetting(layout: $0) }
         settings.rotoEnabled = settings.launchControl == nil
-        if let layout = settings.launchControl?.layout,
-           let saved = UserDefaults.standard.array(forKey: sendsKey(layout)) as? [Int] {
-            settings.launchControl?.sendOutputs = saved.map { $0 < 0 ? nil : $0 }
+        // Both layouts' send rows, so either can be set in Settings with no device connected.
+        for layout in LaunchControlModel.allCases {
+            if let saved = UserDefaults.standard.array(forKey: sendsKey(layout)) as? [Int] {
+                settings.launchControlSends[layout] = saved.map { $0 < 0 ? nil : $0 }
+            }
         }
         return settings
     }
@@ -437,10 +408,8 @@ final class BridgeModel: ObservableObject {
         engine.onLayoutChange = { layout in
             if let data = try? JSONEncoder().encode(layout) { UserDefaults.standard.set(data, forKey: Self.layoutKey) }
         }
-        let sendsLayout = engine.settings.launchControl?.layout
-        engine.onLaunchControlSendsChange = { outputs in
-            guard let sendsLayout else { return }
-            UserDefaults.standard.set(outputs.map { $0 ?? -1 }, forKey: Self.sendsKey(sendsLayout))
+        engine.onLaunchControlSendsChange = { layout, outputs in
+            UserDefaults.standard.set(outputs.map { $0 ?? -1 }, forKey: Self.sendsKey(layout))
         }
         // For now the log goes to the Terminal the app was started from.
         engine.onLog = { line in

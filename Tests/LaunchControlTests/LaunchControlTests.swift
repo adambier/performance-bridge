@@ -158,4 +158,18 @@ final class LaunchControlTests: XCTestCase {
         var parser = LaunchControlParser()
         XCTAssertEqual(parser.feed(LaunchControlModel.lc3.sysExHeader + [0x09, 0x7F, 0xF7]), [.bitmapReady])
     }
+
+    func testTheDAWPortIsFoundByNameWithTheLowestDeviceID() {
+        // CoreMIDI's sources on Adam's Mac (docs/LAUNCH-CONTROL-XL3.md, section 2).
+        let mac = ["Roto-Control", "LCXL3 1 MIDI Out", "LCXL3 1 DAW Out"]
+        XCTAssertEqual(LaunchControlModel.xl3.dawPort(among: mac), "LCXL3 1 DAW")
+        XCTAssertNil(LaunchControlModel.lc3.dawPort(among: mac), "an XL 3's ports are not a Launch Control 3's")
+        // Linux's names, as in Bitwig's guide.
+        XCTAssertEqual(LaunchControlModel.xl3.dawPort(among: ["LCXL3 1 LCXL3 1 DAW Out"]), "LCXL3 1 DAW")
+        // Two units: the lowest device ID.
+        XCTAssertEqual(LaunchControlModel.xl3.dawPort(among: ["LCXL3 3 DAW Out", "LCXL3 2 DAW Out", "LCXL3 2 MIDI Out"]),
+                       "LCXL3 2 DAW")
+        XCTAssertEqual(LaunchControlModel.lc3.dawPort(among: ["LC3 1 MIDI Out", "LC3 1 DAW Out"]), "LC3 1 DAW")
+        XCTAssertNil(LaunchControlModel.xl3.dawPort(among: []))
+    }
 }

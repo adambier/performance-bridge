@@ -70,13 +70,12 @@ public struct LaunchControlDriver: Sendable {
     /// The start of the hub surfaces' names; each layer adds its own (e.g., "lcxl-1.faders").
     public let name: String
 
-    /// The output each send row sends to, by output channel (0-based), as the user last chose it
-    /// with Page (top row) and Shift + Page (middle row): XL 3, two entries, top row first; Launch
-    /// Control 3, one entry, the top row, where `nil` means pan. On the XL 3 `nil` means "the first
-    /// send target the other row isn't using". A choice that isn't a send target now (e.g., hidden
-    /// in TotalMix) is kept, and the row uses another until it comes back. The app can save these
-    /// and pass them back to `init`.
-    public private(set) var sendOutputs: [Int?]
+    /// The send rows' chosen outputs (`LaunchControlSendRows`), as the user last chose them with
+    /// Page (top row) and Shift + Page (middle row) or in the app.
+    public private(set) var sendRows: LaunchControlSendRows
+    /// The output each send row was chosen to send to (`LaunchControlSendRows.choices`). The app
+    /// can save these and pass them back to `init`.
+    public var sendOutputs: [Int?] { sendRows.choices }
     /// Launch Control 3: whether the buttons are PFL (`true`) or mute.
     public private(set) var buttonsArePFL = false
     /// The send target (an index into `SurfaceHub.sendTargets`) each send row uses now, from
@@ -134,8 +133,7 @@ public struct LaunchControlDriver: Sendable {
         self.name = name
         self.layout = layout
         self.device = device ?? layout
-        let rows = layout == .xl3 ? 2 : 1
-        self.sendOutputs = (0..<rows).map { sendOutputs.indices.contains($0) ? sendOutputs[$0] : nil }
+        self.sendRows = LaunchControlSendRows(layout: layout, choices: sendOutputs)
     }
 
     /// Whether the device has answered.
@@ -334,26 +332,9 @@ public struct LaunchControlDriver: Sendable {
         }
     }
 
-    /// Resolves `sendOutputs` against the send targets now: a row's chosen output if it is a
-    /// target and the other row isn't using it, else (XL 3) the first target the other row isn't
-    /// using; on the Launch Control 3, pan if its choice isn't a target.
+    /// Resolves the send rows against the send targets now (`LaunchControlSendRows.indices`).
     private mutating func resolveSends(_ hub: SurfaceHub) {
-        let targets = hub.sendTargets
-        // Each row's own choice first, so that a row whose output has gone never takes the other
-        // row's chosen output (review of 2026-11-02); a duplicate loses. Then, on the XL 3, the
-        // rows left without one take the first target neither row uses.
-        var indices: [Int?] = sendOutputs.map { $0.flatMap { targets.firstIndex(of: $0) } }
-        var used = Set<Int>()
-        for row in indices.indices {
-            if let index = indices[row], !used.insert(index).inserted { indices[row] = nil }
-        }
-        if layout == .xl3 {
-            for row in indices.indices where indices[row] == nil {
-                indices[row] = targets.indices.first { !used.contains($0) }
-                if let index = indices[row] { used.insert(index) }
-            }
-        }
-        sendIndices = indices
+        sendIndices = sendRows.indices(targets: hub.sendTargets)
     }
 
     /// The next send target from `index` in direction `delta` (±1), skipping the other row's;
@@ -371,13 +352,8 @@ public struct LaunchControlDriver: Sendable {
     private mutating func stepSend(row: Int, by delta: Int, hub: inout SurfaceHub, now: Double,
                                    into step: inout LaunchControlStep) {
         guard sendOutputs.indices.contains(row), let next = nextSend(row: row, by: delta, hub: hub) else { return }
-        // The other rows keep the outputs they show now, so that one row moving never moves
-        // another (a row left to choose for itself would otherwise take the freed output).
         let targets = hub.sendTargets
-        for (index, resolved) in sendIndices.enumerated() where layout == .xl3 && sendOutputs[index] == nil {
-            sendOutputs[index] = resolved.map { targets[$0] }
-        }
-        sendOutputs[row] = next.map { targets[$0] }
+        guard sendRows.set(row: row, to: next.map { targets[$0] }, targets: targets) else { return }
         resolveSends(hub)
         setModes(first: page.first, hub: &hub, now: now, into: &step)
         let label = next.map { Self.sendLabel(sendName($0, hub: hub)) } ?? "Pan"
@@ -397,16 +373,8 @@ public struct LaunchControlDriver: Sendable {
     public mutating func setSendOutput(row: Int, to output: Int?, hub: inout SurfaceHub, now: Double) -> LaunchControlStep {
         var step = LaunchControlStep()
         let targets = hub.sendTargets
-        guard sendOutputs.indices.contains(row) else { return step }
         let index = output.flatMap { targets.firstIndex(of: $0) }
-        if output != nil && index == nil { return step }
-        if output == nil && layout == .xl3 { return step }
-        let others = Set(sendIndices.enumerated().filter { $0.offset != row }.compactMap(\.element))
-        if let index, others.contains(index) { return step }
-        for (other, resolved) in sendIndices.enumerated() where layout == .xl3 && sendOutputs[other] == nil {
-            sendOutputs[other] = resolved.map { targets[$0] }
-        }
-        sendOutputs[row] = output
+        guard sendRows.set(row: row, to: output, targets: targets) else { return step }
         resolveSends(hub)
         setModes(first: page.first, hub: &hub, now: now, into: &step)
         let label = index.map { Self.sendLabel(sendName($0, hub: hub)) } ?? "Pan"

@@ -13,15 +13,60 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertNil(LaunchControlSetting(arguments: ["app", "--launch-control", "mk2"]))
         let xl3 = LaunchControlSetting(arguments: ["app", "--launch-control", "xl3"])
         XCTAssertEqual(xl3?.layout, .xl3)
-        XCTAssertEqual(xl3?.portName, "LCXL3 1 DAW")
-        XCTAssertEqual(xl3?.sendOutputs, [])
+        XCTAssertNil(xl3?.portName, "found by name unless given")
         XCTAssertEqual(xl3?.name, "Launch Control XL 3")
         let sim = LaunchControlSetting(arguments: ["app", "--launch-control", "lc3-sim", "--launch-control-port", "LCXL3 2 DAW"])
         XCTAssertEqual(sim?.layout, .lc3)
         XCTAssertEqual(sim?.device, .xl3)
         XCTAssertEqual(sim?.portName, "LCXL3 2 DAW")
         XCTAssertEqual(sim?.name, "Launch Control 3 on a Launch Control XL 3")
-        XCTAssertEqual(LaunchControlSetting(arguments: ["app", "--launch-control", "lc3"])?.portName, "LC3 1 DAW")
+        XCTAssertEqual(LaunchControlSetting(arguments: ["app", "--launch-control", "lc3"])?.device, .lc3)
+    }
+
+    func testTheEngineHoldsBothLayoutsSendRowsWithNoDevice() throws {
+        #if os(Windows)
+        throw XCTSkip("No UDP sockets on Windows yet")
+        #else
+        var probe: UDPSocket? = try UDPSocket(listeningOn: 0, localOnly: true)
+        let port = try XCTUnwrap(probe?.localPort)
+        probe = nil
+        let endpoint = TotalMixEndpoint(host: "127.0.0.1", incomingPort: 9, outgoingPort: port)
+        var settings = BridgeSettings(endpoint: endpoint, rotoPortName: "No such port here", retryInterval: 0.2)
+        settings.rotoEnabled = false
+        settings.launchControlSends = [.lc3: [nil]]
+        let engine = BridgeEngine(settings: settings)
+        let saved = SavedRows()
+        engine.onLaunchControlSendsChange = { layout, choices in saved.append(layout, choices) }
+        engine.start()
+        defer { engine.stop() }
+
+        let sender = try UDPSocket(listeningOn: 0, localOnly: true)
+        for (channel, name) in [(0, "Main"), (2, "Phones 1"), (4, "Phones 2"), (6, "Line 7/8")] {
+            try sender.send(OSCMessage("/output/\(channel)/name", [.string(name)]).encoded(), to: "127.0.0.1", port: port)
+        }
+        try sender.send(OSCMessage("/controlroom/mainout", [.float(0)]).encoded(), to: "127.0.0.1", port: port)
+        let deadline = Date().addingTimeInterval(3)
+        while Date() < deadline, engine.status.sendTargets.count < 3 { Thread.sleep(forTimeInterval: 0.05) }
+        let targets = engine.status.sendTargets.map(\.output)
+        XCTAssertGreaterThanOrEqual(targets.count, 3)
+        guard targets.count >= 3 else { return }
+
+        // No Launch Control is connected, yet both layouts' rows resolve against TotalMix's outputs.
+        XCTAssertEqual(engine.status.launchControlSends[.xl3], [targets[0], targets[1]])
+        XCTAssertEqual(engine.status.launchControlSends[.lc3], [nil], "pan")
+
+        engine.setLaunchControlSend(layout: .xl3, row: 1, to: targets[2])
+        XCTAssertEqual(engine.status.launchControlSends[.xl3], [targets[0], targets[2]])
+        engine.setLaunchControlSend(layout: .xl3, row: 0, to: targets[2])   // the other row's: refused
+        XCTAssertEqual(engine.status.launchControlSends[.xl3], [targets[0], targets[2]])
+        engine.setLaunchControlSend(layout: .lc3, row: 0, to: targets[1])
+        XCTAssertEqual(engine.status.launchControlSends[.lc3], [targets[1]])
+
+        // The row the user didn't touch is pinned to what it showed, so it can't move later.
+        XCTAssertEqual(saved.all.map(\.0), [.xl3, .lc3])
+        XCTAssertEqual(saved.all.first?.1, [targets[0], targets[2]])
+        XCTAssertEqual(saved.all.last?.1, [targets[1]])
+        #endif
     }
 
     func testMonitoringChoicesInOutputOrderWithNamesAndRoles() {
@@ -396,4 +441,12 @@ private final class SavedLayouts: @unchecked Sendable {
     private var layouts: [PerformanceLayout] = []
     func append(_ layout: PerformanceLayout) { lock.lock(); layouts.append(layout); lock.unlock() }
     var all: [PerformanceLayout] { lock.lock(); defer { lock.unlock() }; return layouts }
+}
+
+/// The send rows the engine reported, for a test.
+private final class SavedRows: @unchecked Sendable {
+    private let lock = NSLock()
+    private var rows: [(LaunchControlModel, [Int?])] = []
+    func append(_ layout: LaunchControlModel, _ choices: [Int?]) { lock.lock(); rows.append((layout, choices)); lock.unlock() }
+    var all: [(LaunchControlModel, [Int?])] { lock.lock(); defer { lock.unlock() }; return rows }
 }

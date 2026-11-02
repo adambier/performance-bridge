@@ -107,7 +107,7 @@ public enum SetupChecklist {
                                    detail: "If it stays here, quit any other program that talks to the Roto-Control, such as a DAW with its Roto-Control integration."))
         } else {
             steps.append(SetupStep(id: "roto", title: "Roto-Control not found", state: .waiting,
-                                   detail: "Connect the Roto-Control by USB. If it’s connected, choose its MIDI port in Performance Bridge’s Settings."))
+                                   detail: "Connect the Roto-Control by USB. If it’s connected, try another cable or USB port."))
         }
 
         if let name = status.launchControlName {
@@ -118,7 +118,7 @@ public enum SetupChecklist {
                                        detail: "If it stays here, quit any other program that uses its DAW ports, such as a DAW with its Launch Control integration."))
             } else {
                 steps.append(SetupStep(id: "launchcontrol", title: "\(name) not found", state: .waiting,
-                                       detail: "Connect the Launch Control by USB. If it’s connected, choose its DAW port in Performance Bridge’s Settings, on the Connections tab (MIDI port)."))
+                                       detail: "Connect the Launch Control by USB. If it’s connected, check that the model chosen in Performance Bridge’s Settings, on the Connections tab, is the one connected, then try another cable or USB port."))
             }
         }
 
