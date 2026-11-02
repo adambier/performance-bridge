@@ -74,7 +74,7 @@ the command line with `--in-port` and `--out-port`. The connection log goes to t
 
 A Launch Control can be tried alongside the Roto-Control before Settings has a place for it:
 `--launch-control xl3` for a Launch Control XL 3, `lc3` for a Launch Control 3, or `lc3-sim` for
-the Launch Control 3's layout on an XL 3, with `--launch-control-rows pan,send,send` for the XL 3's
+the Launch Control 3's layout on an XL 3, with `--launch-control-rows send,send,pan` for the XL 3's
 encoder rows and `--launch-control-port NAME` for another MIDI port. The menu then shows a third
 status line.
 

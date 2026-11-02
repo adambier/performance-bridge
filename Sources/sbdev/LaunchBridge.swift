@@ -21,16 +21,16 @@ let lcBridgeUsage = """
           --layout: xl3 (the default) for a Launch Control XL 3; lc3 for a Launch Control 3;
           lc3-sim for the Launch Control 3's layout on a Launch Control XL 3.
           --rows: what the XL 3's encoder rows control, top to bottom, each pan or send
-          (default pan,send,send).
+          (default send,send,pan, as in Novation's own DAW integrations).
           --port names the device's DAW ports (default "LCXL3 1 DAW", or "LC3 1 DAW" for lc3).
           --host, --in-port, and --out-port are TotalMix's, as for monitor. --home is the home
           submix's output number, counting from 1 (default: TotalMix's Main Out).
           Stop sbdev monitor, sbdev bridge, and the app first: they need the same ports.
 
-      On the device: Page up and down move by eight strips; Shift with Page up shows the
-      sources, with Page down the outputs; Track < and > step the sends. XL 3: faders are
+      On the device: Track < and > move by eight strips, or one with Shift; Page up and down
+      step the sends; Shift with Page up shows the sources, with Page down the outputs. XL 3: faders are
       level, top buttons PFL, bottom buttons mute. Launch Control 3 (or lc3-sim): the bottom
-      encoder row is level, the top row pan or a send (Track < >), the buttons mute, and
+      encoder row is level, the top row pan or a send (Page up and down), the buttons mute, and
       Function (Mute/Select on an XL 3) switches them to PFL.
     """
 
@@ -48,7 +48,7 @@ struct LaunchBridgeOptions {
     var endpoint = TotalMixEndpoint.standard
     var layout = LaunchControlModel.xl3
     var device = LaunchControlModel.xl3
-    var rows: [LaunchControlRowFunction] = [.pan, .send, .send]
+    var rows = LaunchControlDriver.defaultRows
     var rowsGiven = false
     var portName: String?
     var home: Int?
@@ -82,7 +82,7 @@ func parseLaunchBridgeOptions(_ arguments: ArraySlice<String>) -> LaunchBridgeOp
             }
         case "--rows":
             guard let rows = parseRowFunctions(value(argument).split(separator: ",").map(String.init)) else {
-                fail("--rows takes up to three of pan and send, separated by commas (e.g., pan,send,send).")
+                fail("--rows takes up to three of pan and send, separated by commas (e.g., send,send,pan).")
             }
             options.rows = rows
             options.rowsGiven = true
@@ -143,7 +143,7 @@ final class LaunchBridgeSession: @unchecked Sendable {
         if options.layout == .xl3 {
             send(driver.setRowFunctions(options.rows, hub: &hub, now: now))
         } else if options.rowsGiven {
-            log("--rows is for the XL 3's layout; the Launch Control 3's top row is stepped with Track < and >.")
+            log("--rows is for the XL 3's layout; the Launch Control 3's top row is stepped with Page up and down.")
         }
 
         let ticker = Thread { [weak self] in

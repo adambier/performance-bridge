@@ -248,6 +248,23 @@ port names.
     move fader 1. How many characters fit per field? Then `display stationary 3` with eight names,
     and the `quiet` option (no display on change).
 11. **Bitmap targets** (section 7, item 5), only if a bitmap is wanted later.
+12. **Do level encoders need relative mode?** The encoders send 128 values. With TotalMix's own
+    curve that is about 0.26 dB a step from −6 to +6 dB, 0.3–0.6 from −20 to −6, 0.6–0.9 from −40
+    to −20, and about 1 dB below that (computed from `FaderCurve`). Relative mode would allow finer
+    steps, but drops the first step after a change of direction (test 2). With music playing
+    through one playback, and `sbdev lcbridge --layout lc3-sim --in-port 7004 --out-port 9004`
+    (the bottom encoder row is level):
+    1. **Trim.** Set the playback to about −10 dB, then turn up one step at a time to −5. Do the
+       steps sound smooth?
+    2. **Targets.** Set 0.0 dB, then −3.0 (the nearest values are −3.12 and −2.86). Close enough?
+    3. **Sweep.** From off to about 0 dB in one quick turn: how far did the encoder turn, and was
+       that comfortable?
+    4. **Fade.** From −20 dB down to off, slowly. Smooth, or audibly stepped?
+    5. The same on a send, in the XL 3's layout (`--layout xl3`, a send row), into the phones.
+
+    Keep absolute mode if 1, 2, and 4 sound smooth and 3 is comfortable. If trims or fades are
+    audibly stepped, or 2 is too coarse, use relative mode with finer steps (e.g., 0.1 dB for a
+    slow step, more as the device accelerates).
 
 ## 9. How Performance Bridge uses it
 
@@ -266,25 +283,31 @@ and intuitiveness to be assessed).
   −10, −20, −40, −60, and off: TotalMix FX's own fader marks (`TOTALMIX-OSC.md`, test 18), placed
   at the fader values measured at each tick (test 7). Between ticks the gain moves evenly in dB
   (Adam, 2026-11-01). The encoders keep TotalMix's own fader curve: they have no printed scale.
-- **Encoder rows.** Each row is Pan or Send, set in the app (default Pan, Send, Send). Send rows
-  take consecutive send targets (control room outputs first), and Track < and > step them
-  together. Gain is left out for now: TotalMix sends it only for inputs with a preamp, which the
+- **Encoder rows.** Each row is Pan or Send, set in the app. The default is Send, Send, Pan, the
+  order of Novation's own DAW integrations (Live, Logic Pro, and Cubase in the user guide's "DAW
+  Mixer mode" sections), with pan just above the fader. Send rows take consecutive send targets
+  (control room outputs first), and Page up and down step them together, as Page steps the sends
+  in Novation's integrations. Gain is left out for now: TotalMix sends it only for inputs with a preamp, which the
   project's interfaces don't have. The encoders take positions from the driver (test 2), so they
   never jump.
 - **Buttons.** The top row is PFL (yellow; dark yellow when off), as on the Roto-Control; the bottom
   row is mute (red; dark red when off). Solo/Arm and Mute/Select do nothing for now: in DAW mode
   the device leaves them to the host (test 6).
-- **Paging and views.** Page up and down move by eight strips; Shift with Page up shows the sources,
-  and with Page down the outputs. Page and Track are lit where they would move.
-- **Colors.** Encoders show their strip's TotalMix color from the palette (an output left white:
-  green for monitoring, blue for sends, as on the Roto-Control); a blank strip is dark. Blue (45)
+- **Paging and views.** Track < and > move by eight strips, and by one with Shift, as the panel's
+  labels say. (Novation's integrations move one track, and eight with Shift; a performance mixer
+  moves by banks more often, so the driver does the reverse; Adam, 2026-11-01.) Shift with Page up
+  shows the sources, and with Page down the outputs. Page and Track are lit where they would move.
+- **Colors.** Level and pan encoders show their strip's TotalMix color from the palette (an output
+  left white: green for monitoring, blue for sends, as on the Roto-Control); a blank strip is dark.
+  A send row shows the color of the output it sends to, the same way, so each row reads as one
+  send, as Novation's integrations light send rows by send. Blue (45)
   and purple (49) are past the part of the palette seen in test 4 (inference from the guide's
   picture).
 - **Screen.** Each fader and encoder has a three-line display (arrangement 2): the channel's name,
   what the control does ("Level", "Pan", "> Phones 1"), and the value in dB or as a pan, sent by
   the driver (test 5). The stationary display (arrangement 3) shows the view and the strips on the
   page as its title, and the eight names, packed to four characters so that the columns stay apart
-  (e.g., "Mic1"). Track shows the new send on the overlay; that the overlay comes up as other
+  (e.g., "Mic1"). Page shows the new send on the overlay; that the overlay comes up as other
   displays do is untested.
 - **Port.** The DAW port, so the MIDI port and the Custom Modes stay free for other uses. Choosing
   a Custom Mode on the device stops the driver drawing until DAW Mixer or DAW Control is chosen

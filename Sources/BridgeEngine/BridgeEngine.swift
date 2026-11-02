@@ -40,9 +40,9 @@ public struct LaunchControlSetting: Equatable, Sendable {
     public var rows: [LaunchControlRowFunction]
 
     /// A setting for `layout` on `device` (by default the same model), with the device's usual DAW
-    /// port name and Pan, Send, Send for the rows.
+    /// port name and the driver's default rows (Send, Send, Pan).
     public init(layout: LaunchControlModel, device: LaunchControlModel? = nil, portName: String? = nil,
-                rows: [LaunchControlRowFunction] = [.pan, .send, .send]) {
+                rows: [LaunchControlRowFunction] = LaunchControlDriver.defaultRows) {
         self.layout = layout
         self.device = device ?? layout
         self.portName = portName ?? (device ?? layout).defaultPortName
@@ -65,7 +65,7 @@ public struct LaunchControlSetting: Equatable, Sendable {
         case "lc3-sim": (layout, device) = (.lc3, .xl3)
         default: return nil
         }
-        var rows: [LaunchControlRowFunction] = [.pan, .send, .send]
+        var rows = LaunchControlDriver.defaultRows
         if let text = value("--launch-control-rows") {
             let parsed = text.split(separator: ",").compactMap { LaunchControlRowFunction(rawValue: $0.lowercased()) }
             if (1...3).contains(parsed.count) { rows = parsed }

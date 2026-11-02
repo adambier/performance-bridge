@@ -17,7 +17,7 @@ public enum LaunchControlRowFunction: String, Codable, Sendable, CaseIterable {
     /// Each strip's pan (in the mix output, for a source).
     case pan
     /// A send: each strip's level into one of the send targets (`SurfaceHub.sendTargets`). Send
-    /// rows take consecutive targets, and Track < and > step them together.
+    /// rows take consecutive targets, and Page up and down step them together.
     case send
 }
 
@@ -47,11 +47,12 @@ public struct LaunchControlStep: Equatable, Sendable {
 /// - XL 3: the faders (level) with the top buttons (PFL); each encoder row (pan or a send, from
 ///   `rowFunctions`), the top row with the bottom buttons (mute).
 /// - Launch Control 3: the bottom encoder row (level) with the buttons (mute, or PFL after
-///   Function); the top encoder row (pan or a send, stepped by Track < and >).
+///   Function); the top encoder row (pan or a send, stepped by Page up and down).
 ///
 /// **Controls** (decided with Adam, 2026-11-01; docs/LAUNCH-CONTROL-XL3.md, section 9, and
-/// docs/LAUNCH-CONTROL-3.md, section 9): Page up and down move by eight strips; Shift with Page up
-/// shows the sources and with Page down the outputs; Track < and > step the sends.
+/// docs/LAUNCH-CONTROL-3.md, section 9), following the labels and Novation's own DAW integrations:
+/// Track < and > move by eight strips, or one with Shift; Page up and down step the sends; Shift
+/// with Page up shows the sources and with Page down the outputs.
 ///
 /// **Simulation.** With `layout` `.lc3` and `device` `.xl3`, the Launch Control 3's layout runs on
 /// an XL 3: its top two encoder rows, top button row, Page, Track, Shift, and Mute/Select as
@@ -79,7 +80,12 @@ public struct LaunchControlDriver: Sendable {
 
     /// What the XL 3's three encoder rows control, top to bottom (Pan, Send, Send by default).
     /// Ignored in the Launch Control 3's layout. Set it with `setRowFunctions(_:hub:now:)`.
-    public private(set) var rowFunctions: [LaunchControlRowFunction] = [.pan, .send, .send]
+    public private(set) var rowFunctions: [LaunchControlRowFunction] = Self.defaultRows
+
+    /// The XL 3's encoder rows unless the app sets them: Send, Send, Pan, as in Novation's own DAW
+    /// integrations (XL 3 user guide, "DAW Mixer mode" in each DAW's chapter), with pan just above
+    /// the fader (Adam, 2026-11-01).
+    public static let defaultRows: [LaunchControlRowFunction] = [.send, .send, .pan]
 
     /// XL 3: the first send target of the send rows. Launch Control 3: what the top row controls,
     /// −1 for pan and n ≥ 0 for send n.
@@ -272,17 +278,26 @@ public struct LaunchControlDriver: Sendable {
                 view = next
                 setModes(first: 0, hub: &hub, now: now, into: &step)
             } else {
-                let primary = id(layers[0])
-                var output = hub.page(primary, by: element == .pageUp ? -1 : 1, now: now)
-                if case .strips(_, let first, _, _)? = hub.mode(of: primary) {
-                    for layer in layers.dropFirst() {
-                        output.append(hub.setMode(id(layer), mode(for: layer, first: first), now: now))
-                    }
-                }
-                take(output, hub: hub, into: &step)
+                stepSends(by: element == .pageUp ? -1 : 1, hub: &hub, now: now, into: &step)
             }
         case .trackLeft, .trackRight:
-            stepSends(by: element == .trackLeft ? -1 : 1, hub: &hub, now: now, into: &step)
+            // Eight strips a press, one with Shift (Novation's integrations do the reverse; a
+            // performance mixer moves by banks more often; Adam, 2026-11-01).
+            let direction = element == .trackLeft ? -1 : 1
+            let primary = id(layers[0])
+            var output: CoreOutput
+            if shiftHeld {
+                guard case .strips(_, let first, _, _)? = hub.mode(of: primary) else { return }
+                output = hub.setMode(primary, mode(for: layers[0], first: max(first + direction, 0)), now: now)
+            } else {
+                output = hub.page(primary, by: direction, now: now)
+            }
+            if case .strips(_, let first, _, _)? = hub.mode(of: primary) {
+                for layer in layers.dropFirst() {
+                    output.append(hub.setMode(id(layer), mode(for: layer, first: first), now: now))
+                }
+            }
+            take(output, hub: hub, into: &step)
         case Self.functionButton where layout == .lc3:
             buttonsArePFL.toggle()
             setModes(first: page.first, hub: &hub, now: now, into: &step)
@@ -579,7 +594,7 @@ public struct LaunchControlDriver: Sendable {
             }
         }
         if pageChanged { bytes += drawStationary() }
-        // Every time: Track's ends change with the send targets, not only with the page (the
+        // Every time: Page's ends change with the send targets, not only with the page (the
         // lights are sent only when they change).
         return bytes + drawNavigation(hub: hub)
     }
@@ -599,7 +614,7 @@ public struct LaunchControlDriver: Sendable {
             bytes += configure(target, .titleNameAndValue, quiet: true)
         }
         if element.hasLight {
-            bytes += color(element, active ? Self.color(for: info) : 0)
+            bytes += color(element, active ? (sendColor(layer, hub: hub) ?? Self.color(for: info)) : 0)
         }
         if let button = button(layer, index) {
             let on = switchOn[layer]?[index] ?? false
@@ -609,6 +624,21 @@ public struct LaunchControlDriver: Sendable {
             bytes += color(button, colorIndex)
         }
         return bytes
+    }
+
+    /// For a layer of sends, the palette color of the output it sends to, so that each send row
+    /// reads as one send, as in Novation's integrations (Adam, 2026-11-01): the output's TotalMix
+    /// color, or, if left white, green for a control room output and blue for another; `nil` for
+    /// any other layer.
+    private func sendColor(_ layer: Layer, hub: SurfaceHub) -> UInt8? {
+        guard case .strips(_, _, .send(let index), _) = mode(for: layer, first: 0) else { return nil }
+        let targets = hub.sendTargets
+        guard targets.indices.contains(index) else { return nil }
+        let ref = ChannelRef(.output, targets[index])
+        let state = hub.mirror.channels[ref]
+        let kind: StripKind = hub.mirror.monitoringOutputs.contains(ref.channel) ? .monitoring : .send
+        return Self.color(for: StripInfo(channel: ref, name: "", color: state?.color, stereo: state?.stereo ?? false,
+                                         kind: kind, knobLabel: "", switchLabel: ""))
     }
 
     /// What a layer's controls do, as its displays' second line: "Level", "Pan", or "> " and the
@@ -648,18 +678,18 @@ public struct LaunchControlDriver: Sendable {
     /// Launch Control 3's layout) is yellow while the buttons are PFL and dim otherwise.
     private mutating func drawNavigation(hub: SurfaceHub) -> [UInt8] {
         var bytes: [UInt8] = []
-        bytes += color(.pageUp, page.first > 0 ? Self.navigationOn : 0)
-        bytes += color(.pageDown, page.first + Self.stripCount < page.count ? Self.navigationOn : 0)
+        bytes += color(.trackLeft, page.first > 0 ? Self.navigationOn : 0)
+        bytes += color(.trackRight, page.first + Self.stripCount < page.count ? Self.navigationOn : 0)
         let range = sendStepRange(hub)
         let steps = layout == .lc3 || rowFunctions.contains(.send)
-        bytes += color(.trackLeft, steps && sendStep > range.lowerBound ? Self.navigationOn : 0)
-        bytes += color(.trackRight, steps && sendStep < range.upperBound ? Self.navigationOn : 0)
+        bytes += color(.pageUp, steps && sendStep > range.lowerBound ? Self.navigationOn : 0)
+        bytes += color(.pageDown, steps && sendStep < range.upperBound ? Self.navigationOn : 0)
         if layout == .lc3 { bytes += color(Self.functionButton, buttonsArePFL ? Self.pflOn : Self.functionIdle) }
         return bytes
     }
 
     /// Shows two lines on the overlay (a temporary display not tied to a control), e.g., after
-    /// Function or Track. That the overlay comes up with SysEx 04h 7Fh, as other displays do, is
+    /// Function or Page. That the overlay comes up with SysEx 04h 7Fh, as other displays do, is
     /// an inference (not yet tried on the device).
     private mutating func overlay(_ first: String, _ second: String) -> [UInt8] {
         guard connected else { return [] }
