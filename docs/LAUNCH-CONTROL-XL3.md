@@ -290,7 +290,7 @@ port names.
    nothing until it passes the middle?
 8. **Relative encoders.** Run: they work as the guide says.[^test-2] `relative 1 on`: do encoders 1–8 report 77–84 with 65 and 63 for single
    steps?
-9. **Colors.** Run for indices 0–39 and RGB;[^test-4] 33, 37, 45, 49, and 53 seen in test 17;[^test-17] the rest of 40–127 not yet. Still to check: purple and orange at their dimmest with level by brightness on (do they keep their hue?). `palette 0`, `palette 40`, and `palette 80`. Compare with the guide's palette. Is 0
+9. **Colors.** Run for indices 0–39 and RGB;[^test-4] 33, 37, 45, 49, and 53 seen in test 17;[^test-17] the rest of 40–127 not yet. `palette 0`, `palette 40`, and `palette 80`. Compare with the guide's palette. Is 0
    off? Then `rgb b11 127 0 0`, and check the Track, Page, Record, Play, and Novation buttons for
    lights.
 10. **Screen.** Run.[^test-5] `display f1 2`, then `text f1 0 Mix`, `text f1 1 ADI-2`, `text f1 2 -6.0 dB`, and
@@ -426,8 +426,8 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   - In test 18, 9, 7, and 5 dimmed in turn and 4 and below looked dark, hence the floor at
     5.[^test-18] A color with two lit parts dims only until its smaller part reaches 5, so the part
     doesn't go dark first and change the hue: purple (16, 0, 127) stops at 5/16 of full and orange
-    (127, 40, 0) at 5/40. That a part below 5 reads as dark on its own is an inference from red
-    alone; how purple and orange look at their dimmest has not been checked (section 8, item 9).
+    (127, 40, 0) at 5/40. At those dimmest values, purple (5, 0, 40) was seen as purple beside blue
+    (0, 0, 40), and orange (16, 5, 0) as orange beside red (16, 0, 0).[^test-18]
   - Palette yellow (13) looks greener on the encoders than on the buttons, so the encoders show
     yellow as 127, 85, 0, which matched the buttons' yellow best of those tried, with the setting on
     or off. Palette orange (9) matched as it is; orange's exact color with the setting on (127, 40,
@@ -790,9 +790,14 @@ Phones 2 (yellow) on the middle. Seen by Adam.
   encoder matched best; palette 13 and 127, 100, 0 were greener.
 - **Orange on the encoders.** Palette orange (9) matched the button's orange better than 127, 30, 0.
 - Several `sbdev` commands pasted at once lost some of them; one at a time worked.
+- **Two-part colors at their dimmest** (after the hue floor was added, `lcxl-101-hue-1102.log`):
+  purple at 5, 0, 40 looked purple beside blue at 0, 0, 40, and orange at 16, 5, 0 looked orange
+  beside red at 16, 0, 0.
 
 **Consequence.**
 - The floor is 5.
 - Encoders show yellow as 127, 85, 0, with the setting on or off; buttons keep palette 13.
+- A color with two lit parts dims only until its smaller part reaches 5, which keeps purple and
+  orange recognizable at their dimmest.
 - Everything else in the 1.0.1 build behaved as section 9 describes.
 

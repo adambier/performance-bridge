@@ -1310,8 +1310,8 @@ public struct LaunchControlDriver: Sendable {
     /// `dimmestValue`, the lowest value seen as lit (test 18). Purple (16, 0, 127) stops at
     /// 5/16 of its brightness and orange (127, 40, 0) at 5/40, so their smaller parts don't go
     /// dark first and leave blue or red; red, white, and the other one-part or even colors dim
-    /// all the way. That a part below 5 would read as dark on its own is an inference from red
-    /// alone (test 18).
+    /// all the way. At those floors purple and orange were seen to keep their hue beside blue and
+    /// red of the same brightness (test 18).
     public static func dimmestFraction(_ rgb: RGB) -> Double {
         let lit = [rgb.red, rgb.green, rgb.blue].filter { $0 > 0 }
         guard let smallest = lit.min() else { return 1 }
