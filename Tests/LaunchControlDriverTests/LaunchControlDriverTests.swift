@@ -286,6 +286,33 @@ final class LaunchControlDriverTests: XCTestCase {
                        "the Launch Control 3's level row at 101 is 0 dB")
     }
 
+    func testPanEncodersLandOnTotalMixsWholeSteps() {
+        XCTAssertEqual(LaunchControlDriver.panSteps(64), 0)
+        XCTAssertEqual(LaunchControlDriver.panSteps(0), -100)
+        XCTAssertEqual(LaunchControlDriver.panSteps(127), 100)
+        XCTAssertEqual(LaunchControlDriver.panPosition(64), 0.5)
+        XCTAssertEqual(LaunchControlDriver.panPosition(127), 1)
+        XCTAssertEqual(LaunchControlDriver.panPosition(0), 0)
+        for value in UInt8(0)...127 {
+            let steps = LaunchControlDriver.panSteps(value)
+            let pan = LaunchControlDriver.panPosition(value) * 2 - 1
+            XCTAssertEqual(ValueText.pan(pan), steps == 0 ? "C" : steps < 0 ? "L\(-steps)" : "R\(steps)",
+                           "the display shows the whole step sent, at \(value)")
+            XCTAssertEqual(Int(pan * 100), steps, "cut off, the step is the same, at \(value)")
+            XCTAssertEqual(LaunchControlDriver.panValue(LaunchControlDriver.panPosition(value)), value)
+            if value > 0 {
+                let gap = steps - LaunchControlDriver.panSteps(value - 1)
+                XCTAssertTrue(gap == 1 || gap == 2, "steps of 1 or 2, at \(value)")
+            }
+        }
+        XCTAssertEqual(LaunchControlDriver.panValue(0.5 + 0.01 / 2), 65, "R1 from TotalMix: the nearest value")
+
+        var (driver, hub, _) = connected(layout: .xl3)
+        let right = driver.receive([0xBF, 0x1D, 65], hub: &hub, now: 1)
+        XCTAssertEqual(right.core.messages, [TotalMixCommand.setMix(from: .input, 0, to: 0, "balpan", Float(0.0225))])
+        XCTAssertTrue(right.midi.contains(LaunchControlOutgoing.text(.control(.encoder(row: 2, column: 0)), field: 2, "R2") ?? []))
+    }
+
     func testTheHomeScreenShowsWhereTheRowsGo() {
         var (driver, hub, midi) = connected(layout: .xl3, outputs: [(4, "ADAT 1/2"), (6, "ADAT 3/4")])
         XCTAssertEqual(driver.stationaryLines(hub: hub), ["Channels 1-4", "Top > Phones", "Mid > ADAT 1/2"])

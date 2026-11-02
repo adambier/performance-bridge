@@ -500,13 +500,43 @@ public struct LaunchControlDriver: Sendable {
     /// TotalMix's position (0…1) for a value from a layer's controls.
     private func devicePosition(_ layer: Layer, _ value: UInt8) -> Double {
         usesFaderScale(layer) ? Self.faderPosition(value)
-            : usesVolumeScale(layer) ? Self.encoderPosition(value) : Self.position(value)
+            : usesVolumeScale(layer) ? Self.encoderPosition(value) : Self.panPosition(value)
     }
 
     /// The value to send a layer's control for TotalMix's position (0…1).
     private func deviceValue(_ layer: Layer, _ position: Double) -> UInt8 {
         usesFaderScale(layer) ? Self.faderValue(position)
-            : usesVolumeScale(layer) ? Self.encoderValue(position) : Self.value(position)
+            : usesVolumeScale(layer) ? Self.encoderValue(position) : Self.panValue(position)
+    }
+
+    /// The pan, in TotalMix's whole steps (−100 for L100 to +100 for R100), for a pan encoder's
+    /// value: 64 is the center, 0 is L100, and 127 is R100, each value about 1.6 steps (so steps of
+    /// 1 or 2; Adam, 2026-11-01).
+    public static func panSteps(_ value: UInt8) -> Int {
+        let offset = Double(Int(min(value, 127)) - 64)
+        return Int((offset < 0 ? offset * 100 / 64 : offset * 100 / 63).rounded())
+    }
+
+    /// The hub position (0…1, the center at 0.5) for a pan encoder's value. It lands on one of
+    /// TotalMix's whole pan steps, plus a quarter step away from the center, so that TotalMix's
+    /// window and the encoder's display show the same step: a step of about 1.6 showed as R01 in
+    /// TotalMix and R2 on the Launch Control (Adam, 2026-11-01; docs/LAUNCH-CONTROL-XL3.md, section 9).
+    /// Whether TotalMix rounds or cuts off a fractional step is untested; the quarter step gives the
+    /// same whole step either way (inference).
+    public static func panPosition(_ value: UInt8) -> Double {
+        let steps = panSteps(value)
+        guard steps != 0 else { return 0.5 }
+        let pan = min((Double(abs(steps)) + 0.25) / 100, 1) * (steps < 0 ? -1 : 1)
+        return (pan + 1) / 2
+    }
+
+    /// The pan encoder's value for a hub position (0…1): the inverse of `panPosition(_:)`, by the
+    /// nearest whole pan step.
+    public static func panValue(_ position: Double) -> UInt8 {
+        let pan = min(max(position.isFinite ? position : 0.5, 0), 1) * 2 - 1
+        let steps = (pan * 100).rounded()
+        let offset = steps < 0 ? steps * 64 / 100 : steps * 63 / 100
+        return UInt8(min(max(64 + offset.rounded(), 0), 127))
     }
 
     /// The gains of the ARC USB's wheel, one per detent from the bottom (after off) to the top, as

@@ -289,7 +289,12 @@ and intuitiveness to be assessed).
   controls (Adam, 2026-11-01): its 54 detents from −63.5 to +6 dB (docs/TOTALMIX-OSC.md, test 19),
   spread over the encoder's values so that 0 dB is at 101, as on the faders. That is about 0.2 dB a
   value from −5 to +5 dB, 0.4 dB from −15 to −5, and up to 1.3 dB at the bottom; value 0 is off.
-  Pan encoders keep a plain scale, centered at 64.
+  Pan encoders are centered at 64 and land on TotalMix's whole pan steps (L100 to R100), about 1.6
+  steps a value, so they move in steps of 1 or 2. Each value is sent a quarter step past its whole
+  step, away from the center, so that TotalMix's window shows the same step as the encoder's
+  display: with plain values, one value past the center showed R01 in TotalMix and R2 on the
+  device (Adam, 2026-11-01), which suggests TotalMix cuts off a fractional step rather than
+  rounding it (inference; the quarter step gives the same whole step either way).
 - **Encoder rows.** Fixed (Adam, 2026-11-01): the top two rows are sends and the bottom row pan,
   the order of Novation's own DAW integrations (Live, Logic Pro, and Cubase in the user guide's "DAW
   Mixer mode" sections), with pan just above the fader. Each send row feeds one output, chosen on
