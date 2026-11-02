@@ -93,7 +93,7 @@ struct LayoutView: View {
                 .disabled(isTotalMixOrder)
             }
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 10) {
                 // One short paragraph each, in callout size, for legibility (Adam, 2026-10-31).
                 Text("Hide and show channels in TotalMix FX’s own Channel Layout window: right-click the channel, choose Change Channel Layout, and check or uncheck the OSC Controller box under \u{201C}Hide Channel in.\u{201D}")
                 Text("Channel colors can be set in the same window.")

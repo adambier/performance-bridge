@@ -325,7 +325,7 @@ struct SettingsView: View {
     /// A note under a group, wrapping to the window's width, in callout size rather than caption,
     /// and with a blank line starting a new paragraph, for legibility (Adam, 2026-10-31).
     private func note(_ text: String) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 10) {
             ForEach(text.components(separatedBy: "\n\n"), id: \.self) { paragraph in
                 Text(paragraph)
                     .fixedSize(horizontal: false, vertical: true)
@@ -391,7 +391,7 @@ struct LaunchControlSendRowsView: View {
                     }
                 }
             }
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 10) {
                 if !live {
                     Text(status.launchControlLayout == chosen
                          ? "Connect the \(chosen.name) to choose its send rows here."
