@@ -2,7 +2,7 @@
 // docs/LAUNCH-CONTROL-XL3.md.
 
 import Foundation
-import LaunchControlXL3
+import LaunchControl
 import MIDITransport
 
 let lcxlUsage = """

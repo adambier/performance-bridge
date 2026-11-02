@@ -1,7 +1,8 @@
 // The Launch Control XL 3's controls in DAW mode, and the MIDI Control Changes they send and take.
 // Source: Novation's "Launch Control XL 3 programmer's reference guide", version 1.0 (April 2026),
-// "The surface in DAW mode" (the control map is a picture there; read 2026-10-31). Nothing here
-// has been checked on the device yet (docs/LAUNCH-CONTROL-XL3.md).
+// "The surface in DAW mode" (the control map is a picture there; read 2026-10-31). The whole map
+// has been checked on the device (docs/LAUNCH-CONTROL-XL3.md, test 1). The Launch Control 3 has a
+// subset of these controls (`LaunchControlModel.has(_:)`).
 
 import Foundation
 
@@ -17,7 +18,8 @@ public enum LaunchControlElement: Hashable, Sendable {
     case button(row: Int, column: Int)
     /// The Solo/Arm button, left of the top button row.
     case soloArm
-    /// The Mute/Select button, left of the bottom button row.
+    /// The Mute/Select button, left of the bottom button row. On the Launch Control 3, the Function
+    /// button, by its number (`LaunchControlModel.has(_:)`).
     case muteSelect
     /// The button with Novation's logo, in the top button row between Solo/Arm and button 1 (the
     /// control map). "Nothing… yet", says the user guide.
@@ -97,7 +99,8 @@ public enum LaunchControlElement: Hashable, Sendable {
     }
 
     /// Whether the control can be given a color. Shift's light belongs to its feature control. That
-    /// faders and the Novation button have no LED is an inference from the guide's pictures.
+    /// the Novation button has no LED has been seen (docs/LAUNCH-CONTROL-XL3.md, test 4); that faders
+    /// have none is an inference from the guide's pictures.
     public var hasLight: Bool {
         switch self {
         case .fader, .shift, .novation: return false

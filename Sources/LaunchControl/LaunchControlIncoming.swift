@@ -1,6 +1,7 @@
-// What the Launch Control XL 3 sends on its DAW port in DAW mode, read from raw MIDI bytes.
-// Source: Novation's "Launch Control XL 3 programmer's reference guide", version 1.0 (April 2026).
-// Not yet checked on the device (docs/LAUNCH-CONTROL-XL3.md).
+// What a Launch Control XL 3 or Launch Control 3 sends on its DAW port in DAW mode, read from raw
+// MIDI bytes. Sources: Novation's programmer's reference guides for the two models (XL 3 version
+// 1.0, Launch Control 3 version 1.1), and the tests on an XL 3 (docs/LAUNCH-CONTROL-XL3.md,
+// section 10). The two models send the same messages for the controls they share.
 
 import Foundation
 
@@ -11,8 +12,8 @@ public enum LaunchControlEvent: Equatable, Sendable {
     /// An encoder in relative mode turned by `steps`: positive clockwise, negative anticlockwise
     /// (the value less 64).
     case turned(LaunchControlElement, steps: Int)
-    /// A button was pressed (`true`) or released (`false`). That a button sends 127 when pressed
-    /// and 0 when released is an inference; the guide gives no values.
+    /// A button was pressed (`true`) or released (`false`). A button sends 127 when pressed and 0
+    /// when released (docs/LAUNCH-CONTROL-XL3.md, test 1); the guide gives no values.
     case button(LaunchControlElement, pressed: Bool)
     /// A control started moving (`true`) or stopped (`false`), with touch reports on (channel 15).
     /// Despite the guide's name, these come from movement, not a touch sensor: on just before the
@@ -85,9 +86,8 @@ public enum LaunchControlEvent: Equatable, Sendable {
 
     /// What a whole SysEx message (F0h to F7h) reports.
     public init(sysEx bytes: [UInt8]) {
-        let header = LaunchControlOutgoing.sysExHeader
-        let body = Array(bytes.dropFirst(header.count))
-        if Array(bytes.prefix(header.count)) == header, body == [0x09, 0x7F, 0xF7] || body == [0x09, 0xF7] {
+        let body = Array(bytes.dropFirst(6))
+        if LaunchControlModel(sysEx: bytes) != nil, body == [0x09, 0x7F, 0xF7] || body == [0x09, 0xF7] {
             self = .bitmapReady
         } else {
             self = .unknown(bytes)

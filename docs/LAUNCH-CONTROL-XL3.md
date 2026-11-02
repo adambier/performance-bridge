@@ -4,11 +4,11 @@ This is the authority, for this project, on Novation's Launch Control XL 3 in DA
 `TOTALMIX-OSC.md` is for TotalMix FX and `ROTO-CONTROL.md` for the Roto-Control. Every statement
 carries its evidence.
 
-**Status (2026-11-01).** Tested on the device from 2026-11-01 (firmware 1.2); results are in
-section 8 as they come. **Before that (2026-10-31):** Everything here comes from Novation's documents. None of it has been
-checked on the device yet. The `LaunchControlXL3` library and `sbdev lcxl` are built from these
-documents, and their tests check them against the documents, not against the device. Section 8
-lists the tests that will check them.
+**Status (2026-11-01).** Tested on the device on 2026-11-01 (firmware 1.2): every test the driver
+needs is done (section 8), and the records are in section 10. Where a record differs from what
+sections 2–7 take from Novation's documents, the record rules. The `LaunchControl` library (which also covers the Launch
+Control 3, `LAUNCH-CONTROL-3.md`), `sbdev lcxl`, and the driver (`LaunchControlDriver`, section 9)
+are built on them.
 
 ## 1. Sources
 
@@ -249,31 +249,42 @@ port names.
     and the `quiet` option (no display on change).
 11. **Bitmap targets** (section 7, item 5), only if a bitmap is wanted later.
 
-## 9. What this means for the driver (planning, not yet built)
+## 9. How Performance Bridge uses it
 
-Everything in this section is inference, for discussion with Adam before the driver is written.
+Decided with Adam, 2026-11-01, after the tests; built in `LaunchControlDriver`, not yet in the app.
+The layout gets a close look in the Tier 1 UI review and Adam's own (Adam asked for its efficiency
+and intuitiveness to be assessed).
 
-- **Capabilities** (SurfaceCore):
-  - 8 strips, each with:
-    - one 7-bit fader without motor, so it needs pickup;
-    - three endless encoders with a color LED each, absolute;
-    - two buttons with RGB LEDs;
-    - a temporary display per fader and encoder.
-  - Plus a stationary display, Page and Track buttons, Record and Play, and Shift.
-- **Pickup.** Pickup could be the device's own (feature 70, fed by position messages), or
-  SurfaceCore's, which already handles surfaces whose controls need pickup. Test 7 decides
-  whether the device's can be used.
-- **Encoders.** Absolute with position feedback (test 6) would let SurfaceCore treat them like the
-  Roto-Control's knobs at 7 bits. Relative output is the fallback.
-- **Pages.** The Page buttons could page the strips, as on the Roto-Control. The Track buttons
-  could move one strip at a time, or switch between sources and outputs. DAW Mixer and DAW
-  Control could be two encoder layouts (e.g., sends and pan), since the device switches between
-  them itself.
-- **Buttons.** The top row could be PFL (or solo) and the bottom row mute. Solo/Arm and
-  Mute/Select could switch what each row does, as on the device.
-- **Screen.** A name and value on every move, which the Roto-Control's displays also show. The
-  stationary display could show the page and the mix output.
-- **Port.** The DAW port, so the MIDI port and Custom Modes stay free for other uses.
+- **Eight strips.** Each fader is its strip's level: into the mix output (the home submix) for a
+  source, or the output's own level in the outputs view.
+- **Fader pickup.** The driver turns on the device's pickup (feature 70) and sends each fader's
+  level as a position, so the device holds a fader back until it reaches TotalMix's level and
+  shows the target meanwhile (test 3). SurfaceCore's own pickup stays on behind it, with a window
+  of 12 steps for the first value after the device lets go, in case the device doesn't hold (as in
+  one run of test 2).
+- **Encoder rows.** Each row is Pan or Send, set in the app (default Pan, Send, Send). Send rows
+  take consecutive send targets (control room outputs first), and Track < and > step them
+  together. Gain is left out for now: TotalMix sends it only for inputs with a preamp, which the
+  project's interfaces don't have. The encoders take positions from the driver (test 2), so they
+  never jump.
+- **Buttons.** The top row is PFL (yellow; dark yellow when off), as on the Roto-Control; the bottom
+  row is mute (red; dark red when off). Solo/Arm and Mute/Select do nothing for now: in DAW mode
+  the device leaves them to the host (test 6).
+- **Paging and views.** Page up and down move by eight strips; Shift with Page up shows the sources,
+  and with Page down the outputs. Page and Track are lit where they would move.
+- **Colors.** Encoders show their strip's TotalMix color from the palette (an output left white:
+  green for monitoring, blue for sends, as on the Roto-Control); a blank strip is dark. Blue (45)
+  and purple (49) are past the part of the palette seen in test 4 (inference from the guide's
+  picture).
+- **Screen.** Each fader and encoder has a three-line display (arrangement 2): the channel's name,
+  what the control does ("Level", "Pan", "> Phones 1"), and the value in dB or as a pan, sent by
+  the driver (test 5). The stationary display (arrangement 3) shows the view and the strips on the
+  page as its title, and the eight names, packed to four characters so that the columns stay apart
+  (e.g., "Mic1"). Track shows the new send on the overlay; that the overlay comes up as other
+  displays do is untested.
+- **Port.** The DAW port, so the MIDI port and the Custom Modes stay free for other uses. Choosing
+  a Custom Mode on the device stops the driver drawing until DAW Mixer or DAW Control is chosen
+  again.
 
 ## 10. Test records
 
