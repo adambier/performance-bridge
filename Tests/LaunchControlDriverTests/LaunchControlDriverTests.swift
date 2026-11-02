@@ -97,8 +97,8 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(answer.midi.contains([0xB0, 0x1D, 5]), "Keys is red in TotalMix FX")
         XCTAssertTrue(answer.midi.contains([0xB0, 0x1E, 3]), "Vox is white")
         XCTAssertTrue(answer.midi.contains([0xB0, 0x21, 0]), "a blank strip's encoder is dark")
-        XCTAssertTrue(answer.midi.contains([0xB0, 0x0D, 45]),
-                      "the top row sends to Phones, a white output that isn't in the control room: blue")
+        XCTAssertTrue(answer.midi.contains([0xB0, 0x0D, LaunchControlDriver.sendRowHues[0]]),
+                      "the top row sends to Phones, a white output: the top row's own hue, cyan")
         XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.stationary, field: 0, "In 1-3, PB 1") ?? []))
         XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.control(.fader(0)), field: 0, "Keys") ?? []))
         XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.control(.fader(0)), field: 1, "Level") ?? []))
@@ -396,10 +396,95 @@ final class LaunchControlDriverTests: XCTestCase {
 
     func testAnOutputsNewColorReachesItsSendRow() {
         var (driver, hub, midi) = connected(layout: .xl3)
-        XCTAssertTrue(midi.contains([0xB0, 0x0D, 45]), "Phones, white in TotalMix FX, is blue")
+        XCTAssertTrue(midi.contains([0xB0, 0x0D, LaunchControlDriver.sendRowHues[0]]), "Phones, white in TotalMix FX, is cyan")
         let recolor = hub.handle(.channel(bus: .output, channel: 2, parameter: "color", value: .number(4)), now: 1)
         let step = driver.take(recolor, hub: &hub, now: 1)
         XCTAssertTrue(step.midi.contains([0xB0, 0x0D, 5]), "TotalMix FX's red reaches the top row at once")
+        let back = hub.handle(.channel(bus: .output, channel: 2, parameter: "color", value: .number(1)), now: 2)
+        XCTAssertTrue(driver.take(back, hub: &hub, now: 2).midi.contains([0xB0, 0x0D, LaunchControlDriver.sendRowHues[0]]),
+                      "white again: the row's hue again")
+    }
+
+    func testWhiteOutputsTakeEachRowsOwnHue() {
+        // Decision 3 of the Tier 3 review (Adam, 2026-11-02): white outputs show the row's hue, not
+        // a color by kind, so the two rows and the sources can be told apart.
+        let top = { (column: Int, color: UInt8) in LaunchControlOutgoing.color(.encoder(row: 0, column: column), color) ?? [] }
+        let middle = { (column: Int, color: UInt8) in LaunchControlOutgoing.color(.encoder(row: 1, column: column), color) ?? [] }
+        var (driver, hub, midi) = connected(layout: .xl3, outputs: [(4, "ADAT 1/2")], sendOutputs: [2, 4])
+        XCTAssertTrue(midi.contains(top(0, 37)), "top row (Phones): cyan")
+        XCTAssertFalse(midi.contains(top(0, 45)), "no longer blue by kind")
+        let send = hub.handle(.mix(bus: .input, channel: 0, output: 4, parameter: "faderlin", value: .number(0.5)), now: 1)
+        XCTAssertTrue(driver.take(send, hub: &hub, now: 1).midi.contains(middle(0, 53)),
+                      "middle row (ADAT 1/2), lit once Keys has a send there: magenta")
+        let (_, _, lc3) = connected(layout: .lc3, outputs: [(4, "ADAT 1/2")], sendOutputs: [2])
+        XCTAssertTrue(lc3.contains(top(0, 37)), "the Launch Control 3's top row, sending: cyan")
+    }
+
+    func testLevelShadesSplitAtTotalMixFXsMarks() {
+        let shade = { (db: Double?) in LaunchControlDriver.levelShade(position: FaderCurve.position(gainDB: db)) }
+        XCTAssertEqual(shade(nil), .off)
+        XCTAssertEqual(shade(-60), .dim)
+        XCTAssertEqual(shade(-40.5), .dim)
+        XCTAssertEqual(shade(-39.5), .medium)
+        XCTAssertEqual(shade(-10.5), .medium)
+        XCTAssertEqual(shade(-9.5), .bright)
+        XCTAssertEqual(shade(0), .bright)
+        XCTAssertEqual(shade(6), .bright)
+    }
+
+    func testShadesStayInTheirColorsGroupOfFour() {
+        XCTAssertEqual(LaunchControlDriver.shade(5, .medium), 6, "red")
+        XCTAssertEqual(LaunchControlDriver.shade(5, .dim), 7)
+        XCTAssertEqual(LaunchControlDriver.shade(37, .dim), 39, "cyan")
+        XCTAssertEqual(LaunchControlDriver.shade(53, .medium), 54, "magenta")
+        XCTAssertEqual(LaunchControlDriver.shade(3, .medium), 2, "white to grey")
+        XCTAssertEqual(LaunchControlDriver.shade(3, .dim), 1, "and dim grey")
+        XCTAssertEqual(LaunchControlDriver.shade(1, .dim), 1, "grey has nothing dimmer")
+        XCTAssertEqual(LaunchControlDriver.shade(21, .off), 0)
+        XCTAssertEqual(LaunchControlDriver.shade(21, .bright), 21)
+    }
+
+    /// Keys (input 1/2, red in TotalMix FX) to Main Out at `db`.
+    private func keysLevel(_ hub: inout SurfaceHub, _ db: Double?, now: Double) -> CoreOutput {
+        hub.handle(.mix(bus: .input, channel: 0, output: 0, parameter: "faderlin",
+                        value: .number(FaderCurve.position(gainDB: db))), now: now)
+    }
+
+    func testLevelBrightnessIsOffByDefault() {
+        let level = { (color: UInt8) in LaunchControlOutgoing.color(.encoder(row: 1, column: 0), color) ?? [] }
+        var (driver, hub, midi) = connected(layout: .lc3, device: .lc3)
+        XCTAssertFalse(driver.levelBrightness)
+        XCTAssertTrue(midi.contains(level(5)), "Keys's level encoder: full red")
+        let step = driver.take(keysLevel(&hub, -50, now: 1), hub: &hub, now: 1)
+        XCTAssertFalse(step.midi.contains(level(7)), "no shading while off")
+    }
+
+    func testLevelBrightnessShadesLevelAndSendEncodersButNotPan() {
+        let level = { (color: UInt8) in LaunchControlOutgoing.color(.encoder(row: 1, column: 0), color) ?? [] }
+        let top = { (color: UInt8) in LaunchControlOutgoing.color(.encoder(row: 0, column: 0), color) ?? [] }
+        var (driver, hub, _) = connected(layout: .lc3, device: .lc3)
+        _ = driver.take(keysLevel(&hub, 0, now: 0.5), hub: &hub, now: 0.5)
+        let on = driver.setLevelBrightness(true, hub: hub)
+        XCTAssertFalse(on.contains(level(6)) || on.contains(level(7)), "Keys at 0 dB stays bright")
+        XCTAssertTrue(on.contains(LaunchControlOutgoing.color(.encoder(row: 1, column: 1), 2) ?? []),
+                      "Vox (white) at the test's 0.5, about −12 dB: medium, grey")
+        var now = 1.0
+        for (db, expected, why) in [(-20.0 as Double?, UInt8(6), "−20 dB: medium"), (-50, 7, "−50 dB: dim"),
+                                    (nil, 0, "−oo: dark"), (-3, 5, "−3 dB: bright again")] {
+            now += 1
+            let step = driver.take(keysLevel(&hub, db, now: now), hub: &hub, now: now)
+            XCTAssertTrue(step.midi.contains(level(expected)), why)
+            XCTAssertFalse(step.midi.contains([0xB0, 0x0D]) && !step.midi.contains(top(5)), "the pan row keeps full color")
+        }
+        _ = driver.take(keysLevel(&hub, -50, now: 10), hub: &hub, now: 10)
+        XCTAssertTrue(driver.setLevelBrightness(false, hub: hub).contains(level(5)), "turned off: full color again")
+
+        // A send row shades by the send's level: the top row sending to Phones, Keys's send at −50 dB.
+        var (sending, sendHub, _) = connected(layout: .lc3, device: .lc3, sendOutputs: [2])
+        _ = sending.setLevelBrightness(true, hub: sendHub)
+        let send = sendHub.handle(.mix(bus: .input, channel: 0, output: 2, parameter: "faderlin",
+                                       value: .number(FaderCurve.position(gainDB: -50))), now: 1)
+        XCTAssertTrue(sending.take(send, hub: &sendHub, now: 1).midi.contains(top(39)), "Phones (white, so cyan) at −50 dB: dim cyan")
     }
 
     func testTheAppCanSetASendRow() {

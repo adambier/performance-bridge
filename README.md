@@ -18,7 +18,7 @@ To set it up, follow the setup guide, [`docs/SETUP.md`](docs/SETUP.md).
 
 ## Installing
 
-Performance Bridge 1.0.0 runs on macOS 13 or later. Download the zip file from the
+Performance Bridge runs on macOS 13 or later. Download the zip file from the
 [latest release](https://github.com/adambier/performance-bridge/releases/latest), open it, and move
 "Performance Bridge.app" to the Applications folder. The app is signed with a Developer ID and notarized
 by Apple. To update it later, choose **Check for Updates…** from its menu.

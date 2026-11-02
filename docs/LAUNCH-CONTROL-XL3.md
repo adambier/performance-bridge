@@ -76,6 +76,7 @@ seen").
 [^test-13]: Test 13 (2026-11-02), section [10](#test-13-2026-11-02-button-shades-and-brightness).
 [^test-14]: Test 14 (2026-11-02), section [10](#test-14-2026-11-02-asking-for-daw-mode-twice).
 [^test-15]: Test 15 (2026-11-02), section [10](#test-15-2026-11-02-mute-master-shades-and-flashing).
+[^tm-marks]: `docs/TOTALMIX-OSC.md`, test 18 (2026-11-01), the marks on TotalMix FX's faders.
 
 ## 2. MIDI ports
 
@@ -400,12 +401,24 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   caught by the app's port check, not by this. Whether the device answers the question in a Custom
   Mode is untested, so the check is skipped there (review of 2026-11-02).
 - **Colors.** Level and pan encoders show their strip's TotalMix FX color from the palette; a blank
-  strip is dark. A send row shows the color of the output it sends to (an output left white in
-  TotalMix FX: green for a control room output, blue for another), so each row reads as one send, as
-  Ableton Live's integration lights send rows in the send's color (Logic Pro's and Cubase's use a
-  fixed color per row).[^ug-daw-chapters] Blue (45)
-  and purple (49) are past the part of the palette seen in test 4 (inference from the guide's
-  picture).
+  strip is dark. A send row shows the color of the output it sends to, so each row reads as one
+  send, as Ableton Live's integration lights send rows in the send's color.[^ug-daw-chapters] An
+  output left white in TotalMix FX (its default) shows the row's own hue instead, as Logic Pro's and
+  Cubase's integrations use a fixed color per row: cyan (37) for the top row and magenta (53) for
+  the middle, neither one of TotalMix FX's eight colors, so the rows can be told apart from each
+  other and from the sources (Adam, 2026-11-02, from the Tier 3 review of that date; before 1.0.1, a
+  white output was green in the control room and blue otherwise). Blue (45), purple (49), cyan
+  (37), and magenta (53) are past the part of the palette seen in test 4 (inference from the
+  guide's picture), so that 37 and 53 show as cyan and magenta is still to be checked (section 8,
+  item 9).
+- **Level by brightness** (Adam, 2026-11-02, from the Tier 3 review of that date). A setting in
+  Settings → Connections, off by default, shades each send encoder by its level, in four steps at
+  TotalMix FX's own fader marks:[^tm-marks] bright above −10 dB, medium from −40 to −10 dB, dim below
+  −40 dB, and dark at −oo. A shade is the third or fourth color of the hue's group of four in the
+  palette (test 4); white dims to grey and dim grey, and grey stays as it is. Pan encoders keep full
+  brightness, and the faders, which carry the level, have no lights. Whether four steps read on the
+  device is not yet known: orange's medium shade (10) was too close to its neighbors to read in
+  test 15,[^test-15] so three steps may be needed.
 - **Screen.** Each fader and encoder has a three-line display (arrangement 2): the channel's name,
   what the control does ("Level", "Pan", "> Phones 1"), and the value in dB or as a pan, sent by
   the driver.[^test-5] The stationary display, the home screen, has three lines (arrangement 2): the

@@ -259,6 +259,14 @@ final class BridgeModel: ObservableObject {
     /// The Launch Control's send rows, as output channels (−1 for none), saved when changed on the
     /// device.
     nonisolated private static let launchControlSendsKey = "launchControlSends"
+    /// Whether a Launch Control shows levels by brightness (off by default; Adam, 2026-11-02).
+    nonisolated private static let levelBrightnessKey = "launchControlLevelBrightness"
+
+    /// Turns a Launch Control's level-by-brightness on or off: at once, and saved.
+    func setLevelBrightness(_ on: Bool) {
+        UserDefaults.standard.set(on, forKey: Self.levelBrightnessKey)
+        engine.setLaunchControlLevelBrightness(on)
+    }
 
     /// The key for one layout's send rows: the XL 3 has two and the Launch Control 3 one (its top
     /// row, pan or a send), so they are kept apart (review of 2026-11-02). The XL 3's are under the
@@ -389,6 +397,7 @@ final class BridgeModel: ObservableObject {
                 settings.launchControlSends[layout] = saved.map { $0 < 0 ? nil : $0 }
             }
         }
+        settings.launchControlLevelBrightness = UserDefaults.standard.bool(forKey: levelBrightnessKey)
         return settings
     }
 

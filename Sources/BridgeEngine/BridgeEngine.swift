@@ -88,6 +88,9 @@ public struct BridgeSettings: Equatable, Sendable {
     /// The engine holds both layouts' rows, connected or not, so the app can set them with no
     /// device plugged in (Adam, 2026-11-02).
     public var launchControlSends: [LaunchControlModel: [Int?]] = [:]
+    /// Whether a Launch Control's level and send encoders show their level by brightness
+    /// (`LaunchControlDriver.levelBrightness`); off by default (Adam, 2026-11-02).
+    public var launchControlLevelBrightness = false
     /// Whether to connect the Roto-Control. The app uses one hardware controller at a time (Adam,
     /// 2026-11-01), so it turns this off when a Launch Control is chosen.
     public var rotoEnabled = true
@@ -164,6 +167,8 @@ public struct BridgeStatus: Equatable, Sendable {
     /// Launch Control 3: the top row, `nil` for pan), whether or not a device is connected, from the
     /// send targets TotalMix FX has shown.
     public var launchControlSends: [LaunchControlModel: [Int?]] = [:]
+    /// Whether a Launch Control's level and send encoders show their level by brightness.
+    public var launchControlLevelBrightness = false
     /// The outputs the send controls step through, in order (`SurfaceHub.sendTargets`), with their
     /// names as the strips show them, for choosing a send row's output.
     public var sendTargets: [HomeChoice] = []
@@ -253,6 +258,8 @@ public final class BridgeEngine: @unchecked Sendable {
     private var openingLC = false
     /// Each layout's send rows, kept across a reconnection and while no device is connected.
     private var sendRows: [LaunchControlModel: LaunchControlSendRows]
+    /// Whether a Launch Control shows levels by brightness, kept like `sendRows`.
+    private var levelBrightness: Bool
 
     /// How often the engine checks that the Roto-Control's ports are still there, in seconds.
     static let unplugCheckInterval: Double = 1
@@ -265,6 +272,7 @@ public final class BridgeEngine: @unchecked Sendable {
             rows[model] = LaunchControlSendRows(layout: model, choices: settings.launchControlSends[model] ?? [])
         }
         self.sendRows = rows
+        self.levelBrightness = settings.launchControlLevelBrightness
     }
 
     private var now: Double { Date().timeIntervalSince(startDate) }
@@ -437,7 +445,8 @@ public final class BridgeEngine: @unchecked Sendable {
         case .success(let connection) where running:
             lcMIDI = connection
             var lc = LaunchControlDriver(name: "launchcontrol", layout: setting.layout, device: setting.device,
-                                         sendOutputs: sendRows[setting.layout]?.choices ?? [])
+                                         sendOutputs: sendRows[setting.layout]?.choices ?? [],
+                                         levelBrightness: levelBrightness)
             let started = lc.start(hub: &hub, now: now)
             sendToLaunchControl(started.midi)
             lcDriver = lc
@@ -589,6 +598,20 @@ public final class BridgeEngine: @unchecked Sendable {
         publishStatusIfChanged()
     }
 
+    /// Turns a Launch Control's level-by-brightness on or off, from the app. Takes effect at once on
+    /// a connected device, and is kept for the next one otherwise.
+    public func setLaunchControlLevelBrightness(_ on: Bool) {
+        lock.lock()
+        levelBrightness = on
+        if var lc = lcDriver {
+            let bytes = lc.setLevelBrightness(on, hub: hub)
+            lcDriver = lc
+            sendToLaunchControl(bytes)
+        }
+        lock.unlock()
+        publishStatusIfChanged()
+    }
+
     /// The layout's new choices, if they changed since `before`: for the layout the driver runs,
     /// the driver's, copied into `sendRows`. Called with the lock held.
     private func takeSendRowChange(_ layout: LaunchControlModel, before: LaunchControlSendRows?) -> [Int?]? {
@@ -718,6 +741,7 @@ public final class BridgeEngine: @unchecked Sendable {
         for (layout, rows) in sendRows {
             status.launchControlSends[layout] = rows.outputs(targets: hub.sendTargets)
         }
+        status.launchControlLevelBrightness = levelBrightness
         status.sendTargets = hub.sendTargets.map { output in
             let ref = ChannelRef(.output, output)
             let name = hub.layout.label(for: ref) ?? hub.mirror.channels[ref]?.name ?? "Output \(output + 1)"

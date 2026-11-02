@@ -37,13 +37,13 @@ with neither a footnote nor a test record behind it is an inference, and says so
 [^hide-log]: Adam's log of test 8's run, `logs/hide-test.log` in the project folder, 2026-10-31.
 [^sbdev-code]: This project's code, `Sources/sbdev/main.swift`.
 [^test-1]: Test 1 (2026-10-28), section 6:
-    [what TotalMix FX sends](#test-1-2026-10-28-what-totalmix-sends).
+    [what TotalMix FX sends](#test-1-2026-10-28-what-totalmix-fx-sends).
 [^test-2]: Test 2 (2026-10-28), section 6:
-    [what TotalMix FX accepts](#test-2-2026-10-28-what-totalmix-accepts).
+    [what TotalMix FX accepts](#test-2-2026-10-28-what-totalmix-fx-accepts).
 [^test-3]: Test 3 (2026-10-28), section 6: [what TotalMix FX sends with "Send faders in linear scale"
-    on](#test-3-2026-10-28-what-totalmix-sends-with-send-faders-in-linear-scale-on).
+    on](#test-3-2026-10-28-what-totalmix-fx-sends-with-send-faders-in-linear-scale-on).
 [^test-5]: Test 5 (2026-10-28), section 6:
-    [does TotalMix FX echo a command?](#test-5-2026-10-28-does-totalmix-echo-a-command).
+    [does TotalMix FX echo a command?](#test-5-2026-10-28-does-totalmix-fx-echo-a-command).
 [^test-7]: Test 7 (2026-10-30), section 6: [color indexes](#test-7-2026-10-30-color-indexes).
 [^test-8]: Test 8 (2026-10-31), section 6: [a channel hidden from OSC Controller
     4](#test-8-2026-10-31-a-channel-hidden-from-osc-controller-4).
@@ -54,11 +54,11 @@ with neither a footnote nor a test record behind it is an inference, and says so
 [^test-12]: Test 12 (2026-11-01), section 6:
     [two interfaces at once](#test-12-2026-11-01-two-interfaces-at-once).
 [^test-13]: Test 13 (2026-11-01), section 6: [when TotalMix FX writes its settings file, and how it
-    records hiding](#test-13-2026-11-01-when-totalmix-writes-its-settings-file-and-how-it-records-hiding).
+    records hiding](#test-13-2026-11-01-when-totalmix-fx-writes-its-settings-file-and-how-it-records-hiding).
 [^test-15]: Test 15 (2026-11-01), section 6: [playback names](#test-15-2026-11-01-playback-names).
 [^test-17]: Test 17 (2026-11-01), section 6: [fader group 1](#test-17-2026-11-01-fader-group-1).
 [^test-20]: Test 20 (2026-11-02), section 6: [changes made in TotalMix FX's
-    window](#test-20-2026-11-02-changes-made-in-totalmixs-window).
+    window](#test-20-2026-11-02-changes-made-in-totalmix-fxs-window).
 [^test-21]: Test 21 (2026-11-02), section 6: [the Cue/PFL to
     menu](#test-21-2026-11-02-the-cuepfl-to-menu).
 

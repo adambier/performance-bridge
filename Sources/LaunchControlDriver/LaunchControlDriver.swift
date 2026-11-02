@@ -78,6 +78,10 @@ public struct LaunchControlDriver: Sendable {
     public var sendOutputs: [Int?] { sendRows.choices }
     /// Launch Control 3: whether the buttons are PFL (`true`, while Function is held) or mute.
     public private(set) var buttonsArePFL = false
+    /// Whether level and send encoders show their level by brightness (`levelShade(position:)`), a
+    /// setting that is off by default (Adam, 2026-11-02, from the Tier 3 review of that date).
+    /// Pan encoders keep full brightness.
+    public private(set) var levelBrightness: Bool
     /// The send target (an index into `SurfaceHub.sendTargets`) each send row uses now, from
     /// `sendOutputs` (`resolveSends(_:)`); `nil` for none, or pan on the Launch Control 3.
     private var sendIndices: [Int?] = []
@@ -124,6 +128,7 @@ public struct LaunchControlDriver: Sendable {
     private var page = (first: 0, count: 0)
     private var infos: [Layer: [StripInfo?]] = [:]
     private var knobOn: [Layer: [Bool]] = [:]
+    private var knobValues: [Layer: [Double?]] = [:]  // the last position the hub sent, 0…1
     private var switchOn: [Layer: [Bool]] = [:]
     private var sentPositions: [UInt8: UInt8] = [:]  // control number → position
     private var sentColors: [UInt8: UInt8] = [:]  // control number → palette index
@@ -149,11 +154,28 @@ public struct LaunchControlDriver: Sendable {
 
     /// A driver for one device. `name` starts the hub surfaces' names; `layout` is the model whose
     /// layout runs and `device` the model connected (by default the same).
-    public init(name: String, layout: LaunchControlModel, device: LaunchControlModel? = nil, sendOutputs: [Int?] = []) {
+    public init(name: String, layout: LaunchControlModel, device: LaunchControlModel? = nil, sendOutputs: [Int?] = [],
+                levelBrightness: Bool = false) {
         self.name = name
         self.layout = layout
         self.device = device ?? layout
         self.sendRows = LaunchControlSendRows(layout: layout, choices: sendOutputs)
+        self.levelBrightness = levelBrightness
+    }
+
+    /// Turns `levelBrightness` on or off, and returns the lights that change (none while the
+    /// device isn't in DAW mode; they are drawn when it is).
+    public mutating func setLevelBrightness(_ on: Bool, hub: SurfaceHub) -> [UInt8] {
+        levelBrightness = on
+        guard connected, !inCustomMode else { return [] }
+        var bytes: [UInt8] = []
+        for layer in layers {
+            for index in 0..<Self.stripCount {
+                let element = self.element(layer, index)
+                if element.hasLight { bytes += color(element, lightColor(layer, index, hub: hub)) }
+            }
+        }
+        return bytes
     }
 
     /// Whether the device has answered.
@@ -844,15 +866,27 @@ public struct LaunchControlDriver: Sendable {
     /// The send rows' lights, in their outputs' colors, for the strips that show a channel.
     private mutating func drawSendColors(hub: SurfaceHub) -> [UInt8] {
         var bytes: [UInt8] = []
-        for layer in layers {
-            guard let color = sendColor(layer, hub: hub) else { continue }
+        for layer in layers where sendColor(layer, hub: hub) != nil {
             for index in 0..<Self.stripCount {
                 let element = self.element(layer, index)
                 let active = (infos[layer]?[index] ?? nil) != nil && (knobOn[layer]?[index] ?? false)
-                if element.hasLight, active { bytes += self.color(element, color) }
+                if element.hasLight, active { bytes += color(element, lightColor(layer, index, hub: hub)) }
             }
         }
         return bytes
+    }
+
+    /// An encoder's light: dark for a strip with no channel; else a send row's output color
+    /// (`sendColor`) or the strip's own (`color(for:)`), shaded by its level when
+    /// `levelBrightness` is on and the encoder is a level or a send.
+    private func lightColor(_ layer: Layer, _ index: Int, hub: SurfaceHub) -> UInt8 {
+        let info = infos[layer]?[index] ?? nil
+        guard info != nil, knobOn[layer]?[index] ?? false else { return 0 }
+        let base = sendColor(layer, hub: hub) ?? Self.color(for: info)
+        guard levelBrightness, case .strips(_, _, let knob, _) = mode(for: layer, first: 0) else { return base }
+        if case .pan = knob { return base }
+        guard let position = knobValues[layer]?[index] ?? nil else { return base }
+        return Self.shade(base, Self.levelShade(position: position))
     }
 
     private mutating func take(_ output: CoreOutput, hub: SurfaceHub, into step: inout LaunchControlStep) {
@@ -871,6 +905,7 @@ public struct LaunchControlDriver: Sendable {
         for (layer, list) in updates {
             var layerInfos = infos[layer] ?? Array(repeating: nil, count: Self.stripCount)
             var layerKnobs = knobOn[layer] ?? Array(repeating: false, count: Self.stripCount)
+            var layerValues = knobValues[layer] ?? Array(repeating: nil, count: Self.stripCount)
             var layerSwitches = switchOn[layer] ?? Array(repeating: false, count: Self.stripCount)
             var touched = Set<Int>()
             var values: [Int: String] = [:]  // sent after the strips, once their displays are set up
@@ -885,6 +920,7 @@ public struct LaunchControlDriver: Sendable {
                 case .knob(let index, let value):
                     guard layerKnobs.indices.contains(index) else { continue }
                     layerKnobs[index] = value != nil
+                    layerValues[index] = value
                     touched.insert(index)
                     if let value {
                         let control = self.element(layer, index)
@@ -908,6 +944,7 @@ public struct LaunchControlDriver: Sendable {
             }
             infos[layer] = layerInfos
             knobOn[layer] = layerKnobs
+            knobValues[layer] = layerValues
             switchOn[layer] = layerSwitches
             for index in touched.sorted() { bytes += drawStrip(layer, index, hub: hub) }
             for (index, value) in values.sorted(by: { $0.key < $1.key }) {
@@ -936,9 +973,7 @@ public struct LaunchControlDriver: Sendable {
         } else {
             bytes += configure(target, .titleNameAndValue, quiet: true)
         }
-        if element.hasLight {
-            bytes += color(element, active ? (sendColor(layer, hub: hub) ?? Self.color(for: info)) : 0)
-        }
+        if element.hasLight { bytes += color(element, lightColor(layer, index, hub: hub)) }
         bytes += drawButton(layer, index, hub: hub)
         return bytes
     }
@@ -980,17 +1015,17 @@ public struct LaunchControlDriver: Sendable {
 
     /// For a layer of sends, the palette color of the output it sends to, so that each send row
     /// reads as one send, as in Novation's integrations (Adam, 2026-11-01): the output's TotalMix FX
-    /// color, or, if left white, green for a control room output and blue for another; `nil` for
-    /// any other layer.
+    /// color, or, if left white (TotalMix FX's default), the row's own hue (`sendRowHues`), so the
+    /// rows can be told apart from each other and from the sources (Adam, 2026-11-02, from the
+    /// Tier 3 review of that date); `nil` for any other layer.
     private func sendColor(_ layer: Layer, hub: SurfaceHub) -> UInt8? {
         guard case .strips(_, _, .send(let index), _) = mode(for: layer, first: 0) else { return nil }
         let targets = hub.sendTargets
         guard targets.indices.contains(index) else { return nil }
-        let ref = ChannelRef(.output, targets[index])
-        let state = hub.mirror.channels[ref]
-        let kind: StripKind = hub.mirror.monitoringOutputs.contains(ref.channel) ? .monitoring : .send
-        return Self.color(for: StripInfo(channel: ref, name: "", color: state?.color, stereo: state?.stereo ?? false,
-                                         kind: kind, knobLabel: "", switchLabel: ""))
+        let color = hub.mirror.channels[ChannelRef(.output, targets[index])]?.color
+        if let color, color != 1, let palette = Self.paletteForTotalMixColor[color] { return palette }
+        let row = layer == .row1 && layout == .xl3 ? 1 : 0
+        return Self.sendRowHues[row]
     }
 
     /// What a layer's controls do, as its displays' second line: "Level", "Pan", or "> " and the
@@ -1146,6 +1181,51 @@ public struct LaunchControlDriver: Sendable {
     /// The Function button while the buttons are mute: the dimmest yellow, PFL's color when off,
     /// as for any button that is off (Adam, 2026-11-02).
     public static let functionIdle: UInt8 = 15
+    /// The hue of a send row whose output is left white in TotalMix FX: cyan (37) for the top row,
+    /// magenta (53) for the XL 3's middle row; neither is one of TotalMix FX's eight colors (Adam,
+    /// 2026-11-02, from the Tier 3 review of that date). Both are bright shades from the guide's
+    /// palette picture, past the part seen on the device (test 4); that they show as cyan and
+    /// magenta is an inference until checked.
+    public static let sendRowHues: [UInt8] = [37, 53]
+
+    /// How bright a level or send encoder shows its level, when `levelBrightness` is on: split at
+    /// TotalMix FX's own fader marks (docs/TOTALMIX-OSC.md, test 18), not at a level of our own
+    /// (Adam, 2026-11-02).
+    public enum LevelShade: Equatable, Sendable {
+        /// −oo: dark.
+        case off
+        /// Below −40 dB.
+        case dim
+        /// −40 dB to −10 dB.
+        case medium
+        /// Above −10 dB.
+        case bright
+    }
+
+    /// The shade for a fader position (0…1).
+    public static func levelShade(position: Double) -> LevelShade {
+        guard let gain = FaderCurve.gainDB(position: position) else { return .off }
+        if gain < -40 { return .dim }
+        if gain <= -10 { return .medium }
+        return .bright
+    }
+
+    /// A palette color in a shade. The palette runs in groups of four, the second the bright
+    /// shade and the third and fourth dimmer ones (test 4; test 13 for orange's dimmest), so a
+    /// color's medium shade is its group's third and its dim shade the fourth. White (3) dims to
+    /// grey (2) and dim grey (1); grey (1) has no dimmer shade and stays. The medium shade has
+    /// been seen to be hard to tell from the others for orange (test 15), so whether four states
+    /// read on the device is not yet known.
+    public static func shade(_ color: UInt8, _ shade: LevelShade) -> UInt8 {
+        switch shade {
+        case .off: return 0
+        case .bright: return color
+        case .medium, .dim:
+            guard color > 3 else { return color == 3 ? (shade == .medium ? 2 : 1) : color }
+            let group = color & ~3
+            return group + (shade == .medium ? 2 : 3)
+        }
+    }
 
     /// The palette color for each of TotalMix FX's eight colors (1 white, 2 grey, 3 orange, 4 red,
     /// 5 blue, 6 green, 7 yellow, 8 pink; docs/TOTALMIX-OSC.md, test 7). White, grey, orange, red,
