@@ -51,7 +51,8 @@ public struct LaunchControlStep: Equatable, Sendable {
 ///
 /// **Controls** (decided with Adam, 2026-11-01; docs/LAUNCH-CONTROL-XL3.md, section 9, and
 /// docs/LAUNCH-CONTROL-3.md, section 9), following the labels and Novation's own DAW integrations:
-/// Track < and > move by eight strips, or one with Shift; Page up and down step the sends; Shift
+/// Track < and > move by eight strips, or with Shift to the first or last page; Page up and down
+/// step the sends; Shift
 /// with Page up shows the sources and with Page down the outputs.
 ///
 /// **Simulation.** With `layout` `.lc3` and `device` `.xl3`, the Launch Control 3's layout runs on
@@ -281,14 +282,15 @@ public struct LaunchControlDriver: Sendable {
                 stepSends(by: element == .pageUp ? -1 : 1, hub: &hub, now: now, into: &step)
             }
         case .trackLeft, .trackRight:
-            // Eight strips a press, one with Shift (Novation's integrations do the reverse; a
-            // performance mixer moves by banks more often; Adam, 2026-11-01).
+            // Eight strips a press; with Shift, the first or the last page. Pages always start at
+            // a multiple of eight, as on the Roto-Control: the order is set in the app, so there is
+            // nothing to gain from moving one strip (Adam, 2026-11-01).
             let direction = element == .trackLeft ? -1 : 1
             let primary = id(layers[0])
             var output: CoreOutput
             if shiftHeld {
-                guard case .strips(_, let first, _, _)? = hub.mode(of: primary) else { return }
-                output = hub.setMode(primary, mode(for: layers[0], first: max(first + direction, 0)), now: now)
+                // Past the end, the hub goes to the start of the last page.
+                output = hub.setMode(primary, mode(for: layers[0], first: direction < 0 ? 0 : Int(Int32.max)), now: now)
             } else {
                 output = hub.page(primary, by: direction, now: now)
             }

@@ -27,7 +27,8 @@ let lcBridgeUsage = """
           submix's output number, counting from 1 (default: TotalMix's Main Out).
           Stop sbdev monitor, sbdev bridge, and the app first: they need the same ports.
 
-      On the device: Track < and > move by eight strips, or one with Shift; Page up and down
+      On the device: Track < and > move by eight strips (with Shift, to the first or last
+      page); Page up and down
       step the sends; Shift with Page up shows the sources, with Page down the outputs. XL 3: faders are
       level, top buttons PFL, bottom buttons mute. Launch Control 3 (or lc3-sim): the bottom
       encoder row is level, the top row pan or a send (Page up and down), the buttons mute, and

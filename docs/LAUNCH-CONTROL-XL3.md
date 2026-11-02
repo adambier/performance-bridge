@@ -293,9 +293,11 @@ and intuitiveness to be assessed).
 - **Buttons.** The top row is PFL (yellow; dark yellow when off), as on the Roto-Control; the bottom
   row is mute (red; dark red when off). Solo/Arm and Mute/Select do nothing for now: in DAW mode
   the device leaves them to the host (test 6).
-- **Paging and views.** Track < and > move by eight strips, and by one with Shift, as the panel's
-  labels say. (Novation's integrations move one track, and eight with Shift; a performance mixer
-  moves by banks more often, so the driver does the reverse; Adam, 2026-11-01.) Shift with Page up
+- **Paging and views.** Track < and > move by eight strips, as the panel's labels say, and with
+  Shift to the first or last page. (Novation's integrations move one track, and eight with Shift.
+  Here the order is set in the app, so moving one strip gains nothing, and pages stay on multiples
+  of eight, as on the Roto-Control; Shift modifies Track rather than adding a new function; Adam,
+  2026-11-01.) Shift with Page up
   shows the sources, and with Page down the outputs. Page and Track are lit where they would move.
 - **Colors.** Level and pan encoders show their strip's TotalMix color from the palette (an output
   left white: green for monitoring, blue for sends, as on the Roto-Control); a blank strip is dark.

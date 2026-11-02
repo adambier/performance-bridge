@@ -326,7 +326,7 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertEqual(top.core.messages, [TotalMixCommand.setMix(from: .input, 0, to: 0, "faderlin", Float(FaderCurve.unityPosition))])
     }
 
-    func testTrackMovesTheStripsByEightOrOneWithShift() {
+    func testTrackMovesTheStripsByEightOrWithShiftToTheEnds() {
         var hub = loadedHub()
         var layout = hub.layout
         layout.playbacksOnNewPage = true  // inputs 1-3, five blanks, then the playback: two pages
@@ -341,7 +341,10 @@ final class LaunchControlDriverTests: XCTestCase {
                        "every layer moves together")
         _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 2)
         _ = driver.receive([0xB0, 0x67, 0x7F], hub: &hub, now: 2)
-        XCTAssertEqual(hub.strips(of: driver.id(.faders))?[1].knobTarget, .level(ChannelRef(.playback, 0), submix: 0),
-                       "Shift + Track <: one strip back")
+        XCTAssertEqual(hub.strips(of: driver.id(.faders))?[0].knobTarget, .level(ChannelRef(.input, 0), submix: 0),
+                       "Shift + Track <: the first page")
+        _ = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 3)
+        XCTAssertEqual(hub.strips(of: driver.id(.faders))?[0].knobTarget, .level(ChannelRef(.playback, 0), submix: 0),
+                       "Shift + Track >: the last page, starting on a multiple of eight")
     }
 }

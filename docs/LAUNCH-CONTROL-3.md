@@ -198,8 +198,8 @@ own (Adam asked for its efficiency and intuitiveness to be assessed).
 - **Buttons.** Mute, switched to PFL by Function. The buttons are red for mute and yellow for PFL,
   Function is lit while they are on PFL (if it has an LED, section 4), and the screen names the
   change.
-- **Paging and views.** Track < and > move by eight strips, or one with Shift (the reverse of
-  Novation's integrations, for a performance mixer); Shift with Page up shows the sources and
+- **Paging and views.** Track < and > move by eight strips, and with Shift to the first or last
+  page (`LAUNCH-CONTROL-XL3.md`, section 9); Shift with Page up shows the sources and
   Shift with Page down the outputs.
 - **Levels.** The encoders keep TotalMix's own fader curve (0.26 dB a step near 0 dB);
   `LAUNCH-CONTROL-XL3.md`, section 8, item 12, tests whether relative mode is needed.
