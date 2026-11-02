@@ -862,10 +862,15 @@ public struct LaunchControlDriver: Sendable {
         }
     }
 
+    /// Sends the home screen's lines that changed, and then brings the screen up again: Track >
+    /// changed the text without changing what the screen showed (Adam, 2026-11-01), so the device
+    /// seems to redraw the stationary display only when it is brought up (inference; at connect it
+    /// is brought up the same way, test 5).
     private mutating func drawStationary(hub: SurfaceHub) -> [UInt8] {
         var bytes = configure(.stationary, .titleNameAndValue, quiet: false)
         for (field, line) in stationaryLines(hub: hub).enumerated() { bytes += text(.stationary, field, line) }
-        return bytes
+        guard !bytes.isEmpty, connected else { return bytes }
+        return bytes + (LaunchControlOutgoing.showDisplay(.stationary, true, model: device) ?? [])
     }
 
     /// Page and Track lights: lit where they would move, dark at the ends. The Function button (the

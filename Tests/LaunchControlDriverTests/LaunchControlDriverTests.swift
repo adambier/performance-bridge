@@ -330,8 +330,11 @@ final class LaunchControlDriverTests: XCTestCase {
         _ = driver.start(hub: &hub, now: 0)
         _ = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0)
         XCTAssertEqual(driver.stationaryLines(hub: hub)[0], "Inputs 1-3")
-        _ = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 1)
+        let track = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(driver.stationaryLines(hub: hub)[0], "Playback 1", "not 'Channels 9-9'")
+        XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.stationary, field: 0, "Playback 1") ?? []))
+        XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.showDisplay(.stationary, true, model: .xl3) ?? []),
+                      "the home screen brought up again with its new title")
     }
 
     func testTheAppCanSetASendRow() {
