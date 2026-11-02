@@ -74,6 +74,7 @@ seen").
 [^test-11]: Test 11 (2026-11-01), section
     [10](#test-11-2026-11-01-the-home-screen-shift--turn-pan-steps-and-the-arc-scale).
 [^test-13]: Test 13 (2026-11-02), section [10](#test-13-2026-11-02-button-shades-and-brightness).
+[^test-14]: Test 14 (2026-11-02), section [10](#test-14-2026-11-02-asking-for-daw-mode-twice).
 
 ## 2. MIDI ports
 
@@ -603,8 +604,8 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
 - Leaving DAW mode, the device sent `B6 1E 06`, `B6 1F 06` (twice), then `9F 0C 00` (`lc-daw-trace.log`, at 86.767 s).
 
 **Consequences.**
-- Inference: the device echoes the DAW mode note only when the mode changes, so a host asking a device already in DAW mode gets no answer. The driver therefore leaves DAW mode and enters it again when it starts (`startBytes`), which makes a change either way, and it takes only a control moved or pressed as a sign of presence, not the feature replies sent on the way out.
-- Still to run, to settle the inference: `sbdev lcxl --raw`, enter DAW mode, ask again, and note whether `9F 0C 7F` comes back; then the same for leaving.
+- Inference (confirmed by test 14): the device echoes the DAW mode note only when the mode changes, so a host asking a device already in DAW mode gets no answer. The driver therefore leaves DAW mode and enters it again when it starts (`startBytes`), which makes a change either way, and it takes only a control moved or pressed as a sign of presence, not the feature replies sent on the way out.
+- Settled by test 14: the device echoes only a change.
 
 ### Test 13 (2026-11-02): button shades and brightness
 
@@ -626,4 +627,22 @@ with `color b11 9`, `rgb b12 127 40 0`, `color b13 13`, and `rgb b14 127 127 0`.
   orange's dimmest.
 - More contrast can come only from the device's own LED brightness (its Settings page, 1–10, 8 by
   default, per Novation's user guide), which is the user's setting and left to the user.
+
+### Test 14 (2026-11-02): asking for DAW mode twice
+
+**Setup.** Adam's Launch Control XL 3, firmware 1.2, after the app had quit properly (leaving DAW
+mode). `sbdev lcxl --raw`, which enters DAW mode as it starts; then `daw on`, `daw off`, `daw off`,
+`daw on`, and `quit`, about 2 seconds apart. Log `lcxl-daw-echo-1102.log`.
+
+**Findings:**
+- On starting, `9F 0C 7F` was answered with `9F 0C 7F` 11 ms later.
+- `daw on` while in DAW mode: no answer.
+- `daw off`: `B6 1E 06`, `B6 1F 06`, `B6 1E 06`, `B6 1F 06`, then `9F 0C 00`, 11 ms later (Custom 1,
+  as in test 12).
+- `daw off` while out of DAW mode: no answer.
+- `daw on`: `9F 0C 7F`, 12 ms later. `quit` (DAW mode off): the same answer as the first `daw off`.
+
+**Consequence.** The device echoes the DAW mode note only when the mode changes, as test 12
+inferred. So a host asking a device already in DAW mode gets no answer, and the driver's start,
+leaving DAW mode and entering it again (`startBytes`), is what makes the device answer.
 
