@@ -484,3 +484,13 @@ and intuitiveness to be assessed).
 
 **Consequences.** In absolute mode the host can't tell which way an encoder turned with Shift held, so Shift can't make coarse steps there. It can still act on "turned with Shift held" (e.g., reset a pan to the center). Whether relative mode sends steps with Shift held is untested.
 
+### Test 10 (2026-11-01): turning a relative encoder with Shift held
+
+**Setup.** `sbdev lcxl` (touch reports on), then `relative 1 on` (the top encoder row in relative mode). Adam turned the top row's first encoder ("e11" in the log) a few clicks each way, then held Shift and turned it again; log `lcxl-shift-relative.log`.
+
+**Findings:**
+- Without Shift, each click sent a touch, a step of +1 or −1, and a release about 80 ms later. The first click after a change of direction sent a touch and a release with no step (as in test 2).
+- With Shift held, eleven bursts of turning over 4.5 s sent only touches and releases, with no steps.
+
+**Consequences.** Relative mode doesn't help: with Shift held, the host learns only that an encoder was turned, never which way. Shift + turn can reset a control (e.g., a pan to the center), but it can't make coarse steps.
+
