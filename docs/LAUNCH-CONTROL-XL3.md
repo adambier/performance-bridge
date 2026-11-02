@@ -378,10 +378,10 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   2026-11-01.) The strips always show the channels (inputs and playbacks), never the outputs: the
   outputs are set up in TotalMix and left alone during a performance (Adam, 2026-11-01). Page
   and Track are lit where they would move.
-- **Free buttons.** Solo/Arm, Mute/Select, Record, and Play do nothing, so arm and the transport
-  stay free for a later connection to a DAW (Adam, 2026-11-01).
-- **The Novation button** goes to the first page in one press (Adam, 2026-11-02, from the review of
-  that date).
+- **Free buttons.** Solo/Arm, Mute/Select, Record, Play, and the Novation button do nothing, so arm
+  and the transport stay free for a later connection to a DAW (Adam, 2026-11-01). The Novation
+  button was tried as a one-press "first page" and dropped as hard to find (Adam, 2026-11-02).
+- **Both Track buttons together** go to the first page (Adam, 2026-11-02).
 - **Presence.** While connected, the driver asks for the surface mode (feature control 30) after
   5 s with nothing from the device. If two questions go unanswered, or the answer is a Custom Mode
   the device never announced, it takes it that the device restarted and lost DAW mode, and enters

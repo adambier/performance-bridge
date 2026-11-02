@@ -563,13 +563,13 @@ final class LaunchControlDriverTests: XCTestCase {
         var driver = LaunchControlDriver(name: "lc", layout: .xl3)
         _ = driver.start(hub: &hub, now: 0)
         _ = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0)
-        _ = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 1)
+        _ = driver.receive([0xB0, 0x66, 0x7F, 0xB0, 0x66, 0x00], hub: &hub, now: 1)   // pressed and released
         XCTAssertEqual(hub.strips(of: driver.id(.faders))?[0].knobTarget, .level(ChannelRef(.playback, 0), submix: 0),
                        "Track >: the next eight")
         XCTAssertEqual(hub.strips(of: driver.id(.row2))?[0].knobTarget, .pan(ChannelRef(.playback, 0), submix: 0),
                        "every layer moves together")
         _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 2)
-        _ = driver.receive([0xB0, 0x67, 0x7F], hub: &hub, now: 2)
+        _ = driver.receive([0xB0, 0x67, 0x7F, 0xB0, 0x67, 0x00], hub: &hub, now: 2)
         XCTAssertEqual(hub.strips(of: driver.id(.faders))?[0].knobTarget, .level(ChannelRef(.input, 0), submix: 0),
                        "Shift + Track <: the first page")
         _ = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 3)
@@ -630,18 +630,27 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertFalse(driver.isConnected)
     }
 
-    func testTheNovationButtonGoesToTheFirstPage() {
+    func testBothTrackButtonsGoToTheFirstPage() {
         var (driver, hub, _) = connected(layout: .xl3, outputs: [(2, "Phones")])
-        for channel in 0..<20 {
+        for channel in 0..<30 {
             _ = hub.handle(.channel(bus: .input, channel: channel, parameter: "name", value: .text("In \(channel + 1)")), now: 0)
         }
-        _ = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 1)   // Track >
-        guard case .strips(_, let moved, _, _)? = hub.mode(of: driver.id(.faders)) else { return XCTFail() }
-        XCTAssertEqual(moved, 8)
-        _ = driver.receive([0xB0, 0x68, 0x7F], hub: &hub, now: 2)   // the Novation button
-        guard case .strips(_, let first, _, _)? = hub.mode(of: driver.id(.faders)) else { return XCTFail() }
-        XCTAssertEqual(first, 0)
+        func first() -> Int? {
+            guard case .strips(_, let first, _, _)? = hub.mode(of: driver.id(.faders)) else { return nil }
+            return first
+        }
+        for now in [1.0, 2.0] {   // Track > twice, released each time
+            _ = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: now)
+            _ = driver.receive([0xB0, 0x66, 0x00], hub: &hub, now: now + 0.1)
+        }
+        XCTAssertEqual(first(), 16)
+        _ = driver.receive([0xB0, 0x67, 0x7F], hub: &hub, now: 3)   // Track < held
+        XCTAssertEqual(first(), 8)
+        _ = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 3.1)   // then Track > with it
+        XCTAssertEqual(first(), 0, "both together: the first page")
         guard case .strips(_, let row0, _, _)? = hub.mode(of: driver.id(.row0)) else { return XCTFail() }
         XCTAssertEqual(row0, 0, "every layer moves")
+        _ = driver.receive([0xB0, 0x68, 0x7F], hub: &hub, now: 4)   // the Novation button
+        XCTAssertEqual(first(), 0, "the Novation button does nothing")
     }
 }

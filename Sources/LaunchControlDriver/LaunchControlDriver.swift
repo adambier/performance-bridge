@@ -99,6 +99,8 @@ public struct LaunchControlDriver: Sendable {
     /// device restarted without its port going away answers this way is an inference.
     public static let presenceInterval: Double = 5
     private var shiftHeld = false
+    private var trackLeftHeld = false
+    private var trackRightHeld = false
     /// When Shift went down, and whether Page or Track has been pressed since, for the reset's
     /// guard (`resetAllowed`).
     private var shiftDownAt: Double?
@@ -328,6 +330,9 @@ public struct LaunchControlDriver: Sendable {
             buttonsArePFL = pressed
             setModes(first: page.first, hub: &hub, now: now, into: &step)
             step.midi += overlay("Buttons", buttonsArePFL ? "PFL" : "Mute")
+        case .button(let element, let isPressed) where element == .trackLeft || element == .trackRight:
+            if element == .trackLeft { trackLeftHeld = isPressed } else { trackRightHeld = isPressed }
+            if isPressed { pressed(element, hub: &hub, now: now, into: &step) }
         case .button(let element, pressed: true):
             pressed(element, hub: &hub, now: now, into: &step)
         default:
@@ -353,11 +358,12 @@ public struct LaunchControlDriver: Sendable {
             // Eight strips a press; with Shift, the first or the last page. Pages always start at
             // a multiple of eight, as on the Roto-Control: the order is set in the app, so there is
             // nothing to gain from moving one strip (Adam, 2026-11-01).
+            // Both Track buttons together go to the first page (Adam, 2026-11-02; the Novation button
+            // was tried for this the same day and dropped as hard to find).
             let direction = element == .trackLeft ? -1 : 1
-            goToPage(shiftHeld ? (direction < 0 ? .first : .last) : .by(direction), hub: &hub, now: now, into: &step)
-        case .novation:
-            // One press to the first page (Adam, 2026-11-02, from the review of that date).
-            goToPage(.first, hub: &hub, now: now, into: &step)
+            let bothHeld = trackLeftHeld && trackRightHeld
+            goToPage(bothHeld ? .first : shiftHeld ? (direction < 0 ? .first : .last) : .by(direction),
+                     hub: &hub, now: now, into: &step)
         default:
             break
         }
