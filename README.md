@@ -5,8 +5,8 @@ bidirectionally through TotalMix FX's Global OSC interface. With it, TotalMix FX
 performance mixer, with the knobs, faders, buttons, and displays of the hardware controller showing
 and controlling the mix.
 
-With a Melbourne Instruments' Roto-Control, its motorized knobs turn in real time with the TotalMix
-FX faders, with detents and other haptics, and track names and colors are carried over. Novation's
+With Melbourne Instruments' Roto-Control, its motorized knobs turn in real time with the TotalMix
+FX faders, with detents and other haptics, and channel names and colors are carried over. Novation's
 Launch Control 3 and Launch Control XL 3 are also currently supported.
 
 The repository also holds the Swift libraries behind the app and a developer tool for checking
