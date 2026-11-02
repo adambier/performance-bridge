@@ -175,8 +175,13 @@ public struct LaunchControlDriver: Sendable {
         return LaunchControlOutgoing.dawMode(false)
     }
 
+    /// Leaves DAW mode and enters it again, so the device answers with its echo even when a host
+    /// that quit without leaving (e.g., stopped with Control-C) left it in DAW mode: started after
+    /// such a host, the app was seen stuck on "Connecting", and connected at once after a host that
+    /// left properly (Adam, 2026-11-01). That the device echoes only a change is an inference.
     private func startBytes() -> [UInt8] {
-        var bytes = LaunchControlOutgoing.dawMode(true) + LaunchControlOutgoing.touchEvents(true)
+        var bytes = LaunchControlOutgoing.dawMode(false) + LaunchControlOutgoing.dawMode(true)
+            + LaunchControlOutgoing.touchEvents(true)
         for row in 0..<device.encoderRows {
             bytes += LaunchControlOutgoing.relativeEncoders(row: row, false) ?? []
         }
