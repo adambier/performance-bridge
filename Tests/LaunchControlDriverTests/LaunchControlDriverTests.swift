@@ -598,4 +598,50 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(lc3.set(row: 0, to: nil, targets: targets))
         XCTAssertEqual(lc3.outputs(targets: targets), [nil])
     }
+
+    func testAPresenceCheckNoticesADeviceThatLostDAWMode() {
+        var (driver, hub, _) = connected(layout: .xl3)
+        let query = LaunchControlOutgoing.queryFeature(0x1E)
+        XCTAssertTrue(driver.tick(hub: &hub, now: 4.9).midi.isEmpty, "quiet for under 5 s: nothing")
+        XCTAssertEqual(driver.tick(hub: &hub, now: 5).midi, query, "asks for the surface mode")
+        XCTAssertTrue(driver.tick(hub: &hub, now: 6).midi.isEmpty, "once per 5 s")
+        _ = driver.receive([0xB6, 0x1E, 0x01], hub: &hub, now: 5.01)   // the answer: a DAW mode
+        XCTAssertTrue(driver.isConnected)
+        XCTAssertTrue(driver.tick(hub: &hub, now: 9).midi.isEmpty)
+
+        // An answer of a Custom Mode the device never announced: it restarted (inference).
+        XCTAssertEqual(driver.tick(hub: &hub, now: 10.01).midi, query)
+        let restart = driver.receive([0xB6, 0x1E, 0x06], hub: &hub, now: 10.02)
+        XCTAssertFalse(driver.isConnected)
+        XCTAssertTrue(restart.midi.contains(LaunchControlOutgoing.dawMode(true)), "asks for DAW mode again")
+        _ = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 10.1)
+        XCTAssertTrue(driver.isConnected)
+
+        // A Custom Mode chosen on the device is announced, and is left alone.
+        _ = driver.receive([0xB6, 0x1E, 0x06], hub: &hub, now: 11)
+        XCTAssertTrue(driver.isConnected)
+        XCTAssertEqual(driver.tick(hub: &hub, now: 16).midi, query)
+        XCTAssertTrue(driver.receive([0xB6, 0x1E, 0x06], hub: &hub, now: 16.01).midi.isEmpty,
+                      "the answer agrees with what it announced")
+
+        // Silence through two questions: asks for DAW mode again.
+        XCTAssertEqual(driver.tick(hub: &hub, now: 21.02).midi, query)
+        XCTAssertTrue(driver.tick(hub: &hub, now: 27.02).midi.contains(LaunchControlOutgoing.dawMode(true)))
+        XCTAssertFalse(driver.isConnected)
+    }
+
+    func testTheNovationButtonGoesToTheFirstPage() {
+        var (driver, hub, _) = connected(layout: .xl3, outputs: [(2, "Phones")])
+        for channel in 0..<20 {
+            _ = hub.handle(.channel(bus: .input, channel: channel, parameter: "name", value: .text("In \(channel + 1)")), now: 0)
+        }
+        _ = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 1)   // Track >
+        guard case .strips(_, let moved, _, _)? = hub.mode(of: driver.id(.faders)) else { return XCTFail() }
+        XCTAssertEqual(moved, 8)
+        _ = driver.receive([0xB0, 0x68, 0x7F], hub: &hub, now: 2)   // the Novation button
+        guard case .strips(_, let first, _, _)? = hub.mode(of: driver.id(.faders)) else { return XCTFail() }
+        XCTAssertEqual(first, 0)
+        guard case .strips(_, let row0, _, _)? = hub.mode(of: driver.id(.row0)) else { return XCTFail() }
+        XCTAssertEqual(row0, 0, "every layer moves")
+    }
 }

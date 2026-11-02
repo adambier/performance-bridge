@@ -219,8 +219,8 @@ the main mix) and the cue output (PFL uses it).
   row.
 - Each row's output is remembered when Performance Bridge restarts. It can also be chosen in Settings, at the
   bottom of the Connections tab, with the Launch Control connected or not; the change takes effect at once.
-- Solo/Arm, Mute/Select, Record, Play, and the Novation button do nothing, so they stay free for later uses (e.g., a
-  connection to a DAW).
+- The Novation button goes back to the first eight channels.
+- Solo/Arm, Mute/Select, Record, and Play do nothing, so they stay free for later uses (e.g., a connection to a DAW).
 - Level and pan are Main Out's. In TotalMix each submix has its own level and pan for every channel, so TotalMix's
   window shows the pans set here only while Main Out's output is selected in its bottom row (seen 2026-11-01).
 
@@ -234,7 +234,7 @@ The Launch Control 3 works the same way, with fewer controls:
 | Top encoder | Pan, or a send: **Page ▼** / **▲** steps it through Pan, then each output in the Outputs list |
 | Button | Mute; PFL while **Function** (labeled "DAW" underneath) is held (orange for mute, yellow for PFL, dim when off; Function lights yellow while the buttons are PFL) |
 
-Track works as on the XL 3, and Shift + turn resets an encoder as there; a level above 0 dB comes down to 0 dB, and
+Track and the Novation button work as on the XL 3, and Shift + turn resets an encoder as there; a level above 0 dB comes down to 0 dB, and
 one below 0 dB stays. The screen shows the channels on
 the page, the top row's function (e.g., "Top: Pan"), and the buttons' ("Buttons: Mute"). The Launch Control 3 has not been tried on a device yet (`docs/LAUNCH-CONTROL-3.md`).
 

@@ -85,6 +85,19 @@ public struct LaunchControlDriver: Sendable {
     private var connected = false
     private var inCustomMode = false
     private var lastStart: Double?
+    /// When the device last sent anything, and when the driver last asked it for its surface mode,
+    /// for the presence check (`presenceInterval`).
+    private var lastHeard: Double?
+    private var lastQuery: Double?
+    private var awaitingModeReply = false
+
+    /// How long the device may stay silent before the driver asks for its surface mode (feature
+    /// control 30, which the XL 3 has answered: docs/LAUNCH-CONTROL-XL3.md, test 6), in seconds.
+    /// With no answer to two questions, or an answer of a Custom Mode the device never announced,
+    /// the driver takes it that the device restarted and lost DAW mode, and enters DAW mode
+    /// again, which draws everything (Adam, 2026-11-02, from the review of that date). That a
+    /// device restarted without its port going away answers this way is an inference.
+    public static let presenceInterval: Double = 5
     private var shiftHeld = false
     /// When Shift went down, and whether Page or Track has been pressed since, for the reset's
     /// guard (`resetAllowed`).
@@ -209,8 +222,25 @@ public struct LaunchControlDriver: Sendable {
         if !connected, let lastStart, now - lastStart >= Self.restartInterval {
             self.lastStart = now
             step.midi += startBytes()
+        } else if connected, let heard = lastHeard, now - heard >= Self.presenceInterval {
+            if now - heard >= 2 * Self.presenceInterval + 1 {
+                restart(now: now, into: &step)   // two questions unanswered
+            } else if now - (lastQuery ?? -Double.infinity) >= Self.presenceInterval {
+                lastQuery = now
+                awaitingModeReply = true
+                step.midi += LaunchControlOutgoing.queryFeature(0x1E)
+            }
         }
         return step
+    }
+
+    /// Takes the device as no longer in DAW mode, and asks for it again; the echo draws everything.
+    private mutating func restart(now: Double, into step: inout LaunchControlStep) {
+        connected = false
+        inCustomMode = false
+        awaitingModeReply = false
+        lastStart = now
+        step.midi += startBytes()
     }
 
     // MARK: - From the device
@@ -225,6 +255,7 @@ public struct LaunchControlDriver: Sendable {
 
     private mutating func handle(_ event: LaunchControlEvent, hub: inout SurfaceHub, now: Double,
                                  into step: inout LaunchControlStep) {
+        lastHeard = now
         if case .dawMode(let on) = event {
             if on {
                 if !connected { connect(hub: &hub, now: now, into: &step) }
@@ -237,7 +268,13 @@ public struct LaunchControlDriver: Sendable {
             return
         }
         if case .mode(let mode) = event {
+            let answer = awaitingModeReply
+            awaitingModeReply = false
             switch mode {
+            case .custom where answer && connected && !inCustomMode:
+                // A Custom Mode chosen on the device is announced when chosen (test 1); one that
+                // shows up only in an answer means the device restarted (inference).
+                restart(now: now, into: &step)
             case .custom:
                 inCustomMode = true
             case .dawMixer, .dawControl:
@@ -317,23 +354,33 @@ public struct LaunchControlDriver: Sendable {
             // a multiple of eight, as on the Roto-Control: the order is set in the app, so there is
             // nothing to gain from moving one strip (Adam, 2026-11-01).
             let direction = element == .trackLeft ? -1 : 1
-            let primary = id(layers[0])
-            var output: CoreOutput
-            if shiftHeld {
-                // Past the end, the hub goes to the start of the last page.
-                output = hub.setMode(primary, mode(for: layers[0], first: direction < 0 ? 0 : Int(Int32.max)), now: now)
-            } else {
-                output = hub.page(primary, by: direction, now: now)
-            }
-            if case .strips(_, let first, _, _)? = hub.mode(of: primary) {
-                for layer in layers.dropFirst() {
-                    output.append(hub.setMode(id(layer), mode(for: layer, first: first), now: now))
-                }
-            }
-            take(output, hub: hub, into: &step)
+            goToPage(shiftHeld ? (direction < 0 ? .first : .last) : .by(direction), hub: &hub, now: now, into: &step)
+        case .novation:
+            // One press to the first page (Adam, 2026-11-02, from the review of that date).
+            goToPage(.first, hub: &hub, now: now, into: &step)
         default:
             break
         }
+    }
+
+    private enum PageMove { case first, last, by(Int) }
+
+    /// Moves every layer to another page: the first, the last (past the end, the hub goes to the
+    /// start of the last page), or by eight strips either way.
+    private mutating func goToPage(_ move: PageMove, hub: inout SurfaceHub, now: Double, into step: inout LaunchControlStep) {
+        let primary = id(layers[0])
+        var output: CoreOutput
+        switch move {
+        case .first: output = hub.setMode(primary, mode(for: layers[0], first: 0), now: now)
+        case .last: output = hub.setMode(primary, mode(for: layers[0], first: Int(Int32.max)), now: now)
+        case .by(let direction): output = hub.page(primary, by: direction, now: now)
+        }
+        if case .strips(_, let first, _, _)? = hub.mode(of: primary) {
+            for layer in layers.dropFirst() {
+                output.append(hub.setMode(id(layer), mode(for: layer, first: first), now: now))
+            }
+        }
+        take(output, hub: hub, into: &step)
     }
 
     /// Resolves the send rows against the send targets now (`LaunchControlSendRows.indices`).
@@ -397,6 +444,9 @@ public struct LaunchControlDriver: Sendable {
         connected = true
         inCustomMode = false
         lastStart = nil
+        lastHeard = now
+        lastQuery = nil
+        awaitingModeReply = false
         sentPositions = [:]
         sentColors = [:]
         sentTexts = [:]
