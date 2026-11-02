@@ -41,7 +41,11 @@ CABLE_TOP = TOWER_TOP + 25
 DECK_Y = 605          # bottom of the hangers; the deck line is drawn at DECK_LINE
 DECK_LINE = 620
 ANCHOR_L, ANCHOR_R = 170, 860
-LARGE_SHIFT = -50     # the large icon raises the waterline 50 units, for the reflection
+LARGE_SHIFT = -50     # the large icon raises the bridge 50 units, for the reflection
+CLEARANCE = 55        # the deck stands this far above the water, on the tower and two piers (Adam,
+                      # 2026-11-02: a deck at the waterline is a strange choice for a bridge)
+WATER_LINE = DECK_LINE + CLEARANCE
+PIERS = (205, 825)    # x of the piers near each end of the deck
 
 # Fader caps for each rendition: (x, cap top y); hanger tops follow from the cable.
 CAPS_LARGE = [(365, 565), (425, 547), (485, 512), (545, 416), (605, 377), (700, 439), (750, 550)]
@@ -68,15 +72,26 @@ def cable_paths():
     return left, right
 
 
-def tower(k):
-    return '<polygon points="%.1f,%d %.1f,%d %.1f,612 %.1f,612" fill="%s"></polygon>' % (
-        TOWER_X - 12 * k, TOWER_TOP, TOWER_X + 12 * k, TOWER_TOP, TOWER_X + 24 * k, TOWER_X - 24 * k, AMBER)
+def tower(k, base=612):
+    """The tower, tapering from its top down to `base`: the deck, or the water where there is one."""
+    bottom_half = 24 * k + (base - 612) * 12 * k / (612 - TOWER_TOP)
+    return '<polygon points="%.1f,%d %.1f,%d %.1f,%d %.1f,%d" fill="%s"></polygon>' % (
+        TOWER_X - 12 * k, TOWER_TOP, TOWER_X + 12 * k, TOWER_TOP, TOWER_X + bottom_half, base, TOWER_X - bottom_half, base, AMBER)
 
 
-def bridge(k, deck_color, deck_width, caps, with_deck=True):
-    """Deck, hangers, cables, and tower (no caps)."""
+def piers(deck_color):
+    """Two piers from the deck down to the water, near the deck's ends (the large icon only)."""
+    return '<g stroke="%s" stroke-width="18">' % deck_color + "".join(
+        '<line x1="%d" y1="%d" x2="%d" y2="%d"></line>' % (x, DECK_LINE, x, WATER_LINE) for x in PIERS) + "</g>"
+
+
+def bridge(k, deck_color, deck_width, caps, with_deck=True, over_water=False):
+    """Deck, hangers, cables, and tower (no caps); `over_water` adds the piers and runs the tower
+    down to the water (the large icon, with its reflection)."""
     left, right = cable_paths()
     out = []
+    if over_water:
+        out.append(piers(deck_color))
     if with_deck:
         out.append('<line x1="160" y1="%d" x2="864" y2="%d" stroke="%s" stroke-width="%.1f" stroke-linecap="round"></line>'
                    % (DECK_LINE, DECK_LINE, deck_color, deck_width))
@@ -84,7 +99,7 @@ def bridge(k, deck_color, deck_width, caps, with_deck=True):
         '<line x1="%s" y1="%.0f" x2="%s" y2="%d"></line>' % (x, cable_y(x) + 10, x, DECK_Y) for x, _ in caps) + "</g>")
     out.append('<g fill="none" stroke="%s" stroke-width="%.1f" stroke-linecap="round"><path d="%s"></path><path d="%s"></path></g>'
                % (AMBER, 24 * k, left, right))
-    out.append(tower(k))
+    out.append(tower(k, WATER_LINE if over_water else 612))
     return "\n".join(out)
 
 
@@ -115,12 +130,13 @@ SKY_GRADIENT = ('<linearGradient id="%s" x1="0" y1="0" x2="0" y2="1"><stop offse
 
 
 def water(prefix):
-    """The reflection as plain vector shapes (no filter): the bridge mirrored at the deck line, cut
-    into horizontal strips that are shifted sideways and fade with depth. Returns the clip paths and
-    the strips. (Dark wave lines across the water were tried and dropped: Adam, 2026-10-30.)"""
-    mirrored = bridge(1, DECK_LARGE, 22, CAPS_LARGE, with_deck=False) + "\n" + flat_caps(CAPS_LARGE, CAP_LARGE)
+    """The reflection as plain vector shapes (no filter): the bridge, deck and piers included,
+    mirrored at the waterline, cut into horizontal strips that are shifted sideways and fade with
+    depth. Returns the clip paths and the strips. (Dark wave lines across the water were tried and
+    dropped: Adam, 2026-10-30.)"""
+    mirrored = bridge(1, DECK_LARGE, 22, CAPS_LARGE, over_water=True) + "\n" + flat_caps(CAPS_LARGE, CAP_LARGE)
     defs, strips = [], []
-    strip_h, top = 8, DECK_LINE
+    strip_h, top = 8, WATER_LINE
     count = 36
     for i in range(count):
         y0 = top + i * strip_h
@@ -130,7 +146,7 @@ def water(prefix):
         cid = "%sstrip%d" % (prefix, i)
         defs.append('<clipPath id="%s"><rect x="0" y="%d" width="1024" height="%d"></rect></clipPath>' % (cid, y0, strip_h))
         strips.append('<g clip-path="url(#%s)" opacity="%.3f"><g transform="translate(%.1f %d) scale(1 -1)">%s</g></g>'
-                      % (cid, opacity, dx, 2 * DECK_LINE, mirrored))
+                      % (cid, opacity, dx, 2 * WATER_LINE, mirrored))
     return "\n".join(defs), "\n".join(strips)
 
 
@@ -171,10 +187,10 @@ def master_layers():
     sky_dark = svg(1024, '<rect width="1024" height="1024" fill="url(#sky)"></rect>', dark % "sky")
     wdefs, wbody = water("m")
     water_layer = svg(1024, '<g %s><g %s>\n%s\n</g></g>' % (MASTER, SHIFT, wbody), wdefs)
-    bridge_layer = svg(1024, '<g %s><g %s>\n%s\n</g></g>' % (MASTER, SHIFT, bridge(1, DECK_LARGE, 22, CAPS_LARGE)))
+    bridge_layer = svg(1024, '<g %s><g %s>\n%s\n</g></g>' % (MASTER, SHIFT, bridge(1, DECK_LARGE, 22, CAPS_LARGE, over_water=True)))
     faders = svg(1024, '<g %s><g %s>\n%s\n</g></g>' % (MASTER, SHIFT, shaded_caps(CAPS_LARGE, CAP_LARGE, "face")), CAP_FACE % "face")
     composite = svg(1024, '<rect width="1024" height="1024" fill="url(#sky)"></rect>\n<g %s><g %s>\n%s\n%s\n%s\n</g></g>' % (
-        MASTER, SHIFT, wbody, bridge(1, DECK_LARGE, 22, CAPS_LARGE), shaded_caps(CAPS_LARGE, CAP_LARGE, "face")),
+        MASTER, SHIFT, wbody, bridge(1, DECK_LARGE, 22, CAPS_LARGE, over_water=True), shaded_caps(CAPS_LARGE, CAP_LARGE, "face")),
         SKY_GRADIENT % "sky" + "\n" + CAP_FACE % "face" + "\n" + wdefs)
     return {"1-sky.svg": sky, "1-sky-dark.svg": sky_dark, "2-reflection.svg": water_layer, "3-bridge.svg": bridge_layer, "4-faders.svg": faders,
             "composite.svg": composite}
@@ -189,7 +205,7 @@ def legacy_large():
     defs = "\n".join([SKY_GRADIENT % "sky", CAP_FACE % "face", wdefs, SHADOW,
                       '<clipPath id="body"><path d="%s"></path></clipPath>' % BODY])
     body = ('<path d="%s" fill="url(#sky)" filter="url(#shadow)"></path>\n<g clip-path="url(#body)"><g %s>\n%s\n%s\n%s\n</g></g>'
-            % (BODY, SHIFT, wbody, bridge(1, DECK_LARGE, 22, CAPS_LARGE), shaded_caps(CAPS_LARGE, CAP_LARGE, "face")))
+            % (BODY, SHIFT, wbody, bridge(1, DECK_LARGE, 22, CAPS_LARGE, over_water=True), shaded_caps(CAPS_LARGE, CAP_LARGE, "face")))
     return svg(1024, body, defs)
 
 
