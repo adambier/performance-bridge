@@ -1263,7 +1263,8 @@ public struct LaunchControlDriver: Sendable {
         }
 
         /// This color at `fraction` (0…1) of its brightness, each part rounded and a part that was
-        /// lit kept at 1 or more, so the hue stays.
+        /// lit kept at 1 or more, so the hue stays roughly the same (only roughly at small
+        /// fractions, and a fraction of 0 is not dark: use `.palette(0)` for off).
         public func scaled(_ fraction: Double) -> RGB {
             func part(_ value: UInt8) -> UInt8 {
                 guard value > 0 else { return 0 }
@@ -1275,7 +1276,7 @@ public struct LaunchControlDriver: Sendable {
 
     /// The exact color of each palette color the driver lights encoders with, for its dimmer
     /// shades. Orange (127, 40, 0) and yellow (127, 127, 0) have been seen to match their palette
-    /// colors (test 13); the others are read off the guide's palette picture (inference), and
+    /// colors on buttons (test 13); the others are read off the guide's palette picture (inference), and
     /// grey's is a guess, since 1–3 looked near white in test 4's photo.
     public static let paletteRGB: [UInt8: RGB] = [
         3: RGB(127, 127, 127),   // white

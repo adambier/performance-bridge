@@ -598,13 +598,9 @@ final class LaunchControlDriverTests: XCTestCase {
         _ = driver.receive([0xB6, 0x3F, 0x00], hub: &hub, now: 10)
         _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 11)
         let lit = driver.receive([0xBE, 0x0D, 0x7F], hub: &hub, now: 11.4).midi
-        let cyanShades = [LaunchControlDriver.LightColor.palette(37), LaunchControlDriver.shade(37, .medium), LaunchControlDriver.shade(37, .dim)]
-        XCTAssertTrue(cyanShades.contains { light in
-            switch light {
-            case .palette(let index): return lit.contains([0xB0, 0x0D, index])
-            case .rgb(let c): return lit.contains(LaunchControlOutgoing.rgb(.encoder(row: 0, column: 0), red: c.red, green: c.green, blue: c.blue) ?? [1])
-            }
-        }, "restored: cyan, in its level's shade")
+        let restoredShade = LaunchControlDriver.shade(37, LaunchControlDriver.levelShade(position: sendBefore ?? -1))
+        XCTAssertEqual(restoredShade, .palette(37), "the restored send is near 0 dB: bright")
+        XCTAssertTrue(lit.contains([0xB0, 0x0D, 37]), "restored: bright cyan")
     }
 
     func testShiftAndTurnNeverRaisesALevel() {

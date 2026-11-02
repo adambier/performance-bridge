@@ -418,7 +418,7 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   are the color's exact RGB (SysEx 01h 53h) at 0.3 and 0.08 of its parts (Adam, 2026-11-02),
   rather than the palette's own dimmer colors: orange's medium palette shade (10) was too close to
   its neighbors to read,[^test-15] and white's (2, 1) looked near white in test 4's photo.[^test-4]
-  Orange's and yellow's RGB values have been seen to match their palette colors;[^test-13] the
+  Orange's and yellow's RGB values have been seen to match their palette colors, on buttons;[^test-13] the
   others are read off the guide's palette picture, and grey's is a guess (inference). The fractions
   are a starting point for the check on the device, and that its brightness follows the RGB values
   in proportion is an inference, so whether the four steps read is not yet known. Pan encoders
