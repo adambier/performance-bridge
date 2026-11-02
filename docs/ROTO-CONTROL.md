@@ -587,3 +587,18 @@ marked "seen".
 - **Run 2** (relaunched): six switches over 54 s, one per press of both arrows; knobs moved TotalMix's faders in both sets throughout (`/mix/in/0/0/faderlin` and `/mix/in/2/0/faderlin`).
 
 **Consequences.** The driver shows the channels on both track sets (Adam, 2026-11-01); the outputs are no longer shown on any hardware controller. The second set has no TotalMix job of its own: TotalMix has no return tracks, and its FX returns (reverb and echo) aren't used here (Adam, 2026-11-01). Because the second set mirrors the first and keeps the page and the selected track when the set changes (fixed after the review of 2026-11-02, which found a switch went back to the first page), an accidental press leaves the knobs on the same channels. No host command sets or locks the track set (SET ALL TRACKS MODE goes only from the Roto-Control to the host), so the switch can't be turned off; this is a feature request.
+
+### Test 11 (2026-11-02): page draws held to one per 100 ms
+
+**Setup.** Adam's Roto-Control in MIX mode, with the app (build 250), whose `RotoDriver` draws a page
+at most once every 100 ms (`pageDrawInterval`, section 3). Log `app-roto-1102.log`. Seen by Adam.
+
+**Findings.** All as intended: on connecting, all eight screens showed their names and TotalMix
+colors; after six quick presses each of the right and left arrows, the screens settled on the right
+page and the knobs responded; a knob turned within about half a second of a page change behaved as
+expected; pressing both arrows kept the page. No stall.
+
+**Consequence.** Holding page draws back doesn't show on the device. Whether it prevents the
+freezes seen in test 4 and test 10's run 1 can't be shown by one session; that it helps stays an
+inference.
+
