@@ -346,6 +346,11 @@ public struct LaunchControlDriver: Sendable {
         case .button:
             guard let (layer, strip) = switchControl(for: element) else { return }
             take(hub.switchPressed(id(layer), strip: strip, now: now), hub: hub, into: &step)
+            // A mute does nothing in the audio while TotalMix's Mute Master is off: say so where
+            // the eyes are (Adam, 2026-11-02).
+            if hub.mirror.muteMaster == false, !isPFLLayer(layer, hub: hub), infos[layer]?[strip] ?? nil != nil {
+                step.midi += overlay("Mute Master off", "in TotalMix FX")
+            }
         case .pageUp, .pageDown:
             if shiftHeld { shiftUsedForNavigation = true }
             // Page steps the top send row's output; on the XL 3, Shift + Page the middle row's
@@ -795,6 +800,7 @@ public struct LaunchControlDriver: Sendable {
         // 2026-11-02). All three send only what changed.
         if connected && !inCustomMode {
             step.midi += drawNavigation(hub: hub) + drawSendColors(hub: hub) + drawStationary(hub: hub)
+                + drawButtons(hub: hub)
         }
         return step
     }
@@ -897,12 +903,41 @@ public struct LaunchControlDriver: Sendable {
         if element.hasLight {
             bytes += color(element, active ? (sendColor(layer, hub: hub) ?? Self.color(for: info)) : 0)
         }
-        if let button = button(layer, index) {
-            let on = switchOn[layer]?[index] ?? false
-            let isPFL: Bool
-            if case .strips(_, _, _, .pfl)? = hub.mode(of: id(layer)) { isPFL = true } else { isPFL = false }
-            let colorIndex: UInt8 = info == nil ? 0 : isPFL ? (on ? Self.pflOn : Self.pflOff) : (on ? Self.muteOn : Self.muteOff)
-            bytes += color(button, colorIndex)
+        bytes += drawButton(layer, index, hub: hub)
+        return bytes
+    }
+
+    /// A strip button's light: bright when on, the dimmest shade when off; a mute that is on while
+    /// TotalMix's Mute Master is off (selected but not silencing) in the medium shade, as TotalMix
+    /// draws its M button partly lit (Adam, 2026-11-02).
+    private mutating func drawButton(_ layer: Layer, _ index: Int, hub: SurfaceHub) -> [UInt8] {
+        guard let button = button(layer, index) else { return [] }
+        let info = infos[layer]?[index] ?? nil
+        let on = switchOn[layer]?[index] ?? false
+        let colorIndex: UInt8
+        if info == nil {
+            colorIndex = 0
+        } else if isPFLLayer(layer, hub: hub) {
+            colorIndex = on ? Self.pflOn : Self.pflOff
+        } else if on {
+            colorIndex = hub.mirror.muteMaster == false ? Self.muteSelected : Self.muteOn
+        } else {
+            colorIndex = Self.muteOff
+        }
+        return color(button, colorIndex)
+    }
+
+    private func isPFLLayer(_ layer: Layer, hub: SurfaceHub) -> Bool {
+        if case .strips(_, _, _, .pfl)? = hub.mode(of: id(layer)) { return true }
+        return false
+    }
+
+    /// Every strip button's light again; only changed ones are sent. For a change of Mute Master,
+    /// which changes no strip.
+    private mutating func drawButtons(hub: SurfaceHub) -> [UInt8] {
+        var bytes: [UInt8] = []
+        for layer in layers {
+            for index in 0..<Self.stripCount { bytes += drawButton(layer, index, hub: hub) }
         }
         return bytes
     }
@@ -1061,14 +1096,18 @@ public struct LaunchControlDriver: Sendable {
     public static let muteOn: UInt8 = 9
     /// A mute button that is off: the dimmest orange.
     public static let muteOff: UInt8 = 11
+    /// A mute that is on while TotalMix's Mute Master is off: the medium orange, between the two
+    /// (inference from the palette's runs of four, test 13; not yet seen).
+    public static let muteSelected: UInt8 = 10
     /// A PFL button that is on: yellow.
     public static let pflOn: UInt8 = 13
     /// A PFL button that is off: the dimmest yellow.
     public static let pflOff: UInt8 = 15
     /// Page and Track where they would move: white.
     public static let navigationOn: UInt8 = 3
-    /// The Function button while the buttons are mute: dim grey.
-    public static let functionIdle: UInt8 = 1
+    /// The Function button while the buttons are mute: the dimmest yellow, PFL's color when off,
+    /// as for any button that is off (Adam, 2026-11-02).
+    public static let functionIdle: UInt8 = 15
 
     /// The palette color for each of TotalMix's eight colors (1 white, 2 grey, 3 orange, 4 red,
     /// 5 blue, 6 green, 7 yellow, 8 pink; docs/TOTALMIX-OSC.md, test 7). White, grey, orange, red,

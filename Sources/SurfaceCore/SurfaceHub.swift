@@ -143,6 +143,9 @@ public struct SurfaceHub: Sendable {
             return refresh(where: { $0.contains(node: key) }, now: now)
         case .channel, .controlRoom:
             return refreshAll(now: now)
+        case .muteMaster:
+            // Nothing on the strips changes; drivers that show it read the mirror.
+            return CoreOutput()
         }
     }
 

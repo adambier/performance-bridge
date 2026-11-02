@@ -141,6 +141,25 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(mute.midi.contains([0xB0, 0x2D, LaunchControlDriver.muteOn]), "mute on: orange")
     }
 
+    func testMuteMasterOffShowsMutesAsSelectedOnly() {
+        var (driver, hub, _) = connected(layout: .xl3)
+        let message = OSCMessage("/globalmute", [.float(0)])
+        let event = try! XCTUnwrap(TotalMixEvent(message))
+        XCTAssertEqual(event, .other(path: "globalmute", value: .number(0)), "TotalMix's /globalmute")
+        let off = driver.take(hub.handle(event, now: 1), hub: &hub, now: 1)
+        XCTAssertEqual(hub.mirror.muteMaster, false)
+        XCTAssertTrue(off.midi.isEmpty, "no mute on yet: nothing to redraw")
+
+        let mute = driver.receive([0xB0, 0x2D, 0x7F], hub: &hub, now: 2)
+        XCTAssertTrue(mute.midi.contains([0xB0, 0x2D, LaunchControlDriver.muteSelected]), "medium orange")
+        XCTAssertTrue(mute.midi.contains(LaunchControlOutgoing.text(.overlay, field: 0, "Mute Master off", model: .xl3) ?? []),
+                      "the screen says why")
+        let on = driver.take(hub.handle(.other(path: "globalmute", value: .number(1)), now: 3), hub: &hub, now: 3)
+        XCTAssertTrue(on.midi.contains([0xB0, 0x2D, LaunchControlDriver.muteOn]), "Mute Master on: bright")
+        let pfl = driver.receive([0xB0, 0x25, 0x7F], hub: &hub, now: 4)
+        XCTAssertFalse(pfl.midi.contains(LaunchControlOutgoing.text(.overlay, field: 0, "Mute Master off", model: .xl3) ?? []))
+    }
+
     func testFaderAwayFromItsLevelIsHeldBack() {
         var (driver, hub, _) = connected(layout: .xl3)
         XCTAssertEqual(driver.receive([0xBF, 0x05, 10], hub: &hub, now: 1).core.messages, [],

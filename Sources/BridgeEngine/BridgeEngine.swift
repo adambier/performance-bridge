@@ -167,6 +167,9 @@ public struct BridgeStatus: Equatable, Sendable {
     /// The outputs the send controls step through, in order (`SurfaceHub.sendTargets`), with their
     /// names as the strips show them, for choosing a send row's output.
     public var sendTargets: [HomeChoice] = []
+    /// Whether TotalMix has reported its Mute Master off: mutes are then only selected and don't
+    /// silence (Adam, 2026-11-02). False until TotalMix has reported it.
+    public var muteMasterOff = false
     /// How many channels TotalMix has described (named or set) since the engine started: more than
     /// zero once it has answered `/sendall` with its channels, not only its status.
     public var channelCount = 0
@@ -720,6 +723,7 @@ public final class BridgeEngine: @unchecked Sendable {
             let name = hub.layout.label(for: ref) ?? hub.mirror.channels[ref]?.name ?? "Output \(output + 1)"
             return HomeChoice(output: output, name: name, roles: [])
         }
+        status.muteMasterOff = hub.mirror.muteMaster == false
         status.channelCount = hub.mirror.channels.count
         status.levelsSeen = levelsSeen
         status.homeSubmix = hub.homeSubmix

@@ -217,6 +217,9 @@ final class BridgeEngineTests: XCTestCase {
         let steps = states(status)
         for id in ["port", "totalmix", "channels", "meters", "roto"] { XCTAssertEqual(steps[id], .done, id) }
         XCTAssertTrue(SetupChecklist.isComplete(status))
+        XCTAssertNil(steps["mutemaster"], "no Mute Master step while it is on or unknown")
+        status.muteMasterOff = true
+        XCTAssertEqual(states(status)["mutemaster"], .problem)
     }
 
     func testSetupChecklistNamesTheEnginesPortsAndTotalMixsLabels() throws {

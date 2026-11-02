@@ -473,6 +473,11 @@ struct MenuContent: View {
         if let name = model.status.launchControlName {
             Text(name + ": " + launchControlState)
         }
+        // Only while it's off: mutes then do nothing in the audio (Adam, 2026-11-02). A TotalMix
+        // state that can change between sessions, so a status line, not a fault mark.
+        if model.status.muteMasterOff {
+            Text("Mute Master: Off")
+        }
         Divider()
         // Order (Apple's HIG, Menus): what is used most first, related items grouped and separated;
         // then the rarely used items in the order of a Mac app menu: the Setup Guide (mostly at

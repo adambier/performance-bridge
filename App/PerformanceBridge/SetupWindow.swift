@@ -24,6 +24,7 @@ struct SetupView: View {
         "totalmix": ["totalmix-options-menu", "totalmix-osc-tab", "totalmix-osc-details"],
         "meters": ["totalmix-osc-tab"],
         "hide": ["totalmix-channel-layout"],
+        "mutemaster": ["totalmix-control-strip"],
     ]
 
     private var checks: [SetupStep] { steps.filter { !Self.noteIDs.contains($0.id) } }

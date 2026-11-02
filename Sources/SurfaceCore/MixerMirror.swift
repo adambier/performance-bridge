@@ -65,6 +65,8 @@ public enum MirrorChange: Hashable, Sendable {
     case meter(ChannelRef)
     /// A control-room assignment (Main Out, Phones, and the others in `MonitoringRole`).
     case controlRoom
+    /// TotalMix's Mute Master (`/globalmute`).
+    case muteMaster
 }
 
 /// The control-room assignments that make an output a monitoring output rather than a send:
@@ -101,6 +103,10 @@ public struct MixerMirror: Sendable {
     public private(set) var meters: [ChannelRef: Double] = [:]
     /// The output channel (its left channel) assigned to each monitoring role in the control room.
     public private(set) var monitoring: [MonitoringRole: Int] = [:]
+    /// TotalMix's Mute Master (`/globalmute`), or `nil` until TotalMix has reported it. While it is
+    /// off, a channel's mute is only selected and doesn't silence it (docs/TOTALMIX-OSC.md, the
+    /// global mute recheck of 2026-10-31, and Adam, 2026-11-02).
+    public private(set) var muteMaster: Bool?
     private var visible: [TotalMixBus: [ChannelRef]] = [:]
 
     /// An empty mirror.
@@ -120,6 +126,12 @@ public struct MixerMirror: Sendable {
             if meters[ref] == peakDB { return nil }
             meters[ref] = peakDB
             return .meter(ref)
+        case .other("globalmute", let value):
+            guard let number = value.number else { return nil }
+            let on = number >= 0.5
+            if muteMaster == on { return nil }
+            muteMaster = on
+            return .muteMaster
         case .other(let path, let value):
             guard path.hasPrefix("controlroom/"),
                   let role = MonitoringRole(rawValue: String(path.dropFirst("controlroom/".count))),

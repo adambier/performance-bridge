@@ -98,6 +98,11 @@ public enum SetupChecklist {
             : SetupStep(id: "meters", title: "No meters yet", state: .optional,
                         detail: "For meters on the hardware controllers: in TotalMix FX, Options → Mixer Settings… (F3) → OSC, check “Send Level Data” for the controller.\n\nTotalMix FX sends levels only when they change, so play something to see them."))
 
+        if status.muteMasterOff {
+            steps.append(SetupStep(id: "mutemaster", title: "Mute Master is off in TotalMix FX", state: .problem,
+                                   detail: "While it’s off, mutes from the hardware controller only select a channel’s mute and don’t silence it.\n\nIn TotalMix FX, turn on the M (Mute Master) button in the Control Strip, below the interface’s name and Undo."))
+        }
+
         if !status.rotoEnabled {
             // Another hardware controller is in use.
         } else if status.rotoConnected {
