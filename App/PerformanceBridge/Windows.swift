@@ -10,6 +10,12 @@ import TotalMixOSC
 #if canImport(MIDITransport)
 import MIDITransport
 #endif
+#if canImport(BridgeEngine)
+import BridgeEngine
+#endif
+#if canImport(LaunchControl)
+import LaunchControl
+#endif
 
 /// Opens the app's windows, one of each, bringing the app forward (a menu-bar app is otherwise in
 /// the background).
@@ -91,10 +97,13 @@ struct AboutView: View {
 
 /// The Settings window's tabs.
 enum SettingsTab: String, Hashable {
-    /// Where to find TotalMix FX and the Roto-Control.
+    /// Where to find TotalMix FX and the hardware controller.
     case connections
     /// The order of the channels on the surfaces.
     case channelLayout
+    /// The Launch Control's send rows; shown only while a Launch Control is the hardware
+    /// controller (Adam, 2026-11-01).
+    case launchControl
 
     /// The tab's name, also the window's title while it shows (Apple's HIG, Settings: the title
     /// names the pane that is showing).
@@ -102,6 +111,7 @@ enum SettingsTab: String, Hashable {
         switch self {
         case .connections: return "Connections"
         case .channelLayout: return "Channel Layout"
+        case .launchControl: return "Launch Control"
         }
     }
 
@@ -113,7 +123,8 @@ enum SettingsTab: String, Hashable {
     }
 }
 
-/// The Settings window: Connections and Channel Layout, in tabs (Adam, 2026-10-31). The window
+/// The Settings window: Connections, Channel Layout, and Launch Control while one is used, in tabs
+/// (Adam, 2026-10-31; 2026-11-01). The window
 /// fits the tab that is showing, as macOS settings windows do, rather than the taller of the two
 /// (Adam, 2026-10-31): only that tab's content is built, and the other is empty, since a tab view
 /// otherwise takes the size of its largest tab.
@@ -131,10 +142,19 @@ struct SettingsWindowView: View {
             pane(.channelLayout) { LayoutView(model: model) }
                 .tabItem { Text(SettingsTab.channelLayout.title) }
                 .tag(SettingsTab.channelLayout)
+            if model.status.launchControlLayout != nil {
+                pane(.launchControl) { LaunchControlSettingsView(model: model) }
+                    .tabItem { Text(SettingsTab.launchControl.title) }
+                    .tag(SettingsTab.launchControl)
+            }
         }
         .padding(.top, 8)
         .frame(width: 480)
         .onAppear { show(tab) }
+        .onChange(of: model.status.launchControlLayout) { layout in
+            // The Launch Control tab goes when the Launch Control does.
+            if layout == nil, tab == .launchControl { tab = .connections }
+        }
         .onChange(of: tab) { tab in
             show(tab)
             // After SwiftUI has laid out the new tab.
@@ -162,15 +182,17 @@ struct SettingsWindowView: View {
 extension BridgeModel {
     /// Opens the Settings window on `tab`, or on the tab shown last.
     func showSettings(_ tab: SettingsTab? = nil) {
-        let tab = tab ?? SettingsTab.lastShown
+        var tab = tab ?? SettingsTab.lastShown
+        if tab == .launchControl, status.launchControlLayout == nil { tab = .connections }
         Windows.show("settings", title: tab.title) {
             SettingsWindowView(model: self, tab: tab)
         }
     }
 }
 
-/// The Connections tab: where to find TotalMix FX and the Roto-Control. Apply saves the settings
-/// and restarts the connections.
+/// The Connections tab: where to find TotalMix FX, and which hardware controller is used and its
+/// MIDI port. Only the chosen controller's settings show (Adam, 2026-11-01). Apply saves the
+/// settings and restarts the connections.
 struct SettingsView: View {
     @ObservedObject var model: BridgeModel
     /// The edits, held by the Settings window so they survive switching tabs.
@@ -196,12 +218,21 @@ struct SettingsView: View {
             Divider()
                 .padding(.vertical, 4)
 
-            Text("Roto-Control")
+            Text("Hardware Controller")
                 .font(.headline)
             Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 10, verticalSpacing: 8) {
                 GridRow {
+                    label("Controller")
+                    Picker("Controller", selection: controllerChoice) {
+                        ForEach(ControllerChoice.allCases) { choice in
+                            Text(choice.title).tag(choice)
+                        }
+                    }
+                    .labelsHidden()
+                }
+                GridRow {
                     label("MIDI port")
-                    Picker("MIDI port", selection: $edited.rotoPortName) {
+                    Picker("MIDI port", selection: $edited.portName) {
                         ForEach(portChoices, id: \.self) { name in
                             Text(portTitle(name)).tag(name)
                         }
@@ -209,7 +240,13 @@ struct SettingsView: View {
                     .labelsHidden()
                 }
             }
-            note("The MIDI ports connected now.\n\nIf the Roto-Control isn’t listed, connect it by USB and open Settings again.")
+            note(portNote)
+            if model.launchControlFromCommandLine {
+                Text("A Launch Control from the command line is in use instead.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
 
             if !edited.isValid {
                 Text("Ports must be from 1 to 65535 and different from each other, and no field may be empty.")
@@ -235,22 +272,47 @@ struct SettingsView: View {
         .fixedSize(horizontal: false, vertical: true)
     }
 
-    /// The names of the MIDI ports that both send and receive, as they are when the window opens.
+    /// The controller menu's selection: choosing a model also moves a Launch Control port left at
+    /// the other model's usual name to this one's.
+    private var controllerChoice: Binding<ControllerChoice> {
+        Binding(get: { edited.controller }, set: { edited.choose($0) })
+    }
+
+    /// The note under the hardware controller's settings.
+    private var portNote: String {
+        if edited.controller == .roto {
+            return "The MIDI ports connected now.\n\nIf the Roto-Control isn’t listed, connect it by USB and open Settings again."
+        }
+        return "The MIDI ports connected now. Choose the Launch Control’s DAW port (e.g., “LCXL3 1 DAW”), not its MIDI port.\n\nIf it isn’t listed, connect it by USB and open Settings again."
+    }
+
+    /// The MIDI ports that both send and receive, as they are when the window opens: a source and
+    /// a destination with the same name (the Roto-Control's), or a pair named "… Out" and "… In"
+    /// (the Launch Controls'), listed by the part they share (e.g., "LCXL3 1 DAW").
     @State private var ports = Self.listPorts()
 
     private static func listPorts() -> [MIDIEndpointInfo] {
         let destinations = Set(MIDIConnection.destinations().map(\.name))
         var seen = Set<String>()
-        return MIDIConnection.sources()
-            .filter { destinations.contains($0.name) && seen.insert($0.name).inserted }
-            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        var ports: [MIDIEndpointInfo] = []
+        for source in MIDIConnection.sources() {
+            var port = source
+            if !destinations.contains(source.name) {
+                guard source.name.hasSuffix(" Out") else { continue }
+                let stem = String(source.name.dropLast(4))
+                guard destinations.contains(stem + " In") else { continue }
+                port.name = stem
+            }
+            if seen.insert(port.name).inserted { ports.append(port) }
+        }
+        return ports.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 
     /// The menu's choices: the ports, and the chosen name too when it is not exactly one of them
     /// (e.g., the default "Roto", which matches "Roto-Control" by part of its name).
     private var portChoices: [String] {
         let names = ports.map(\.name)
-        return names.contains(edited.rotoPortName) ? names : [edited.rotoPortName] + names
+        return names.contains(edited.portName) ? names : [edited.portName] + names
     }
 
     /// A choice's title: a port's name, or a chosen name that is not a port's, with what it matches.
@@ -298,5 +360,72 @@ struct SettingsView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
+    }
+}
+
+/// The Launch Control tab: the outputs its send rows feed, also chosen on the device with Page
+/// (top row) and Shift + Page (the XL 3's middle row). Changes apply at once, as on the device.
+struct LaunchControlSettingsView: View {
+    @ObservedObject var model: BridgeModel
+
+    var body: some View {
+        let status = model.status
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Send Rows")
+                .font(.headline)
+            if status.launchControlSends.isEmpty {
+                Text("Connect the \(status.launchControlName ?? "Launch Control") to choose its send rows.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 10, verticalSpacing: 8) {
+                    ForEach(status.launchControlSends.indices, id: \.self) { row in
+                        GridRow {
+                            Text(rowTitle(row))
+                                .frame(width: 110, alignment: .trailing)
+                            Picker(rowTitle(row), selection: selection(row)) {
+                                if status.launchControlLayout == .lc3 {
+                                    Text("Pan").tag(Int?.none)
+                                }
+                                ForEach(choices(row), id: \.output) { choice in
+                                    Text("> " + choice.name).tag(Int?.some(choice.output))
+                                }
+                            }
+                            .labelsHidden()
+                        }
+                    }
+                }
+            }
+            VStack(alignment: .leading, spacing: 6) {
+                Text(status.launchControlLayout == .lc3
+                     ? "Page ▲ and ▼ on the Launch Control step the top row through Pan and the outputs too."
+                     : "Page ▲ and ▼ on the Launch Control step the top row, and Shift + Page the middle row. The two rows never feed the same output.")
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("The outputs follow the order of the Outputs list on the Channel Layout tab.")
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .font(.callout)
+            .foregroundStyle(.secondary)
+        }
+        .padding(20)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private func rowTitle(_ row: Int) -> String {
+        model.status.launchControlLayout == .lc3 ? "Top row" : row == 0 ? "Top row" : "Middle row"
+    }
+
+    /// The outputs a row can feed: every send target except the other row's.
+    private func choices(_ row: Int) -> [HomeChoice] {
+        let sends = model.status.launchControlSends
+        let others = Set(sends.indices.filter { $0 != row }.compactMap { sends[$0] })
+        return model.status.sendTargets.filter { !others.contains($0.output) }
+    }
+
+    private func selection(_ row: Int) -> Binding<Int?> {
+        Binding(
+            get: { model.status.launchControlSends.indices.contains(row) ? model.status.launchControlSends[row] : nil },
+            set: { model.engine.setLaunchControlSend(row: row, to: $0) })
     }
 }

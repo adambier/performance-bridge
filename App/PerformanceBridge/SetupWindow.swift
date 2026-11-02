@@ -1,4 +1,4 @@
-// The setup window: the steps of setting up Performance Bridge with TotalMix FX and a Roto-Control,
+// The setup window: the steps of setting up Performance Bridge with TotalMix FX and a hardware controller,
 // each checked live where the app can see it (SetupChecklist in BridgeEngine). It opens by itself
 // the first time the app runs, and from the menu (Setup Guide…) after that.
 

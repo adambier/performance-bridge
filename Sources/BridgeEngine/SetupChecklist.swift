@@ -98,7 +98,9 @@ public enum SetupChecklist {
             : SetupStep(id: "meters", title: "No meters yet", state: .optional,
                         detail: "For meters on the hardware controllers: in TotalMix FX, Options → Mixer Settings… (F3) → OSC, check “Send Level Data” for the controller.\n\nTotalMix FX sends levels only when they change, so play something to see them."))
 
-        if status.rotoConnected {
+        if !status.rotoEnabled {
+            // Another hardware controller is in use.
+        } else if status.rotoConnected {
             steps.append(SetupStep(id: "roto", title: "Roto-Control connected", state: .done, detail: ""))
         } else if status.rotoFound {
             steps.append(SetupStep(id: "roto", title: "Roto-Control found, connecting", state: .waiting,
@@ -106,6 +108,18 @@ public enum SetupChecklist {
         } else {
             steps.append(SetupStep(id: "roto", title: "Roto-Control not found", state: .waiting,
                                    detail: "Connect the Roto-Control by USB. If it’s connected, choose its MIDI port in Performance Bridge’s Settings."))
+        }
+
+        if let name = status.launchControlName {
+            if status.launchControlConnected {
+                steps.append(SetupStep(id: "launchcontrol", title: "\(name) connected", state: .done, detail: ""))
+            } else if status.launchControlFound {
+                steps.append(SetupStep(id: "launchcontrol", title: "\(name) found, connecting", state: .waiting,
+                                       detail: "If it stays here, quit any other program that uses its DAW ports, such as a DAW with its Launch Control integration."))
+            } else {
+                steps.append(SetupStep(id: "launchcontrol", title: "\(name) not found", state: .waiting,
+                                       detail: "Connect the Launch Control by USB. If it’s connected, check its MIDI port in Performance Bridge’s Settings, on the Launch Control tab."))
+            }
         }
 
         steps.append(SetupStep(id: "hide", title: "Channels the hardware controllers don’t show", state: .instruction,
@@ -135,9 +149,11 @@ public enum SetupChecklist {
                          detail: needs + " Update it from RME’s website.")
     }
 
-    /// Whether every step the surfaces need is done: TotalMix answering with its channels, and the
-    /// Roto-Control connected.
+    /// Whether every step the surfaces need is done: TotalMix answering with its channels, the
+    /// Roto-Control connected if it is used, and the Launch Control connected if one is set.
     public static func isComplete(_ status: BridgeStatus) -> Bool {
-        status.listening && status.totalMixAnswering && status.channelCount > 0 && status.rotoConnected
+        status.listening && status.totalMixAnswering && status.channelCount > 0
+            && (!status.rotoEnabled || status.rotoConnected)
+            && (status.launchControlName == nil || status.launchControlConnected)
     }
 }

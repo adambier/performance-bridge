@@ -86,8 +86,11 @@ public struct BridgeSettings: Equatable, Sendable {
     public var playbacksOnNewPage = false
     /// The layout to start with: the channel order and labels saved by the app.
     public var layout = PerformanceLayout()
-    /// A Launch Control to connect as well as the Roto-Control, or `nil` for none.
+    /// A Launch Control to connect, or `nil` for none.
     public var launchControl: LaunchControlSetting?
+    /// Whether to connect the Roto-Control. The app uses one hardware controller at a time (Adam,
+    /// 2026-11-01), so it turns this off when a Launch Control is chosen.
+    public var rotoEnabled = true
     /// How often the engine tries again to open TotalMix's port or the Roto-Control's MIDI ports
     /// while either is not open, in seconds.
     public var retryInterval: Double = 3
@@ -140,6 +143,8 @@ public struct BridgeStatus: Equatable, Sendable {
     public var running = false
     /// Whether something has come from TotalMix in the last `BridgeEngine.totalMixTimeout` seconds.
     public var totalMixAnswering = false
+    /// Whether the engine uses a Roto-Control (`BridgeSettings.rotoEnabled`).
+    public var rotoEnabled = true
     /// Whether the Roto-Control has completed the handshake.
     public var rotoConnected = false
     /// Whether TotalMix's outgoing port is open (another program, such as `sbdev bridge`, may have
@@ -153,6 +158,14 @@ public struct BridgeStatus: Equatable, Sendable {
     public var launchControlFound = false
     /// Whether the Launch Control has answered (entered DAW mode).
     public var launchControlConnected = false
+    /// The layout the Launch Control runs (the XL 3's or the Launch Control 3's), or `nil` for none.
+    public var launchControlLayout: LaunchControlModel?
+    /// The output each Launch Control send row feeds now (XL 3: top and middle rows; Launch Control
+    /// 3: the top row, `nil` for pan); empty until the driver has started.
+    public var launchControlSends: [Int?] = []
+    /// The outputs the send controls step through, in order (`SurfaceHub.sendTargets`), with their
+    /// names as the strips show them, for choosing a send row's output.
+    public var sendTargets: [HomeChoice] = []
     /// How many channels TotalMix has described (named or set) since the engine started: more than
     /// zero once it has answered `/sendall` with its channels, not only its status.
     public var channelCount = 0
@@ -255,7 +268,7 @@ public final class BridgeEngine: @unchecked Sendable {
         lock.lock()
         guard !running else { lock.unlock(); return }
         running = true
-        dispatch(hub.addSurface(driver.id, capabilities: RotoDriver.capabilities, now: now))
+        if settings.rotoEnabled { dispatch(hub.addSurface(driver.id, capabilities: RotoDriver.capabilities, now: now)) }
         if let home = settings.homeSubmix { dispatch(hub.setHomeSubmix(home, now: now)) }
         var layout = settings.layout
         if settings.playbacksOnNewPage { layout.playbacksOnNewPage = true }
@@ -329,7 +342,7 @@ public final class BridgeEngine: @unchecked Sendable {
     /// handshake.
     private func openMIDIIfDue(force: Bool = false) {
         lock.lock()
-        guard running, midi == nil, !openingMIDI else { lock.unlock(); return }
+        guard running, settings.rotoEnabled, midi == nil, !openingMIDI else { lock.unlock(); return }
         if !force, let last = lastMIDITry, now - last < settings.retryInterval { lock.unlock(); return }
         lastMIDITry = now
         openingMIDI = true
@@ -538,6 +551,27 @@ public final class BridgeEngine: @unchecked Sendable {
         return hub.layout.isTotalMixOrder(view, in: hub.mirror)
     }
 
+    /// Sets a Launch Control send row's output from the app, as Page does on the device
+    /// (`LaunchControlDriver.setSendOutput`): `nil` is pan, on the Launch Control 3's top row. Does
+    /// nothing while the Launch Control isn't open, or for an output the other row has.
+    public func setLaunchControlSend(row: Int, to output: Int?) {
+        lock.lock()
+        var changedSends: [Int?]?
+        if var lc = lcDriver {
+            let step = lc.setSendOutput(row: row, to: output, hub: &hub, now: now)
+            lcDriver = lc
+            sendToLaunchControl(step.midi)
+            dispatch(step.core)
+            if lc.sendOutputs != lcSendOutputs {
+                changedSends = lc.sendOutputs
+                lcSendOutputs = lc.sendOutputs
+            }
+        }
+        lock.unlock()
+        if let changedSends { onLaunchControlSendsChange?(changedSends) }
+        publishStatusIfChanged()
+    }
+
     /// Refreshes the channels from TotalMix (`SurfaceHub.refreshChannels`): asks for its whole
     /// state again and drops channels its answer leaves out, so channels hidden or shown in
     /// TotalMix since the last refresh leave or join the surfaces.
@@ -650,12 +684,20 @@ public final class BridgeEngine: @unchecked Sendable {
         var status = BridgeStatus()
         status.running = running
         status.totalMixAnswering = lastFromTotalMix.map { now - $0 < Self.totalMixTimeout } ?? false
+        status.rotoEnabled = settings.rotoEnabled
         status.rotoConnected = driver.isConnected
         status.listening = socket != nil
         status.rotoFound = midi != nil
         status.launchControlName = settings.launchControl?.name
         status.launchControlFound = lcMIDI != nil
         status.launchControlConnected = lcDriver?.isConnected ?? false
+        status.launchControlLayout = settings.launchControl?.layout
+        status.launchControlSends = lcDriver?.currentSendOutputs(hub: hub) ?? []
+        status.sendTargets = hub.sendTargets.map { output in
+            let ref = ChannelRef(.output, output)
+            let name = hub.layout.label(for: ref) ?? hub.mirror.channels[ref]?.name ?? "Output \(output + 1)"
+            return HomeChoice(output: output, name: name, roles: [])
+        }
         status.channelCount = hub.mirror.channels.count
         status.levelsSeen = levelsSeen
         status.homeSubmix = hub.homeSubmix

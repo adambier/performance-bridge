@@ -125,6 +125,34 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertFalse(SetupChecklist.isComplete(status))
     }
 
+    func testSetupChecklistAndWatchCoverALaunchControl() {
+        var status = BridgeStatus()
+        status.running = true
+        status.listening = true
+        status.totalMixAnswering = true
+        status.channelCount = 46
+        status.rotoConnected = true
+        XCTAssertNil(states(status)["launchcontrol"], "no step without a Launch Control")
+        var launchOnly = status
+        launchOnly.rotoEnabled = false
+        launchOnly.rotoConnected = false
+        XCTAssertNil(states(launchOnly)["roto"], "no Roto-Control step while a Launch Control is the controller")
+        XCTAssertTrue(SetupChecklist.isComplete(status))
+        status.launchControlName = "Launch Control XL 3"
+        XCTAssertEqual(states(status)["launchcontrol"], .waiting)
+        XCTAssertFalse(SetupChecklist.isComplete(status))
+        status.launchControlFound = true
+        var watch = SetupWatch(totalMixWorked: true, rotoWorked: true)
+        _ = watch.update(status: status, totalMixRunning: true, now: 0)
+        _ = watch.update(status: status, totalMixRunning: true, now: 11)
+        XCTAssertTrue(watch.needsAttention(status: status, now: 11), "plugged in but not in DAW mode: the mark")
+        status.launchControlConnected = true
+        _ = watch.update(status: status, totalMixRunning: true, now: 12)
+        XCTAssertFalse(watch.needsAttention(status: status, now: 12))
+        XCTAssertEqual(states(status)["launchcontrol"], .done)
+        XCTAssertTrue(SetupChecklist.isComplete(status))
+    }
+
     func testSetupChecklistPortInUseIsAProblem() {
         let steps = states(BridgeStatus())
         XCTAssertEqual(steps["port"], .problem)
