@@ -248,6 +248,8 @@ public final class BridgeEngine: @unchecked Sendable {
     private var openingLC = false
     /// The Launch Control's send rows as last seen, kept across a reconnection.
     private var lcSendOutputs: [Int?]?
+    /// The send rows the driver first started with, normalized (`fromLaunchControl`).
+    private var lcInitialSends: [Int?] = []
 
     /// How often the engine checks that the Roto-Control's ports are still there, in seconds.
     static let unplugCheckInterval: Double = 1
@@ -424,6 +426,7 @@ public final class BridgeEngine: @unchecked Sendable {
             lcMIDI = connection
             var lc = LaunchControlDriver(name: "launchcontrol", layout: setting.layout, device: setting.device,
                                          sendOutputs: lcSendOutputs ?? setting.sendOutputs)
+            if lcSendOutputs == nil { lcInitialSends = lc.sendOutputs }
             let started = lc.start(hub: &hub, now: now)
             sendToLaunchControl(started.midi)
             lcDriver = lc
@@ -617,7 +620,9 @@ public final class BridgeEngine: @unchecked Sendable {
             sendToLaunchControl(step.midi)
             dispatch(step.core)
             if lc.sendOutputs != lcSendOutputs {
-                if lcSendOutputs != nil || lc.sendOutputs != (settings.launchControl?.sendOutputs ?? []) {
+                // Compared with what the driver started with (it fills missing rows with nil), so
+                // that nothing is saved before a row actually changes (review of 2026-11-02).
+                if lcSendOutputs != nil || lc.sendOutputs != lcInitialSends {
                     changedSends = lc.sendOutputs
                 }
                 lcSendOutputs = lc.sendOutputs

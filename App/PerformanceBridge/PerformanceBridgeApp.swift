@@ -288,6 +288,13 @@ final class BridgeModel: ObservableObject {
     /// device.
     nonisolated private static let launchControlSendsKey = "launchControlSends"
 
+    /// The key for one layout's send rows: the XL 3 has two and the Launch Control 3 one (its top
+    /// row, pan or a send), so they are kept apart (review of 2026-11-02). The XL 3's are under the
+    /// key earlier builds used for both.
+    nonisolated private static func sendsKey(_ layout: LaunchControlModel) -> String {
+        layout == .xl3 ? launchControlSendsKey : launchControlSendsKey + " " + layout.rawValue
+    }
+
     init() {
         let arguments = CommandLine.arguments
         func port(_ option: String) -> UInt16? {
@@ -407,7 +414,8 @@ final class BridgeModel: ObservableObject {
                 LaunchControlSetting(layout: $0, portName: saved.launchControlPortName.trimmingCharacters(in: .whitespaces))
             }
         settings.rotoEnabled = settings.launchControl == nil
-        if let saved = UserDefaults.standard.array(forKey: launchControlSendsKey) as? [Int] {
+        if let layout = settings.launchControl?.layout,
+           let saved = UserDefaults.standard.array(forKey: sendsKey(layout)) as? [Int] {
             settings.launchControl?.sendOutputs = saved.map { $0 < 0 ? nil : $0 }
         }
         return settings
@@ -429,8 +437,10 @@ final class BridgeModel: ObservableObject {
         engine.onLayoutChange = { layout in
             if let data = try? JSONEncoder().encode(layout) { UserDefaults.standard.set(data, forKey: Self.layoutKey) }
         }
+        let sendsLayout = engine.settings.launchControl?.layout
         engine.onLaunchControlSendsChange = { outputs in
-            UserDefaults.standard.set(outputs.map { $0 ?? -1 }, forKey: Self.launchControlSendsKey)
+            guard let sendsLayout else { return }
+            UserDefaults.standard.set(outputs.map { $0 ?? -1 }, forKey: Self.sendsKey(sendsLayout))
         }
         // For now the log goes to the Terminal the app was started from.
         engine.onLog = { line in

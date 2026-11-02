@@ -118,7 +118,7 @@ public enum SetupChecklist {
                                        detail: "If it stays here, quit any other program that uses its DAW ports, such as a DAW with its Launch Control integration."))
             } else {
                 steps.append(SetupStep(id: "launchcontrol", title: "\(name) not found", state: .waiting,
-                                       detail: "Connect the Launch Control by USB. If it’s connected, check its MIDI port in Performance Bridge’s Settings, on the Launch Control tab."))
+                                       detail: "Connect the Launch Control by USB. If it’s connected, choose its DAW port in Performance Bridge’s Settings, on the Connections tab (MIDI port)."))
             }
         }
 

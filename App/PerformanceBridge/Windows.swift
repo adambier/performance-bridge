@@ -381,6 +381,9 @@ struct LaunchControlSendRowsView: View {
                         Picker(rowTitle(row), selection: selection(row)) {
                             if chosen == .lc3 {
                                 Text("Pan").tag(Int?.none)
+                            } else if selection(row).wrappedValue == nil {
+                                // An XL 3 row with no output left to feed (review of 2026-11-02).
+                                Text("None").tag(Int?.none)
                             }
                             ForEach(choices(row), id: \.output) { choice in
                                 Text(choice.name).tag(Int?.some(choice.output))
