@@ -422,7 +422,7 @@ public final class BridgeEngine: @unchecked Sendable {
         let result = Result { () throws -> MIDIConnection in
             let sources = MIDIConnection.sources().map(\.name)
             guard let port = setting.portName ?? setting.device.dawPort(among: sources) else {
-                throw MIDIConnectionError.endpointNotFound(setting.device.portPrefix + " … DAW")
+                throw MIDIConnectionError.endpointNotFound(setting.device.portPrefix + " 1 DAW")
             }
             return try MIDIConnection(clientName: "Performance Bridge", sourceName: port,
                                       destinationName: port) { [weak self] bytes in
