@@ -200,8 +200,8 @@ the main mix) and the cue output (PFL uses it).
 | Top encoder | Send to the top row's output (e.g., Phones 1) |
 | Middle encoder | Send to the middle row's output (e.g., Phones 2) |
 | Bottom encoder | Pan in Main Out |
-| Top button | PFL (yellow when on) |
-| Bottom button | Mute (red when on) |
+| Top button | PFL (bright yellow when on, dim yellow when off) |
+| Bottom button | Mute (bright orange when on, dim orange when off) |
 
 | Button | What it does |
 |---|---|
@@ -232,7 +232,7 @@ The Launch Control 3 works the same way, with fewer controls:
 |---|---|
 | Bottom encoder | Level in Main Out |
 | Top encoder | Pan, or a send: **Page ▼** / **▲** steps it through Pan, then each output in the Outputs list |
-| Button | Mute; PFL while **Function** (labeled "DAW" underneath) is held (red for mute, yellow for PFL; Function lights yellow while the buttons are PFL) |
+| Button | Mute; PFL while **Function** (labeled "DAW" underneath) is held (orange for mute, yellow for PFL, dim when off; Function lights yellow while the buttons are PFL) |
 
 Track works as on the XL 3, and Shift + turn resets an encoder as there; a level above 0 dB comes down to 0 dB, and
 one below 0 dB stays. The screen shows the channels on

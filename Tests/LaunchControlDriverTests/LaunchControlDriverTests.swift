@@ -104,7 +104,7 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.control(.fader(0)), field: 1, "Level") ?? []))
         XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.control(.encoder(row: 0, column: 0)), field: 1, "> Phones") ?? []))
         XCTAssertTrue(answer.midi.contains([0xB0, 0x25, 15]), "top buttons: PFL off, dark yellow")
-        XCTAssertTrue(answer.midi.contains([0xB0, 0x2D, 7]), "bottom buttons: mute off, dark red")
+        XCTAssertTrue(answer.midi.contains([0xB0, 0x2D, LaunchControlDriver.muteOff]), "bottom buttons: mute off, dim orange")
         XCTAssertTrue(answer.midi.contains([0xB0, 0x66, 0]), "Track >: no more strips with four sources")
     }
 
@@ -138,7 +138,7 @@ final class LaunchControlDriverTests: XCTestCase {
 
         let mute = driver.receive([0xB0, 0x2D, 0x7F], hub: &hub, now: 4)
         XCTAssertEqual(mute.core.messages, [TotalMixCommand.set(.input, 0, "mute", 1)])
-        XCTAssertTrue(mute.midi.contains([0xB0, 0x2D, 5]), "mute on: red")
+        XCTAssertTrue(mute.midi.contains([0xB0, 0x2D, LaunchControlDriver.muteOn]), "mute on: orange")
     }
 
     func testFaderAwayFromItsLevelIsHeldBack() {

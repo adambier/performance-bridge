@@ -994,16 +994,20 @@ public struct LaunchControlDriver: Sendable {
     /// The label for a send: "> " and the output's name (AGENTS.md, house style).
     public static func sendLabel(_ name: String) -> String { "> " + name }
 
-    /// Palette colors for the buttons and the navigation lights. The palette's first 40 colors
-    /// have been seen to run as the guide's picture does (docs/LAUNCH-CONTROL-XL3.md, test 4):
-    /// 5 red and 7 a darker red, 13 yellow and 15 a darker yellow, 3 white and 1 a dim grey. That
-    /// the darker ones read as "off" next to the bright ones is an inference, for Adam to judge.
-    public static let muteOn: UInt8 = 5
-    /// A mute button that is off: dark red.
-    public static let muteOff: UInt8 = 7
+    /// Palette colors for the buttons and the navigation lights. Mute is orange and PFL yellow on
+    /// every hardware controller, since the Roto-Control's firmware fixes those two and a host can
+    /// only turn them on or off (docs/ROTO-CONTROL.md, section 3); a button that is off shows the
+    /// dimmest shade of its color, so the two rows can still be told apart (Adam, 2026-11-02).
+    /// The palette's first 40 colors have been seen to run as the guide's picture does
+    /// (docs/LAUNCH-CONTROL-XL3.md, test 4), each hue a run of four from bright to dim: 5 red and
+    /// 7 a darker red, 13 yellow and 15 a darker yellow, 3 white and 1 a dim grey. 9 orange and
+    /// 11 its dimmest follow the same pattern (inference; not yet seen on the device).
+    public static let muteOn: UInt8 = 9
+    /// A mute button that is off: the dimmest orange.
+    public static let muteOff: UInt8 = 11
     /// A PFL button that is on: yellow.
     public static let pflOn: UInt8 = 13
-    /// A PFL button that is off: dark yellow.
+    /// A PFL button that is off: the dimmest yellow.
     public static let pflOff: UInt8 = 15
     /// Page and Track where they would move: white.
     public static let navigationOn: UInt8 = 3

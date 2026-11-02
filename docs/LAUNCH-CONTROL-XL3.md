@@ -365,8 +365,11 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   With Shift held the device reports only that an encoder turned, not which way,[^test-9][^test-10]
   so a reset is all it can do. The driver also sends the encoder its new position, since the turn
   with Shift held left the device's own value where it was.[^test-9]
-- **Buttons.** The top row is PFL (yellow; dark yellow when off), as on the Roto-Control; the bottom
-  row is mute (red; dark red when off). Solo/Arm and Mute/Select do nothing for now: in DAW mode
+- **Buttons.** The top row is PFL (yellow) and the bottom row mute (orange), the colors the
+  Roto-Control's firmware gives solo and mute, so every hardware controller shows them alike (Adam,
+  2026-11-02). A button that is off shows the dimmest shade of its color, so the two rows stay
+  recognizable (Adam, 2026-11-02). Orange's dimmest shade (index 11) is an inference from the
+  palette's pattern (test 4 saw red's and yellow's). Solo/Arm and Mute/Select do nothing for now: in DAW mode
   the device leaves them to the host.[^test-6]
 - **Paging and views.** Track < and > move by eight strips, as the panel's labels say, and with
   Shift to the first or last page. (Novation's integrations move one track, and eight with Shift.
