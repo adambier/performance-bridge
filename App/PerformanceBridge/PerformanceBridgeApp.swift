@@ -2,8 +2,9 @@
 // `swift run PerformanceBridge`, or `swift run PerformanceBridge --in-port 7004 --out-port 9004` to
 // override the ports saved in Settings; quit `sbdev bridge` first, since both need TotalMix's
 // outgoing port and the Roto-Control's MIDI ports. make-app.sh builds the app bundle, with Sparkle.
-// A Launch Control can be tried with `--launch-control xl3`, `lc3`, or `lc3-sim`
-// (`LaunchControlSetting(arguments:)`) until Settings has a place for it.
+// The hardware controller is chosen in Settings → Connections. `--launch-control xl3`, `lc3`, or
+// `lc3-sim` (`LaunchControlSetting(arguments:)`) overrides it, e.g., for the Launch Control 3's
+// layout on an XL 3, which Settings doesn't offer.
 
 import AppKit
 import SwiftUI
@@ -15,6 +16,9 @@ import TotalMixOSC
 #endif
 #if canImport(SurfaceCore)
 import SurfaceCore
+#endif
+#if canImport(LaunchControl)
+import LaunchControl
 #endif
 // Sparkle (in-app updates) is linked by make-app.sh. Package.swift does not declare it, so
 // `swift run` compiles without it and the menu has no "Check for Updates…" item.
@@ -153,18 +157,53 @@ enum Brand {
     }()
 }
 
+/// The hardware controller the app uses: one at a time (Adam, 2026-11-01).
+enum ControllerChoice: String, CaseIterable, Identifiable {
+    /// Melbourne Instruments' Roto-Control.
+    case roto
+    /// Novation's Launch Control XL 3.
+    case launchControlXL3
+    /// Novation's Launch Control 3.
+    case launchControl3
+
+    var id: String { rawValue }
+
+    /// The name the Settings menu shows.
+    var title: String {
+        switch self {
+        case .roto: return "Roto-Control"
+        case .launchControlXL3: return LaunchControlModel.xl3.name
+        case .launchControl3: return LaunchControlModel.lc3.name
+        }
+    }
+
+    /// The Launch Control model, or `nil` for the Roto-Control.
+    var launchControl: LaunchControlModel? {
+        switch self {
+        case .roto: return nil
+        case .launchControlXL3: return .xl3
+        case .launchControl3: return .lc3
+        }
+    }
+}
+
 /// The settings kept between launches, in the user defaults.
 struct SavedSettings: Equatable {
     var host = TotalMixEndpoint.standard.host
     var incomingPort = Int(TotalMixEndpoint.standard.incomingPort)
     var outgoingPort = Int(TotalMixEndpoint.standard.outgoingPort)
+    var controller = ControllerChoice.roto
     var rotoPortName = BridgeSettings().rotoPortName
+    /// The Launch Control's DAW ports, by name or part of it; the model's usual name by default.
+    var launchControlPortName = LaunchControlModel.xl3.defaultPortName
 
     private enum Key {
         static let host = "totalMixHost"
         static let incomingPort = "totalMixIncomingPort"
         static let outgoingPort = "totalMixOutgoingPort"
+        static let controller = "hardwareController"
         static let rotoPortName = "rotoPortName"
+        static let launchControlPortName = "launchControlPortName"
     }
 
     static func load(_ defaults: UserDefaults = .standard) -> SavedSettings {
@@ -172,7 +211,10 @@ struct SavedSettings: Equatable {
         if let host = defaults.string(forKey: Key.host), !host.isEmpty { saved.host = host }
         if let port = defaults.object(forKey: Key.incomingPort) as? Int, SavedSettings.isPort(port) { saved.incomingPort = port }
         if let port = defaults.object(forKey: Key.outgoingPort) as? Int, SavedSettings.isPort(port) { saved.outgoingPort = port }
+        if let raw = defaults.string(forKey: Key.controller), let choice = ControllerChoice(rawValue: raw) { saved.controller = choice }
         if let name = defaults.string(forKey: Key.rotoPortName), !name.isEmpty { saved.rotoPortName = name }
+        if let model = saved.controller.launchControl { saved.launchControlPortName = model.defaultPortName }
+        if let name = defaults.string(forKey: Key.launchControlPortName), !name.isEmpty { saved.launchControlPortName = name }
         return saved
     }
 
@@ -180,16 +222,39 @@ struct SavedSettings: Equatable {
         defaults.set(host, forKey: Key.host)
         defaults.set(incomingPort, forKey: Key.incomingPort)
         defaults.set(outgoingPort, forKey: Key.outgoingPort)
+        defaults.set(controller.rawValue, forKey: Key.controller)
         defaults.set(rotoPortName, forKey: Key.rotoPortName)
+        defaults.set(launchControlPortName, forKey: Key.launchControlPortName)
     }
 
     static func isPort(_ value: Int) -> Bool { (1...65_535).contains(value) }
 
+    /// Chooses a hardware controller; a Launch Control port left at the previous model's usual
+    /// name follows the new model's.
+    mutating func choose(_ choice: ControllerChoice) {
+        let usual = LaunchControlModel.allPortDefaults
+        if let model = choice.launchControl, usual.contains(launchControlPortName) {
+            launchControlPortName = model.defaultPortName
+        }
+        controller = choice
+    }
+
+    /// The port name of the chosen hardware controller.
+    var portName: String {
+        get { controller == .roto ? rotoPortName : launchControlPortName }
+        set { if controller == .roto { rotoPortName = newValue } else { launchControlPortName = newValue } }
+    }
+
     /// Whether every field can be used.
     var isValid: Bool {
         !host.trimmingCharacters(in: .whitespaces).isEmpty && Self.isPort(incomingPort) && Self.isPort(outgoingPort)
-            && incomingPort != outgoingPort && !rotoPortName.trimmingCharacters(in: .whitespaces).isEmpty
+            && incomingPort != outgoingPort && !portName.trimmingCharacters(in: .whitespaces).isEmpty
     }
+}
+
+extension LaunchControlModel {
+    /// Both models' usual DAW port names.
+    static var allPortDefaults: Set<String> { [LaunchControlModel.xl3.defaultPortName, LaunchControlModel.lc3.defaultPortName] }
 }
 
 /// The engine and its latest status, for the menu.
@@ -201,7 +266,7 @@ final class BridgeModel: ObservableObject {
     /// Whether TotalMix FX and the Roto-Control (and a Launch Control, if one is set) are all
     /// connected (the menu-bar icon is dimmed otherwise).
     var allConnected: Bool {
-        status.totalMixAnswering && status.rotoConnected
+        status.totalMixAnswering && (!status.rotoEnabled || status.rotoConnected)
             && (status.launchControlName == nil || status.launchControlConnected)
     }
     /// Whether TotalMix FX is among the running apps, and its version from its app bundle, for the
@@ -214,6 +279,9 @@ final class BridgeModel: ObservableObject {
     @Published private(set) var engine: BridgeEngine
     /// Ports given on the command line (`--in-port`, `--out-port`), which win over the saved ones.
     let portOverrides: (incoming: UInt16?, outgoing: UInt16?)
+    /// Whether a Launch Control given on the command line (`--launch-control`) is used instead of
+    /// the hardware controller chosen in Settings.
+    let launchControlFromCommandLine = LaunchControlSetting(arguments: CommandLine.arguments) != nil
 
     private static let homeSubmixKey = "homeSubmix"
     /// The Launch Control's send rows, as output channels (−1 for none), saved when changed on the
@@ -323,7 +391,13 @@ final class BridgeModel: ObservableObject {
         // Level and pan always go to Main Out (the Mix Output menu was dropped; Adam, 2026-11-01),
         // so a choice saved by an earlier build is ignored.
         UserDefaults.standard.removeObject(forKey: homeSubmixKey)
+        // One hardware controller at a time: the one chosen in Settings, or a Launch Control from the
+        // command line.
         settings.launchControl = LaunchControlSetting(arguments: CommandLine.arguments)
+            ?? saved.controller.launchControl.map {
+                LaunchControlSetting(layout: $0, portName: saved.launchControlPortName.trimmingCharacters(in: .whitespaces))
+            }
+        settings.rotoEnabled = settings.launchControl == nil
         if let saved = UserDefaults.standard.array(forKey: launchControlSendsKey) as? [Int] {
             settings.launchControl?.sendOutputs = saved.map { $0 < 0 ? nil : $0 }
         }
@@ -405,7 +479,9 @@ struct MenuContent: View {
         // Status only, always dimmed (Adam, 2026-10-31), as macOS's own menu bar menus show status
         // lines. The full reasons go to the log; the Setup Guide says what to do.
         Text("TotalMix FX: " + totalMixState)
-        Text("Roto-Control: " + rotoState)
+        if model.status.rotoEnabled {
+            Text("Roto-Control: " + rotoState)
+        }
         if let name = model.status.launchControlName {
             Text(name + ": " + launchControlState)
         }

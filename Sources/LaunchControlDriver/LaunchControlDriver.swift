@@ -347,6 +347,36 @@ public struct LaunchControlDriver: Sendable {
         step.midi += overlay(layout == .lc3 ? "Top row" : row == 0 ? "Top row" : "Middle row", label)
     }
 
+    /// The output each send row feeds now, as the device shows it (XL 3: top and middle rows;
+    /// Launch Control 3: the top row, `nil` for pan); `nil` for a row with no output.
+    public func currentSendOutputs(hub: SurfaceHub) -> [Int?] {
+        let targets = hub.sendTargets
+        return sendIndices.map { index in index.flatMap { targets.indices.contains($0) ? targets[$0] : nil } }
+    }
+
+    /// Sets a send row's output from the app (`nil`: pan, on the Launch Control 3's top row), as
+    /// Page does on the device: the other rows keep theirs, and an output the other row has is
+    /// refused. Shows the change on the overlay.
+    public mutating func setSendOutput(row: Int, to output: Int?, hub: inout SurfaceHub, now: Double) -> LaunchControlStep {
+        var step = LaunchControlStep()
+        let targets = hub.sendTargets
+        guard sendOutputs.indices.contains(row) else { return step }
+        let index = output.flatMap { targets.firstIndex(of: $0) }
+        if output != nil && index == nil { return step }
+        if output == nil && layout == .xl3 { return step }
+        let others = Set(sendIndices.enumerated().filter { $0.offset != row }.compactMap(\.element))
+        if let index, others.contains(index) { return step }
+        for (other, resolved) in sendIndices.enumerated() where layout == .xl3 && sendOutputs[other] == nil {
+            sendOutputs[other] = resolved.map { targets[$0] }
+        }
+        sendOutputs[row] = output
+        resolveSends(hub)
+        setModes(first: page.first, hub: &hub, now: now, into: &step)
+        let label = index.map { Self.sendLabel(sendName($0, hub: hub)) } ?? "Pan"
+        step.midi += overlay(layout == .lc3 ? "Top row" : row == 0 ? "Top row" : "Middle row", label)
+        return step
+    }
+
     private func sendName(_ index: Int, hub: SurfaceHub) -> String {
         let targets = hub.sendTargets
         guard targets.indices.contains(index) else { return "none" }

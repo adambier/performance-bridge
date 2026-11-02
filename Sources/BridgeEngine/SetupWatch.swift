@@ -54,6 +54,8 @@ public struct SetupWatch: Sendable {
     private var listenedThisLaunch = false
     private var silentSince: Double?
     private var rotoPendingSince: Double?
+    /// Since when the Launch Control has been plugged in but not in DAW mode.
+    private var launchControlPendingSince: Double?
     private var opened = false
 
     /// A watch for a new launch, or for new settings, with what has worked before.
@@ -80,6 +82,11 @@ public struct SetupWatch: Sendable {
         } else {
             rotoPendingSince = nil
         }
+        if status.launchControlFound, !status.launchControlConnected {
+            launchControlPendingSince = launchControlPendingSince ?? now
+        } else {
+            launchControlPendingSince = nil
+        }
 
         guard !opened else { return nil }
         var reason: Reason?
@@ -98,13 +105,14 @@ public struct SetupWatch: Sendable {
 
     /// Whether the menu-bar icon should show its warning mark, as of the last `update`: the port is
     /// in use, TotalMix is running but has been silent for `attentionDelay` seconds, or the
-    /// Roto-Control is plugged in but hasn't connected for `attentionDelay` seconds. TotalMix not
-    /// running, or the Roto-Control unplugged, is idle, not a fault.
+    /// Roto-Control or the Launch Control is plugged in but hasn't connected for `attentionDelay`
+    /// seconds. TotalMix not running, or a hardware controller unplugged, is idle, not a fault.
     public func needsAttention(status: BridgeStatus, now: Double) -> Bool {
         guard status.running else { return false }
         if !status.listening { return true }
         if let since = silentSince, now - since >= Self.attentionDelay { return true }
         if let since = rotoPendingSince, now - since >= Self.attentionDelay { return true }
+        if let since = launchControlPendingSince, now - since >= Self.attentionDelay { return true }
         return false
     }
 }

@@ -313,6 +313,25 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(right.midi.contains(LaunchControlOutgoing.text(.control(.encoder(row: 2, column: 0)), field: 2, "R2") ?? []))
     }
 
+    func testTheAppCanSetASendRow() {
+        var (driver, hub, _) = connected(layout: .xl3, outputs: [(4, "ADAT 1/2"), (6, "ADAT 3/4")])
+        XCTAssertEqual(driver.currentSendOutputs(hub: hub), [2, 4])
+        let step = driver.setSendOutput(row: 1, to: 6, hub: &hub, now: 1)
+        XCTAssertEqual(driver.currentSendOutputs(hub: hub), [2, 6])
+        XCTAssertEqual(driver.sendOutputs, [2, 6], "the top row kept its output")
+        XCTAssertTrue(step.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, "> ADAT 3/4") ?? []))
+        XCTAssertTrue(step.midi.contains(LaunchControlOutgoing.text(.stationary, field: 2, "Mid > ADAT 3/4") ?? []))
+        XCTAssertTrue(driver.setSendOutput(row: 0, to: 6, hub: &hub, now: 2).midi.isEmpty, "the other row's output is refused")
+        XCTAssertTrue(driver.setSendOutput(row: 0, to: nil, hub: &hub, now: 2).midi.isEmpty, "no pan on the XL 3")
+        XCTAssertTrue(driver.setSendOutput(row: 0, to: 99, hub: &hub, now: 2).midi.isEmpty, "not a send target")
+
+        var (lc3, lc3Hub, _) = connected(layout: .lc3)
+        _ = lc3.setSendOutput(row: 0, to: 2, hub: &lc3Hub, now: 1)
+        XCTAssertEqual(lc3.currentSendOutputs(hub: lc3Hub), [2])
+        _ = lc3.setSendOutput(row: 0, to: nil, hub: &lc3Hub, now: 2)
+        XCTAssertEqual(lc3.currentSendOutputs(hub: lc3Hub), [nil], "back to pan")
+    }
+
     func testTheHomeScreenShowsWhereTheRowsGo() {
         var (driver, hub, midi) = connected(layout: .xl3, outputs: [(4, "ADAT 1/2"), (6, "ADAT 3/4")])
         XCTAssertEqual(driver.stationaryLines(hub: hub), ["Channels 1-4", "Top > Phones", "Mid > ADAT 1/2"])
