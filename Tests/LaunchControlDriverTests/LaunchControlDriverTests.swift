@@ -498,6 +498,19 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertFalse(panReset.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, "Shift+turn: restore") ?? [1]))
     }
 
+    func testAMuteOrPFLPressSaysSoOnTheScreen() {
+        var (driver, hub, _) = connected(layout: .xl3)
+        // Bottom button 1 (mute): on, then off.
+        let on = driver.receive([0xB0, 0x2D, 0x7F], hub: &hub, now: 1)
+        XCTAssertTrue(on.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, "Mute on") ?? [1]))
+        _ = driver.receive([0xB0, 0x2D, 0x00], hub: &hub, now: 1.1)
+        let off = driver.receive([0xB0, 0x2D, 0x7F], hub: &hub, now: 2)
+        XCTAssertTrue(off.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, "Mute off") ?? [1]))
+        // Top button 1 (PFL).
+        let pfl = driver.receive([0xB0, 0x25, 0x7F], hub: &hub, now: 3)
+        XCTAssertTrue(pfl.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, "PFL on") ?? [1]))
+    }
+
     func testTheNovationButtonAsksForTotalMixFX() {
         var (driver, hub, _) = connected(layout: .xl3)
         XCTAssertTrue(driver.receive([0xB0, 104, 0x7F], hub: &hub, now: 1).showTotalMix)

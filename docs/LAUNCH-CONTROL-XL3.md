@@ -395,6 +395,9 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   and Track are lit where they would move.
 - **Free buttons.** Solo/Arm, Mute/Select, Record, and Play do nothing, so arm and the transport
   stay free for a later connection to a DAW (Adam, 2026-11-01).
+- **Mute and PFL presses** show on the overlay as well as the light: the channel's name and "Mute
+  on", "Mute off", "PFL on", or "PFL off" (Adam, 2026-11-02), or "Mute Master off" for a mute while
+  TotalMix FX's Mute Master is off.
 - **The Novation button** brings TotalMix FX's window to the front (Adam, 2026-11-02). It was
   tried as a one-press "first page" earlier that day and dropped as hard to find.
 - **Both Track buttons together** go to the first page (Adam, 2026-11-02).

@@ -400,10 +400,16 @@ public struct LaunchControlDriver: Sendable {
         case .button:
             guard let (layer, strip) = switchControl(for: element) else { return }
             take(hub.switchPressed(id(layer), strip: strip, now: now), hub: hub, into: &step)
-            // A mute does nothing in the audio while TotalMix FX's Mute Master is off: say so where
-            // the eyes are (Adam, 2026-11-02).
-            if hub.mirror.muteMaster == false, !isPFLLayer(layer, hub: hub), infos[layer]?[strip] ?? nil != nil {
+            guard let info = infos[layer]?[strip] ?? nil else { return }
+            let isPFL = isPFLLayer(layer, hub: hub)
+            if hub.mirror.muteMaster == false, !isPFL {
+                // A mute does nothing in the audio while TotalMix FX's Mute Master is off: say so
+                // where the eyes are (Adam, 2026-11-02).
                 step.midi += overlay("Mute Master off", "in TotalMix FX")
+            } else {
+                // The screen says what the press did, as well as the light (Adam, 2026-11-02).
+                let on = switchOn[layer]?[strip] ?? false
+                step.midi += overlay(info.name, (isPFL ? "PFL" : "Mute") + (on ? " on" : " off"))
             }
         case .novation:
             // Brings TotalMix FX to the front, e.g., to see a setting the controller can't show
