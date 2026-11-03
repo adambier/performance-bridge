@@ -252,6 +252,9 @@ by Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   (XL 3 test 1; for the Launch Control 3, an inference).
 - **Paging.** Track < and > move by eight strips, and with Shift to the first or last
   page.[^xl3-use] The strips always show the channels, never the outputs.
+- **The Novation button** brings TotalMix FX's window to the front, as on the XL 3 (Adam,
+  2026-11-02); that it sends 104 here too is from Bitwig's integration, not yet seen on a device
+  (section 4).
 - **Levels.** Level and send encoders use the ARC USB's scale, as on the XL 3 (about 0.2 dB a
   value near 0 dB).[^xl3-use] `LAUNCH-CONTROL-XL3.md`, section 8, item 12, tests whether relative
   mode is needed.

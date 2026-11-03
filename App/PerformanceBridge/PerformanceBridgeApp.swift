@@ -473,6 +473,12 @@ final class BridgeModel: ObservableObject {
         engine.onLaunchControlSendsChange = { layout, outputs in
             UserDefaults.standard.set(outputs.map { $0 ?? -1 }, forKey: Self.sendsKey(layout))
         }
+        // The Launch Control's Novation button brings TotalMix FX to the front (Adam, 2026-11-02).
+        engine.onShowTotalMix = {
+            Task { @MainActor in
+                if let app = Self.runningTotalMix() { app.activate(options: [.activateIgnoringOtherApps]) }
+            }
+        }
         // For now the log goes to the Terminal the app was started from.
         engine.onLog = { line in
             print(line)

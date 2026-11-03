@@ -224,6 +224,9 @@ public final class BridgeEngine: @unchecked Sendable {
     public var onLog: (@Sendable (String) -> Void)?
     /// Called when the status changes.
     public var onStatus: (@Sendable (BridgeStatus) -> Void)?
+    /// Called when a hardware controller asks for TotalMix FX's window (the Launch Control's
+    /// Novation button), with the lock released. The app brings TotalMix FX to the front.
+    public var onShowTotalMix: (@Sendable () -> Void)?
     /// Called with a layout and its send rows' choices (`LaunchControlSendRows.choices`) whenever
     /// the user changes them, on the device or in the app, so the app can save them. Called with the
     /// lock released.
@@ -656,18 +659,21 @@ public final class BridgeEngine: @unchecked Sendable {
     private func fromLaunchControl(_ bytes: [UInt8]) {
         lock.lock()
         var changed: (LaunchControlModel, [Int?])?
+        var showTotalMix = false
         if var lc = lcDriver {
             let before = sendRows[lc.layout]
             let step = lc.receive(bytes, hub: &hub, now: now)
             lcDriver = lc
             sendToLaunchControl(step.midi)
             dispatch(step.core)
+            showTotalMix = step.showTotalMix
             // Compared with the rows the driver started from (both padded to the layout's rows),
             // so nothing is saved before a row actually changes (review of 2026-11-02).
             changed = takeSendRowChange(lc.layout, before: before).map { (lc.layout, $0) }
         }
         lock.unlock()
         if let changed { onLaunchControlSendsChange?(changed.0, changed.1) }
+        if showTotalMix { onShowTotalMix?() }
         publishStatusIfChanged()
     }
 

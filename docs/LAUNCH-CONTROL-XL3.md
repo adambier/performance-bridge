@@ -393,9 +393,10 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   2026-11-01.) The strips always show the channels (inputs and playbacks), never the outputs: the
   outputs are set up in TotalMix FX and left alone during a performance (Adam, 2026-11-01). Page
   and Track are lit where they would move.
-- **Free buttons.** Solo/Arm, Mute/Select, Record, Play, and the Novation button do nothing, so arm
-  and the transport stay free for a later connection to a DAW (Adam, 2026-11-01). The Novation
-  button was tried as a one-press "first page" and dropped as hard to find (Adam, 2026-11-02).
+- **Free buttons.** Solo/Arm, Mute/Select, Record, and Play do nothing, so arm and the transport
+  stay free for a later connection to a DAW (Adam, 2026-11-01).
+- **The Novation button** brings TotalMix FX's window to the front (Adam, 2026-11-02). It was
+  tried as a one-press "first page" earlier that day and dropped as hard to find.
 - **Both Track buttons together** go to the first page (Adam, 2026-11-02).
 - **Mute Master.** While TotalMix FX's Mute Master is off, a mute that is on flashes between bright
   and dim orange (0.4 s each), and pressing a mute shows "Mute Master off / in TotalMix FX" on

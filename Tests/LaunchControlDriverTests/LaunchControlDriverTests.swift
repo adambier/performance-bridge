@@ -498,6 +498,13 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertFalse(panReset.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, "Shift+turn: restore") ?? [1]))
     }
 
+    func testTheNovationButtonAsksForTotalMixFX() {
+        var (driver, hub, _) = connected(layout: .xl3)
+        XCTAssertTrue(driver.receive([0xB0, 104, 0x7F], hub: &hub, now: 1).showTotalMix)
+        XCTAssertFalse(driver.receive([0xB0, 104, 0x00], hub: &hub, now: 1.1).showTotalMix, "not on release")
+        XCTAssertFalse(driver.receive([0xB0, 0x6A, 0x7F], hub: &hub, now: 2).showTotalMix, "Page doesn't")
+    }
+
     func testEncodersShowTheButtonsYellow() {
         // Test 18: palette yellow looks greener on the encoders than on the buttons.
         typealias D = LaunchControlDriver

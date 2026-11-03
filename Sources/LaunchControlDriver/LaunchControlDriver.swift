@@ -20,6 +20,9 @@ public struct LaunchControlStep: Equatable, Sendable {
     /// Messages for TotalMix FX, and updates for the other surfaces. This driver's own updates are
     /// already turned into `midi`.
     public var core = CoreOutput()
+    /// Whether the app should bring TotalMix FX's window to the front: the Novation button was
+    /// pressed (Adam, 2026-11-02).
+    public var showTotalMix = false
 
     /// Nothing to send.
     public init() {}
@@ -402,6 +405,10 @@ public struct LaunchControlDriver: Sendable {
             if hub.mirror.muteMaster == false, !isPFLLayer(layer, hub: hub), infos[layer]?[strip] ?? nil != nil {
                 step.midi += overlay("Mute Master off", "in TotalMix FX")
             }
+        case .novation:
+            // Brings TotalMix FX to the front, e.g., to see a setting the controller can't show
+            // (Adam, 2026-11-02; it had been left free).
+            step.showTotalMix = true
         case .pageUp, .pageDown:
             if shiftHeld { shiftUsedForNavigation = true }
             // Page steps the top send row's output; on the XL 3, Shift + Page the middle row's
