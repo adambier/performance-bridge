@@ -95,10 +95,14 @@ struct LayoutView: View {
 
             VStack(alignment: .leading, spacing: 10) {
                 // One short paragraph each, in callout size, for legibility (Adam, 2026-10-31).
-                // Three notes, with the full TotalMix FX path (UI review of 2026-11-02).
+                // Three notes, with the full TotalMix FX path (UI review of 2026-11-02), and on the
+                // sources, one on playback names (Adam, 2026-11-02).
                 Text("Channels that TotalMix FX hides from Performance Bridge’s OSC Controller aren’t shown. Hide and show them in TotalMix FX’s own Channel Layout window: Options → Channel Layout…, or right-click the channel and choose Change Channel Layout; under \u{201C}Hide Channel in\u{201D}, check or uncheck the OSC Controller box.")
                 Text("Channel colors can be set in the same window.")
                 Text("Labels show only on the hardware controllers. Clear a label to go back to the name shown dimmed beside it.")
+                if view == .sources {
+                    Text("Playbacks show as \u{201C}PB 1/2\u{201D} and so on, whatever their names in TotalMix FX: TotalMix FX gives an unnamed playback its output\u{2019}s hardware name, which Performance Bridge can\u{2019}t tell from a name you gave it. Give a playback a label to name it on the hardware controllers.")
+                }
             }
             .font(.callout)
             .foregroundStyle(.secondary)
