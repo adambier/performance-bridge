@@ -48,7 +48,7 @@ public struct ControlsGuide: Equatable, Sendable {
         "Every hardware controller works the same way: **each column of controls is one channel** and every control in a column controls that channel.",
         "Levels and pans go into the submix of the output that TotalMix FX's control room assigns to Main Out and follow Main Out if it is reassigned there. Set the outputs themselves (e.g., Main Out's volume and Speaker B) in TotalMix FX or with an ARC USB; the hardware controllers don't change them.",
         "**Sends** set the headphone mixes and the other submixes. A send control sets how much of its channel goes to one other output, e.g., Phones 1. A row of send controls is that output's whole submix, one channel per column.",
-        "The outputs a send row can feed are the ones in **Settings… → Channel Layout → Outputs**, in that order, except Main Out and Main Out B (they carry the main mix) and the cue output (PFL uses it).",
+        "The outputs a send row can feed are the ones in **Settings… → Channel Layout → Outputs**, in that order. Main Out and Main Out B (they carry the main mix) and the cue output (PFL uses it) aren't listed there.",
     ]
 
     /// The guide for a hardware controller.
@@ -70,7 +70,7 @@ public struct ControlsGuide: Equatable, Sendable {
                 Row("Middle encoder", "Send to the middle row's output (e.g., Phones 2)"),
                 Row("Bottom encoder", "Pan in Main Out"),
                 Row("Top button", "PFL (bright yellow when on, dim yellow when off; the screen briefly names the channel and says \"PFL on\" or \"PFL off\")"),
-                Row("Bottom button", "Mute (bright orange when on, dim orange when off, and \"Mute on\" or \"Mute off\" on the screen; a mute that is on flashes while TotalMix FX's Mute Master is off)"),
+                Row("Bottom button", "Mute (bright orange when on, dim orange when off, and \"Mute on\" or \"Mute off\" on the screen, or \"Mute Master off\" while TotalMix FX's Mute Master is off; a mute that is on flashes while TotalMix FX's Mute Master is off)"),
             ]),
             Table(controlHeading: "Button", actionHeading: "What it does", rows: [
                 Row("**Track >** / **Track <**", "Show the next or previous eight channels. With **Shift**: the last or first eight."),
@@ -99,7 +99,7 @@ public struct ControlsGuide: Equatable, Sendable {
             Table(controlHeading: "Control (in each column)", actionHeading: "What it does for that column's channel", rows: [
                 Row("Bottom encoder", "Level in Main Out"),
                 Row("Top encoder", "Pan, or a send: **Page ▼** / **▲** steps it through Pan, then each output in the Outputs list"),
-                Row("Button", "Mute; PFL while **Function** (labeled \"DAW\" underneath) is held (orange for mute, yellow for PFL, dim when off). Function rests dim yellow; it lights bright yellow while held, and also while any channel's PFL is on, so a PFL left on still shows"),
+                Row("Button", "Mute; PFL while **Function** (labeled \"DAW\" underneath) is held (orange for mute, yellow for PFL, dim when off). Function (if it has a light) rests dim yellow; it lights bright yellow while held, and also while any channel's PFL is on, so a PFL left on still shows"),
             ]),
         ],
         notes: [

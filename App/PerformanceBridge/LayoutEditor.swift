@@ -204,7 +204,7 @@ struct LayoutRow: View {
             .accessibilityLabel("Edit the label for \(item.defaultName)")
             if item.label != nil {
                 // Clears the label, back to the name the strip would show anyway (Adam, 2026-11-02).
-                Button { editing = false; commit("") } label: {
+                Button { commit("") } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(.tertiary)
                 }

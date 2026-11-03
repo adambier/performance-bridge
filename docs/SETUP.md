@@ -210,8 +210,8 @@ and Speaker B) in TotalMix FX or with an ARC USB; the hardware controllers don't
 Phones 1. A row of send controls is that output's whole submix, one channel per column.
 
 The outputs a send row can
-feed are the ones in **Settings… → Channel Layout → Outputs**, in that order, except Main Out and Main Out B (they carry
-the main mix) and the cue output (PFL uses it).
+feed are the ones in **Settings… → Channel Layout → Outputs**, in that order. Main Out and Main Out B (they carry
+the main mix) and the cue output (PFL uses it) aren't listed there.
 
 ### Launch Control XL 3
 
@@ -222,7 +222,7 @@ the main mix) and the cue output (PFL uses it).
 | Middle encoder | Send to the middle row's output (e.g., Phones 2) |
 | Bottom encoder | Pan in Main Out |
 | Top button | PFL (bright yellow when on, dim yellow when off; the screen briefly names the channel and says "PFL on" or "PFL off") |
-| Bottom button | Mute (bright orange when on, dim orange when off, and "Mute on" or "Mute off" on the screen; a mute that is on flashes while TotalMix FX's Mute Master is off) |
+| Bottom button | Mute (bright orange when on, dim orange when off, and "Mute on" or "Mute off" on the screen, or "Mute Master off" while TotalMix FX's Mute Master is off; a mute that is on flashes while TotalMix FX's Mute Master is off) |
 
 | Button | What it does |
 |---|---|
@@ -256,7 +256,7 @@ The Launch Control 3 works the same way, with fewer controls:
 |---|---|
 | Bottom encoder | Level in Main Out |
 | Top encoder | Pan, or a send: **Page ▼** / **▲** steps it through Pan, then each output in the Outputs list |
-| Button | Mute; PFL while **Function** (labeled "DAW" underneath) is held (orange for mute, yellow for PFL, dim when off). Function rests dim yellow; it lights bright yellow while held, and also while any channel's PFL is on, so a PFL left on still shows |
+| Button | Mute; PFL while **Function** (labeled "DAW" underneath) is held (orange for mute, yellow for PFL, dim when off). Function (if it has a light) rests dim yellow; it lights bright yellow while held, and also while any channel's PFL is on, so a PFL left on still shows |
 
 - Track works as on the XL 3 and Shift + turn resets an encoder as it does there; a level above 0 dB comes down to 0 dB,
   and one at or below 0 dB stays. The screen shows the channels on the page, the top row's function (e.g., "Top: Pan"),
