@@ -8,6 +8,9 @@ import SwiftUI
 #if canImport(BridgeEngine)
 import BridgeEngine
 #endif
+#if canImport(LaunchControl)
+import LaunchControl
+#endif
 
 /// The setup window's content: one step per page, with Back and Continue, and a row of marks
 /// across the top for every step, so the whole setup can be seen at a glance and any step reached
@@ -29,16 +32,29 @@ struct SetupView: View {
     /// another page.
     @State private var showInstructions = false
 
-    /// Screenshots of TotalMix FX for a step, shown on its page. They are from TotalMix FX
-    /// "2.10 (1)" on a Mac (Adam, 2026-10-31), published with his permission; TotalMix FX's
-    /// windows rarely change.
-    private static let screenshots: [String: [String]] = [
-        "totalmix": ["totalmix-options-menu", "totalmix-osc-tab", "totalmix-osc-details"],
-        "hide": ["totalmix-channel-layout"],
-        "mutemaster": ["totalmix-control-strip"],
-        "livemode": ["totalmix-control-strip"],
-        "cue": ["totalmix-cue-pfl-to"],
-    ]
+    /// Screenshots for a step, shown on its page: one for every step (Adam, 2026-11-02), whole
+    /// windows so it is clear where a setting is, with the setting outlined in the app's amber
+    /// where the window holds more. TotalMix FX's ("totalmix-") are from TotalMix FX "2.10 (1)" on
+    /// a Mac (Adam, 2026-10-31 and 2026-11-02), published with his permission; TotalMix FX's
+    /// windows rarely change. Performance Bridge's own ("app-") need taking again when its
+    /// windows change.
+    private var shots: [String: [String]] {
+        let launchControl = model.status.launchControlLayout == .lc3 ? "app-connections-lc3" : "app-connections-xl3"
+        return [
+            "port": ["totalmix-osc-outgoing"],
+            "version": ["totalmix-about"],
+            "totalmix": ["totalmix-options-menu", "totalmix-osc-tab", "totalmix-osc-details"],
+            "channels": ["app-menu-refresh"],
+            "meters": ["totalmix-osc-level-data"],
+            "mutemaster": ["totalmix-control-strip"],
+            "roto": ["app-connections-roto"],
+            "launchcontrol": [launchControl],
+            "livemode": ["totalmix-live-mode"],
+            "cue": ["totalmix-cue-pfl-to"],
+            "hide": ["totalmix-channel-layout"],
+            "order": ["app-channel-layout"],
+        ]
+    }
 
     /// The width of the window's content, and so the widest a screenshot is shown.
     private static let width: CGFloat = 560
@@ -140,7 +156,7 @@ struct SetupView: View {
             if !step.detail.isEmpty { detailText(step.detail) }
             if step.state != .done {
                 screenshots(for: step)
-            } else if !step.instructions.isEmpty || Self.screenshots[step.id] != nil {
+            } else if !step.instructions.isEmpty || shots[step.id] != nil {
                 // A done step's instructions and screenshots, on request: e.g., to set up another
                 // Mac the same way.
                 Button(showInstructions ? "Hide Instructions" : "Show Instructions") {
@@ -206,21 +222,23 @@ struct SetupView: View {
     /// pixels), no wider than the page, with an exact height so no space is left around it.
     @ViewBuilder
     private func screenshots(for step: SetupStep) -> some View {
-        let images = (Self.screenshots[step.id] ?? []).compactMap { Brand.resources.image(forResource: $0) }
-        if !images.isEmpty {
+        let names = (shots[step.id] ?? []).filter { Brand.resources.image(forResource: $0) != nil }
+        if !names.isEmpty {
             VStack(alignment: .leading, spacing: 6) {
-                Text("Where it is in TotalMix FX")
+                // Named for the app the screenshots show.
+                Text(names.allSatisfy { $0.hasPrefix("app-") } ? "Where it is in Performance Bridge" : "Where it is in TotalMix FX")
                     .font(.callout.weight(.medium))
                     .foregroundStyle(.secondary)
-                ForEach(images.indices, id: \.self) { index in
-                    let image = images[index]
-                    let pixels = pixelSize(image)
-                    let width = min(pixels.width / 2, Self.width - 12)
-                    Image(nsImage: image)
-                        .resizable()
-                        .interpolation(.high)
-                        .frame(width: width, height: width * pixels.height / max(pixels.width, 1))
-                        .accessibilityLabel("Screenshot of TotalMix FX")
+                ForEach(names, id: \.self) { name in
+                    if let image = Brand.resources.image(forResource: name) {
+                        let pixels = pixelSize(image)
+                        let width = min(pixels.width / 2, Self.width - 12)
+                        Image(nsImage: image)
+                            .resizable()
+                            .interpolation(.high)
+                            .frame(width: width, height: width * pixels.height / max(pixels.width, 1))
+                            .accessibilityLabel(name.hasPrefix("app-") ? "Screenshot of Performance Bridge" : "Screenshot of TotalMix FX")
+                    }
                 }
             }
         }
