@@ -115,7 +115,7 @@ public enum SetupChecklist {
                                    detail: "If it stays here, quit any other program that talks to the Roto-Control, such as a DAW with its Roto-Control integration."))
         } else {
             steps.append(SetupStep(id: "roto", title: "Roto-Control not found", state: .waiting,
-                                   detail: "Connect the Roto-Control by USB. If it’s connected, try another cable or USB port."))
+                                   detail: "Connect the Roto-Control by USB. If it’s connected, try another cable or USB port.\n\nTo use a Launch Control XL 3 or Launch Control 3 instead, choose it in Performance Bridge’s Settings, on the Connections tab."))
         }
 
         if let name = status.launchControlName {
@@ -138,8 +138,12 @@ public enum SetupChecklist {
         steps.append(SetupStep(id: "cue", title: "Send PFL to your headphones", state: .instruction,
                                detail: "TotalMix FX sends PFL to Main by default, so PFL from a hardware controller replaces what Main Out plays: on stage, the audience hears only the channel being checked. Performance Bridge can’t check this setting.\n\nIn TotalMix FX’s Control Room section, click “assign”, then “Cue/PFL to”, and choose a headphone output (e.g., “Phones 1”)."))
 
+        // The color tip is only for a Launch Control, so it shows only once one is chosen (Adam,
+        // 2026-11-02).
+        let colorTip = status.launchControlName == nil ? ""
+            : " Give each output the send rows feed (e.g., each headphone output) a color of its own: a send row lights in its output’s color, so the color shows which output it feeds."
         steps.append(SetupStep(id: "hide", title: "Hide channels in TotalMix FX", state: .instruction,
-                               detail: "Hide and show channels in TotalMix FX: choose Options → Channel Layout…, or right-click the channel and choose Change Channel Layout. Under “Hide Channel in”, check or uncheck the box for Performance Bridge’s OSC Controller.\n\nChannel colors can be set in the same window. With a Launch Control, give each output its send rows feed (e.g., each headphone output) a color of its own: a send row lights in its output’s color, so the color shows which output it feeds."))
+                               detail: "Hide and show channels in TotalMix FX: choose Options → Channel Layout…, or right-click the channel and choose Change Channel Layout. Under “Hide Channel in”, check or uncheck the box for Performance Bridge’s OSC Controller.\n\nChannel colors can be set in the same window." + colorTip))
         steps.append(SetupStep(id: "order", title: "Set the order of the channels", state: .optional,
                                detail: "Set the order of the channels, and give them short labels for the hardware controllers, on the Channel Layout tab of Performance Bridge’s Settings."))
         return steps

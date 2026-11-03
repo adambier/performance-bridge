@@ -46,7 +46,9 @@ final class BridgeEngineTests: XCTestCase {
         }
         try sender.send(OSCMessage("/controlroom/mainout", [.float(0)]).encoded(), to: "127.0.0.1", port: port)
         let deadline = Date().addingTimeInterval(3)
-        while Date() < deadline, engine.status.sendTargets.count < 3 { Thread.sleep(forTimeInterval: 0.05) }
+        // Wait for the names and Main Out's assignment, which can be handled after three of the
+        // names (seen once on CI's macOS runner, 2026-11-02).
+        while Date() < deadline, engine.status.sendTargets.map(\.output) != [2, 4, 6] { Thread.sleep(forTimeInterval: 0.05) }
         let targets = engine.status.sendTargets.map(\.output)
         XCTAssertGreaterThanOrEqual(targets.count, 3)
         guard targets.count >= 3 else { return }
@@ -460,8 +462,11 @@ final class BridgeEngineTests: XCTestCase {
                      "nothing before it to go back to")
         XCTAssertNil(SetupChecklist.nextIndex(after: ids.count - 1, in: skipping), "Done on the last page")
         XCTAssertFalse(skipping.contains { $0.state == .done && $0.detail.isEmpty }, "a done page says what was checked")
+        XCTAssertFalse(steps.first { $0.id == "hide" }!.detail.contains("send row"),
+                       "no Launch Control tip before a Launch Control is chosen")
         status.launchControlName = "Launch Control XL 3"
         let withLaunchControl = SetupChecklist.steps(status: status, settings: BridgeSettings())
+        XCTAssertTrue(withLaunchControl.first { $0.id == "hide" }!.detail.contains("send row"))
         XCTAssertEqual(withLaunchControl[SetupChecklist.startIndex(of: withLaunchControl,
                                                                    openFor: SetupWatch.Reason.launchControlNotConnecting.stepID)].id,
                        "launchcontrol", "a Launch Control problem opens at its step")
