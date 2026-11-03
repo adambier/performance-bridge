@@ -1261,8 +1261,9 @@ public struct LaunchControlDriver: Sendable {
     /// Page and Track where they would move: white.
     public static let navigationOn: UInt8 = 3
     /// The Function button while the buttons are mute: PFL's color when off, as for any button that
-    /// is off (Adam, 2026-11-02). That the Launch Control 3's Function button takes an exact color
-    /// as the strip buttons do is an inference (test 19 lit the XL 3's strip buttons only).
+    /// is off (Adam, 2026-11-02). The Launch Control 3's buttons, Function
+    /// included, are taken to show colors as the XL 3's do (Adam, 2026-11-02; test 19 lit the
+    /// XL 3's strip buttons).
     public static let functionIdle = pflOff
     /// The hue of a send row whose output is left white in TotalMix FX: teal (33) for the top row,
     /// magenta (53) for the XL 3's middle row; neither is one of TotalMix FX's eight colors (Adam,
