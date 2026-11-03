@@ -200,12 +200,16 @@ Choose **Settings…** from the menu and open the **Channel Layout** tab.
 The app has the same for the chosen hardware controller: choose **Controls Guide…** from Performance Bridge's menu.
 
 Every hardware controller works the same way: **each column of controls is one channel** and every control in a
-column controls that channel. Levels and pans go into the submix of the output that TotalMix FX's control room
+column controls that channel.
+
+Levels and pans go into the submix of the output that TotalMix FX's control room
 assigns to Main Out and follow Main Out if it is reassigned there. Set the outputs themselves (e.g., Main Out's volume
 and Speaker B) in TotalMix FX or with an ARC USB; the hardware controllers don't change them.
 
 **Sends** set the headphone mixes and the other submixes. A send control sets how much of its channel goes to one other output, e.g.,
-Phones 1. A row of send controls is that output's whole submix, one channel per column. The outputs a send row can
+Phones 1. A row of send controls is that output's whole submix, one channel per column.
+
+The outputs a send row can
 feed are the ones in **Settings… → Channel Layout → Outputs**, in that order, except Main Out and Main Out B (they carry
 the main mix) and the cue output (PFL uses it).
 
@@ -263,8 +267,12 @@ The Launch Control 3 works the same way, with fewer controls:
 
 ### Roto-Control
 
-Each of the eight knobs is a channel. Hold **SEL** to choose what the knobs control (Volume, Pan, or a send, "FX")
-and what the switches do (Mute or Solo; Solo is PFL here). The < and > buttons page through the channels. Pressing
+Each of the eight knobs is a channel.
+
+Hold **SEL** to choose what the knobs control (Volume, Pan, or a send, "FX")
+and what the switches do (Mute or Solo; Solo is PFL here).
+
+The < and > buttons page through the channels. Pressing
 both arrow buttons together switches the Roto-Control to its second track set ("MIX-RTN" on its screen), which shows
 the same channels.
 

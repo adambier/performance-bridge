@@ -45,8 +45,10 @@ public struct ControlsGuide: Equatable, Sendable {
 
     /// What every hardware controller has in common: paragraphs shown before each guide.
     public static let common: [String] = [
-        "Every hardware controller works the same way: **each column of controls is one channel** and every control in a column controls that channel. Levels and pans go into the submix of the output that TotalMix FX's control room assigns to Main Out and follow Main Out if it is reassigned there. Set the outputs themselves (e.g., Main Out's volume and Speaker B) in TotalMix FX or with an ARC USB; the hardware controllers don't change them.",
-        "**Sends** set the headphone mixes and the other submixes. A send control sets how much of its channel goes to one other output, e.g., Phones 1. A row of send controls is that output's whole submix, one channel per column. The outputs a send row can feed are the ones in **Settings… → Channel Layout → Outputs**, in that order, except Main Out and Main Out B (they carry the main mix) and the cue output (PFL uses it).",
+        "Every hardware controller works the same way: **each column of controls is one channel** and every control in a column controls that channel.",
+        "Levels and pans go into the submix of the output that TotalMix FX's control room assigns to Main Out and follow Main Out if it is reassigned there. Set the outputs themselves (e.g., Main Out's volume and Speaker B) in TotalMix FX or with an ARC USB; the hardware controllers don't change them.",
+        "**Sends** set the headphone mixes and the other submixes. A send control sets how much of its channel goes to one other output, e.g., Phones 1. A row of send controls is that output's whole submix, one channel per column.",
+        "The outputs a send row can feed are the ones in **Settings… → Channel Layout → Outputs**, in that order, except Main Out and Main Out B (they carry the main mix) and the cue output (PFL uses it).",
     ]
 
     /// The guide for a hardware controller.
@@ -79,7 +81,9 @@ public struct ControlsGuide: Equatable, Sendable {
         ],
         notes: [
             "The two send rows never feed the same output: stepping one skips the output the other has.",
-            "The screen shows the channels on the page, counted in the order of **Settings… → Channel Layout** with a stereo pair counting once, and where each send row goes (e.g., \"Inputs 1-7\", \"Top > Phones 1\", \"Mid > Phones 2\"). Moving a control shows its channel, what it does, and its value. After each Page press the screen names the row and its new output, and each send row's lights take the color of the output it feeds: its color in TotalMix FX, or, for an output left white, teal (a blue-green) for the top row and magenta for the middle row.",
+            "The screen shows the channels on the page, counted in the order of **Settings… → Channel Layout** with a stereo pair counting once, and where each send row goes (e.g., \"Inputs 1-7\", \"Top > Phones 1\", \"Mid > Phones 2\").",
+            "Moving a control shows its channel, what it does, and its value.",
+            "After each Page press the screen names the row and its new output, and each send row's lights take the color of the output it feeds: its color in TotalMix FX, or, for an output left white, teal (a blue-green) for the top row and magenta for the middle row.",
             "Page and Track are lit where they can move and dark at the ends. While Shift is held, Page lights for the middle row.",
             "Each row's output is remembered when Performance Bridge restarts. It can also be chosen in Settings, at the bottom of the Connections tab, with the Launch Control connected or not; the change takes effect at once.",
             "Press **Track <** and **Track >** together to go back to the first eight channels.",
@@ -99,7 +103,8 @@ public struct ControlsGuide: Equatable, Sendable {
             ]),
         ],
         notes: [
-            "Track works as on the XL 3 and Shift + turn resets an encoder as it does there; a level above 0 dB comes down to 0 dB, and one at or below 0 dB stays. The screen shows the channels on the page, the top row's function (e.g., \"Top: Pan\"), and the buttons' (\"Buttons: Mute\", or \"PFL on, buttons Mute\" while a PFL is on; briefly \"Buttons\" over \"PFL\" while Function is held).",
+            "Track works as on the XL 3 and Shift + turn resets an encoder as it does there; a level above 0 dB comes down to 0 dB, and one at or below 0 dB stays.",
+            "The screen shows the channels on the page, the top row's function (e.g., \"Top: Pan\"), and the buttons' (\"Buttons: Mute\", or \"PFL on, buttons Mute\" while a PFL is on; briefly \"Buttons\" over \"PFL\" while Function is held).",
             "The **Novation button** brings TotalMix FX's window to the front, as on the XL 3.",
             "The Launch Control 3 has not been tried on a device yet.",
         ])
@@ -107,7 +112,9 @@ public struct ControlsGuide: Equatable, Sendable {
     static let rotoControl = ControlsGuide(
         title: "Roto-Control",
         introduction: [
-            "Each of the eight knobs is a channel. Hold **SEL** to choose what the knobs control (Volume, Pan, or a send, \"FX\") and what the switches do (Mute or Solo; Solo is PFL here). The < and > buttons page through the channels. Pressing both arrow buttons together switches the Roto-Control to its second track set (\"MIX-RTN\" on its screen), which shows the same channels.",
+            "Each of the eight knobs is a channel.",
+            "Hold **SEL** to choose what the knobs control (Volume, Pan, or a send, \"FX\") and what the switches do (Mute or Solo; Solo is PFL here).",
+            "The < and > buttons page through the channels. Pressing both arrow buttons together switches the Roto-Control to its second track set (\"MIX-RTN\" on its screen), which shows the same channels.",
         ],
         tables: [],
         notes: [
