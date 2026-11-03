@@ -3,6 +3,22 @@
     <channel>
         <title>Performance Bridge</title>
         <item>
+            <title>1.0.1</title>
+            <pubDate>Mon, 02 Nov 2026 16:02:35 -0800</pubDate>
+            <sparkle:version>288</sparkle:version>
+            <sparkle:shortVersionString>1.0.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[# Performance Bridge 1.0.1
+
+## New
+
+- **Send rows on the Launch Control XL 3 and Launch Control 3 are easier to tell apart.** A send row whose output has no color in TotalMix FX now lights teal (a blue-green) on the top row and magenta on the middle row, instead of the same green or blue for every such output. An output with a color in TotalMix FX keeps its color.
+- **Show levels by brightness** (Settings… → Connections, below the send rows; off by default). Level and send encoders dim smoothly with their levels and go dark at −oo. Pan encoders keep full brightness. The XL 3's faders have no lights, so on the XL 3 this shows the send levels.
+
+]]></description>
+            <enclosure url="https://github.com/adambier/performance-bridge/releases/download/v1.0.1/Performance-Bridge-1.0.1.zip" length="3521627" type="application/octet-stream" sparkle:edSignature="cMzfAMIzgVMyaTBGu+NZ0+FQV/wHUGPWCwSyeavS6vRaaH8zItgJM8trT/wGp2Dmp50uPsQm0DlSyl4Ge3eWCA=="/>
+        </item>
+        <item>
             <title>1.0.0</title>
             <pubDate>Mon, 02 Nov 2026 13:25:41 -0800</pubDate>
             <sparkle:version>277</sparkle:version>
