@@ -104,7 +104,7 @@ public struct MixerMirror: Sendable {
     /// The output channel (its left channel) assigned to each monitoring role in the control room.
     public private(set) var monitoring: [MonitoringRole: Int] = [:]
     /// TotalMix FX's Mute Master (`/globalmute`), or `nil` until TotalMix FX has reported it. While it is
-    /// off, a channel's mute is only selected and doesn't silence it (docs/TOTALMIX-OSC.md, the
+    /// off, a channel's mute is only set and doesn't silence it (docs/TOTALMIX-OSC.md, the
     /// global mute recheck of 2026-10-31, and Adam, 2026-11-02).
     public private(set) var muteMaster: Bool?
     private var visible: [TotalMixBus: [ChannelRef]] = [:]

@@ -172,7 +172,7 @@ public struct BridgeStatus: Equatable, Sendable {
     /// The outputs the send controls step through, in order (`SurfaceHub.sendTargets`), with their
     /// names as the strips show them, for choosing a send row's output.
     public var sendTargets: [HomeChoice] = []
-    /// Whether TotalMix FX has reported its Mute Master off: mutes are then only selected and don't
+    /// Whether TotalMix FX has reported its Mute Master off: mutes are then only set and don't
     /// silence (Adam, 2026-11-02). False until TotalMix FX has reported it.
     public var muteMasterOff = false
     /// How many channels TotalMix FX has described (named or set) since the engine started: more than

@@ -255,7 +255,7 @@ public struct LaunchControlDriver: Sendable {
             self.lastStart = now
             step.midi += startBytes()
         }
-        // Mutes selected while Mute Master is off flash; the lights are sent only when they change.
+        // Mutes set while Mute Master is off flash; the lights are sent only when they change.
         let lit = Int((now / Self.blinkPeriod).rounded(.down)) % 2 == 0
         if connected, !inCustomMode, lit != blinkLit, hub.mirror.muteMaster == false {
             blinkLit = lit
@@ -1017,7 +1017,7 @@ public struct LaunchControlDriver: Sendable {
     }
 
     /// A strip button's light: bright when on, the dimmest shade when off; a mute that is on while
-    /// TotalMix FX's Mute Master is off (selected but not silencing) flashes between the two,
+    /// TotalMix FX's Mute Master is off (set but not silencing) flashes between the two,
     /// `blinkPeriod` each (docs/LAUNCH-CONTROL-XL3.md, test 15; Adam, 2026-11-02).
     private mutating func drawButton(_ layer: Layer, _ index: Int, hub: SurfaceHub) -> [UInt8] {
         guard let button = button(layer, index) else { return [] }
