@@ -235,7 +235,7 @@ the main mix) and the cue output (PFL uses it).
 - Each row's output is remembered when Performance Bridge restarts. It can also be chosen in Settings, at the
   bottom of the Connections tab, with the Launch Control connected or not; the change takes effect at once.
 - Press **Track <** and **Track >** together to go back to the first eight channels.
-- The **Novation button** brings TotalMix FX's window to the front.
+- The **Novation button** brings TotalMix FX's window to the front. Press it again while TotalMix FX is in front to go back to the app you were in.
 - Solo/Arm, Mute/Select, Record, and Play do nothing in this release; they are kept free for later uses (e.g., a
   connection to a DAW).
 - Level and pan are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so TotalMix FX's

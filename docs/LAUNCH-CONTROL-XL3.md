@@ -400,7 +400,8 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
 - **Mute and PFL presses** show on the overlay as well as the light: the channel's name and "Mute
   on", "Mute off", "PFL on", or "PFL off" (Adam, 2026-11-02), or "Mute Master off" for a mute while
   TotalMix FX's Mute Master is off.
-- **The Novation button** brings TotalMix FX's window to the front (Adam, 2026-11-02). It was
+- **The Novation button** brings TotalMix FX's window to the front, and, with TotalMix FX already
+  in front, goes back to the app that was (Adam, 2026-11-02). It was
   tried as a one-press "first page" earlier that day and dropped as hard to find.
 - **Both Track buttons together** go to the first page (Adam, 2026-11-02).
 - **Mute Master.** While TotalMix FX's Mute Master is off, a mute that is on flashes between bright

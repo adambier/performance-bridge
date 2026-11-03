@@ -321,6 +321,27 @@ final class BridgeModel: ObservableObject {
 
     private static let setupShownKey = "setupShown"
 
+    /// The app that was in front when the Novation button last brought TotalMix FX forward.
+    private var appBeforeTotalMix: NSRunningApplication?
+
+    /// Brings TotalMix FX to the front; if it is already there, goes back to the app that was in
+    /// front before, or, if there is none to go back to, hides TotalMix FX so the next app comes
+    /// forward (Adam, 2026-11-02).
+    private func toggleTotalMix() {
+        guard let totalMix = Self.runningTotalMix() else { return }
+        if totalMix.isActive {
+            if let previous = appBeforeTotalMix, !previous.isTerminated, previous != totalMix {
+                previous.activate(options: [.activateIgnoringOtherApps])
+            } else {
+                totalMix.hide()
+            }
+            appBeforeTotalMix = nil
+        } else {
+            appBeforeTotalMix = NSWorkspace.shared.frontmostApplication
+            totalMix.activate(options: [.activateIgnoringOtherApps])
+        }
+    }
+
     /// Set once a hardware controller has connected in this launch, or the user has applied
     /// Settings; until then the app chooses the hardware controller by itself (Adam, 2026-11-02:
     /// each launch starts over).
@@ -473,11 +494,10 @@ final class BridgeModel: ObservableObject {
         engine.onLaunchControlSendsChange = { layout, outputs in
             UserDefaults.standard.set(outputs.map { $0 ?? -1 }, forKey: Self.sendsKey(layout))
         }
-        // The Launch Control's Novation button brings TotalMix FX to the front (Adam, 2026-11-02).
-        engine.onShowTotalMix = {
-            Task { @MainActor in
-                if let app = Self.runningTotalMix() { app.activate(options: [.activateIgnoringOtherApps]) }
-            }
+        // The Launch Control's Novation button brings TotalMix FX to the front, and with TotalMix FX
+        // already in front goes back to the app that was (Adam, 2026-11-02).
+        engine.onShowTotalMix = { [weak self] in
+            Task { @MainActor in self?.toggleTotalMix() }
         }
         // For now the log goes to the Terminal the app was started from.
         engine.onLog = { line in
