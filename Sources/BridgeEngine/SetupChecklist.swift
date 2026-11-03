@@ -26,7 +26,9 @@ public struct SetupStep: Equatable, Sendable, Identifiable {
     /// Where it stands.
     public var state: State
     /// What to do, or what was seen. Empty when there is nothing to add. Each line is shown on
-    /// its own (e.g., a numbered step), and a blank line starts a new paragraph.
+    /// its own (e.g., a numbered step), and a blank line starts a new paragraph. A line
+    /// `[image: name]` marks where the app shows the screenshot `name`: right after the steps it
+    /// shows (Adam, 2026-11-02).
     public var detail: String
     /// For a step that is done, how it is set up, shown on request (Adam, 2026-11-02): e.g., to
     /// set up a second Mac the same way. Empty when there is nothing to show.
@@ -65,17 +67,21 @@ public enum SetupChecklist {
 
         steps.append(versionStep(status: status, running: totalMixRunning, version: totalMixVersion))
 
-        // Lines are list items; a blank line starts a new paragraph (SetupView spaces them).
+        // Lines are list items; a blank line starts a new paragraph (SetupView spaces them). Each
+        // screenshot follows the steps it shows.
         let oscSetup = """
             In TotalMix FX:
             1. Options → Enable OSC Control: checked.
             2. Options → Mixer Settings… (F3) → OSC.
+            [image: totalmix-options-menu]
             3. “Select Controller”: an OSC Controller (1–4) no other program or device uses. Check “In Use”.
             4. “Compatibility (Mode)”: Global OSC.
             5. “Port (incoming)”: \(incoming).
             6. Under “Remote Controller Address”, “Port (outgoing)”: \(outgoing).
             7. “Host”: localhost (if Performance Bridge runs on this Mac).
+            [image: totalmix-osc-tab]
             8. Click Details and check “Send changes” and “Send status”.
+            [image: totalmix-osc-details]
 
             Each OSC Controller needs its own ports. If TotalMix FX uses other ports, set the same ones in Performance Bridge’s Settings, on the Connections tab.
             """

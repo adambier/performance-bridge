@@ -43,7 +43,6 @@ struct SetupView: View {
         return [
             "port": ["totalmix-osc-outgoing"],
             "version": ["totalmix-about"],
-            "totalmix": ["totalmix-options-menu", "totalmix-osc-tab", "totalmix-osc-details"],
             "channels": ["app-menu-refresh"],
             "meters": ["totalmix-osc-level-data"],
             "mutemaster": ["totalmix-control-strip"],
@@ -202,15 +201,22 @@ struct SetupView: View {
     /// A step's detail, broken up for legibility (Adam, 2026-10-31): each line on its own with a
     /// little space between (e.g., numbered steps), and more space between paragraphs, which a
     /// blank line separates. In the primary color, since on its page the detail is what the user
-    /// acts on (UI review of 2026-11-02).
+    /// acts on (UI review of 2026-11-02). A line `[image: name]` shows that screenshot there, after
+    /// the steps it shows (Adam, 2026-11-02).
     private func detailText(_ detail: String) -> some View {
         let paragraphs = detail.components(separatedBy: "\n\n").map { $0.components(separatedBy: "\n") }
         return VStack(alignment: .leading, spacing: 10) {
             ForEach(paragraphs.indices, id: \.self) { p in
                 VStack(alignment: .leading, spacing: 4) {
                     ForEach(paragraphs[p].indices, id: \.self) { l in
-                        Text(paragraphs[p][l])
-                            .fixedSize(horizontal: false, vertical: true)
+                        let line = paragraphs[p][l]
+                        if let name = Self.imageName(line) {
+                            screenshot(name)
+                                .padding(.vertical, 6)
+                        } else {
+                            Text(line)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
                 }
             }
@@ -229,18 +235,30 @@ struct SetupView: View {
                 Text(names.allSatisfy { $0.hasPrefix("app-") } ? "Where it is in Performance Bridge" : "Where it is in TotalMix FX")
                     .font(.callout.weight(.medium))
                     .foregroundStyle(.secondary)
-                ForEach(names, id: \.self) { name in
-                    if let image = Brand.resources.image(forResource: name) {
-                        let pixels = pixelSize(image)
-                        let width = min(pixels.width / 2, Self.width - 12)
-                        Image(nsImage: image)
-                            .resizable()
-                            .interpolation(.high)
-                            .frame(width: width, height: width * pixels.height / max(pixels.width, 1))
-                            .accessibilityLabel(name.hasPrefix("app-") ? "Screenshot of Performance Bridge" : "Screenshot of TotalMix FX")
-                    }
-                }
+                ForEach(names, id: \.self) { name in screenshot(name) }
             }
+        }
+    }
+
+    /// The screenshot a detail line names (`[image: name]`), or `nil` for a line of text.
+    private static func imageName(_ line: String) -> String? {
+        let trimmed = line.trimmingCharacters(in: .whitespaces)
+        guard trimmed.hasPrefix("[image:"), trimmed.hasSuffix("]") else { return nil }
+        return trimmed.dropFirst("[image:".count).dropLast().trimmingCharacters(in: .whitespaces)
+    }
+
+    /// One screenshot at its own size (a Retina capture, so half its pixels), no wider than the
+    /// page, with an exact height so no space is left around it.
+    @ViewBuilder
+    private func screenshot(_ name: String) -> some View {
+        if let image = Brand.resources.image(forResource: name) {
+            let pixels = pixelSize(image)
+            let width = min(pixels.width / 2, Self.width - 12)
+            Image(nsImage: image)
+                .resizable()
+                .interpolation(.high)
+                .frame(width: width, height: width * pixels.height / max(pixels.width, 1))
+                .accessibilityLabel(name.hasPrefix("app-") ? "Screenshot of Performance Bridge" : "Screenshot of TotalMix FX")
         }
     }
 

@@ -499,6 +499,13 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertEqual(totalMix.state, .done)
         XCTAssertTrue(totalMix.instructions.contains("Global OSC"), "how TotalMix FX was set up, on request")
         XCTAssertTrue(done.first { $0.id == "meters" }!.instructions.contains("Send Level Data"))
+        let lines = totalMix.instructions.components(separatedBy: "\n")
+        let images = lines.indices.filter { lines[$0].hasPrefix("[image:") }
+        XCTAssertEqual(images.map { lines[$0] }, ["[image: totalmix-options-menu]", "[image: totalmix-osc-tab]",
+                                                  "[image: totalmix-osc-details]"])
+        XCTAssertTrue(lines[images[0] - 1].hasPrefix("2."), "each screenshot after the steps it shows")
+        XCTAssertTrue(lines[images[1] - 1].hasPrefix("7."))
+        XCTAssertTrue(lines[images[2] - 1].hasPrefix("8."))
         status.totalMixAnswering = false
         let waiting = SetupChecklist.steps(status: status, settings: BridgeSettings()).first { $0.id == "totalmix" }!
         XCTAssertEqual(waiting.detail, totalMix.instructions, "the same text as before it was done")
