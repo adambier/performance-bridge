@@ -46,7 +46,7 @@ struct LayoutView: View {
             // The hardware controllers show only the sources; the outputs' order is the order the
             // send controls step through them (Adam, 2026-11-01).
             Text(view == .outputs
-                 ? "Drag to set the order the send controls step through the outputs. Click a name to give it a label for the hardware controllers."
+                 ? "Drag to set the order the send controls step through the outputs. Click a name to give it a label for the hardware controllers. Main Out, Main Out B, and the cue output aren’t listed, since the sends don’t reach them."
                  : "Drag to reorder. Click a name to give it a label for the hardware controllers.")
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -95,10 +95,10 @@ struct LayoutView: View {
 
             VStack(alignment: .leading, spacing: 10) {
                 // One short paragraph each, in callout size, for legibility (Adam, 2026-10-31).
-                Text("Hide and show channels in TotalMix FX’s own Channel Layout window: right-click the channel, choose Change Channel Layout, and check or uncheck the OSC Controller box under \u{201C}Hide Channel in.\u{201D}")
+                // Three notes, with the full TotalMix FX path (UI review of 2026-11-02).
+                Text("Channels that TotalMix FX hides from Performance Bridge’s OSC Controller aren’t shown. Hide and show them in TotalMix FX’s own Channel Layout window: Options → Channel Layout…, or right-click the channel and choose Change Channel Layout; under \u{201C}Hide Channel in\u{201D}, check or uncheck the OSC Controller box.")
                 Text("Channel colors can be set in the same window.")
-                Text("Labels show only on the hardware controllers. Clear a label to show TotalMix FX’s name again.")
-                Text("Channels that TotalMix FX hides from an OSC Controller are not shown on the hardware controllers connected through it.")
+                Text("Labels show only on the hardware controllers. Clear a label to go back to the name shown dimmed beside it.")
             }
             .font(.callout)
             .foregroundStyle(.secondary)
@@ -136,12 +136,20 @@ struct LayoutView: View {
                     model.engine.setLabel(text, for: item.channel)
                     reload()
                 }
+                // A fixed width, so the name it replaces sits right beside a label (UI review of
+                // 2026-11-02).
+                .frame(width: 180, alignment: .leading)
                 if item.label != nil {
-                    // TotalMix FX's own name, for reference, while a label replaces it.
+                    // The name the strip would show without the label, for reference.
                     Text(item.defaultName)
                         .foregroundStyle(.tertiary)
                         .lineLimit(1)
                 }
+                Spacer(minLength: 0)
+                // A pencil, so the names read as editable (UI review of 2026-11-02).
+                Image(systemName: "pencil")
+                    .foregroundStyle(.tertiary)
+                    .accessibilityHidden(true)
             }
             .frame(minHeight: 24)
             .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
@@ -164,9 +172,13 @@ struct LayoutView: View {
         isTotalMixOrder = model.engine.isTotalMixOrder(view)
     }
 
-    /// Reads the view's channels again, after a change in the app or in TotalMix FX.
+    /// Reads the view's channels again, after a change in the app or in TotalMix FX. The outputs
+    /// view lists only the send targets, since in 1.0.x its order is only the order the sends step
+    /// through (Adam, 2026-11-02, from the UI review of that date).
     private func reload() {
-        items = model.engine.layoutItems(view)
+        let all = model.engine.layoutItems(view)
+        let sends = Set(model.status.sendTargets.map(\.output))
+        items = view == .outputs ? all.filter { sends.contains($0.channel.channel) } : all
         isTotalMixOrder = model.engine.isTotalMixOrder(view)
     }
 }
@@ -193,8 +205,10 @@ struct LabelField: View {
     }
 
     private func save() {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmed != (item.label ?? "") else { return }
+        var trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        // A label that is the name the strip would show anyway is no label (UI review of 2026-11-02).
+        if trimmed == item.defaultName { trimmed = "" }
+        guard trimmed != (item.label ?? "") else { text = item.label ?? ""; return }
         commit(trimmed)
     }
 }

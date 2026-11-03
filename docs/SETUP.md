@@ -11,9 +11,11 @@
   from source".)
 
 Open **Performance Bridge** from the Applications folder. It runs in the menu bar, with no Dock icon. Its
-Setup Guide window follows these steps and checks each one live where it can: whether TotalMix FX answers,
-whether it has sent its channels, whether meters arrive, and whether the hardware controller is connected. It
-opens by itself the first time the app runs; after that, choose **Setup Guide…** from the menu.
+Setup Guide follows these steps one page at a time, with **Back** and **Continue**, and checks each one live
+where it can: whether TotalMix FX answers, whether it has sent its channels, whether meters arrive, and whether
+the hardware controller is connected. The marks across its top show every step at a glance (green when done);
+click one to go to its page. It opens by itself the first time the app runs, at the first step not done; after
+that, choose **Setup Guide…** from the menu.
 
 ## Step 1: Turn on Global OSC in TotalMix FX
 
@@ -37,7 +39,8 @@ Checked on screen with TotalMix FX "2.10 (1)" on a Mac (2026-10-31); the screens
      Bridge sends to TotalMix FX. The **Host** above it is your Mac's own name, shown for reference.
    - Under **Remote Controller Address**, **Host** is the computer Performance Bridge runs on (`localhost` or
      `127.0.0.1` on the same Mac), and **Port (outgoing)** is where TotalMix FX sends to Performance Bridge.
-   - Enter the same two ports in Performance Bridge's **Settings… → Connections**. Its defaults are 7001 and
+   - Enter the same two ports in Performance Bridge's **Settings… → Connections**, under the same labels,
+     **Port (incoming)** and **Port (outgoing)**. Its defaults are 7001 and
      9001, which RME's manual gives as typical values.
 
    <img src="../App/PerformanceBridge/Resources/totalmix-osc-tab.png" width="380" alt="Mixer Settings, OSC tab: controller 1 in use, ports 7001 and 9001, host localhost, Global OSC">
@@ -116,7 +119,7 @@ Launch Control 3.
    and ports) and the hardware controller; the send rows below them don't need Apply.
 
 The app finds the controller by the names of its MIDI ports, which are fixed for each model, so there is
-no port to choose: the Roto-Control's port "Roto-Control", and a Launch Control's DAW ports ("LCXL3 1 DAW
+no port to choose: the Roto-Control's port "Roto-Control" and a Launch Control's DAW ports ("LCXL3 1 DAW
 In" and "Out" on a Launch Control XL 3, "LC3 1 DAW In" and "Out" on a Launch Control 3, the number being
 the device ID). With more than one Launch Control of the same model connected, it uses the one with the
 lowest device ID.
@@ -173,20 +176,22 @@ Choose **Settings…** from the menu and open the **Channel Layout** tab.
 - **Sources** are the channels the hardware controllers show. Drag a channel to change its place on them.
 - **Playbacks start on a new page**, under the Sources list, puts the first playback at the start of a new
   page of strips, after blank strips that fill the inputs' last page.
-- **Outputs** are the outputs the send controls can feed (Step 6). Their order is the order you step through
+- **Outputs** are the outputs the send controls can feed (Step 6); Main Out, Main Out B, and the cue output
+  aren't listed, since the sends don't reach them. Their order is the order you step through
   them on the hardware controllers. The **Control Room** outputs (those assigned in TotalMix FX's control room:
   Phones, and so on) and the **Hardware Outputs** are ordered in their own sections, since control room outputs
   always come first.
-- Click a channel's name to give it a **label** for the hardware controllers, e.g., a short name for mixing. The label shows only on the hardware controllers; TotalMix FX keeps its own name, shown dimmed beside the label. Clear the label to show TotalMix FX's name again. A playback without a label shows as "PB 1/2" and so on, since an unnamed playback otherwise has its output's hardware name, which can be the same as an input's.
+- Click a channel's name (each row has a pencil at its end) to give it a **label** for the hardware controllers, e.g., a short name for mixing. The label shows only on the hardware controllers; TotalMix FX keeps its own name, shown dimmed beside the label. Clear the label to go back to that name. A playback without a label shows as "PB 1/2" and so on, since an unnamed playback otherwise has its output's hardware name, which can be the same as an input's.
 - The order and the labels are kept when Performance Bridge restarts.
 - **Restore TotalMix FX Order** puts the view back in TotalMix FX's order. It is dimmed when the order is already TotalMix FX's.
 - To take a channel off the hardware controllers, hide it in TotalMix FX (Step 2). The layout has no hide setting of its own.
-- Set channel colors in TotalMix FX's own Channel Layout window (Step 2).
+- Set channel colors in TotalMix FX's own Channel Layout window (Step 2). Give each headphone output its own color: a
+  Launch Control's send rows light in their output's color, so the rows can be told apart at a glance.
 - The note at the bottom repeats the rule for channels hidden in TotalMix FX.
 
 ## Step 6: Use the hardware controllers
 
-Every hardware controller works the same way: **each column of controls is one channel**, and every control in a
+Every hardware controller works the same way: **each column of controls is one channel** and every control in a
 column controls that channel. Levels and pans go into the submix of the output that TotalMix FX's control room
 assigns to Main Out and follow Main Out if it is reassigned there. Set the outputs themselves (e.g., Main Out's volume
 and Speaker B) in TotalMix FX or with an ARC USB; the hardware controllers don't change them.
@@ -212,7 +217,7 @@ the main mix) and the cue output (PFL uses it).
 | **Track >** / **Track <** | Show the next or previous eight channels. With **Shift**: the last or first eight. |
 | **Page ▼** / **Page ▲** | Change the output the **top** encoder row feeds, to the next or previous one in the Outputs list. |
 | **Shift + Page ▼** / **▲** | The same for the **middle** encoder row. |
-| **Shift + turn an encoder** | Reset it: a pan to the center, a send to −oo (release Shift, then Shift + turn it again to bring it back). Hold Shift for a moment (0.3 s) first; after Page or Track in the same hold, turning does nothing. |
+| **Shift + turn an encoder** | Reset it: a pan to the center, a send to −oo (the screen says "Shift+turn: restore": release Shift, then Shift + turn it again to bring it back). Hold Shift for a moment (0.3 s) first; after Page or Track in the same hold, turning does nothing. |
 
 - The two send rows never feed the same output: stepping one skips the output the other has.
 - The screen shows the channels on the page, counted in the order of **Settings… → Channel Layout** with a stereo pair
@@ -238,25 +243,25 @@ The Launch Control 3 works the same way, with fewer controls:
 |---|---|
 | Bottom encoder | Level in Main Out |
 | Top encoder | Pan, or a send: **Page ▼** / **▲** steps it through Pan, then each output in the Outputs list |
-| Button | Mute; PFL while **Function** (labeled "DAW" underneath) is held (orange for mute, yellow for PFL, dim when off; Function rests dim yellow and lights bright yellow while held) |
+| Button | Mute; PFL while **Function** (labeled "DAW" underneath) is held (orange for mute, yellow for PFL, dim when off). Function rests dim yellow; it lights bright yellow while held, and also while any channel's PFL is on, so a PFL left on still shows |
 
-Track works as on the XL 3, and Shift + turn resets an encoder as it does there; a level above 0 dB comes down to 0 dB,
+Track works as on the XL 3 and Shift + turn resets an encoder as it does there; a level above 0 dB comes down to 0 dB,
 and one at or below 0 dB stays. The screen shows the channels on
-the page, the top row's function (e.g., "Top: Pan"), and the buttons' ("Buttons: Mute"; briefly "Buttons" over "PFL" while Function is held). The Launch Control 3 has not been tried on a device yet ([`docs/LAUNCH-CONTROL-3.md`](LAUNCH-CONTROL-3.md)).
+the page, the top row's function (e.g., "Top: Pan"), and the buttons' ("Buttons: Mute", or "PFL on, buttons Mute" while a PFL is on; briefly "Buttons" over "PFL" while Function is held). The Launch Control 3 has not been tried on a device yet ([`docs/LAUNCH-CONTROL-3.md`](LAUNCH-CONTROL-3.md)).
 
 ### Roto-Control
 
 Each of the eight knobs is a channel. Hold **SEL** to choose what the knobs control (Volume, Pan, or a send, "FX")
 and what the switches do (Mute or Solo; Solo is PFL here). The < and > buttons page through the channels. Pressing
 both arrow buttons together switches the Roto-Control to its second track set ("MIX-RTN" on its screen), which shows
-the same channels.
+the same channels. (On a Launch Control, both Track buttons together go to the first page instead.)
 
 ## If something does not work
 
 - **TotalMix FX: Port N in Use.** Another program has the port. Quit `sbdev` or any other OSC remote.
 - **TotalMix FX: No Answer.** Check that Global OSC is on and that the ports in Settings match TotalMix FX's
   (Step 1). Then choose **Refresh Channels from TotalMix FX**.
-- **Roto-Control or Launch Control: Not Found.** Check the cable, and that the model chosen in Settings is the
+- **Roto-Control or Launch Control: Not Found.** Check the cable and that the model chosen in Settings is the
   one connected (Step 3).
 - **A channel is missing from the hardware controllers.** Check whether TotalMix FX hides it from the OSC Controller the app uses
   (Step 2).

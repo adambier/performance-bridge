@@ -239,7 +239,8 @@ final class LaunchControlDriverTests: XCTestCase {
         let release = driver.receive([0xB0, 0x42, 0x00], hub: &hub, now: 5.5)
         XCTAssertFalse(driver.buttonsArePFL, "PFL only while Function is held")
         XCTAssertEqual(hub.strips(of: driver.id(.row1))?[0].switchTarget, .mute(keys))
-        XCTAssertTrue(release.midi.contains([0xB0, 0x42, LaunchControlDriver.functionIdle]))
+        XCTAssertFalse(release.midi.contains([0xB0, 0x42, LaunchControlDriver.functionIdle]),
+                       "Keys's PFL is still on, so Function stays lit (UI review of 2026-11-02)")
         let level = driver.receive([0xBF, 0x15, 127], hub: &hub, now: 6)
         XCTAssertEqual(level.core.messages.count, 1, "the bottom row's encoders follow, with no pickup")
     }
@@ -456,6 +457,41 @@ final class LaunchControlDriverTests: XCTestCase {
             XCTAssertNotNil(D.paletteRGB[color], "every color the encoders use has its exact color: \(color)")
         }
         XCTAssertEqual(D.shaded(17, position: 0.5), .palette(17), "a color without an exact one stays undimmed")
+    }
+
+    func testALaunchControl3ShowsAPFLLeftOn() {
+        // UI review of 2026-11-02: once Function is released, a PFL left on must still show.
+        var (driver, hub, midi) = connected(layout: .lc3, device: .lc3)
+        let function = LaunchControlOutgoing.color(LaunchControlDriver.functionButton, LaunchControlDriver.pflOn) ?? [1]
+        let idle = LaunchControlOutgoing.color(LaunchControlDriver.functionButton, LaunchControlDriver.functionIdle) ?? [1]
+        XCTAssertTrue(midi.contains(idle), "Function rests dim yellow")
+        let on = hub.handle(.channel(bus: .input, channel: 2, parameter: "pfl", value: .number(1)), now: 1)
+        let step = driver.take(on, hub: &hub, now: 1)
+        XCTAssertTrue(step.midi.contains(function), "a PFL on: Function lit bright yellow")
+        XCTAssertTrue(step.midi.contains(LaunchControlOutgoing.text(.stationary, field: 2, "PFL on, buttons Mute", model: .lc3) ?? [1]),
+                      "and the home screen says so")
+        let off = hub.handle(.channel(bus: .input, channel: 2, parameter: "pfl", value: .number(0)), now: 2)
+        let cleared = driver.take(off, hub: &hub, now: 2)
+        XCTAssertTrue(cleared.midi.contains(idle), "every PFL off: Function rests again")
+        XCTAssertTrue(cleared.midi.contains(LaunchControlOutgoing.text(.stationary, field: 2, "Buttons: Mute", model: .lc3) ?? [1]))
+        XCTAssertLessThanOrEqual("PFL on, buttons Mute".count, LaunchControlDriver.fieldLength)
+    }
+
+    func testASendResetSaysHowToRestoreIt() {
+        var (driver, hub, _) = connected(layout: .xl3)
+        _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 1)
+        let reset = driver.receive([0xBE, 0x0D, 0x7F], hub: &hub, now: 1.4)
+        XCTAssertTrue(reset.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, "Shift+turn: restore") ?? [1]))
+        _ = driver.receive([0xB6, 0x3F, 0x00], hub: &hub, now: 2)
+        _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 3)
+        let restore = driver.receive([0xBE, 0x0D, 0x7F], hub: &hub, now: 3.4)
+        XCTAssertTrue(restore.midi.contains(LaunchControlOutgoing.text(.overlay, field: 0, "Send restored") ?? [1]))
+        // Pan resets say nothing extra.
+        _ = driver.receive([0xB6, 0x3F, 0x00], hub: &hub, now: 4)
+        _ = driver.receive([0xBF, 0x1D, 127], hub: &hub, now: 4.1)
+        _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 5)
+        XCTAssertFalse(driver.receive([0xBE, 0x1D, 0x7F], hub: &hub, now: 5.4).midi.contains(
+            LaunchControlOutgoing.text(.overlay, field: 1, "Shift+turn: restore") ?? [1]))
     }
 
     func testEncodersShowTheButtonsYellow() {

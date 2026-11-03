@@ -430,6 +430,21 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertEqual(watch.update(status: status(), totalMixRunning: true, now: 1, totalMixTooOld: true), .totalMixTooOld)
     }
 
+    func testTheSetupAssistantOpensWhereItIsNeeded() {
+        var status = BridgeStatus()
+        status.listening = true
+        let steps = SetupChecklist.steps(status: status, settings: BridgeSettings())
+        XCTAssertEqual(steps[SetupChecklist.startIndex(of: steps)].id, "version", "the first step not done: TotalMix FX isn't running")
+        XCTAssertEqual(steps[SetupChecklist.startIndex(of: steps, openFor: SetupWatch.Reason.rotoHandshake.stepID)].id, "roto",
+                       "opened for a problem: that step")
+        XCTAssertEqual(SetupChecklist.startIndex(of: steps, openFor: "launchcontrol"), SetupChecklist.startIndex(of: steps),
+                       "a step that isn't there: the first one not done")
+        for reason in [SetupWatch.Reason.portInUse, .totalMixNotAnswering, .totalMixTooOld] {
+            XCTAssertNotNil(steps.first { $0.id == reason.stepID }, "\(reason) opens at a step that exists")
+        }
+        XCTAssertEqual(steps.map(\.id).suffix(4), ["livemode", "cue", "hide", "order"], "the notes come last, as their own pages")
+    }
+
     func testSetupChecklistVersionStep() {
         func version(running: Bool, _ text: String?, answering: Bool = false) -> SetupStep {
             var status = BridgeStatus()

@@ -57,7 +57,7 @@ public enum SetupChecklist {
                         state: .done, detail: "")
             : SetupStep(id: "port", title: "Port \(outgoing) is in use",
                         state: .problem,
-                        detail: "Another program is using port \(outgoing), the port TotalMix FX sends to. Quit it (for example, sbdev or another OSC remote).\n\nPerformance Bridge keeps trying."))
+                        detail: "Another program is using port \(outgoing), the port TotalMix FX sends to. Quit it (for example, another OSC remote, or a developer tool left running).\n\nPerformance Bridge keeps trying."))
 
         steps.append(versionStep(status: status, running: totalMixRunning, version: totalMixVersion))
 
@@ -66,14 +66,14 @@ public enum SetupChecklist {
             In TotalMix FX:
             1. Options → Enable OSC Control: checked.
             2. Options → Mixer Settings… (F3) → OSC.
-            3. “Select Controller”: a controller no other program or device uses. Check “In Use”.
+            3. “Select Controller”: an OSC Controller (1–4) no other program or device uses. Check “In Use”.
             4. “Compatibility (Mode)”: Global OSC.
             5. “Port (incoming)”: \(incoming).
             6. Under “Remote Controller Address”, “Port (outgoing)”: \(outgoing).
             7. “Host”: localhost (if Performance Bridge runs on this Mac).
             8. Click Details and check “Send changes” and “Send status”.
 
-            Each controller needs its own ports. If TotalMix FX uses other ports, set the same ones in Performance Bridge’s Settings.
+            Each OSC Controller needs its own ports. If TotalMix FX uses other ports, set the same ones in Performance Bridge’s Settings, on the Connections tab.
             """
         if status.totalMixAnswering {
             steps.append(SetupStep(id: "totalmix", title: "TotalMix FX answered", state: .done, detail: ""))
@@ -96,19 +96,12 @@ public enum SetupChecklist {
         steps.append(status.levelsSeen
             ? SetupStep(id: "meters", title: "Receiving meter levels", state: .done, detail: "")
             : SetupStep(id: "meters", title: "No meters yet", state: .optional,
-                        detail: "For meters on the hardware controllers: in TotalMix FX, Options → Mixer Settings… (F3) → OSC, check “Send Level Data” for the controller.\n\nTotalMix FX sends levels only when they change, so play something to see them."))
+                        detail: "For meters on the hardware controllers: in TotalMix FX, Options → Mixer Settings… (F3) → OSC, check “Send Level Data” for Performance Bridge’s OSC Controller.\n\nTotalMix FX sends levels only when they change, so play something to see them."))
 
         if status.muteMasterOff {
             steps.append(SetupStep(id: "mutemaster", title: "Mute Master is off in TotalMix FX", state: .problem,
                                    detail: "While it’s off, mutes from the hardware controller only select a channel’s mute and don’t silence it.\n\nIn TotalMix FX, turn on the “M” (Mute Master) button in the Control Strip, below the interface’s name and “undo”."))
         }
-
-        // Neither Live mode nor "Cue/PFL to" can be read over OSC (docs/TOTALMIX-OSC.md, tests 6
-        // and 21), so they are notes.
-        steps.append(SetupStep(id: "livemode", title: "PFL needs Live mode", state: .instruction,
-                               detail: "The hardware controllers’ PFL buttons have been seen to do nothing visible unless TotalMix FX is in Live mode, which Performance Bridge can’t check. With Live mode on, the channels’ buttons read PFL instead of S.\n\nIn TotalMix FX’s Control Strip, click “options” and, under “solo/pfl mode”, choose “live”."))
-        steps.append(SetupStep(id: "cue", title: "Send PFL to your headphones", state: .instruction,
-                               detail: "TotalMix FX sends PFL to Main by default, so PFL from a hardware controller replaces what Main Out plays: on stage, the audience hears only the channel being checked. Performance Bridge can’t check this setting.\n\nIn TotalMix FX’s Control Room section, click “assign”, then “Cue/PFL to”, and choose a headphone output (e.g., “Phones 1”)."))
 
         if !status.rotoEnabled {
             // Another hardware controller is in use.
@@ -134,10 +127,17 @@ public enum SetupChecklist {
             }
         }
 
-        steps.append(SetupStep(id: "hide", title: "Channels the hardware controllers don’t show", state: .instruction,
-                               detail: "Hide and show channels in TotalMix FX: right-click the channel, choose Change Channel Layout, and under “Hide Channel in” check or uncheck the OSC Controller box for the controller Performance Bridge uses.\n\nChannel colors can be set in the same window."))
-        steps.append(SetupStep(id: "order", title: "The order of the channels", state: .instruction,
-                               detail: "Channel order on the hardware controllers can be set under Settings… from the menu."))
+        // Neither Live mode nor "Cue/PFL to" can be read over OSC (docs/TOTALMIX-OSC.md, tests 6
+        // and 21), so they are notes.
+        steps.append(SetupStep(id: "livemode", title: "Turn on Live mode for PFL", state: .instruction,
+                               detail: "The hardware controllers’ PFL buttons have been seen to do nothing visible unless TotalMix FX is in Live mode, which Performance Bridge can’t check. With Live mode on, the channels’ buttons read PFL instead of S.\n\nIn TotalMix FX’s Control Strip, click “options” and, under “solo/pfl mode”, choose “live”."))
+        steps.append(SetupStep(id: "cue", title: "Send PFL to your headphones", state: .instruction,
+                               detail: "TotalMix FX sends PFL to Main by default, so PFL from a hardware controller replaces what Main Out plays: on stage, the audience hears only the channel being checked. Performance Bridge can’t check this setting.\n\nIn TotalMix FX’s Control Room section, click “assign”, then “Cue/PFL to”, and choose a headphone output (e.g., “Phones 1”)."))
+
+        steps.append(SetupStep(id: "hide", title: "Hide channels in TotalMix FX", state: .instruction,
+                               detail: "Hide and show channels in TotalMix FX: choose Options → Channel Layout…, or right-click the channel and choose Change Channel Layout. Under “Hide Channel in”, check or uncheck the box for Performance Bridge’s OSC Controller.\n\nChannel colors can be set in the same window. Give each headphone output its own color: a Launch Control’s send rows light in their output’s color, so the rows can be told apart at a glance."))
+        steps.append(SetupStep(id: "order", title: "Set the order of the channels", state: .instruction,
+                               detail: "Set the order of the channels, and give them short labels for the hardware controllers, on the Channel Layout tab of Performance Bridge’s Settings."))
         return steps
     }
 
@@ -151,14 +151,22 @@ public enum SetupChecklist {
                              detail: "Open TotalMix FX. " + needs)
         }
         guard let text = version, let parsed = TotalMixVersion(text) else {
-            return SetupStep(id: "version", title: "TotalMix FX’s version", state: .instruction,
-                             detail: "Performance Bridge couldn’t read it. " + needs)
+            return SetupStep(id: "version", title: "TotalMix FX’s version couldn’t be read", state: .instruction,
+                             detail: needs + " Check it in TotalMix FX’s About window.")
         }
         if parsed.supportsGlobalOSC {
             return SetupStep(id: "version", title: "TotalMix FX has Global OSC", state: .done, detail: "")
         }
         return SetupStep(id: "version", title: "TotalMix FX \(text) is too old", state: .problem,
                          detail: needs + " Update it from RME’s website.")
+    }
+
+    /// The page the setup assistant opens at: the step `openFor` names if it is there (e.g., the
+    /// problem that opened the window), else the first step that is waiting or has a problem,
+    /// else the first page.
+    public static func startIndex(of steps: [SetupStep], openFor: String? = nil) -> Int {
+        if let openFor, let index = steps.firstIndex(where: { $0.id == openFor }) { return index }
+        return steps.firstIndex { $0.state == .waiting || $0.state == .problem } ?? 0
     }
 
     /// Whether every step the surfaces need is done: TotalMix FX answering with its channels, the

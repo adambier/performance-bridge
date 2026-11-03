@@ -197,6 +197,26 @@ struct SettingsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
+            // The settings Apply covers, boxed with its buttons, apart from a Launch Control's
+            // section below, which takes effect at once (Adam, 2026-11-02, from the UI review of
+            // that date).
+            GroupBox {
+                appliedSettings
+                    .padding(8)
+            }
+
+            if let chosen = edited.controller.launchControl {
+                LaunchControlSendRowsView(model: model, chosen: chosen)
+                    .padding(.top, 6)
+            }
+        }
+        .padding(20)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    /// TotalMix FX's host and ports and the hardware controller, with Defaults, Revert, and Apply.
+    private var appliedSettings: some View {
+        VStack(alignment: .leading, spacing: 12) {
             Text("TotalMix FX")
                 .font(.headline)
             Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 10, verticalSpacing: 8) {
@@ -205,10 +225,12 @@ struct SettingsView: View {
                     TextField("Computer", text: $edited.host, prompt: Text("localhost"))
                         .labelsHidden()
                 }
-                portRow("Incoming port", value: $edited.incomingPort, override: model.portOverrides.incoming)
-                portRow("Outgoing port", value: $edited.outgoingPort, override: model.portOverrides.outgoing)
+                // TotalMix FX's own labels, so they match its window word for word (UI review of
+                // 2026-11-02): "incoming" and "outgoing" are TotalMix FX's side.
+                portRow("Port (incoming)", value: $edited.incomingPort, override: model.portOverrides.incoming)
+                portRow("Port (outgoing)", value: $edited.outgoingPort, override: model.portOverrides.outgoing)
             }
-            note("The computer that runs TotalMix FX and the ports of the OSC controller set up for Performance Bridge.\n\nIn TotalMix FX: Options → Mixer Settings… → OSC, “Port (incoming)” and “Port (outgoing)”, with “Compatibility (Mode)” set to “Global OSC”.")
+            note("The computer that runs TotalMix FX, and the ports of the OSC Controller set up for Performance Bridge. Use the same values as TotalMix FX: Options → Mixer Settings… → OSC, with “Compatibility (Mode)” set to “Global OSC”.")
 
             Divider()
                 .padding(.vertical, 4)
@@ -253,15 +275,7 @@ struct SettingsView: View {
                 .disabled(!edited.isValid || edited == saved)
             }
             .padding(.top, 4)
-
-            if let chosen = edited.controller.launchControl {
-                Divider()
-                    .padding(.vertical, 4)
-                LaunchControlSendRowsView(model: model, chosen: chosen)
-            }
         }
-        .padding(20)
-        .fixedSize(horizontal: false, vertical: true)
     }
 
     /// The note under the hardware controller's menu.
@@ -328,8 +342,10 @@ struct LaunchControlSendRowsView: View {
         let status = model.status
         let live = !status.sendTargets.isEmpty
         VStack(alignment: .leading, spacing: 8) {
-            // A heading of its own, so the menus can list plain output names (Adam, 2026-11-01).
-            Text("Sends")
+            // A heading of its own, so the menus can list plain output names (Adam, 2026-11-01). On
+            // the Launch Control 3 the row can be Pan, so it is named for the row (UI review of
+            // 2026-11-02).
+            Text(chosen == .lc3 ? "Top Encoder Row" : "Sends")
                 .font(.headline)
             Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 10, verticalSpacing: 8) {
                 ForEach(0..<rowCount, id: \.self) { row in
@@ -363,7 +379,11 @@ struct LaunchControlSendRowsView: View {
                     .fixedSize(horizontal: false, vertical: true)
                 Text(chosen == .lc3
                      ? "Page ▲ and ▼ on the Launch Control also step the top row through Pan and the outputs."
-                     : "Page ▲ and ▼ on the Launch Control step the top row, and Shift + Page the middle row. The two rows never feed the same output.")
+                     : "Page ▲ and ▼ on the Launch Control step the top row; Shift + Page steps the middle row. The two rows never feed the same output.")
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(chosen == .lc3
+                     ? "As a send, the row lights in its output’s color from TotalMix FX, or teal for an output left white."
+                     : "Each row lights in its output’s color from TotalMix FX. An output left white shows teal on the top row and magenta on the middle row; give each headphone output its own color in TotalMix FX to tell them apart.")
                     .fixedSize(horizontal: false, vertical: true)
                 Text("The outputs follow the order of the Outputs list on the Channel Layout tab.")
                     .fixedSize(horizontal: false, vertical: true)
@@ -378,7 +398,7 @@ struct LaunchControlSendRowsView: View {
                 .padding(.top, 6)
             Text(chosen == .lc3
                  ? "The level and send encoders dim with their levels and go dark at −oo. Pan keeps full brightness."
-                 : "The send encoders dim with their levels and go dark at −oo. Pan keeps full brightness, and the faders have no lights.")
+                 : "The send encoders dim with their levels and go dark at −oo. Pan keeps full brightness; the faders have no lights.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

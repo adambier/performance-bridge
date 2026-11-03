@@ -1,6 +1,7 @@
-// The setup window: the steps of setting up Performance Bridge with TotalMix FX and a hardware controller,
-// each checked live where the app can see it (SetupChecklist in BridgeEngine). It opens by itself
-// the first time the app runs, and from the menu (Setup Guide…) after that.
+// The setup window: an assistant with one step of setting up Performance Bridge per page (Adam,
+// 2026-11-02, from the UI review of that date), each step checked live where the app can see it
+// (SetupChecklist in BridgeEngine). It opens by itself the first time the app runs, and at a
+// problem's step when SetupWatch says so; from the menu (Setup Guide…) after that.
 
 import AppKit
 import SwiftUI
@@ -8,18 +9,23 @@ import SwiftUI
 import BridgeEngine
 #endif
 
-/// The setup window's content. It follows the engine's status, so each step turns done as soon as
-/// it works.
+/// The setup window's content: one step per page, with Back and Continue, and a row of marks
+/// across the top for every step, so the whole setup can be seen at a glance and any step reached
+/// with a click. It follows the engine's status, so a step's mark and page change as soon as it
+/// works.
 struct SetupView: View {
     @ObservedObject var model: BridgeModel
+    /// The step to open at (e.g., the problem that opened the window), or `nil` for the first step
+    /// that isn't done (`SetupChecklist.startIndex`).
+    var openFor: String?
 
-    /// The steps that are notes, not checks: shown apart, without a mark, so they don't read as
-    /// to-dos (Adam, 2026-10-31).
-    private static let noteIDs: Set<String> = ["hide", "order", "livemode", "cue"]
+    /// The step on show, by its id, so the page stays put when steps come and go (e.g., Mute
+    /// Master's).
+    @State private var pageID: String?
 
-    /// Screenshots of TotalMix FX for a step, shown under "Show in TotalMix FX" while the step
-    /// needs doing. They are from TotalMix FX "2.10 (1)" on a Mac (Adam, 2026-10-31), published
-    /// with his permission; TotalMix FX's windows rarely change.
+    /// Screenshots of TotalMix FX for a step, shown on its page. They are from TotalMix FX
+    /// "2.10 (1)" on a Mac (Adam, 2026-10-31), published with his permission; TotalMix FX's
+    /// windows rarely change.
     private static let screenshots: [String: [String]] = [
         "totalmix": ["totalmix-options-menu", "totalmix-osc-tab", "totalmix-osc-details"],
         "meters": ["totalmix-osc-tab"],
@@ -29,104 +35,135 @@ struct SetupView: View {
         "cue": ["totalmix-cue-pfl-to"],
     ]
 
-    private var checks: [SetupStep] { steps.filter { !Self.noteIDs.contains($0.id) } }
-    private var notes: [SetupStep] { steps.filter { Self.noteIDs.contains($0.id) } }
+    /// The width of the window's content, and so the widest a screenshot is shown.
+    private static let width: CGFloat = 560
 
     private var steps: [SetupStep] {
         SetupChecklist.steps(status: model.status, settings: model.engine.settings,
                              totalMixRunning: model.totalMixRunning, totalMixVersion: model.totalMixVersion)
     }
 
-    /// The height of the steps and notes, measured, so the window fits them until it would be
-    /// taller than the screen, and scrolls them after that.
-    @State private var contentHeight: CGFloat = 400
+    private var index: Int {
+        let steps = self.steps
+        if let pageID, let index = steps.firstIndex(where: { $0.id == pageID }) { return index }
+        return SetupChecklist.startIndex(of: steps, openFor: openFor)
+    }
 
-    /// The most the scrolling part may take: the screen's height, less room for the title, the
-    /// header, the buttons, and the Dock.
-    private var maxScrollHeight: CGFloat {
-        ((NSScreen.main?.visibleFrame.height ?? 800) - 220).clamped(to: 240...2000)
+    /// The most the page may take: the screen's height, less room for the title, the marks, the
+    /// buttons, and the Dock.
+    private var maxPageHeight: CGFloat {
+        ((NSScreen.main?.visibleFrame.height ?? 800) - 240).clamped(to: 300...900)
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Set up Performance Bridge")
-                    .font(.title3.weight(.semibold))
-                Text(SetupChecklist.isComplete(model.status)
-                     ? "Everything the hardware controllers need is working."
-                     : "Each step updates as soon as it works. Leave this window open while you set up TotalMix FX.")
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+        let steps = self.steps
+        let index = min(self.index, max(steps.count - 1, 0))
+        VStack(alignment: .leading, spacing: 14) {
+            header(steps, index: index)
+            Divider()
+            if steps.indices.contains(index) {
+                ScrollView(.vertical) {
+                    page(steps[index])
+                        .padding(.trailing, 12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .frame(height: maxPageHeight.clamped(to: 300...560))
             }
+            Divider()
+            footer(steps, index: index)
+        }
+        .padding(20)
+        .frame(width: Self.width + 40)
+        .fixedSize(horizontal: false, vertical: true)
+        .onAppear { if pageID == nil, steps.indices.contains(index) { pageID = steps[index].id } }
+    }
 
-            ScrollView(.vertical) {
-                stepsAndNotes
-                    .padding(.trailing, 12)
-                    .background(GeometryReader { geometry in
-                        Color.clear.preference(key: SetupContentHeightKey.self, value: geometry.size.height)
-                    })
-            }
-            .frame(height: min(contentHeight, maxScrollHeight))
-            .onPreferenceChange(SetupContentHeightKey.self) { contentHeight = $0 }
+    // MARK: - Parts
 
-            HStack {
-                Button("Connections…") { model.showSettings(.connections) }
-                Button("Channel Layout…") { model.showSettings(.channelLayout) }
+    /// The summary line and a mark for every step: a click on a mark opens its page.
+    private func header(_ steps: [SetupStep], index: Int) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(SetupChecklist.isComplete(model.status)
+                 ? "Everything the hardware controllers need is working."
+                 : "Each step updates as soon as it works. Leave this window open while you set up TotalMix FX.")
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: 8) {
+                ForEach(steps.indices, id: \.self) { i in
+                    Button { pageID = steps[i].id } label: {
+                        mark(steps[i].state, current: i == index)
+                    }
+                    .buttonStyle(.plain)
+                    .help(steps[i].title)
+                    .accessibilityLabel("Step \(i + 1): \(steps[i].title)")
+                }
                 Spacer()
+                Text("Step \(index + 1) of \(steps.count)")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
+        }
+    }
+
+    /// One step: its mark and title, what to do, the TotalMix FX screenshots for it, and a button
+    /// to the Settings tab it needs.
+    private func page(_ step: SetupStep) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .firstTextBaseline, spacing: 10) {
+                icon(step.state)
+                    .font(.title3)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(step.title)
+                        .font(.title3.weight(.semibold))
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(stateText(step.state))
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            if !step.detail.isEmpty { detailText(step.detail) }
+            screenshots(for: step)
+            if let link = settingsLink(for: step.id) {
+                Button(link.title) { model.showSettings(link.tab) }
+            }
+        }
+    }
+
+    /// Back, and Continue (Done on the last page), which is the default button.
+    private func footer(_ steps: [SetupStep], index: Int) -> some View {
+        HStack {
+            Button("Back") { if index > 0 { pageID = steps[index - 1].id } }
+                .disabled(index == 0)
+            Spacer()
+            if index + 1 < steps.count {
+                Button("Continue") { pageID = steps[index + 1].id }
+                    .keyboardShortcut(.defaultAction)
+            } else {
                 Button("Done") { Windows.close("setup") }
                     .keyboardShortcut(.defaultAction)
             }
-            .padding(.top, 4)
         }
-        .padding(20)
-        .frame(width: 532)
-        .fixedSize(horizontal: false, vertical: true)
     }
 
-    /// The checks, then the notes under "Good to Know".
-    private var stepsAndNotes: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            ForEach(checks) { step in
-                HStack(alignment: .firstTextBaseline, spacing: 10) {
-                    icon(step.state)
-                        .frame(width: 18)
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(step.title)
-                            .fontWeight(.medium)
-                        if !step.detail.isEmpty {
-                            detailText(step.detail)
-                            screenshots(for: step)
-                        }
-                    }
-                }
-            }
-
-            Divider()
-
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Good to Know")
-                    .font(.headline)
-                ForEach(notes) { note in
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(note.title)
-                            .fontWeight(.medium)
-                        detailText(note.detail)
-                        screenshots(for: note)
-                    }
-                }
-            }
+    /// The Settings tab a step's page links to, with the button's title.
+    private func settingsLink(for id: String) -> (title: String, tab: SettingsTab)? {
+        switch id {
+        case "port", "totalmix", "roto", "launchcontrol": return ("Open Connections Settings…", .connections)
+        case "order": return ("Open Channel Layout Settings…", .channelLayout)
+        default: return nil
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     /// A step's detail, broken up for legibility (Adam, 2026-10-31): each line on its own with a
     /// little space between (e.g., numbered steps), and more space between paragraphs, which a
-    /// blank line separates.
+    /// blank line separates. In the primary color, since on its page the detail is what the user
+    /// acts on (UI review of 2026-11-02).
     private func detailText(_ detail: String) -> some View {
         let paragraphs = detail.components(separatedBy: "\n\n").map { $0.components(separatedBy: "\n") }
-        return VStack(alignment: .leading, spacing: 8) {
+        return VStack(alignment: .leading, spacing: 10) {
             ForEach(paragraphs.indices, id: \.self) { p in
-                VStack(alignment: .leading, spacing: 3) {
+                VStack(alignment: .leading, spacing: 4) {
                     ForEach(paragraphs[p].indices, id: \.self) { l in
                         Text(paragraphs[p][l])
                             .fixedSize(horizontal: false, vertical: true)
@@ -134,34 +171,30 @@ struct SetupView: View {
                 }
             }
         }
-        .font(.callout)
-        .foregroundStyle(.secondary)
         .textSelection(.enabled)
     }
 
-    /// A step's screenshots, folded away until asked for. Each is shown at its own size (they are
-    /// Retina captures, so half their pixels), no wider than 400 points, with an exact height so
-    /// no space is left around it.
+    /// A step's screenshots, each shown at its own size (they are Retina captures, so half their
+    /// pixels), no wider than the page, with an exact height so no space is left around it.
     @ViewBuilder
     private func screenshots(for step: SetupStep) -> some View {
         let images = (Self.screenshots[step.id] ?? []).compactMap { Brand.resources.image(forResource: $0) }
         if !images.isEmpty {
-            DisclosureGroup("Show in TotalMix FX") {
-                VStack(alignment: .leading, spacing: 8) {
-                    ForEach(images.indices, id: \.self) { index in
-                        let image = images[index]
-                        let pixels = pixelSize(image)
-                        let width = min(pixels.width / 2, 400)
-                        Image(nsImage: image)
-                            .resizable()
-                            .interpolation(.high)
-                            .frame(width: width, height: width * pixels.height / max(pixels.width, 1))
-                            .accessibilityLabel("Screenshot of TotalMix FX")
-                    }
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Where it is in TotalMix FX")
+                    .font(.callout.weight(.medium))
+                    .foregroundStyle(.secondary)
+                ForEach(images.indices, id: \.self) { index in
+                    let image = images[index]
+                    let pixels = pixelSize(image)
+                    let width = min(pixels.width / 2, Self.width - 12)
+                    Image(nsImage: image)
+                        .resizable()
+                        .interpolation(.high)
+                        .frame(width: width, height: width * pixels.height / max(pixels.width, 1))
+                        .accessibilityLabel("Screenshot of TotalMix FX")
                 }
-                .padding(.top, 4)
             }
-            .font(.callout)
         }
     }
 
@@ -171,8 +204,42 @@ struct SetupView: View {
         return CGSize(width: rep.pixelsWide, height: rep.pixelsHigh)
     }
 
-    /// The mark for a step's state: a check when done, a clock while waiting, a warning for a
-    /// problem, a dash for an optional step, and an "i" for an instruction.
+    /// A step's state in words, under its title.
+    private func stateText(_ state: SetupStep.State) -> String {
+        switch state {
+        case .done: return "Done"
+        case .waiting: return "Not done yet"
+        case .problem: return "Needs attention"
+        case .optional: return "Optional"
+        case .instruction: return "Performance Bridge can’t check this one"
+        }
+    }
+
+    /// A step's small mark in the row across the top: its state's color, ringed while on show.
+    private func mark(_ state: SetupStep.State, current: Bool) -> some View {
+        let color: Color = {
+            switch state {
+            case .done: return .green
+            case .problem: return .orange
+            case .instruction: return Brand.accent
+            case .waiting, .optional: return .secondary
+            }
+        }()
+        let filled = state == .done || state == .problem
+        return ZStack {
+            Circle()
+                .fill(filled ? color : Color.clear)
+            Circle()
+                .strokeBorder(color, lineWidth: filled ? 0 : 1.5)
+        }
+        .frame(width: 12, height: 12)
+        .padding(3)
+        .overlay(Circle().strokeBorder(Color.primary.opacity(current ? 0.8 : 0), lineWidth: 1.5))
+        .contentShape(Circle())
+    }
+
+    /// The mark for a step's state on its page: a check when done, a clock while waiting, a
+    /// warning for a problem, a dash for an optional step, and an "i" for an instruction.
     @ViewBuilder
     private func icon(_ state: SetupStep.State) -> some View {
         switch state {
@@ -192,14 +259,6 @@ struct SetupView: View {
             Image(systemName: "info.circle").foregroundStyle(Brand.accent)
                 .accessibilityLabel("Instruction")
         }
-    }
-}
-
-/// The measured height of the setup window's scrolling part.
-private struct SetupContentHeightKey: PreferenceKey {
-    static let defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = max(value, nextValue())
     }
 }
 

@@ -41,6 +41,17 @@ public struct SetupWatch: Sendable {
         case launchControlNotConnecting
         /// TotalMix FX is older than 2.1, which has no Global OSC.
         case totalMixTooOld
+
+        /// The setup step (`SetupStep.id`) the window opens at for this reason.
+        public var stepID: String {
+            switch self {
+            case .portInUse: return "port"
+            case .totalMixNotAnswering: return "totalmix"
+            case .rotoHandshake: return "roto"
+            case .launchControlNotConnecting: return "launchcontrol"
+            case .totalMixTooOld: return "version"
+            }
+        }
     }
 
     /// How long TotalMix FX may run without answering before the window opens, in seconds.

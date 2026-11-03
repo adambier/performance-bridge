@@ -367,7 +367,8 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   - a level (the Launch Control 3's) above 0 dB comes down to 0 dB, and one at or below 0 dB
     stays: a reset never raises a level;
   - a send goes to −oo, and a second Shift + turn, after Shift is released and held again, brings it
-    back to where it was;
+    back to where it was; the overlay says "Send off (-oo)" / "Shift+turn: restore", then "Send
+    restored" (Adam, 2026-11-02, from the UI review of that date);
   - only once Shift has been held 0.3 s with no Page or Track press, and once per encoder per hold
     of Shift.
 

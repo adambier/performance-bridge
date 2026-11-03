@@ -625,6 +625,11 @@ public struct LaunchControlDriver: Sendable {
         guard let position = resetPosition(layer, current: current, previous: sendsBeforeReset[target]) else { return }
         if case .strips(_, _, .send, _) = mode(for: layer, first: 0) {
             if position == 0 { sendsBeforeReset[target] = current } else { sendsBeforeReset[target] = nil }
+            // Silencing a send is the one reset that takes something away, so say how to undo it
+            // (Adam, 2026-11-02, from the UI review of that date).
+            step.midi += position == 0
+                ? overlay("Send off (-oo)", "Shift+turn: restore")
+                : overlay("Send restored", ValueText.level(position: position))
         }
         take(hub.controlMoved(id(layer), strip: strip, to: position, now: now), hub: hub, into: &step)
         step.midi += drawOwnMove(layer, strip, hub: hub)
@@ -1081,7 +1086,10 @@ public struct LaunchControlDriver: Sendable {
         if layout == .xl3 {
             return [title, row("Top", send(0), none: "none"), row("Mid", send(1), none: "none")]
         }
-        return [title, row("Top", send(0), none: "Pan"), "Buttons: " + (buttonsArePFL ? "PFL" : "Mute")]
+        // "PFL on" when a channel's PFL is on while the buttons are mute, since nothing else would
+        // show it once Function is released (UI review of 2026-11-02); 20 characters at most.
+        let buttons = buttonsArePFL ? "Buttons: PFL" : Self.anyPFL(hub) ? "PFL on, buttons Mute" : "Buttons: Mute"
+        return [title, row("Top", send(0), none: "Pan"), buttons]
     }
 
     /// The home screen's first line: what is on the page, each kind counted on its own in the
@@ -1126,7 +1134,11 @@ public struct LaunchControlDriver: Sendable {
         let usable = !shiftHeld || layout == .xl3
         bytes += color(.pageUp, usable && nextSend(row: row, by: -1, hub: hub) != nil ? Self.navigationOn : 0)
         bytes += color(.pageDown, usable && nextSend(row: row, by: 1, hub: hub) != nil ? Self.navigationOn : 0)
-        if layout == .lc3 { bytes += color(Self.functionButton, buttonsArePFL ? Self.pflOn : Self.functionIdle) }
+        // Lit bright yellow while the buttons are PFL, and also whenever a channel's PFL is on, so
+        // a PFL left on after Function is released still shows (UI review of 2026-11-02).
+        if layout == .lc3 {
+            bytes += color(Self.functionButton, buttonsArePFL || Self.anyPFL(hub) ? Self.pflOn : Self.functionIdle)
+        }
         return bytes
     }
 
@@ -1327,6 +1339,11 @@ public struct LaunchControlDriver: Sendable {
         }
         guard let fraction = brightness(position: position, floor: dimmestFraction(rgb)) else { return .palette(0) }
         return .rgb(rgb.scaled(fraction))
+    }
+
+    /// Whether any channel's PFL is on in TotalMix FX.
+    static func anyPFL(_ hub: SurfaceHub) -> Bool {
+        hub.mirror.channels.values.contains { $0.pfl }
     }
 
     /// The palette color for each of TotalMix FX's eight colors (1 white, 2 grey, 3 orange, 4 red,

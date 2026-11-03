@@ -346,7 +346,7 @@ final class BridgeModel: ObservableObject {
             case .totalMixTooOld: print("Opening setup: TotalMix FX \(version ?? "") is older than 2.1")
             }
             fflush(stdout)
-            showSetup()
+            showSetup(openFor: reason.stepID)
         }
     }
 
@@ -370,9 +370,10 @@ final class BridgeModel: ObservableObject {
         return nil
     }
 
-    /// Opens the setup window.
-    func showSetup() {
-        Windows.show("setup", title: "Performance Bridge Setup Guide") { SetupView(model: self) }
+    /// Opens the setup window, at the step `openFor` names (e.g., a problem's), or at the first
+    /// step that isn't done.
+    func showSetup(openFor: String? = nil) {
+        Windows.show("setup", title: "Performance Bridge Setup Guide") { SetupView(model: self, openFor: openFor) }
     }
 
     /// The engine's settings from the saved settings, the command line, and the menu's choices.
