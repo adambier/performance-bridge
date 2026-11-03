@@ -34,7 +34,6 @@ struct SetupView: View {
     /// windows rarely change.
     private static let screenshots: [String: [String]] = [
         "totalmix": ["totalmix-options-menu", "totalmix-osc-tab", "totalmix-osc-details"],
-        "meters": ["totalmix-osc-tab"],
         "hide": ["totalmix-channel-layout"],
         "mutemaster": ["totalmix-control-strip"],
         "livemode": ["totalmix-control-strip"],
