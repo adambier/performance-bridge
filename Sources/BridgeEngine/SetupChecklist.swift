@@ -28,13 +28,17 @@ public struct SetupStep: Equatable, Sendable, Identifiable {
     /// What to do, or what was seen. Empty when there is nothing to add. Each line is shown on
     /// its own (e.g., a numbered step), and a blank line starts a new paragraph.
     public var detail: String
+    /// For a step that is done, how it is set up, shown on request (Adam, 2026-11-02): e.g., to
+    /// set up a second Mac the same way. Empty when there is nothing to show.
+    public var instructions: String
 
     /// Makes a step.
-    public init(id: String, title: String, state: State, detail: String) {
+    public init(id: String, title: String, state: State, detail: String, instructions: String = "") {
         self.id = id
         self.title = title
         self.state = state
         self.detail = detail
+        self.instructions = instructions
     }
 }
 
@@ -77,7 +81,8 @@ public enum SetupChecklist {
             """
         if status.totalMixAnswering {
             steps.append(SetupStep(id: "totalmix", title: "TotalMix FX is connected", state: .done,
-                                   detail: "TotalMix FX answers on its OSC Controller for Performance Bridge, with ports \(incoming) (incoming) and \(outgoing) (outgoing).\n\nIts OSC settings are under Options → Mixer Settings… (F3) → OSC."))
+                                   detail: "TotalMix FX answers on its OSC Controller for Performance Bridge, with ports \(incoming) (incoming) and \(outgoing) (outgoing).",
+                                   instructions: oscSetup))
         } else {
             steps.append(SetupStep(id: "totalmix", title: "TotalMix FX hasn’t answered yet",
                                    state: status.listening ? .waiting : .problem, detail: oscSetup))
@@ -94,34 +99,36 @@ public enum SetupChecklist {
                                        : ""))
         }
 
+        let metersSetup = "For meters on the hardware controllers: in TotalMix FX, Options → Mixer Settings… (F3) → OSC, check “Send Level Data” for Performance Bridge’s OSC Controller.\n\nTotalMix FX sends levels only when they change, so play something to see them."
         steps.append(status.levelsSeen
             ? SetupStep(id: "meters", title: "Meter levels are arriving", state: .done,
-                        detail: "The hardware controllers’ meters follow TotalMix FX’s.")
-            : SetupStep(id: "meters", title: "No meters yet", state: .optional,
-                        detail: "For meters on the hardware controllers: in TotalMix FX, Options → Mixer Settings… (F3) → OSC, check “Send Level Data” for Performance Bridge’s OSC Controller.\n\nTotalMix FX sends levels only when they change, so play something to see them."))
+                        detail: "The hardware controllers’ meters follow TotalMix FX’s.", instructions: metersSetup)
+            : SetupStep(id: "meters", title: "No meters yet", state: .optional, detail: metersSetup))
 
         if status.muteMasterOff {
             steps.append(SetupStep(id: "mutemaster", title: "Mute Master is off in TotalMix FX", state: .problem,
                                    detail: "While it’s off, mutes from the hardware controller only select a channel’s mute and don’t silence it.\n\nIn TotalMix FX, turn on the “M” (Mute Master) button in the Control Strip, below the interface’s name and “undo”."))
         }
 
+        let rotoBusy = "If it stays here, quit any other program that talks to the Roto-Control, such as a DAW with its Roto-Control integration."
         if !status.rotoEnabled {
             // Another hardware controller is in use.
         } else if status.rotoConnected {
             steps.append(SetupStep(id: "roto", title: "Roto-Control is connected", state: .done,
-                                   detail: "Its knobs and switches control TotalMix FX, in MIX mode."))
+                                   detail: "Its knobs and switches control TotalMix FX, in MIX mode.",
+                                   instructions: "Connect the Roto-Control by USB. If it doesn’t connect, quit any other program that talks to the Roto-Control, such as a DAW with its Roto-Control integration."))
         } else if status.rotoFound {
-            steps.append(SetupStep(id: "roto", title: "Roto-Control found, connecting", state: .waiting,
-                                   detail: "If it stays here, quit any other program that talks to the Roto-Control, such as a DAW with its Roto-Control integration."))
+            steps.append(SetupStep(id: "roto", title: "Roto-Control found, connecting", state: .waiting, detail: rotoBusy))
         } else {
             steps.append(SetupStep(id: "roto", title: "Roto-Control not found", state: .waiting,
-                                   detail: "Connect the Roto-Control by USB. If it’s connected, try another cable or USB port.\n\nTo use a Launch Control XL 3 or Launch Control 3 instead, choose it in Performance Bridge’s Settings, on the Connections tab."))
+                                   detail: "Connect the Roto-Control by USB. If it’s connected, try another cable or USB port.\n\nA Launch Control XL 3 or Launch Control 3 plugged in instead is chosen by itself until a hardware controller has connected; after that, choose it in Performance Bridge’s Settings, on the Connections tab."))
         }
 
         if let name = status.launchControlName {
             if status.launchControlConnected {
                 steps.append(SetupStep(id: "launchcontrol", title: "\(name) is connected", state: .done,
-                                       detail: "It is in DAW mode, and its controls work TotalMix FX."))
+                                       detail: "It is in DAW mode, and its controls work TotalMix FX.",
+                                       instructions: "Connect the Launch Control by USB. If it doesn’t connect, quit any other program that uses its DAW ports, such as a DAW with its Launch Control integration."))
             } else if status.launchControlFound {
                 steps.append(SetupStep(id: "launchcontrol", title: "\(name) found, connecting", state: .waiting,
                                        detail: "If it stays here, quit any other program that uses its DAW ports, such as a DAW with its Launch Control integration."))
@@ -180,15 +187,10 @@ public enum SetupChecklist {
     }
 
     /// The page Continue goes to from page `index`: the next step not done, since a done step needs
-    /// nothing from the user (Adam, 2026-11-02); `nil` when none is left. The marks across the top
-    /// still reach every step.
+    /// nothing from the user (Adam, 2026-11-02); `nil` when none is left. Back goes one page back,
+    /// done or not (Adam, 2026-11-02), and the marks across the top reach every step.
     public static func nextIndex(after index: Int, in steps: [SetupStep]) -> Int? {
         steps.indices.first { $0 > index && steps[$0].state != .done }
-    }
-
-    /// The page Back goes to from page `index`: the previous step not done; `nil` when none is.
-    public static func previousIndex(before index: Int, in steps: [SetupStep]) -> Int? {
-        steps.indices.last { $0 < index && steps[$0].state != .done }
     }
 
     /// Whether every step the surfaces need is done: TotalMix FX answering with its channels, the

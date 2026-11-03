@@ -128,28 +128,9 @@ struct LayoutView: View {
     /// A group's rows: a drag handle and the channel's name.
     private func rows(_ group: [LayoutItem]) -> some DynamicViewContent {
         ForEach(group, id: \.channel) { item in
-            HStack(spacing: 8) {
-                Image(systemName: "line.3.horizontal")
-                    .foregroundStyle(.tertiary)
-                    .accessibilityHidden(true)
-                LabelField(item: item) { text in
-                    model.engine.setLabel(text, for: item.channel)
-                    reload()
-                }
-                // A fixed width, so the name it replaces sits right beside a label (UI review of
-                // 2026-11-02).
-                .frame(width: 180, alignment: .leading)
-                if item.label != nil {
-                    // The name the strip would show without the label, for reference.
-                    Text(item.defaultName)
-                        .foregroundStyle(.tertiary)
-                        .lineLimit(1)
-                }
-                Spacer(minLength: 0)
-                // A pencil, so the names read as editable (UI review of 2026-11-02).
-                Image(systemName: "pencil")
-                    .foregroundStyle(.tertiary)
-                    .accessibilityHidden(true)
+            LayoutRow(item: item) { text in
+                model.engine.setLabel(text, for: item.channel)
+                reload()
             }
             .frame(minHeight: 24)
             .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
@@ -184,6 +165,41 @@ struct LayoutView: View {
         let sends = Set(model.status.sendTargets.map(\.output))
         items = view == .outputs ? all.filter { sends.contains($0.channel.channel) } : all
         isTotalMixOrder = model.engine.isTotalMixOrder(view)
+    }
+}
+
+/// One row of the layout: a drag handle, the channel's name (its label, editable in place), a
+/// pencil right after the name while the pointer is over the row, and, beside a label, the name it
+/// replaces, dimmed. The pencil shows only on hover (Adam, 2026-11-02: a pencil on every row says
+/// nothing), as macOS lists reveal a row's controls where the pointer is.
+struct LayoutRow: View {
+    let item: LayoutItem
+    let commit: (String) -> Void
+    @State private var hovering = false
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "line.3.horizontal")
+                .foregroundStyle(.tertiary)
+                .accessibilityHidden(true)
+                .padding(.trailing, 2)
+            LabelField(item: item, commit: commit)
+                // As wide as the name, so the pencil sits right after it.
+                .fixedSize()
+            Image(systemName: "pencil")
+                .foregroundStyle(.secondary)
+                .opacity(hovering ? 1 : 0)
+                .accessibilityHidden(true)
+            if item.label != nil {
+                // The name the strip would show without the label, for reference.
+                Text(item.defaultName)
+                    .foregroundStyle(.tertiary)
+                    .lineLimit(1)
+            }
+            Spacer(minLength: 0)
+        }
+        .contentShape(Rectangle())
+        .onHover { hovering = $0 }
     }
 }
 

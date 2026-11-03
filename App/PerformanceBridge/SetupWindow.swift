@@ -25,6 +25,9 @@ struct SetupView: View {
     /// Where the page on show was, so that if its step goes away (e.g., Mute Master's, once it is
     /// on) the assistant stays at the same place instead of jumping (review of 1.0.2).
     @State private var lastIndex: Int?
+    /// Whether a done page shows how its step is set up (Adam, 2026-11-02); hidden again on
+    /// another page.
+    @State private var showInstructions = false
 
     /// Screenshots of TotalMix FX for a step, shown on its page. They are from TotalMix FX
     /// "2.10 (1)" on a Mac (Adam, 2026-10-31), published with his permission; TotalMix FX's
@@ -62,6 +65,7 @@ struct SetupView: View {
     /// Shows step `i`.
     private func go(to i: Int, in steps: [SetupStep]) {
         guard steps.indices.contains(i) else { return }
+        if pageID != steps[i].id { showInstructions = false }
         pageID = steps[i].id
         lastIndex = i
     }
@@ -135,21 +139,32 @@ struct SetupView: View {
                 }
             }
             if !step.detail.isEmpty { detailText(step.detail) }
-            screenshots(for: step)
+            if step.state != .done {
+                screenshots(for: step)
+            } else if !step.instructions.isEmpty || Self.screenshots[step.id] != nil {
+                // A done step's instructions and screenshots, on request: e.g., to set up another
+                // Mac the same way.
+                Button(showInstructions ? "Hide Setup Instructions" : "Show Setup Instructions") {
+                    showInstructions.toggle()
+                }
+                if showInstructions {
+                    if !step.instructions.isEmpty { detailText(step.instructions) }
+                    screenshots(for: step)
+                }
+            }
             if let link = settingsLink(for: step.id) {
                 Button(link.title) { model.showSettings(link.tab) }
             }
         }
     }
 
-    /// Back, and Continue (Done when no step is left), which is the default button. Both skip the
-    /// steps that are done (Adam, 2026-11-02); the marks reach those.
+    /// Back, one page back, and Continue (Done when no step is left), the default button, which
+    /// skips the steps that are done (Adam, 2026-11-02).
     private func footer(_ steps: [SetupStep], index: Int) -> some View {
-        let previous = SetupChecklist.previousIndex(before: index, in: steps)
         let next = SetupChecklist.nextIndex(after: index, in: steps)
         return HStack {
-            Button("Back") { if let previous { go(to: previous, in: steps) } }
-                .disabled(previous == nil)
+            Button("Back") { go(to: index - 1, in: steps) }
+                .disabled(index == 0)
             Spacer()
             if let next {
                 Button("Continue") { go(to: next, in: steps) }

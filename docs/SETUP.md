@@ -11,10 +11,11 @@
   from source".)
 
 Open **Performance Bridge** from the Applications folder. It runs in the menu bar, with no Dock icon. Its
-Setup Guide follows these steps one page at a time, with **Back** and **Continue**, which skip the steps already
-done, and checks each one live where it can: whether TotalMix FX answers, whether it has sent its channels, whether meters arrive, and whether
+Setup Guide follows these steps one page at a time, with **Back** and **Continue** (which skips the steps already
+done), and checks each one live where it can: whether TotalMix FX answers, whether it has sent its channels, whether meters arrive, and whether
 the hardware controller is connected. The marks across its top show every step at a glance (green when done);
-click one to go to its page, done or not. It opens by itself the first time the app runs, at the first step not done; after
+click one to go to its page, done or not. A finished page can still show its setup instructions: click **Show Setup
+Instructions**. It opens by itself the first time the app runs, at the first step not done; after
 that, choose **Setup Guide…** from the menu.
 
 ## Step 1: Turn on Global OSC in TotalMix FX
@@ -114,7 +115,8 @@ Launch Control 3.
 
 1. Connect the hardware controller to the Mac by USB. It can be connected before or after the app starts.
 2. In Performance Bridge, open **Settings… → Connections** and choose it from the **Controller** menu
-   under Hardware Controller. The Roto-Control is the default.
+   under Hardware Controller. The Roto-Control is the default. Until a hardware controller has connected,
+   Performance Bridge chooses one by itself when the one chosen isn't plugged in and exactly one other is.
 3. Click **Apply**, just below the menu. Apply, **Revert**, and **Defaults** cover the TotalMix FX connection (host
    and ports) and the hardware controller; the send rows below them don't need Apply.
 
@@ -181,7 +183,7 @@ Choose **Settings…** from the menu and open the **Channel Layout** tab.
   them on the hardware controllers. The **Control Room** outputs (those assigned in TotalMix FX's control room:
   Phones, and so on) and the **Hardware Outputs** are ordered in their own sections, since control room outputs
   always come first.
-- Click a channel's name (each row has a pencil at its end) to give it a **label** for the hardware controllers, e.g., a short name for mixing. The label shows only on the hardware controllers; the name the strip would show without it (TotalMix FX's name, or "PB 1/2" and so on for a playback) is shown dimmed beside the label. Clear the label to go back to that name. A playback without a label shows as "PB 1/2" and so on, since an unnamed playback otherwise has its output's hardware name, which can be the same as an input's.
+- Click a channel's name (a pencil appears beside it when the pointer is over its row) to give it a **label** for the hardware controllers, e.g., a short name for mixing. The label shows only on the hardware controllers; the name the strip would show without it (TotalMix FX's name, or "PB 1/2" and so on for a playback) is shown dimmed beside the label. Clear the label to go back to that name. A playback without a label shows as "PB 1/2" and so on, since an unnamed playback otherwise has its output's hardware name, which can be the same as an input's.
 - The order and the labels are kept when Performance Bridge restarts.
 - **Restore TotalMix FX Order** puts the view back in TotalMix FX's order. It is dimmed when the order is already TotalMix FX's.
 - To take a channel off the hardware controllers, hide it in TotalMix FX (Step 2). The layout has no hide setting of its own.

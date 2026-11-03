@@ -20,6 +20,9 @@ import SurfaceCore
 #if canImport(LaunchControl)
 import LaunchControl
 #endif
+#if canImport(MIDITransport)
+import MIDITransport
+#endif
 // Sparkle (in-app updates) is linked by make-app.sh. Package.swift does not declare it, so
 // `swift run` compiles without it and the menu has no "Check for Updates…" item.
 #if canImport(Sparkle)
@@ -185,6 +188,20 @@ enum ControllerChoice: String, CaseIterable, Identifiable {
         case .launchControl3: return .lc3
         }
     }
+
+    /// The same hardware controller, as `DetectedController` names it.
+    var detected: DetectedController {
+        launchControl.map { .launchControl($0) } ?? .roto
+    }
+
+    /// The choice for a hardware controller found plugged in.
+    init(_ detected: DetectedController) {
+        switch detected {
+        case .roto: self = .roto
+        case .launchControl(.xl3): self = .launchControlXL3
+        case .launchControl(.lc3): self = .launchControl3
+        }
+    }
 }
 
 /// The settings kept between launches, in the user defaults.
@@ -304,6 +321,34 @@ final class BridgeModel: ObservableObject {
 
     private static let setupShownKey = "setupShown"
 
+    /// Set once a hardware controller has connected, or the user has chosen one in Settings; until
+    /// then the app chooses the hardware controller by itself (Adam, 2026-11-02).
+    private static let controllerSettledKey = "controllerSettled"
+    /// The hardware controller the app last chose by itself, for the Settings window to follow.
+    @Published private(set) var autoChosen: ControllerChoice?
+
+    /// Until a hardware controller has connected: if the one chosen isn't plugged in and exactly
+    /// one other is, chooses that one (Adam, 2026-11-02). Only the MIDI ports' names are read, so
+    /// nothing is sent to a device until it is chosen. Never after a hardware controller has
+    /// connected, since a Launch Control taken over this way leaves a DAW's session with it (see
+    /// AGENTS.md, section 3).
+    private func chooseControllerIfNeeded() {
+        let defaults = UserDefaults.standard
+        guard !launchControlFromCommandLine, !defaults.bool(forKey: Self.controllerSettledKey) else { return }
+        if status.rotoConnected || status.launchControlConnected {
+            defaults.set(true, forKey: Self.controllerSettledKey)
+            return
+        }
+        var saved = SavedSettings.load()
+        let found = DetectedController.found(among: MIDIConnection.sources(), rotoPortName: engine.settings.rotoPortName)
+        guard let target = DetectedController.switchTarget(chosen: saved.controller.detected, found: found) else { return }
+        let choice = ControllerChoice(target)
+        print("Choosing the \(choice.title): it is plugged in and the \(saved.controller.title) isn’t")
+        saved.controller = choice
+        apply(saved, chosenByUser: false)
+        autoChosen = choice
+    }
+
     /// The keys under which "worked with these settings" is kept: TotalMix FX's host and ports, and the
     /// Roto-Control's port name, as the engine uses them.
     private var totalMixWorkedKey: String {
@@ -339,6 +384,7 @@ final class BridgeModel: ObservableObject {
         if watch.launchControlWorked, engine.settings.launchControl != nil {
             UserDefaults.standard.set(true, forKey: launchControlWorkedKey)
         }
+        chooseControllerIfNeeded()
         let attention = watch.needsAttention(status: status, now: now)
         if attention != needsAttention { needsAttention = attention }
         if let reason {
@@ -442,8 +488,12 @@ final class BridgeModel: ObservableObject {
         engine.start()
     }
 
-    /// Saves new settings and restarts the engine with them.
-    func apply(_ saved: SavedSettings) {
+    /// Saves new settings and restarts the engine with them. A hardware controller the user chooses
+    /// stays chosen: the app no longer chooses one by itself.
+    func apply(_ saved: SavedSettings, chosenByUser: Bool = true) {
+        if chosenByUser, saved.controller != SavedSettings.load().controller {
+            UserDefaults.standard.set(true, forKey: Self.controllerSettledKey)
+        }
         saved.save()
         engine.stop()
         engine = BridgeEngine(settings: Self.settings(saved, overrides: portOverrides))

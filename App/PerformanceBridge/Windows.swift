@@ -221,6 +221,13 @@ struct SettingsView: View {
         }
         .padding(20)
         .fixedSize(horizontal: false, vertical: true)
+        // The app chose the hardware controller by itself (BridgeModel.chooseControllerIfNeeded):
+        // show it, unless the user has already picked another here.
+        .onChange(of: model.autoChosen) { choice in
+            guard let choice else { return }
+            if edited.controller == saved.controller { edited.controller = choice }
+            saved.controller = choice
+        }
     }
 
     /// TotalMix FX's host and ports and the hardware controller, with Defaults, Revert, and Apply.

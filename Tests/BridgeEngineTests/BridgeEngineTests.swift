@@ -5,6 +5,7 @@ import SurfaceCore
 import UDPTransport
 import LaunchControl
 import LaunchControlDriver
+import MIDITransport
 @testable import BridgeEngine
 
 final class BridgeEngineTests: XCTestCase {
@@ -445,7 +446,7 @@ final class BridgeEngineTests: XCTestCase {
             XCTAssertNotNil(steps.first { $0.id == reason.stepID }, "\(reason) opens at a step that exists")
         }
         XCTAssertEqual(steps.map(\.id).suffix(4), ["livemode", "cue", "hide", "order"], "the notes come last, as their own pages")
-        // Continue and Back skip the steps that are done.
+        // Continue skips the steps that are done.
         var answering = status
         answering.totalMixAnswering = true
         let skipping = SetupChecklist.steps(status: answering, settings: BridgeSettings(), totalMixRunning: true,
@@ -458,8 +459,6 @@ final class BridgeEngineTests: XCTestCase {
                        "the first step not done: TotalMix FX answered, but no channels yet")
         XCTAssertEqual(SetupChecklist.nextIndex(after: port, in: skipping), ids.firstIndex(of: "channels"),
                        "Continue skips the version and TotalMix FX, both done")
-        XCTAssertNil(SetupChecklist.previousIndex(before: ids.firstIndex(of: "channels")!, in: skipping),
-                     "nothing before it to go back to")
         XCTAssertNil(SetupChecklist.nextIndex(after: ids.count - 1, in: skipping), "Done on the last page")
         XCTAssertFalse(skipping.contains { $0.state == .done && $0.detail.isEmpty }, "a done page says what was checked")
         XCTAssertFalse(steps.first { $0.id == "hide" }!.detail.contains("send row"),
@@ -470,6 +469,42 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertEqual(withLaunchControl[SetupChecklist.startIndex(of: withLaunchControl,
                                                                    openFor: SetupWatch.Reason.launchControlNotConnecting.stepID)].id,
                        "launchcontrol", "a Launch Control problem opens at its step")
+    }
+
+    func testTheHardwareControllerIsFoundByItsPortNames() {
+        func sources(_ names: String...) -> [MIDIEndpointInfo] {
+            names.enumerated().map { MIDIEndpointInfo(name: $1, uniqueID: Int32($0)) }
+        }
+        typealias D = DetectedController
+        let none = sources("IAC Driver Bus 1", "Digiface AES")
+        XCTAssertEqual(D.found(among: none, rotoPortName: "Roto"), [])
+        let xl3 = sources("IAC Driver Bus 1", "LCXL3 1 MIDI Out", "LCXL3 1 DAW Out")
+        XCTAssertEqual(D.found(among: xl3, rotoPortName: "Roto"), [.launchControl(.xl3)])
+        let both = sources("Roto-Control", "LC3 1 DAW Out")
+        XCTAssertEqual(D.found(among: both, rotoPortName: "Roto"), [.roto, .launchControl(.lc3)])
+
+        XCTAssertEqual(D.switchTarget(chosen: .roto, found: [.launchControl(.xl3)]), .launchControl(.xl3),
+                       "the Roto-Control isn't plugged in and only an XL 3 is: switch")
+        XCTAssertNil(D.switchTarget(chosen: .launchControl(.xl3), found: [.launchControl(.xl3)]), "already chosen")
+        XCTAssertNil(D.switchTarget(chosen: .roto, found: []), "nothing plugged in")
+        XCTAssertNil(D.switchTarget(chosen: .launchControl(.xl3), found: [.roto, .launchControl(.lc3)]),
+                     "several: the user chooses")
+        XCTAssertNil(D.switchTarget(chosen: .roto, found: [.roto, .launchControl(.lc3)]), "the chosen one is there")
+    }
+
+    func testDoneStepsKeepTheirInstructions() {
+        var status = BridgeStatus()
+        status.listening = true
+        status.totalMixAnswering = true
+        status.levelsSeen = true
+        let done = SetupChecklist.steps(status: status, settings: BridgeSettings())
+        let totalMix = done.first { $0.id == "totalmix" }!
+        XCTAssertEqual(totalMix.state, .done)
+        XCTAssertTrue(totalMix.instructions.contains("Global OSC"), "how TotalMix FX was set up, on request")
+        XCTAssertTrue(done.first { $0.id == "meters" }!.instructions.contains("Send Level Data"))
+        status.totalMixAnswering = false
+        let waiting = SetupChecklist.steps(status: status, settings: BridgeSettings()).first { $0.id == "totalmix" }!
+        XCTAssertEqual(waiting.detail, totalMix.instructions, "the same text as before it was done")
     }
 
     func testSetupChecklistVersionStep() {
