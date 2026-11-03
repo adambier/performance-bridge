@@ -108,7 +108,7 @@ public enum SetupChecklist {
         let metersSetup = "For meters on the hardware controllers: in TotalMix FX, Options → Mixer Settings… (F3) → OSC, check “Send Level Data” for Performance Bridge’s OSC Controller.\n\nTotalMix FX sends levels only when they change, so play something to see them."
         steps.append(status.levelsSeen
             ? SetupStep(id: "meters", title: "Meter levels are arriving", state: .done,
-                        detail: "The hardware controllers’ meters follow TotalMix FX’s.", instructions: metersSetup)
+                        detail: "TotalMix FX is sending meter levels.", instructions: metersSetup)
             : SetupStep(id: "meters", title: "No meters yet", state: .optional, detail: metersSetup))
 
         if status.muteMasterOff {
