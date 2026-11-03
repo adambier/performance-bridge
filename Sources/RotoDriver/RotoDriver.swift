@@ -102,6 +102,11 @@ public struct RotoDriver: Sendable {
     private var selectedTrack = 0
     private var trackSet: RotoTrackSet = .audio
     private var infos: [StripInfo?] = Array(repeating: nil, count: RotoCC.controlCount)
+    /// Whether each switch's light is on, as the hub last set it.
+    private var switchOn = Array(repeating: false, count: RotoCC.controlCount)
+    /// Whether flashing mute lights are in their lit half now (`blinkPeriod`); always true while
+    /// nothing flashes.
+    private var blinkLit = true
     private var page = (first: 0, count: 0)
     private var motorTargets: [(position: Int, time: Double)?] = Array(repeating: nil, count: RotoCC.controlCount)
 
@@ -247,9 +252,10 @@ public struct RotoDriver: Sendable {
     /// current time.
     public mutating func tick(now: Double, hub: SurfaceHub? = nil) -> [UInt8] {
         if handshake.isConnected {
-            guard pageDrawPending, let hub, !inPluginMode,
-                  now - (lastPageDraw ?? -Double.infinity) >= Self.pageDrawInterval else { return [] }
-            return drawPage(hub: hub, now: now)
+            guard let hub, !inPluginMode else { return [] }
+            let blink = drawBlink(hub: hub, now: now)
+            guard pageDrawPending, now - (lastPageDraw ?? -Double.infinity) >= Self.pageDrawInterval else { return blink }
+            return blink + drawPage(hub: hub, now: now)
         }
         guard let lastStart, now - lastStart >= Self.restartInterval else { return [] }
         return start(now: now)
@@ -395,7 +401,8 @@ public struct RotoDriver: Sendable {
             case .valueText(let index, let text):
                 controls += RotoOutgoing.showValue(.knob, control: index, text: text).bytes
             case .switchState(let index, let on):
-                controls += RotoFeedback.switchLight(index, on: on)
+                if switchOn.indices.contains(index) { switchOn[index] = on }
+                controls += RotoFeedback.switchLight(index, on: on && (blinkLit || !isMute(index, hub: hub)))
             case .meter(let index, let value):
                 let level = UInt8(min(max(value, 0), 127))
                 controls += RotoFeedback.meter(index, left: level, right: level)
@@ -588,6 +595,33 @@ public struct RotoDriver: Sendable {
 
     /// Whether a strip's knob is a level or a send (a fader position), whose scale is bent to the
     /// indent; pans are not.
+    /// How a mute that is on while TotalMix FX's Mute Master is off shows: its light flashes, on
+    /// and off for this many seconds each, as on a Launch Control (Adam, 2026-11-02). Such a mute
+    /// is only set and doesn't silence the channel (docs/TOTALMIX-OSC.md, the global mute
+    /// recheck). The firmware fixes the switches' colors, so on and off is all a host can do
+    /// (docs/ROTO-CONTROL.md, section 3).
+    public static let blinkPeriod: Double = 0.4
+
+    /// The mute lights that are on, turned off or on again as the flash goes; nothing while Mute
+    /// Master is on and the lights are steady.
+    private mutating func drawBlink(hub: SurfaceHub, now: Double) -> [UInt8] {
+        let lit = hub.mirror.muteMaster != false || Int((now / Self.blinkPeriod).rounded(.down)) % 2 == 0
+        guard lit != blinkLit else { return [] }
+        blinkLit = lit
+        var bytes: [UInt8] = []
+        for index in switchOn.indices where switchOn[index] && isMute(index, hub: hub) {
+            bytes += RotoFeedback.switchLight(index, on: lit)
+        }
+        return bytes
+    }
+
+    /// Whether switch `index` is a channel's mute.
+    private func isMute(_ index: Int, hub: SurfaceHub) -> Bool {
+        guard let strips = hub.strips(of: id), strips.indices.contains(index),
+              case .mute? = strips[index].switchTarget else { return false }
+        return true
+    }
+
     private func isLevel(_ index: Int, hub: SurfaceHub) -> Bool {
         guard let strips = hub.strips(of: id), strips.indices.contains(index),
               case .level? = strips[index].knobTarget else { return false }
