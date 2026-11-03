@@ -157,16 +157,15 @@ struct SetupView: View {
         }
     }
 
-    /// Back, one page back, and Continue (Done when no step is left), the default button, which
-    /// skips the steps that are done (Adam, 2026-11-02).
+    /// Back and Continue (Done on the last page), the default button: one page at a time, done or
+    /// not (Adam, 2026-11-02; skipping the done ones was tried the same day).
     private func footer(_ steps: [SetupStep], index: Int) -> some View {
-        let next = SetupChecklist.nextIndex(after: index, in: steps)
-        return HStack {
+        HStack {
             Button("Back") { go(to: index - 1, in: steps) }
                 .disabled(index == 0)
             Spacer()
-            if let next {
-                Button("Continue") { go(to: next, in: steps) }
+            if index + 1 < steps.count {
+                Button("Continue") { go(to: index + 1, in: steps) }
                     .keyboardShortcut(.defaultAction)
             } else {
                 Button("Done") { Windows.close("setup") }

@@ -179,18 +179,12 @@ public enum SetupChecklist {
 
     /// The page the setup assistant opens at: the step `openFor` names if it is there (e.g., the
     /// problem that opened the window), else the first step that is waiting or has a problem, else
-    /// the first one not done (e.g., the notes), else the first page.
+    /// the first one not done (e.g., the notes), else the first page. Back and Continue then go
+    /// through every page, done or not (Adam, 2026-11-02).
     public static func startIndex(of steps: [SetupStep], openFor: String? = nil) -> Int {
         if let openFor, let index = steps.firstIndex(where: { $0.id == openFor }) { return index }
         return steps.firstIndex { $0.state == .waiting || $0.state == .problem }
             ?? steps.firstIndex { $0.state != .done } ?? 0
-    }
-
-    /// The page Continue goes to from page `index`: the next step not done, since a done step needs
-    /// nothing from the user (Adam, 2026-11-02); `nil` when none is left. Back goes one page back,
-    /// done or not (Adam, 2026-11-02), and the marks across the top reach every step.
-    public static func nextIndex(after index: Int, in steps: [SetupStep]) -> Int? {
-        steps.indices.first { $0 > index && steps[$0].state != .done }
     }
 
     /// Whether every step the surfaces need is done: TotalMix FX answering with its channels, the

@@ -446,7 +446,7 @@ final class BridgeEngineTests: XCTestCase {
             XCTAssertNotNil(steps.first { $0.id == reason.stepID }, "\(reason) opens at a step that exists")
         }
         XCTAssertEqual(steps.map(\.id).suffix(4), ["livemode", "cue", "hide", "order"], "the notes come last, as their own pages")
-        // Continue skips the steps that are done.
+        // The guide opens at the first step not done.
         var answering = status
         answering.totalMixAnswering = true
         let skipping = SetupChecklist.steps(status: answering, settings: BridgeSettings(), totalMixRunning: true,
@@ -457,9 +457,6 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertEqual(skipping[version].state, .done)
         XCTAssertEqual(SetupChecklist.startIndex(of: skipping), ids.firstIndex(of: "channels"),
                        "the first step not done: TotalMix FX answered, but no channels yet")
-        XCTAssertEqual(SetupChecklist.nextIndex(after: port, in: skipping), ids.firstIndex(of: "channels"),
-                       "Continue skips the version and TotalMix FX, both done")
-        XCTAssertNil(SetupChecklist.nextIndex(after: ids.count - 1, in: skipping), "Done on the last page")
         XCTAssertFalse(skipping.contains { $0.state == .done && $0.detail.isEmpty }, "a done page says what was checked")
         XCTAssertFalse(steps.first { $0.id == "hide" }!.detail.contains("send row"),
                        "no Launch Control tip before a Launch Control is chosen")
