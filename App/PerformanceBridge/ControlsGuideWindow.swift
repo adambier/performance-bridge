@@ -56,7 +56,7 @@ struct ControlsGuideView: View {
     /// A table of controls: a heading row, then one row per control, the controls in a column of
     /// their own.
     private func table(_ table: ControlsGuide.Table) -> some View {
-        Grid(alignment: .topLeading, horizontalSpacing: 14, verticalSpacing: 8) {
+        Grid(alignment: .topLeading, horizontalSpacing: 14, verticalSpacing: 14) {
             GridRow {
                 Text(table.controlHeading).font(.callout.weight(.semibold))
                 Text(table.actionHeading).font(.callout.weight(.semibold))
