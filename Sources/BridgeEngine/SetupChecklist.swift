@@ -54,7 +54,7 @@ public enum SetupChecklist {
 
         steps.append(status.listening
             ? SetupStep(id: "port", title: "Performance Bridge is listening on port \(outgoing)",
-                        state: .done, detail: "")
+                        state: .done, detail: "No other program is using port \(outgoing), so TotalMix FX’s messages can reach Performance Bridge.")
             : SetupStep(id: "port", title: "Port \(outgoing) is in use",
                         state: .problem,
                         detail: "Another program is using port \(outgoing), the port TotalMix FX sends to. Quit it (for example, another OSC remote or a developer tool left running).\n\nPerformance Bridge keeps trying."))
@@ -76,15 +76,16 @@ public enum SetupChecklist {
             Each OSC Controller needs its own ports. If TotalMix FX uses other ports, set the same ones in Performance Bridge’s Settings, on the Connections tab.
             """
         if status.totalMixAnswering {
-            steps.append(SetupStep(id: "totalmix", title: "TotalMix FX answered", state: .done, detail: ""))
+            steps.append(SetupStep(id: "totalmix", title: "TotalMix FX is connected", state: .done,
+                                   detail: "TotalMix FX answers on its OSC Controller for Performance Bridge, with ports \(incoming) (incoming) and \(outgoing) (outgoing).\n\nIts OSC settings are under Options → Mixer Settings… (F3) → OSC."))
         } else {
             steps.append(SetupStep(id: "totalmix", title: "TotalMix FX hasn’t answered yet",
                                    state: status.listening ? .waiting : .problem, detail: oscSetup))
         }
 
         if status.channelCount > 0 {
-            steps.append(SetupStep(id: "channels", title: "TotalMix FX channels received", state: .done,
-                                   detail: "\(status.channelCount) channels."))
+            steps.append(SetupStep(id: "channels", title: "TotalMix FX has sent its channels", state: .done,
+                                   detail: "Performance Bridge has \(status.channelCount) of TotalMix FX’s channels. Channels hidden from its OSC Controller aren’t among them."))
         } else {
             steps.append(SetupStep(id: "channels", title: "TotalMix FX hasn’t sent its channels yet",
                                    state: .waiting,
@@ -94,7 +95,8 @@ public enum SetupChecklist {
         }
 
         steps.append(status.levelsSeen
-            ? SetupStep(id: "meters", title: "Receiving meter levels", state: .done, detail: "")
+            ? SetupStep(id: "meters", title: "Meter levels are arriving", state: .done,
+                        detail: "The hardware controllers’ meters follow TotalMix FX’s.")
             : SetupStep(id: "meters", title: "No meters yet", state: .optional,
                         detail: "For meters on the hardware controllers: in TotalMix FX, Options → Mixer Settings… (F3) → OSC, check “Send Level Data” for Performance Bridge’s OSC Controller.\n\nTotalMix FX sends levels only when they change, so play something to see them."))
 
@@ -106,7 +108,8 @@ public enum SetupChecklist {
         if !status.rotoEnabled {
             // Another hardware controller is in use.
         } else if status.rotoConnected {
-            steps.append(SetupStep(id: "roto", title: "Roto-Control connected", state: .done, detail: ""))
+            steps.append(SetupStep(id: "roto", title: "Roto-Control is connected", state: .done,
+                                   detail: "Its knobs and switches control TotalMix FX, in MIX mode."))
         } else if status.rotoFound {
             steps.append(SetupStep(id: "roto", title: "Roto-Control found, connecting", state: .waiting,
                                    detail: "If it stays here, quit any other program that talks to the Roto-Control, such as a DAW with its Roto-Control integration."))
@@ -117,7 +120,8 @@ public enum SetupChecklist {
 
         if let name = status.launchControlName {
             if status.launchControlConnected {
-                steps.append(SetupStep(id: "launchcontrol", title: "\(name) connected", state: .done, detail: ""))
+                steps.append(SetupStep(id: "launchcontrol", title: "\(name) is connected", state: .done,
+                                       detail: "It is in DAW mode, and its controls work TotalMix FX."))
             } else if status.launchControlFound {
                 steps.append(SetupStep(id: "launchcontrol", title: "\(name) found, connecting", state: .waiting,
                                        detail: "If it stays here, quit any other program that uses its DAW ports, such as a DAW with its Launch Control integration."))
@@ -155,18 +159,32 @@ public enum SetupChecklist {
                              detail: needs + " Check TotalMix FX’s version in its About window.")
         }
         if parsed.supportsGlobalOSC {
-            return SetupStep(id: "version", title: "TotalMix FX has Global OSC", state: .done, detail: "")
+            return SetupStep(id: "version", title: "TotalMix FX \(text) has Global OSC", state: .done,
+                             detail: "Global OSC needs TotalMix FX 2.1 or later.")
         }
         return SetupStep(id: "version", title: "TotalMix FX \(text) is too old", state: .problem,
                          detail: needs + " Update it from RME’s website.")
     }
 
     /// The page the setup assistant opens at: the step `openFor` names if it is there (e.g., the
-    /// problem that opened the window), else the first step that is waiting or has a problem,
-    /// else the first page.
+    /// problem that opened the window), else the first step that is waiting or has a problem, else
+    /// the first one not done (e.g., the notes), else the first page.
     public static func startIndex(of steps: [SetupStep], openFor: String? = nil) -> Int {
         if let openFor, let index = steps.firstIndex(where: { $0.id == openFor }) { return index }
-        return steps.firstIndex { $0.state == .waiting || $0.state == .problem } ?? 0
+        return steps.firstIndex { $0.state == .waiting || $0.state == .problem }
+            ?? steps.firstIndex { $0.state != .done } ?? 0
+    }
+
+    /// The page Continue goes to from page `index`: the next step not done, since a done step needs
+    /// nothing from the user (Adam, 2026-11-02); `nil` when none is left. The marks across the top
+    /// still reach every step.
+    public static func nextIndex(after index: Int, in steps: [SetupStep]) -> Int? {
+        steps.indices.first { $0 > index && steps[$0].state != .done }
+    }
+
+    /// The page Back goes to from page `index`: the previous step not done; `nil` when none is.
+    public static func previousIndex(before index: Int, in steps: [SetupStep]) -> Int? {
+        steps.indices.last { $0 < index && steps[$0].state != .done }
     }
 
     /// Whether every step the surfaces need is done: TotalMix FX answering with its channels, the

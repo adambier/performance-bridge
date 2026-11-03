@@ -11,10 +11,10 @@
   from source".)
 
 Open **Performance Bridge** from the Applications folder. It runs in the menu bar, with no Dock icon. Its
-Setup Guide follows these steps one page at a time, with **Back** and **Continue**, and checks each one live
-where it can: whether TotalMix FX answers, whether it has sent its channels, whether meters arrive, and whether
+Setup Guide follows these steps one page at a time, with **Back** and **Continue**, which skip the steps already
+done, and checks each one live where it can: whether TotalMix FX answers, whether it has sent its channels, whether meters arrive, and whether
 the hardware controller is connected. The marks across its top show every step at a glance (green when done);
-click one to go to its page. It opens by itself the first time the app runs, at the first step not done; after
+click one to go to its page, done or not. It opens by itself the first time the app runs, at the first step not done; after
 that, choose **Setup Guide…** from the menu.
 
 ## Step 1: Turn on Global OSC in TotalMix FX

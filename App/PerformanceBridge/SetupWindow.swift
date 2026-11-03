@@ -142,14 +142,17 @@ struct SetupView: View {
         }
     }
 
-    /// Back, and Continue (Done on the last page), which is the default button.
+    /// Back, and Continue (Done when no step is left), which is the default button. Both skip the
+    /// steps that are done (Adam, 2026-11-02); the marks reach those.
     private func footer(_ steps: [SetupStep], index: Int) -> some View {
-        HStack {
-            Button("Back") { go(to: index - 1, in: steps) }
-                .disabled(index == 0)
+        let previous = SetupChecklist.previousIndex(before: index, in: steps)
+        let next = SetupChecklist.nextIndex(after: index, in: steps)
+        return HStack {
+            Button("Back") { if let previous { go(to: previous, in: steps) } }
+                .disabled(previous == nil)
             Spacer()
-            if index + 1 < steps.count {
-                Button("Continue") { go(to: index + 1, in: steps) }
+            if let next {
+                Button("Continue") { go(to: next, in: steps) }
                     .keyboardShortcut(.defaultAction)
             } else {
                 Button("Done") { Windows.close("setup") }
@@ -219,7 +222,7 @@ struct SetupView: View {
     /// A step's state in words, under its title.
     private func stateText(_ state: SetupStep.State) -> String {
         switch state {
-        case .done: return "Done"
+        case .done: return "Done: nothing to do here"
         case .waiting: return "Not done yet"
         case .problem: return "Needs attention"
         case .optional: return "Optional"

@@ -443,6 +443,23 @@ final class BridgeEngineTests: XCTestCase {
             XCTAssertNotNil(steps.first { $0.id == reason.stepID }, "\(reason) opens at a step that exists")
         }
         XCTAssertEqual(steps.map(\.id).suffix(4), ["livemode", "cue", "hide", "order"], "the notes come last, as their own pages")
+        // Continue and Back skip the steps that are done.
+        var answering = status
+        answering.totalMixAnswering = true
+        let skipping = SetupChecklist.steps(status: answering, settings: BridgeSettings(), totalMixRunning: true,
+                                            totalMixVersion: "2.10 (1)")
+        let ids = skipping.map(\.id)
+        let port = ids.firstIndex(of: "port")!, version = ids.firstIndex(of: "version")!
+        XCTAssertEqual(skipping[port].state, .done)
+        XCTAssertEqual(skipping[version].state, .done)
+        XCTAssertEqual(SetupChecklist.startIndex(of: skipping), ids.firstIndex(of: "channels"),
+                       "the first step not done: TotalMix FX answered, but no channels yet")
+        XCTAssertEqual(SetupChecklist.nextIndex(after: port, in: skipping), ids.firstIndex(of: "channels"),
+                       "Continue skips the version and TotalMix FX, both done")
+        XCTAssertNil(SetupChecklist.previousIndex(before: ids.firstIndex(of: "channels")!, in: skipping),
+                     "nothing before it to go back to")
+        XCTAssertNil(SetupChecklist.nextIndex(after: ids.count - 1, in: skipping), "Done on the last page")
+        XCTAssertFalse(skipping.contains { $0.state == .done && $0.detail.isEmpty }, "a done page says what was checked")
         status.launchControlName = "Launch Control XL 3"
         let withLaunchControl = SetupChecklist.steps(status: status, settings: BridgeSettings())
         XCTAssertEqual(withLaunchControl[SetupChecklist.startIndex(of: withLaunchControl,
@@ -461,7 +478,7 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertEqual(version(running: false, nil).state, .waiting)
         XCTAssertEqual(version(running: true, nil).state, .instruction)
         XCTAssertEqual(version(running: true, "2.10 (1)").state, .done)
-        XCTAssertEqual(version(running: true, "2.10 (1)").title, "TotalMix FX has Global OSC")
+        XCTAssertEqual(version(running: true, "2.10 (1)").title, "TotalMix FX 2.10 (1) has Global OSC")
         XCTAssertEqual(version(running: true, "2.1 RC1").state, .done)
         XCTAssertEqual(version(running: true, "1.96").state, .problem)
         XCTAssertEqual(version(running: false, "2.10", answering: true).state, .done, "an answer means it runs")
