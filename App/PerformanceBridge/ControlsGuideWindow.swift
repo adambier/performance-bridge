@@ -30,7 +30,7 @@ struct ControlsGuideView: View {
                 ForEach(ControlsGuide.common + guide.introduction, id: \.self) { paragraph($0) }
                 ForEach(guide.tables.indices, id: \.self) { table(guide.tables[$0]) }
                 if !guide.notes.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 12) {
                         ForEach(guide.notes, id: \.self) { note in
                             HStack(alignment: .firstTextBaseline, spacing: 6) {
                                 Text("•").foregroundStyle(.secondary)
