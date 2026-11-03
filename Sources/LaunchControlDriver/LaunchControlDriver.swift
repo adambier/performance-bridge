@@ -1033,17 +1033,17 @@ public struct LaunchControlDriver: Sendable {
         guard let button = button(layer, index) else { return [] }
         let info = infos[layer]?[index] ?? nil
         let on = switchOn[layer]?[index] ?? false
-        let colorIndex: UInt8
+        let light: LightColor
         if info == nil {
-            colorIndex = 0
+            light = .palette(0)
         } else if isPFLLayer(layer, hub: hub) {
-            colorIndex = on ? Self.pflOn : Self.pflOff
+            light = on ? .palette(Self.pflOn) : Self.pflOff
         } else if on {
-            colorIndex = hub.mirror.muteMaster == false && !blinkLit ? Self.muteOff : Self.muteOn
+            light = hub.mirror.muteMaster == false && !blinkLit ? Self.muteOff : .palette(Self.muteOn)
         } else {
-            colorIndex = Self.muteOff
+            light = Self.muteOff
         }
-        return color(button, colorIndex)
+        return color(button, light)
     }
 
     private func isPFLLayer(_ layer: Layer, hub: SurfaceHub) -> Bool {
@@ -1161,7 +1161,7 @@ public struct LaunchControlDriver: Sendable {
         // Lit bright yellow while the buttons are PFL, and also whenever a channel's PFL is on, so
         // a PFL left on after Function is released still shows (UI review of 2026-11-02).
         if layout == .lc3 {
-            bytes += color(Self.functionButton, buttonsArePFL || Self.anyPFL(hub) ? Self.pflOn : Self.functionIdle)
+            bytes += color(Self.functionButton, buttonsArePFL || Self.anyPFL(hub) ? .palette(Self.pflOn) : Self.functionIdle)
         }
         return bytes
     }
@@ -1214,6 +1214,18 @@ public struct LaunchControlDriver: Sendable {
         }
     }
 
+    /// The bytes that light `element` in `light` on `model`, as the driver sends them (e.g., for
+    /// tests).
+    public static func lightBytes(_ element: LaunchControlElement, _ light: LightColor,
+                                  model: LaunchControlModel = .xl3) -> [UInt8] {
+        switch light {
+        case .palette(let index):
+            return LaunchControlOutgoing.color(element, index) ?? []
+        case .rgb(let rgb):
+            return LaunchControlOutgoing.rgb(element, red: rgb.red, green: rgb.green, blue: rgb.blue, model: model) ?? []
+        }
+    }
+
     // MARK: - Text and colors
 
     /// The most characters a display field keeps: 20 (inference from the XL 3, test 5).
@@ -1222,17 +1234,19 @@ public struct LaunchControlDriver: Sendable {
     /// The label for a send: "> " and the output's name (AGENTS.md, house style).
     public static func sendLabel(_ name: String) -> String { "> " + name }
 
-    /// Palette colors for the buttons and the navigation lights. Mute is orange and PFL yellow on
-    /// every hardware controller, since the Roto-Control's firmware fixes those two and a host can
-    /// only turn them on or off (docs/ROTO-CONTROL.md, section 3); a button that is off shows the
-    /// dimmest shade of its color, so the two rows can still be told apart (Adam, 2026-11-02).
+    /// Colors for the buttons and the navigation lights. Mute is orange and PFL yellow on every
+    /// hardware controller, since the Roto-Control's firmware fixes those two and a host can only
+    /// turn them on or off (docs/ROTO-CONTROL.md, section 3); a button that is off shows a dim
+    /// shade of its color, so the two rows can still be told apart (Adam, 2026-11-02).
     /// The palette's first 40 colors have been seen to run as the guide's picture does
     /// (docs/LAUNCH-CONTROL-XL3.md, test 4), each hue a run of four from bright to dim: 5 red and
     /// 7 a darker red, 13 yellow and 15 a darker yellow, 3 white and 1 a dim grey; 9 orange and 11
     /// its dimmest (test 13).
     public static let muteOn: UInt8 = 9
-    /// A mute button that is off: the dimmest orange.
-    public static let muteOff: UInt8 = 11
+    /// A mute button that is off: orange by exact RGB, dimmer than the palette's dimmest orange
+    /// (11), so on and off differ more; chosen on the XL 3 with its LED brightness at 10 (Adam,
+    /// 2026-11-02; docs/LAUNCH-CONTROL-XL3.md, test 19).
+    public static let muteOff = LightColor.rgb(RGB(12, 4, 0))
     /// How a mute that is on while TotalMix FX's Mute Master is off shows: it flashes between bright
     /// and dim orange, `blinkPeriod` seconds each, drawn by the driver. The medium shade (10) was
     /// tried and was too close to the others to read, and the device has no flashing of its own
@@ -1240,13 +1254,14 @@ public struct LaunchControlDriver: Sendable {
     public static let blinkPeriod: Double = 0.5
     /// A PFL button that is on: yellow.
     public static let pflOn: UInt8 = 13
-    /// A PFL button that is off: the dimmest yellow.
-    public static let pflOff: UInt8 = 15
+    /// A PFL button that is off: yellow by exact RGB, dimmer than the palette's dimmest yellow (15),
+    /// chosen with `muteOff` (test 19).
+    public static let pflOff = LightColor.rgb(RGB(16, 11, 0))
     /// Page and Track where they would move: white.
     public static let navigationOn: UInt8 = 3
-    /// The Function button while the buttons are mute: the dimmest yellow, PFL's color when off,
-    /// as for any button that is off (Adam, 2026-11-02).
-    public static let functionIdle: UInt8 = 15
+    /// The Function button while the buttons are mute: PFL's color when off, as for any button that
+    /// is off (Adam, 2026-11-02).
+    public static let functionIdle = pflOff
     /// The hue of a send row whose output is left white in TotalMix FX: teal (33) for the top row,
     /// magenta (53) for the XL 3's middle row; neither is one of TotalMix FX's eight colors (Adam,
     /// 2026-11-02, from the Tier 3 review of that date). On the XL 3 both have been told apart from

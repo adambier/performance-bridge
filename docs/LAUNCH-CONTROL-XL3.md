@@ -78,6 +78,7 @@ seen").
 [^test-15]: Test 15 (2026-11-02), section [10](#test-15-2026-11-02-mute-master-shades-and-flashing).
 [^test-17]: Test 17 (2026-11-02), section [10](#test-17-2026-11-02-colors-and-brightness-for-101).
 [^test-18]: Test 18 (2026-11-02), section [10](#test-18-2026-11-02-the-101-build-in-the-app-and-two-adjustments).
+[^test-19]: Test 19 (2026-11-02), section [10](#test-19-2026-11-02-dimmer-off-buttons).
 [^tm-marks]: `docs/TOTALMIX-OSC.md`, test 18 (2026-11-01), the marks on TotalMix FX's faders.
 
 ## 2. MIDI ports
@@ -384,9 +385,10 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   with Shift held left the device's own value where it was.[^test-9]
 - **Buttons.** The top row is PFL (yellow) and the bottom row mute (orange), the colors the
   Roto-Control's firmware gives solo and mute, so every hardware controller shows them alike (Adam,
-  2026-11-02). A button that is off shows the dimmest shade of its color, so the two rows stay
-  recognizable (Adam, 2026-11-02). Orange's dimmest shade is index 11.[^test-13] The bright shades
-  have been observed to look as bright as full RGB values; more contrast is left to the device's own LED brightness setting.[^test-13] Solo/Arm and Mute/Select do nothing for now: in DAW mode
+  2026-11-02). A button that is off shows a dim shade of its color, so the two rows stay
+  recognizable (Adam, 2026-11-02): by exact RGB, yellow 16, 11, 0 and orange 12, 4, 0, dimmer than
+  the palette's dimmest shades (15 and 11), for more contrast with a button that is on.[^test-19]
+  The bright shades have been observed to look as bright as full RGB values.[^test-13] Solo/Arm and Mute/Select do nothing for now: in DAW mode
   the device leaves them to the host.[^test-6]
 - **Paging and views.** Track < and > move by eight strips, as the panel's labels say, and with
   Shift to the first or last page. (Novation's integrations move one track, and eight with Shift.
@@ -815,3 +817,17 @@ Phones 2 (yellow) on the middle. Seen by Adam.
   orange recognizable at their dimmest.
 - Everything else in the 1.0.1 build behaved as section 9 describes.
 
+### Test 19 (2026-11-02): dimmer off buttons
+
+**Setup.** Adam's XL 3 with its LED brightness setting at 10, `sbdev lcxl`
+(`lcxl-buttons-1102.log`). Seen by Adam.
+
+**Yellow, top buttons 1–5:** palette 13 (PFL on), palette 15 (PFL off until now), then RGB 16, 11, 0;
+10, 7, 0; and 7, 5, 0. Adam chose 16, 11, 0: the two dimmer ones were visible, highly so in the dark,
+but their yellow came close to the white of the button's translucent part.
+
+**Orange, bottom buttons 1–5:** palette 9 (mute on), palette 11 (mute off until now), then RGB 24, 8, 0;
+16, 5, 0; and 12, 4, 0. Adam chose 12, 4, 0.
+
+**Consequence.** A button that is off is drawn by exact RGB, yellow 16, 11, 0 and orange 12, 4, 0
+(1.0.2). Not tried: other LED brightness settings.
