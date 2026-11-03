@@ -12,7 +12,7 @@ statement there carries its evidence.
 | Item | Value |
 |---|---|
 | Repository | `adambier/performance-bridge` (GitHub), Swift package `performance-bridge` |
-| What it is | Performance Bridge, a macOS menu-bar app (released from GitHub Releases; 1.0.0, 1.0.1, and 1.0.2 on 2026-11-02, 1.0.3 next) that connects hardware control surfaces to RME TotalMix FX through its Global OSC interface, plus the libraries and developer tool behind it |
+| What it is | Performance Bridge, a macOS menu-bar app (released from GitHub Releases; 1.0.0 through 1.0.3 on 2026-11-02) that connects hardware control surfaces to RME TotalMix FX through its Global OSC interface, plus the libraries and developer tool behind it |
 | Surfaces | Melbourne Instruments Roto-Control first; Novation Launch Control XL 3 and Launch Control 3 second; Mackie Control (MCU) surfaces possibly later |
 | License | MIT (`LICENSE`); not affiliated with or endorsed by RME, Melbourne Instruments, or Novation |
 | Language, tooling | Swift, `swift-tools-version:5.9`; CI uses the `swift:6.0-noble` image on Linux, Swift 6.2 on Windows, and the runner's Xcode on macOS; XCTest |
@@ -83,7 +83,7 @@ small driver of its own.
   - Novation's [Launch Control XL 3 programmer's reference guide](https://userguides.novationmusic.com/hc/en-gb/articles/27840466285586-About-the-Launch-Control-XL-3-programmer-s-reference-guide).
 - **The app.** A SwiftUI app modeled on pgdata Packer's (`adambier/3rd-wave-tools`):
   - `make-app.sh` compiles every library folder and the app into one module with `swiftc` (not `sbdev`); CI type-checks that build on macOS;
-  - version 1.0.0 was the first release, and 1.0.1 and 1.0.2 followed (all 2026-11-02); 1.0.3 is next; the build number is the commit count; the update notes Sparkle shows are `hw-tests/release-notes-<version>.md`, which git ignores, so they live on the release signer's Mac;
+  - version 1.0.0 was the first release, and 1.0.1, 1.0.2, and 1.0.3 followed (all 2026-11-02); the build number is the commit count; the update notes Sparkle shows are `hw-tests/release-notes-<version>.md`, which git ignores, so they live on the release signer's Mac;
   - Sparkle 2.10.1 is pinned with its SHA-256, and the XPC services are removed;
   - the app is signed with a Developer ID, notarized, and updated through `appcast.xml` on `main`;
   - its icon and menu-bar glyph come from `Design/AppIcon/` (the About window shows the icon at 128 points); the icon's amber, #FFB13D, is the app's accent color, used only when the user's accent color is Multicolor, as Apple's HIG (Color) has it, and the user's own accent color otherwise (Adam, 2026-10-31);
