@@ -127,7 +127,7 @@ public enum SetupChecklist {
         if let name = status.launchControlName {
             if status.launchControlConnected {
                 steps.append(SetupStep(id: "launchcontrol", title: "\(name) is connected", state: .done,
-                                       detail: "It is in DAW mode, and its controls work TotalMix FX.",
+                                       detail: "It is in DAW mode, and it controls TotalMix FX.",
                                        instructions: "Connect the Launch Control by USB. If it doesn’t connect, quit any other program that uses its DAW ports, such as a DAW with its Launch Control integration."))
             } else if status.launchControlFound {
                 steps.append(SetupStep(id: "launchcontrol", title: "\(name) found, connecting", state: .waiting,
