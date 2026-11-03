@@ -107,7 +107,7 @@ public enum SetupChecklist {
 
         if status.muteMasterOff {
             steps.append(SetupStep(id: "mutemaster", title: "Mute Master is off in TotalMix FX", state: .problem,
-                                   detail: "While it’s off, mutes from the hardware controller only select a channel’s mute and don’t silence it. Turning on Mute Master immediately mutes all channels whose mutes are currently selected.\n\nIn TotalMix FX, turn on the “M” (Mute Master) button in the Control Strip, below the interface’s name and “undo”."))
+                                   detail: "While it’s off, a mute turned on from the hardware controller is only set and doesn’t silence the channel; TotalMix FX shows its M button partly lit. Turning on Mute Master immediately mutes every channel whose mute is set.\n\nIn TotalMix FX, turn on the “M” (Mute Master) button in the Control Strip, below the interface’s name and “undo”."))
         }
 
         let rotoBusy = "If it stays here, quit any other program that talks to the Roto-Control, such as a DAW with its Roto-Control integration."

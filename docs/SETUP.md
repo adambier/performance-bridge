@@ -69,9 +69,9 @@ Checked on screen with TotalMix FX "2.10 (1)" on a Mac (2026-10-31); the screens
    <img src="../App/PerformanceBridge/Resources/totalmix-control-strip.png" width="160" alt="TotalMix FX's Control Strip: the M, S, and F buttons, and the options panel with solo/pfl mode set to live">
 
    - **Mute Master.** Turn on the **M** button in the Control Strip, below the interface's name and "undo". While
-     it is off, a mute only selects the channel's mute and doesn't silence it ([`docs/TOTALMIX-OSC.md`](TOTALMIX-OSC.md), the global
-     mute recheck of 2026-10-31). Turning on Mute Master immediately mutes all channels whose mutes are currently
-     selected. Performance Bridge reads it: while it is off, the menu shows **Mute Master:
+     it is off, a mute is only set and doesn't silence the channel; TotalMix FX shows its M button partly lit
+     ([`docs/TOTALMIX-OSC.md`](TOTALMIX-OSC.md), the global mute recheck of 2026-10-31). Turning on Mute Master
+     immediately mutes every channel whose mute is set. Performance Bridge reads it: while it is off, the menu shows **Mute Master:
      Off**, the Setup Guide shows a warning, and on a Launch Control a mute that is on flashes.
    - **Live mode.** In the Control Strip, click **options** and, under **solo/pfl mode**, choose **live**. Without
      it, PFL from a hardware controller is accepted but has been observed to show nothing in TotalMix FX's window
