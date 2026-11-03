@@ -105,11 +105,15 @@ public enum SetupChecklist {
                                        : ""))
         }
 
-        let metersSetup = "For meters on the hardware controllers: in TotalMix FX, Options → Mixer Settings… (F3) → OSC, check “Send Level Data” for Performance Bridge’s OSC Controller.\n\nTotalMix FX sends levels only when they change, so play something to see them."
-        steps.append(status.levelsSeen
-            ? SetupStep(id: "meters", title: "Meter levels are arriving", state: .done,
-                        detail: "TotalMix FX is sending meter levels.", instructions: metersSetup)
-            : SetupStep(id: "meters", title: "No meters yet", state: .optional, detail: metersSetup))
+        let metersSetup = "For meters on the Roto-Control: in TotalMix FX, Options → Mixer Settings… (F3) → OSC, check “Send Level Data” for Performance Bridge’s OSC Controller.\n\nTotalMix FX sends levels only when they change, so play something to see them."
+        // Meters show only on the Roto-Control: the Launch Controls have none, so the step is left
+        // out for them (Adam, 2026-11-02).
+        if status.rotoEnabled {
+            steps.append(status.levelsSeen
+                ? SetupStep(id: "meters", title: "Meter levels are arriving", state: .done,
+                            detail: "TotalMix FX is sending meter levels.", instructions: metersSetup)
+                : SetupStep(id: "meters", title: "No meters yet", state: .optional, detail: metersSetup))
+        }
 
         if status.muteMasterOff {
             steps.append(SetupStep(id: "mutemaster", title: "Mute Master is off in TotalMix FX", state: .problem,

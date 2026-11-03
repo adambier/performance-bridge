@@ -12,7 +12,7 @@
 
 Open **Performance Bridge** from the Applications folder. It runs in the menu bar, with no Dock icon. Its
 Setup Guide follows these steps one page at a time, with **Back** and **Continue**, and checks each one live where
-it can: whether TotalMix FX answers, whether it has sent its channels, whether meters arrive, and whether
+it can: whether TotalMix FX answers, whether it has sent its channels, whether meters arrive (Roto-Control only), and whether
 the hardware controller is connected. The marks across its top show every step at a glance (green when done);
 click one to go to its page, done or not. A finished page can still show its setup instructions: click **Show
 Instructions**. It opens at the first step not done (or at the first note, once every check is done), by itself the first time the app runs; after
@@ -46,7 +46,7 @@ Checked on screen with TotalMix FX "2.10 (1)" on a Mac (2026-10-31); the screens
 
    <img src="../App/PerformanceBridge/Resources/totalmix-osc-tab.png" width="380" alt="Mixer Settings, OSC tab: controller 1 in use, ports 7001 and 9001, host localhost, Global OSC">
 
-6. In the OSC tab's **Options** group, check **Send Level Data** for meters on the hardware controllers and leave **Lock Remote
+6. In the OSC tab's **Options** group, check **Send Level Data** for meters on the Roto-Control (the Launch Controls have no meters) and leave **Lock Remote
    to Submix** off (Performance Bridge chooses submixes itself). The effect of **Number of faders per bank** on
    the app has not been tested.
 7. Click **Details**, which opens "Gobal OSC - Detailed Settings" (TotalMix FX's spelling), and check **Send

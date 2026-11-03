@@ -463,6 +463,10 @@ final class BridgeEngineTests: XCTestCase {
         status.launchControlName = "Launch Control XL 3"
         let withLaunchControl = SetupChecklist.steps(status: status, settings: BridgeSettings())
         XCTAssertTrue(withLaunchControl.first { $0.id == "hide" }!.detail.contains("send row"))
+        var launchControlOnly = status
+        launchControlOnly.rotoEnabled = false
+        XCTAssertNil(SetupChecklist.steps(status: launchControlOnly, settings: BridgeSettings()).first { $0.id == "meters" },
+                     "no meters step for a Launch Control: it shows no meters")
         XCTAssertEqual(withLaunchControl[SetupChecklist.startIndex(of: withLaunchControl,
                                                                    openFor: SetupWatch.Reason.launchControlNotConnecting.stepID)].id,
                        "launchcontrol", "a Launch Control problem opens at its step")
