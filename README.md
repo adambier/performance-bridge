@@ -14,7 +14,7 @@ Windows.
 
 Performance Bridge is not affiliated with or endorsed by RME, Melbourne Instruments, or Novation.
 
-To set it up, follow the in-app setup guide or preview it here: [`docs/SETUP.md`](docs/SETUP.md). A guide to controls may be found in the in-app Controls Guide or [`docs/SETUP.md`, Step 6](docs/SETUP.md#step-6-use-the-hardware-controllers).
+To set it up, follow the in-app setup guide or preview it here: [`docs/SETUP.md`](docs/SETUP.md). A guide to controls may be found in the in-app Controls Guide.
 
 ## Installing
 
