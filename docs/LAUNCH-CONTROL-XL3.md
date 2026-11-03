@@ -427,7 +427,8 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
     5.[^test-18] A color with two lit parts dims only until its smaller part reaches 5, so the part
     doesn't go dark first and change the hue: purple (16, 0, 127) stops at 5/16 of full and orange
     (127, 40, 0) at 5/40. At those dimmest values, purple (5, 0, 40) was seen as purple beside blue
-    (0, 0, 40), and orange (16, 5, 0) as orange beside red (16, 0, 0).[^test-18]
+    (0, 0, 40), "a bit close but distinguishable", and orange (16, 5, 0) as orange beside red
+    (16, 0, 0), "very different".[^test-18]
   - Palette yellow (13) looks greener on the encoders than on the buttons, so the encoders show
     yellow as 127, 85, 0, which matched the buttons' yellow best of those tried, with the setting on
     or off. Palette orange (9) matched as it is; orange's exact color with the setting on (127, 40,
@@ -791,8 +792,8 @@ Phones 2 (yellow) on the middle. Seen by Adam.
 - **Orange on the encoders.** Palette orange (9) matched the button's orange better than 127, 30, 0.
 - Several `sbdev` commands pasted at once lost some of them; one at a time worked.
 - **Two-part colors at their dimmest** (after the hue floor was added, `lcxl-101-hue-1102.log`):
-  purple at 5, 0, 40 looked purple beside blue at 0, 0, 40, and orange at 16, 5, 0 looked orange
-  beside red at 16, 0, 0.
+  purple at 5, 0, 40 looked purple beside blue at 0, 0, 40 ("a bit close but distinguishable"), and
+  orange at 16, 5, 0 looked orange beside red at 16, 0, 0 ("very different").
 
 **Consequence.**
 - The floor is 5.
