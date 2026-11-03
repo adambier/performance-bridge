@@ -3,6 +3,33 @@
     <channel>
         <title>Performance Bridge</title>
         <item>
+            <title>1.0.2</title>
+            <pubDate>Mon, 02 Nov 2026 21:14:37 -0800</pubDate>
+            <sparkle:version>318</sparkle:version>
+            <sparkle:shortVersionString>1.0.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[# Performance Bridge 1.0.2
+
+## New
+
+- **A new Setup Guide.** It shows one step per page, with Back and Continue, and a row of marks across the top for every step. It opens at the first step that isn't done. Every page has a screenshot of the window where the setting is, with the setting outlined. A finished page can still show its instructions: click **Show Instructions**.
+- **Performance Bridge finds your hardware controller.** If the controller chosen in Settings isn't plugged in and exactly one other is, Performance Bridge switches to it by itself. It stops once a controller has connected, or once you click Apply in Settings.
+- **The Novation button** on a Launch Control brings TotalMix FX to the front. Press it again to go back to the app you were in.
+- **Mute and PFL on a Launch Control** now say so on its screen ("Mute on", "PFL off", and so on), as well as on the button.
+- **Mutes flash while TotalMix FX's Mute Master is off,** on the Roto-Control as on a Launch Control. Such a mute is only set and doesn't silence the channel until Mute Master is turned on.
+- **Clearer buttons on a Launch Control.** A button that is off is dimmer than before, so on and off are easier to tell apart.
+
+## Changes
+
+- **Shift + turn on a send** (Launch Control) says on that encoder's screen how to bring the send back: release Shift, then Shift + turn again.
+- **Settings… → Connections:** the settings that Apply covers are boxed with its buttons, and the port fields are named as TotalMix FX names them.
+- **Settings… → Channel Layout:** the Outputs list shows only the outputs the send controls can feed, and a pencil appears beside a channel's name when the pointer is over it.
+- The meters step is shown only for the Roto-Control: the Launch Controls have no meters.
+
+]]></description>
+            <enclosure url="https://github.com/adambier/performance-bridge/releases/download/v1.0.2/Performance-Bridge-1.0.2.zip" length="5565646" type="application/octet-stream" sparkle:edSignature="5rKWqJotsIKQPlCroF/uI2wKeorica7ZqgILZBHGhPSDJHHN90inmxEA8FRwzmWtXxM2misuTw8aXFaxKFLeDA=="/>
+        </item>
+        <item>
             <title>1.0.1</title>
             <pubDate>Mon, 02 Nov 2026 16:02:35 -0800</pubDate>
             <sparkle:version>288</sparkle:version>
