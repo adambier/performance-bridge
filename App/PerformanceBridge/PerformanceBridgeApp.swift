@@ -576,6 +576,9 @@ struct MenuContent: View {
         Button("Refresh Channels from TotalMix FX") { model.engine.refresh() }
         Divider()
         Button("Setup Guide…") { model.showSetup() }
+        Button("Controls Guide…") {
+            Windows.show("controls", title: "Performance Bridge Controls Guide") { ControlsGuideView(model: model) }
+        }
         Button("About Performance Bridge") {
             Windows.show("about", title: "About Performance Bridge") { AboutView() }
         }

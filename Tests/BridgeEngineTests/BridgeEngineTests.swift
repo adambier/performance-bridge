@@ -493,6 +493,39 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertNil(D.switchTarget(chosen: .roto, found: [.roto, .launchControl(.lc3)]), "the chosen one is there")
     }
 
+    func testTheControlsGuideMatchesSetupMD() throws {
+        // The Controls Guide and docs/SETUP.md, Step 6, say the same (Adam, 2026-11-02).
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let file = try String(contentsOf: root.appendingPathComponent("docs/SETUP.md"), encoding: .utf8)
+        // Only Step 6, and each guide only in its own section of it.
+        func section(_ text: String, from start: String, to end: String) -> String {
+            guard let a = text.range(of: start) else { return "" }
+            let rest = text[a.upperBound...]
+            return String(rest[..<(rest.range(of: end)?.lowerBound ?? rest.endIndex)])
+        }
+        let step6 = section(file, from: "## Step 6:", to: "\n## ")
+        func flatten(_ text: String) -> String { text.split(whereSeparator: \.isWhitespace).joined(separator: " ") }
+        let common = flatten(String(step6[..<(step6.range(of: "### ")?.lowerBound ?? step6.endIndex)]))
+        for paragraph in ControlsGuide.common { XCTAssertTrue(common.contains(flatten(paragraph)), paragraph) }
+        var guides: [DetectedController] = [.roto, .launchControl(.xl3), .launchControl(.lc3)]
+        while let controller = guides.popLast() {
+            let guide = ControlsGuide.guide(for: controller)
+            let setup = section(step6, from: "### \(guide.title)\n", to: "\n### ")
+            XCTAssertFalse(setup.isEmpty, "\(guide.title): its section in Step 6")
+            let flat = flatten(setup)
+            for table in guide.tables {
+                XCTAssertTrue(setup.contains("| \(table.controlHeading) | \(table.actionHeading) |"), table.controlHeading)
+                for row in table.rows {
+                    XCTAssertTrue(setup.contains("| \(row.control) | \(row.action) |"), "\(guide.title): \(row.control)")
+                }
+            }
+            for paragraph in guide.introduction + guide.notes {
+                XCTAssertTrue(flat.contains(flatten(paragraph)), "\(guide.title): \(paragraph)")
+            }
+        }
+    }
+
     func testDoneStepsKeepTheirInstructions() {
         var status = BridgeStatus()
         status.listening = true

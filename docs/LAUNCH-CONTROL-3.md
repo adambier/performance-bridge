@@ -151,8 +151,8 @@ reasoning that has not been checked, the text says so in words ("inference", "no
   - Mode enters mode selection, where the 8 buttons choose a mode; the current one is lit white.
   - Mode and Function together cycle between DAW Control and DAW Mixer.
   - In DAW modes, Function changes what the 8 buttons control (Solo, Arm, Mute, or Select in
-    Novation's DAW integrations).[^ug-top][^ug-buttons][^bitwig-help] Whether Function has an LED
-    is not in Novation's documents; Bitwig's code lights 66 (inference).
+    Novation's DAW integrations).[^ug-top][^ug-buttons][^bitwig-help] Function has an LED (Adam,
+    2026-11-02); Novation's documents don't say so, and Bitwig's code lights 66.
   - On the XL 3, choosing a DAW mode on the device changed nothing it sends and was left to the
     host.[^xl3-test6] That the Launch Control 3 behaves the same is an inference.
 - **Relative encoders.** Feature controls 69 (top row) and 72 (bottom row), 127 on and 0 off. In
@@ -171,8 +171,8 @@ reasoning that has not been checked, the text says so in words ("inference", "no
 - **Palette colors** by Control Change on channel 1, with the control's number; **RGB** by SysEx
   01h 53h; Shift takes no color. For RGB, encoder LEDs take their absolute numbers in either
   encoder mode; for palette colors that is an inference.[^prg-coloring][^prg-rgb] The palette
-  picture is the same image as the XL 3 guide's (identical files, compared 2026-11-01); that the
-  device shows those colors is an inference.
+  picture is the same image as the XL 3 guide's (identical files, compared 2026-11-01), and the device is taken to show
+  colors as the XL 3 does (Adam, 2026-11-02); not yet seen on a Launch Control 3.
 - **The screen** works as the XL 3's: configure a display (SysEx 04h), then fill its text fields
   (SysEx 06h), with the same four arrangements and the same character set, or send a bitmap
   (SysEx 09h).[^prg-screen] The XL 3's tests of field lengths and layout[^xl3-test5] are taken to
@@ -244,14 +244,13 @@ by Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   `LAUNCH-CONTROL-XL3.md`, section 9).
 - **Buttons.** Mute, and PFL while Function is held (Adam, 2026-11-02, from the review of that date:
   a toggle could leave the buttons on PFL by mistake on stage). The buttons are orange for mute and
-  yellow for PFL, Function rests dim yellow and lights bright yellow while they are on PFL (if it
-  has an LED, section 4), and the
+  yellow for PFL, Function rests dim yellow and lights bright yellow while they are on PFL, and the
   screen names the change. Function also stays bright yellow, and the home screen reads "PFL on,
   buttons Mute", while any channel's PFL is on, so a PFL left on after Function is released still
   shows (Adam, 2026-11-02, from the UI review of that date). This needs Function to send its release, as the XL 3's buttons do
   (XL 3 test 1; for the Launch Control 3, an inference). A button that is off, and Function at
-  rest, show an exact-RGB dim shade (XL 3 test 19); that the Launch Control 3's buttons take it too
-  is an inference.
+  rest, show an exact-RGB dim shade (XL 3 test 19), taken to look as on the XL 3 (Adam,
+  2026-11-02).
 - **Paging.** Track < and > move by eight strips, and with Shift to the first or last
   page.[^xl3-use] The strips always show the channels, never the outputs.
 - **Mute and PFL presses** show on the overlay, as on the XL 3 (Adam, 2026-11-02).
@@ -273,7 +272,7 @@ by Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   full at the top of the travel to dim at the bottom and dark at −oo; pan keeps full brightness.
   Here the level row has lights, so the levels themselves dim, which the XL 3's faders can't. The
   curve, the floor, and the encoders' yellow (127, 85, 0) were set on the XL 3 (its tests 17 and
-  18); that the Launch Control 3's LEDs need the same is an inference.
+  18) and are taken to suit the Launch Control 3's LEDs too (Adam, 2026-11-02).
 - **Simulation on an XL 3.** The driver can run the Launch Control 3's layout on an XL 3: the top
   two encoder rows, the top button row, Page, Track, Shift, and Mute/Select as Function (the same
   number, 66). The faders, the bottom encoder row, the bottom button row, Solo/Arm, Record, and
