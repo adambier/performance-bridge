@@ -497,7 +497,9 @@ final class BridgeEngineTests: XCTestCase {
         // The Controls Guide and docs/SETUP.md, Step 6, say the same (Adam, 2026-11-02).
         let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
             .deletingLastPathComponent()
+        // Windows checks files out with CRLF line endings.
         let file = try String(contentsOf: root.appendingPathComponent("docs/SETUP.md"), encoding: .utf8)
+            .replacingOccurrences(of: "\r\n", with: "\n")
         // Only Step 6, and each guide only in its own section of it.
         func section(_ text: String, from start: String, to end: String) -> String {
             guard let a = text.range(of: start) else { return "" }
