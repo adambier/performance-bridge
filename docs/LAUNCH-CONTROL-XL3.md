@@ -386,7 +386,7 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
 - **Buttons.** The top row is PFL (yellow) and the bottom row mute (orange), the colors the
   Roto-Control's firmware gives solo and mute, so every hardware controller shows them alike (Adam,
   2026-11-02). A button that is off shows a dim shade of its color, so the two rows stay
-  recognizable (Adam, 2026-11-02): by exact RGB, yellow 16, 11, 0 and orange 12, 4, 0, dimmer than
+  recognizable (Adam, 2026-11-02): by exact RGB, yellow 10, 7, 0 and orange 12, 4, 0, dimmer than
   the palette's dimmest shades (15 and 11), for more contrast with a button that is on.[^test-19]
   The bright shades have been observed to look as bright as full RGB values.[^test-13] Solo/Arm and Mute/Select do nothing for now: in DAW mode
   the device leaves them to the host.[^test-6]
@@ -824,10 +824,11 @@ Phones 2 (yellow) on the middle. Seen by Adam.
 
 **Yellow, top buttons 1–5:** palette 13 (PFL on), palette 15 (PFL off until now), then RGB 16, 11, 0;
 10, 7, 0; and 7, 5, 0. Adam chose 16, 11, 0: the two dimmer ones were visible, highly so in the dark,
-but their yellow came close to the white of the button's translucent part.
+but their yellow came close to the white of the button's translucent part. After seeing orange,
+Adam made yellow one step dimmer: 10, 7, 0.
 
 **Orange, bottom buttons 1–5:** palette 9 (mute on), palette 11 (mute off until now), then RGB 24, 8, 0;
 16, 5, 0; and 12, 4, 0. Adam chose 12, 4, 0.
 
-**Consequence.** A button that is off is drawn by exact RGB, yellow 16, 11, 0 and orange 12, 4, 0
+**Consequence.** A button that is off is drawn by exact RGB, yellow 10, 7, 0 and orange 12, 4, 0
 (1.0.2). Not tried: other LED brightness settings.

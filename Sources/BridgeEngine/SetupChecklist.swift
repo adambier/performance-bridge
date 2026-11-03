@@ -96,7 +96,8 @@ public enum SetupChecklist {
 
         if status.channelCount > 0 {
             steps.append(SetupStep(id: "channels", title: "TotalMix FX has sent its channels", state: .done,
-                                   detail: "Performance Bridge has detected \(status.channelCount) TotalMix FX channels. Channels hidden from its OSC Controller aren’t detected."))
+                                   detail: "Performance Bridge has detected \(status.channelCount) TotalMix FX channels. Channels hidden from its OSC Controller aren’t detected.",
+                                   instructions: "After hiding or showing a channel in TotalMix FX, choose Refresh Channels from TotalMix FX from Performance Bridge’s menu, since TotalMix FX doesn’t announce the change."))
         } else {
             steps.append(SetupStep(id: "channels", title: "TotalMix FX hasn’t sent its channels yet",
                                    state: .waiting,
