@@ -46,7 +46,7 @@ struct LayoutView: View {
             // The hardware controllers show only the sources; the outputs' order is the order the
             // send controls step through them (Adam, 2026-11-01).
             Text(view == .outputs
-                 ? "Drag to set the order the send controls step through the outputs. Click a name to give it a label for the hardware controllers. Main Out, Main Out B, and the cue output aren’t listed, since the sends don’t reach them."
+                 ? "Drag to set the order the send controls step through the outputs. Click a name to give it a label for the hardware controllers. Main Out, Main Out B, and an output used only for cue aren’t listed, since the sends don’t reach them."
                  : "Drag to reorder. Click a name to give it a label for the hardware controllers.")
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -168,7 +168,11 @@ struct LayoutView: View {
         if isMonitoring { first.move(fromOffsets: source, toOffset: destination) }
         else { rest.move(fromOffsets: source, toOffset: destination) }
         items = first + rest
-        model.engine.setLayout(model.engine.layout.withOrder(view, items.map(\.channel)))
+        // The outputs list shows only the send targets: the outputs it leaves out (Main Out, Main
+        // Out B, and so on) keep their places, so the saved order matches TotalMix FX's whenever
+        // the listed ones do.
+        let all = model.engine.layoutItems(view).map(\.channel)
+        model.engine.setLayout(model.engine.layout.withOrder(view, items.map(\.channel), among: all))
         isTotalMixOrder = model.engine.isTotalMixOrder(view)
     }
 

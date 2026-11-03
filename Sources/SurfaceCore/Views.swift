@@ -99,6 +99,17 @@ public struct PerformanceLayout: Hashable, Codable, Sendable {
         return layout
     }
 
+    /// This layout with some of a view's channels reordered: `shown`, in their new order, take the
+    /// places they had among `all` (the whole view, in its current order), and every other channel
+    /// keeps its place. The layout editor uses it where it lists only part of a view (e.g., only the
+    /// send targets among the outputs; UI review of 2026-11-02), so the order it saves still matches
+    /// TotalMix FX's whenever the listed channels do.
+    public func withOrder(_ view: ViewKind, _ shown: [ChannelRef], among all: [ChannelRef]) -> PerformanceLayout {
+        let listed = Set(shown)
+        var reordered = shown.makeIterator()
+        return withOrder(view, all.map { listed.contains($0) ? (reordered.next() ?? $0) : $0 })
+    }
+
     /// Whether a view shows its channels in TotalMix FX's own order, as it would with no order set
     /// (e.g., after Restore TotalMix FX Order, or with an order that puts them back where TotalMix FX
     /// has them).

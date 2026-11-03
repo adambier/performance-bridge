@@ -147,8 +147,8 @@ One more line appears only while TotalMix FX's Mute Master is off (Step 1, item 
 
 ### The menu-bar icon
 
-The Setup Guide also opens by itself, at most once per launch, for a problem that has never worked with
-the current settings: the port in use; TotalMix FX running but not answering for 30 seconds; or the
+The Setup Guide also opens by itself, at most once per launch and at that problem's step, for a problem
+that has never worked with the current settings: the port in use; TotalMix FX running but not answering for 30 seconds; or the
 hardware controller plugged in but not connected after 15 seconds. A hardware controller that isn't
 plugged in, or TotalMix FX not running, never opens it.
 
@@ -176,17 +176,18 @@ Choose **Settings…** from the menu and open the **Channel Layout** tab.
 - **Sources** are the channels the hardware controllers show. Drag a channel to change its place on them.
 - **Playbacks start on a new page**, under the Sources list, puts the first playback at the start of a new
   page of strips, after blank strips that fill the inputs' last page.
-- **Outputs** are the outputs the send controls can feed (Step 6); Main Out, Main Out B, and the cue output
-  aren't listed, since the sends don't reach them. Their order is the order you step through
+- **Outputs** are the outputs the send controls can feed (Step 6); Main Out, Main Out B, and an output used only for
+  cue aren't listed, since the sends don't reach them. Their order is the order you step through
   them on the hardware controllers. The **Control Room** outputs (those assigned in TotalMix FX's control room:
   Phones, and so on) and the **Hardware Outputs** are ordered in their own sections, since control room outputs
   always come first.
-- Click a channel's name (each row has a pencil at its end) to give it a **label** for the hardware controllers, e.g., a short name for mixing. The label shows only on the hardware controllers; TotalMix FX keeps its own name, shown dimmed beside the label. Clear the label to go back to that name. A playback without a label shows as "PB 1/2" and so on, since an unnamed playback otherwise has its output's hardware name, which can be the same as an input's.
+- Click a channel's name (each row has a pencil at its end) to give it a **label** for the hardware controllers, e.g., a short name for mixing. The label shows only on the hardware controllers; the name the strip would show without it (TotalMix FX's name, or "PB 1/2" and so on for a playback) is shown dimmed beside the label. Clear the label to go back to that name. A playback without a label shows as "PB 1/2" and so on, since an unnamed playback otherwise has its output's hardware name, which can be the same as an input's.
 - The order and the labels are kept when Performance Bridge restarts.
 - **Restore TotalMix FX Order** puts the view back in TotalMix FX's order. It is dimmed when the order is already TotalMix FX's.
 - To take a channel off the hardware controllers, hide it in TotalMix FX (Step 2). The layout has no hide setting of its own.
-- Set channel colors in TotalMix FX's own Channel Layout window (Step 2). Give each headphone output its own color: a
-  Launch Control's send rows light in their output's color, so the rows can be told apart at a glance.
+- Set channel colors in TotalMix FX's own Channel Layout window (Step 2). With a Launch Control, give each output its send
+  rows feed (e.g., each headphone output) a color of its own: a send row lights in its output's color, so the color
+  shows which output it feeds.
 - The note at the bottom repeats the rule for channels hidden in TotalMix FX.
 
 ## Step 6: Use the hardware controllers
@@ -217,7 +218,7 @@ the main mix) and the cue output (PFL uses it).
 | **Track >** / **Track <** | Show the next or previous eight channels. With **Shift**: the last or first eight. |
 | **Page ▼** / **Page ▲** | Change the output the **top** encoder row feeds, to the next or previous one in the Outputs list. |
 | **Shift + Page ▼** / **▲** | The same for the **middle** encoder row. |
-| **Shift + turn an encoder** | Reset it: a pan to the center, a send to −oo (the screen says "Shift+turn: restore": release Shift, then Shift + turn it again to bring it back). Hold Shift for a moment (0.3 s) first; after Page or Track in the same hold, turning does nothing. |
+| **Shift + turn an encoder** | Reset it: a pan to the center, a send to −oo (release Shift, then Shift + turn it again to bring it back). Hold Shift for a moment (0.3 s) first; after Page or Track in the same hold, turning does nothing. |
 
 - The two send rows never feed the same output: stepping one skips the output the other has.
 - The screen shows the channels on the page, counted in the order of **Settings… → Channel Layout** with a stereo pair
@@ -254,7 +255,7 @@ the page, the top row's function (e.g., "Top: Pan"), and the buttons' ("Buttons:
 Each of the eight knobs is a channel. Hold **SEL** to choose what the knobs control (Volume, Pan, or a send, "FX")
 and what the switches do (Mute or Solo; Solo is PFL here). The < and > buttons page through the channels. Pressing
 both arrow buttons together switches the Roto-Control to its second track set ("MIX-RTN" on its screen), which shows
-the same channels. (On a Launch Control, both Track buttons together go to the first page instead.)
+the same channels.
 
 ## If something does not work
 

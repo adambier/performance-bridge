@@ -239,6 +239,7 @@ final class LaunchControlDriverTests: XCTestCase {
         let release = driver.receive([0xB0, 0x42, 0x00], hub: &hub, now: 5.5)
         XCTAssertFalse(driver.buttonsArePFL, "PFL only while Function is held")
         XCTAssertEqual(hub.strips(of: driver.id(.row1))?[0].switchTarget, .mute(keys))
+        XCTAssertTrue(LaunchControlDriver.anyPFL(hub), "Keys's PFL is on")
         XCTAssertFalse(release.midi.contains([0xB0, 0x42, LaunchControlDriver.functionIdle]),
                        "Keys's PFL is still on, so Function stays lit (UI review of 2026-11-02)")
         let level = driver.receive([0xBF, 0x15, 127], hub: &hub, now: 6)
@@ -481,6 +482,8 @@ final class LaunchControlDriverTests: XCTestCase {
         var (driver, hub, _) = connected(layout: .xl3)
         _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 1)
         let reset = driver.receive([0xBE, 0x0D, 0x7F], hub: &hub, now: 1.4)
+        XCTAssertFalse(reset.core.messages.isEmpty, "the send goes to -oo")
+        XCTAssertTrue(reset.midi.contains(LaunchControlOutgoing.text(.overlay, field: 0, "Send off (-oo)") ?? [1]))
         XCTAssertTrue(reset.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, "Shift+turn: restore") ?? [1]))
         _ = driver.receive([0xB6, 0x3F, 0x00], hub: &hub, now: 2)
         _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 3)
@@ -490,8 +493,9 @@ final class LaunchControlDriverTests: XCTestCase {
         _ = driver.receive([0xB6, 0x3F, 0x00], hub: &hub, now: 4)
         _ = driver.receive([0xBF, 0x1D, 127], hub: &hub, now: 4.1)
         _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 5)
-        XCTAssertFalse(driver.receive([0xBE, 0x1D, 0x7F], hub: &hub, now: 5.4).midi.contains(
-            LaunchControlOutgoing.text(.overlay, field: 1, "Shift+turn: restore") ?? [1]))
+        let panReset = driver.receive([0xBE, 0x1D, 0x7F], hub: &hub, now: 5.4)
+        XCTAssertFalse(panReset.core.messages.isEmpty, "the pan goes to the center")
+        XCTAssertFalse(panReset.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, "Shift+turn: restore") ?? [1]))
     }
 
     func testEncodersShowTheButtonsYellow() {

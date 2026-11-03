@@ -288,6 +288,10 @@ final class BridgeModel: ObservableObject {
         watchTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.checkSetup() }
         }
+        // Once now, so the Setup Guide's first page knows whether TotalMix FX is running: the timer
+        // first fires after the window has opened (review of 1.0.2). No status has come from the
+        // engine yet, so only a TotalMix FX older than 2.1 can be reported now.
+        checkSetup()
         // The setup window opens by itself the first time the app runs; later, from the menu.
         if !UserDefaults.standard.bool(forKey: Self.setupShownKey) {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
@@ -373,6 +377,8 @@ final class BridgeModel: ObservableObject {
     /// Opens the setup window, at the step `openFor` names (e.g., a problem's), or at the first
     /// step that isn't done.
     func showSetup(openFor: String? = nil) {
+        // From the menu, an open guide stays on its page; a problem opens at its step.
+        if openFor == nil, Windows.front("setup") { return }
         Windows.show("setup", title: "Performance Bridge Setup Guide") { SetupView(model: self, openFor: openFor) }
     }
 

@@ -174,7 +174,7 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertEqual(steps["meters"], .optional)
         XCTAssertEqual(steps["roto"], .waiting)
         XCTAssertEqual(steps["hide"], .instruction)
-        XCTAssertEqual(steps["order"], .instruction)
+        XCTAssertEqual(steps["order"], .optional)
         XCTAssertFalse(SetupChecklist.isComplete(status))
     }
 
@@ -443,6 +443,11 @@ final class BridgeEngineTests: XCTestCase {
             XCTAssertNotNil(steps.first { $0.id == reason.stepID }, "\(reason) opens at a step that exists")
         }
         XCTAssertEqual(steps.map(\.id).suffix(4), ["livemode", "cue", "hide", "order"], "the notes come last, as their own pages")
+        status.launchControlName = "Launch Control XL 3"
+        let withLaunchControl = SetupChecklist.steps(status: status, settings: BridgeSettings())
+        XCTAssertEqual(withLaunchControl[SetupChecklist.startIndex(of: withLaunchControl,
+                                                                   openFor: SetupWatch.Reason.launchControlNotConnecting.stepID)].id,
+                       "launchcontrol", "a Launch Control problem opens at its step")
     }
 
     func testSetupChecklistVersionStep() {

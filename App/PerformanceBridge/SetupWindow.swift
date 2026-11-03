@@ -22,6 +22,9 @@ struct SetupView: View {
     /// The step on show, by its id, so the page stays put when steps come and go (e.g., Mute
     /// Master's).
     @State private var pageID: String?
+    /// Where the page on show was, so that if its step goes away (e.g., Mute Master's, once it is
+    /// on) the assistant stays at the same place instead of jumping (review of 1.0.2).
+    @State private var lastIndex: Int?
 
     /// Screenshots of TotalMix FX for a step, shown on its page. They are from TotalMix FX
     /// "2.10 (1)" on a Mac (Adam, 2026-10-31), published with his permission; TotalMix FX's
@@ -46,13 +49,21 @@ struct SetupView: View {
     private var index: Int {
         let steps = self.steps
         if let pageID, let index = steps.firstIndex(where: { $0.id == pageID }) { return index }
+        if let lastIndex { return min(lastIndex, max(steps.count - 1, 0)) }
         return SetupChecklist.startIndex(of: steps, openFor: openFor)
     }
 
     /// The most the page may take: the screen's height, less room for the title, the marks, the
     /// buttons, and the Dock.
     private var maxPageHeight: CGFloat {
-        ((NSScreen.main?.visibleFrame.height ?? 800) - 240).clamped(to: 300...900)
+        ((NSScreen.main?.visibleFrame.height ?? 800) - 240).clamped(to: 300...560)
+    }
+
+    /// Shows step `i`.
+    private func go(to i: Int, in steps: [SetupStep]) {
+        guard steps.indices.contains(i) else { return }
+        pageID = steps[i].id
+        lastIndex = i
     }
 
     var body: some View {
@@ -67,7 +78,7 @@ struct SetupView: View {
                         .padding(.trailing, 12)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .frame(height: maxPageHeight.clamped(to: 300...560))
+                .frame(height: maxPageHeight)
             }
             Divider()
             footer(steps, index: index)
@@ -75,7 +86,7 @@ struct SetupView: View {
         .padding(20)
         .frame(width: Self.width + 40)
         .fixedSize(horizontal: false, vertical: true)
-        .onAppear { if pageID == nil, steps.indices.contains(index) { pageID = steps[index].id } }
+        .onAppear { if pageID == nil { go(to: index, in: steps) } }
     }
 
     // MARK: - Parts
@@ -90,12 +101,13 @@ struct SetupView: View {
                 .fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 8) {
                 ForEach(steps.indices, id: \.self) { i in
-                    Button { pageID = steps[i].id } label: {
+                    Button { go(to: i, in: steps) } label: {
                         mark(steps[i].state, current: i == index)
                     }
                     .buttonStyle(.plain)
                     .help(steps[i].title)
-                    .accessibilityLabel("Step \(i + 1): \(steps[i].title)")
+                    .accessibilityLabel("Step \(i + 1): \(steps[i].title), \(stateText(steps[i].state))")
+                    .accessibilityAddTraits(i == index ? .isSelected : [])
                 }
                 Spacer()
                 Text("Step \(index + 1) of \(steps.count)")
@@ -133,11 +145,11 @@ struct SetupView: View {
     /// Back, and Continue (Done on the last page), which is the default button.
     private func footer(_ steps: [SetupStep], index: Int) -> some View {
         HStack {
-            Button("Back") { if index > 0 { pageID = steps[index - 1].id } }
+            Button("Back") { go(to: index - 1, in: steps) }
                 .disabled(index == 0)
             Spacer()
             if index + 1 < steps.count {
-                Button("Continue") { pageID = steps[index + 1].id }
+                Button("Continue") { go(to: index + 1, in: steps) }
                     .keyboardShortcut(.defaultAction)
             } else {
                 Button("Done") { Windows.close("setup") }

@@ -41,6 +41,15 @@ enum Windows {
         window.makeKeyAndOrderFront(nil)
     }
 
+    /// Brings the window named `id` forward if it is on screen, keeping its content, and says
+    /// whether it was (e.g., Setup Guide… from the menu keeps the page the guide is on).
+    static func front(_ id: String) -> Bool {
+        guard let window = open[id], window.isVisible else { return false }
+        NSApplication.shared.activate(ignoringOtherApps: true)
+        window.makeKeyAndOrderFront(nil)
+        return true
+    }
+
     /// Sets the title of the window named `id`, if it is open.
     static func setTitle(_ id: String, _ title: String) {
         open[id]?.title = title
@@ -230,7 +239,7 @@ struct SettingsView: View {
                 portRow("Port (incoming)", value: $edited.incomingPort, override: model.portOverrides.incoming)
                 portRow("Port (outgoing)", value: $edited.outgoingPort, override: model.portOverrides.outgoing)
             }
-            note("The computer that runs TotalMix FX, and the ports of the OSC Controller set up for Performance Bridge. Use the same values as TotalMix FX: Options → Mixer Settings… → OSC, with “Compatibility (Mode)” set to “Global OSC”.")
+            note("The computer that runs TotalMix FX and the ports of the OSC Controller set up for Performance Bridge. Use the same ports as TotalMix FX: Options → Mixer Settings… → OSC, with “Compatibility (Mode)” set to “Global OSC”.")
 
             Divider()
                 .padding(.vertical, 4)

@@ -261,7 +261,7 @@ by Adam (Adam asked for its efficiency and intuitiveness to be assessed).
 - **Screen and colors.** As on the XL 3:[^xl3-use] each encoder's display shows its channel, what
   it does, and the value; the encoders show their channel's color. The home
   screen shows the channels on the page, the top row's function ("Top: Pan" or "Top > Phones 1"),
-  and the buttons' ("Buttons: Mute" or "Buttons: PFL").
+  and the buttons' ("Buttons: Mute" or "Buttons: PFL", or "PFL on, buttons Mute" while a channel's PFL is on with the buttons on mute).
 - **Level by brightness.** As on the XL 3 (an off-by-default setting; Adam, 2026-11-02):[^xl3-use]
   the level encoders, and the top row when it is a send, dim continuously with their level, from
   full at the top of the travel to dim at the bottom and dark at −oo; pan keeps full brightness.

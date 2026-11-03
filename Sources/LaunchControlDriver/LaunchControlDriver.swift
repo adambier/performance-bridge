@@ -1072,7 +1072,8 @@ public struct LaunchControlDriver: Sendable {
     /// The stationary display (the home screen): what is on the page (`pageTitle`), then what isn't shown
     /// anywhere else on the device (Adam, 2026-11-01). XL 3: where each send row goes ("Top >
     /// Phones 1", "Mid > ADI-2 3/4"). Launch Control 3: the top row ("Top: Pan" or "Top > Phones 1")
-    /// and the buttons ("Buttons: Mute" or "Buttons: PFL"). Each strip's own name shows on its
+    /// and the buttons ("Buttons: Mute" or "Buttons: PFL", or "PFL on, buttons Mute" while a channel's
+    /// PFL is on with the buttons on mute). Each strip's own name shows on its
     /// control's display when the control moves. (Four-letter names in two rows of four were tried
     /// first and were unreadable; docs/LAUNCH-CONTROL-XL3.md, test 5.)
     func stationaryLines(hub: SurfaceHub) -> [String] {
@@ -1143,8 +1144,9 @@ public struct LaunchControlDriver: Sendable {
     }
 
     /// Shows two lines on the overlay (a temporary display not tied to a control), e.g., after
-    /// Function or Page. That the overlay comes up with SysEx 04h 7Fh, as other displays do, is
-    /// an inference (not yet tried on the device).
+    /// Function or Page. It has been seen after a button press (docs/LAUNCH-CONTROL-XL3.md, test
+    /// 16); after an encoder turn (Shift + turn on a send), where the encoder's own display may
+    /// cover it, not yet (section 8, item 13).
     private mutating func overlay(_ first: String, _ second: String, _ third: String? = nil) -> [UInt8] {
         guard connected else { return [] }
         var bytes = configure(.overlay, third == nil ? .nameAndValue : .titleNameAndValue, quiet: false)

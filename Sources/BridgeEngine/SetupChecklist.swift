@@ -57,7 +57,7 @@ public enum SetupChecklist {
                         state: .done, detail: "")
             : SetupStep(id: "port", title: "Port \(outgoing) is in use",
                         state: .problem,
-                        detail: "Another program is using port \(outgoing), the port TotalMix FX sends to. Quit it (for example, another OSC remote, or a developer tool left running).\n\nPerformance Bridge keeps trying."))
+                        detail: "Another program is using port \(outgoing), the port TotalMix FX sends to. Quit it (for example, another OSC remote or a developer tool left running).\n\nPerformance Bridge keeps trying."))
 
         steps.append(versionStep(status: status, running: totalMixRunning, version: totalMixVersion))
 
@@ -135,8 +135,8 @@ public enum SetupChecklist {
                                detail: "TotalMix FX sends PFL to Main by default, so PFL from a hardware controller replaces what Main Out plays: on stage, the audience hears only the channel being checked. Performance Bridge can’t check this setting.\n\nIn TotalMix FX’s Control Room section, click “assign”, then “Cue/PFL to”, and choose a headphone output (e.g., “Phones 1”)."))
 
         steps.append(SetupStep(id: "hide", title: "Hide channels in TotalMix FX", state: .instruction,
-                               detail: "Hide and show channels in TotalMix FX: choose Options → Channel Layout…, or right-click the channel and choose Change Channel Layout. Under “Hide Channel in”, check or uncheck the box for Performance Bridge’s OSC Controller.\n\nChannel colors can be set in the same window. Give each headphone output its own color: a Launch Control’s send rows light in their output’s color, so the rows can be told apart at a glance."))
-        steps.append(SetupStep(id: "order", title: "Set the order of the channels", state: .instruction,
+                               detail: "Hide and show channels in TotalMix FX: choose Options → Channel Layout…, or right-click the channel and choose Change Channel Layout. Under “Hide Channel in”, check or uncheck the box for Performance Bridge’s OSC Controller.\n\nChannel colors can be set in the same window. With a Launch Control, give each output its send rows feed (e.g., each headphone output) a color of its own: a send row lights in its output’s color, so the color shows which output it feeds."))
+        steps.append(SetupStep(id: "order", title: "Set the order of the channels", state: .optional,
                                detail: "Set the order of the channels, and give them short labels for the hardware controllers, on the Channel Layout tab of Performance Bridge’s Settings."))
         return steps
     }
@@ -152,7 +152,7 @@ public enum SetupChecklist {
         }
         guard let text = version, let parsed = TotalMixVersion(text) else {
             return SetupStep(id: "version", title: "TotalMix FX’s version couldn’t be read", state: .instruction,
-                             detail: needs + " Check it in TotalMix FX’s About window.")
+                             detail: needs + " Check TotalMix FX’s version in its About window.")
         }
         if parsed.supportsGlobalOSC {
             return SetupStep(id: "version", title: "TotalMix FX has Global OSC", state: .done, detail: "")
