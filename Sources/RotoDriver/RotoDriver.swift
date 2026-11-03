@@ -600,7 +600,7 @@ public struct RotoDriver: Sendable {
     /// is only set and doesn't silence the channel (docs/TOTALMIX-OSC.md, the global mute
     /// recheck). The firmware fixes the switches' colors, so on and off is all a host can do
     /// (docs/ROTO-CONTROL.md, section 3).
-    public static let blinkPeriod: Double = 0.4
+    public static let blinkPeriod: Double = 0.5
 
     /// The mute lights that are on, turned off or on again as the flash goes; nothing while Mute
     /// Master is on and the lights are steady.

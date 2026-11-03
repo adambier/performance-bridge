@@ -405,7 +405,7 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   tried as a one-press "first page" earlier that day and dropped as hard to find.
 - **Both Track buttons together** go to the first page (Adam, 2026-11-02).
 - **Mute Master.** While TotalMix FX's Mute Master is off, a mute that is on flashes between bright
-  and dim orange (0.4 s each), and pressing a mute shows "Mute Master off / in TotalMix FX" on
+  and dim orange (0.5 s each; 0.4 s until Adam slowed it, 2026-11-02), and pressing a mute shows "Mute Master off / in TotalMix FX" on
   the screen (Adam, 2026-11-02). The medium shade was too close to the others, and no way to make
   the device flash a color by itself has been found, so the driver flashes it.[^test-15]
 - **Presence.** While connected, the driver asks for the surface mode (feature control 30) after

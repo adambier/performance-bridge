@@ -1237,7 +1237,7 @@ public struct LaunchControlDriver: Sendable {
     /// and dim orange, `blinkPeriod` seconds each, drawn by the driver. The medium shade (10) was
     /// tried and was too close to the others to read, and the device has no flashing of its own
     /// (docs/LAUNCH-CONTROL-XL3.md, test 15; Adam, 2026-11-02).
-    public static let blinkPeriod: Double = 0.4
+    public static let blinkPeriod: Double = 0.5
     /// A PFL button that is on: yellow.
     public static let pflOn: UInt8 = 13
     /// A PFL button that is off: the dimmest yellow.
