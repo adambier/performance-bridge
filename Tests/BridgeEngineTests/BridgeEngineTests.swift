@@ -493,6 +493,30 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertNil(D.switchTarget(chosen: .roto, found: [.roto, .launchControl(.lc3)]), "the chosen one is there")
     }
 
+    func testTheControlsGuideMatchesSetupMD() throws {
+        // The Controls Guide and docs/SETUP.md, Step 6, say the same (Adam, 2026-11-02).
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let setup = try String(contentsOf: root.appendingPathComponent("docs/SETUP.md"), encoding: .utf8)
+        let flat = setup.split(whereSeparator: \.isWhitespace).joined(separator: " ")
+        func flatten(_ text: String) -> String { text.split(whereSeparator: \.isWhitespace).joined(separator: " ") }
+        var guides: [DetectedController] = [.roto, .launchControl(.xl3), .launchControl(.lc3)]
+        for paragraph in ControlsGuide.common { XCTAssertTrue(flat.contains(flatten(paragraph)), paragraph) }
+        while let controller = guides.popLast() {
+            let guide = ControlsGuide.guide(for: controller)
+            XCTAssertTrue(setup.contains("### \(guide.title)"), guide.title)
+            for table in guide.tables {
+                XCTAssertTrue(setup.contains("| \(table.controlHeading) | \(table.actionHeading) |"), table.controlHeading)
+                for row in table.rows {
+                    XCTAssertTrue(setup.contains("| \(row.control) | \(row.action) |"), "\(guide.title): \(row.control)")
+                }
+            }
+            for paragraph in guide.introduction + guide.notes {
+                XCTAssertTrue(flat.contains(flatten(paragraph)), "\(guide.title): \(paragraph)")
+            }
+        }
+    }
+
     func testDoneStepsKeepTheirInstructions() {
         var status = BridgeStatus()
         status.listening = true

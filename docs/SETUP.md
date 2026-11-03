@@ -185,8 +185,8 @@ Choose **Settings…** from the menu and open the **Channel Layout** tab.
   them on the hardware controllers. The **Control Room** outputs (those assigned in TotalMix FX's control room:
   Phones, and so on) and the **Hardware Outputs** are ordered in their own sections, since control room outputs
   always come first.
-- Click a channel's name (a pencil appears beside it when the pointer is over its row) to give it a **label** for the hardware controllers, e.g., a short name for mixing. The label shows only on the hardware controllers; the name the strip would show without it (TotalMix FX's name, or "PB 1/2" and so on for a playback) is shown dimmed beside the label. Clear the label to go back to that name.
-- A playback without a label shows as "PB 1/2" and so on, whatever its name in TotalMix FX: an unnamed playback carries the hardware name of the output with the same number (e.g., "SPDIF"), so it can look like an input, and Performance Bridge can't tell such a name from one you gave the playback. Give a playback a label to name it. A note under the Sources list says so.
+- Click a channel's name, or the pencil that appears beside it when the pointer is over its row, to give it a **label** for the hardware controllers, e.g., a short name for mixing. The label shows only on the hardware controllers; the name the strip would show without it (TotalMix FX's name, or "PB 1/2" and so on for a playback) is shown dimmed beside the label. Clear the label, or click the **x** beside it, to go back to that name.
+- A software playback channel without a label entered here shows as "PB 1/2" and so on, whatever its name in TotalMix FX; in TotalMix FX, an unnamed playback carries the hardware name of the output channel with the same number (e.g., "SPDIF"), and so it could be difficult to distinguish from often identically named hardware inputs. Give a playback a label to name it on the hardware controllers. A note under the Sources list says so.
 - The order and the labels are kept when Performance Bridge restarts.
 - **Restore TotalMix FX Order** puts the view back in TotalMix FX's order. It is dimmed when the order is already TotalMix FX's.
 - To take a channel off the hardware controllers, hide it in TotalMix FX (Step 2). The layout has no hide setting of its own.
@@ -196,6 +196,8 @@ Choose **Settings…** from the menu and open the **Channel Layout** tab.
 - The notes at the bottom repeat the rule for channels hidden in TotalMix FX, where colors are set, what labels do, and how playbacks are named.
 
 ## Step 6: Use the hardware controllers
+
+The app has the same for the chosen hardware controller: choose **Controls Guide…** from Performance Bridge's menu.
 
 Every hardware controller works the same way: **each column of controls is one channel** and every control in a
 column controls that channel. Levels and pans go into the submix of the output that TotalMix FX's control room
@@ -252,9 +254,12 @@ The Launch Control 3 works the same way, with fewer controls:
 | Top encoder | Pan, or a send: **Page ▼** / **▲** steps it through Pan, then each output in the Outputs list |
 | Button | Mute; PFL while **Function** (labeled "DAW" underneath) is held (orange for mute, yellow for PFL, dim when off). Function rests dim yellow; it lights bright yellow while held, and also while any channel's PFL is on, so a PFL left on still shows |
 
-Track works as on the XL 3 and Shift + turn resets an encoder as it does there; a level above 0 dB comes down to 0 dB,
-and one at or below 0 dB stays. The screen shows the channels on
-the page, the top row's function (e.g., "Top: Pan"), and the buttons' ("Buttons: Mute", or "PFL on, buttons Mute" while a PFL is on; briefly "Buttons" over "PFL" while Function is held). The Launch Control 3 has not been tried on a device yet ([`docs/LAUNCH-CONTROL-3.md`](LAUNCH-CONTROL-3.md)).
+- Track works as on the XL 3 and Shift + turn resets an encoder as it does there; a level above 0 dB comes down to 0 dB,
+  and one at or below 0 dB stays. The screen shows the channels on the page, the top row's function (e.g., "Top: Pan"),
+  and the buttons' ("Buttons: Mute", or "PFL on, buttons Mute" while a PFL is on; briefly "Buttons" over "PFL" while
+  Function is held).
+- The **Novation button** brings TotalMix FX's window to the front, as on the XL 3.
+- The Launch Control 3 has not been tried on a device yet. See [`docs/LAUNCH-CONTROL-3.md`](LAUNCH-CONTROL-3.md).
 
 ### Roto-Control
 
@@ -262,6 +267,8 @@ Each of the eight knobs is a channel. Hold **SEL** to choose what the knobs cont
 and what the switches do (Mute or Solo; Solo is PFL here). The < and > buttons page through the channels. Pressing
 both arrow buttons together switches the Roto-Control to its second track set ("MIX-RTN" on its screen), which shows
 the same channels.
+
+- A mute that is on flashes while TotalMix FX's Mute Master is off.
 
 ## If something does not work
 

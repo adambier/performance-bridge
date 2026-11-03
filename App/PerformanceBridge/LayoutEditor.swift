@@ -99,9 +99,9 @@ struct LayoutView: View {
                 // sources, one on playback names (Adam, 2026-11-02).
                 Text("Channels that TotalMix FX hides from Performance Bridge’s OSC Controller aren’t shown. Hide and show them in TotalMix FX’s own Channel Layout window: Options → Channel Layout…, or right-click the channel and choose Change Channel Layout; under \u{201C}Hide Channel in\u{201D}, check or uncheck the OSC Controller box.")
                 Text("Channel colors can be set in the same window.")
-                Text("Labels show only on the hardware controllers. Clear a label to go back to the name shown dimmed beside it.")
+                Text("Labels show only on the hardware controllers. Clear a label, or click its x, to go back to the name shown dimmed beside it.")
                 if view == .sources {
-                    Text("A playback without a label shows as \u{201C}PB 1/2\u{201D} and so on, whatever its name in TotalMix FX: an unnamed playback carries the hardware name of the output with the same number (e.g., \u{201C}SPDIF\u{201D}), so it can look like an input, and Performance Bridge can\u{2019}t tell such a name from one you gave the playback. Give a playback a label to name it on the hardware controllers.")
+                    Text("A software playback channel without a label entered here shows as \u{201C}PB 1/2\u{201D} and so on, whatever its name in TotalMix FX; in TotalMix FX, an unnamed playback carries the hardware name of the output channel with the same number (e.g., \u{201C}SPDIF\u{201D}), and so it could be difficult to distinguish from often identically named hardware inputs. Give a playback a label to name it on the hardware controllers.")
                 }
             }
             .font(.callout)
@@ -180,6 +180,8 @@ struct LayoutRow: View {
     let item: LayoutItem
     let commit: (String) -> Void
     @State private var hovering = false
+    /// Whether the label field is being edited; the pencil puts the cursor there (Adam, 2026-11-02).
+    @FocusState private var editing: Bool
 
     var body: some View {
         HStack(spacing: 6) {
@@ -187,14 +189,28 @@ struct LayoutRow: View {
                 .foregroundStyle(.tertiary)
                 .accessibilityHidden(true)
                 .padding(.trailing, 2)
-            LabelField(item: item, commit: commit)
+            LabelField(item: item, commit: commit, focused: $editing)
                 // As wide as the name, so the pencil sits right after it.
                 .fixedSize()
-            Image(systemName: "pencil")
-                .foregroundStyle(.secondary)
-                .opacity(hovering ? 1 : 0)
-                .accessibilityHidden(true)
+            // The pencil edits the name: a click puts the cursor in the field, as clicking the name
+            // does (Adam, 2026-11-02: a pencil that did nothing invited a click).
+            Button { editing = true } label: {
+                Image(systemName: "pencil")
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .opacity(hovering || editing ? 1 : 0)
+            .help("Edit the label")
+            .accessibilityLabel("Edit the label for \(item.defaultName)")
             if item.label != nil {
+                // Clears the label, back to the name the strip would show anyway (Adam, 2026-11-02).
+                Button { editing = false; commit("") } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.tertiary)
+                }
+                .buttonStyle(.plain)
+                .help("Clear the label")
+                .accessibilityLabel("Clear the label for \(item.defaultName)")
                 // The name the strip would show without the label, for reference.
                 Text(item.defaultName)
                     .foregroundStyle(.tertiary)
@@ -213,18 +229,19 @@ struct LayoutRow: View {
 struct LabelField: View {
     let item: LayoutItem
     let commit: (String) -> Void
+    /// Whether the field has the cursor, held by the row so its pencil can put it there.
+    var focused: FocusState<Bool>.Binding
     @State private var text = ""
-    @FocusState private var focused: Bool
 
     var body: some View {
         TextField("Label", text: $text, prompt: Text(item.defaultName))
             .textFieldStyle(.plain)
             .labelsHidden()
-            .focused($focused)
+            .focused(focused)
             .onAppear { text = item.label ?? "" }
             .onChange(of: item.label) { text = $0 ?? "" }
             .onSubmit { save() }
-            .onChange(of: focused) { if !$0 { save() } }
+            .onChange(of: focused.wrappedValue) { if !$0 { save() } }
             .accessibilityLabel("Label for \(item.defaultName)")
     }
 
