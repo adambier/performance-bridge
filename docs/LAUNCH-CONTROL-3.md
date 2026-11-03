@@ -151,8 +151,8 @@ reasoning that has not been checked, the text says so in words ("inference", "no
   - Mode enters mode selection, where the 8 buttons choose a mode; the current one is lit white.
   - Mode and Function together cycle between DAW Control and DAW Mixer.
   - In DAW modes, Function changes what the 8 buttons control (Solo, Arm, Mute, or Select in
-    Novation's DAW integrations).[^ug-top][^ug-buttons][^bitwig-help] Whether Function has an LED
-    is not in Novation's documents; Bitwig's code lights 66 (inference).
+    Novation's DAW integrations).[^ug-top][^ug-buttons][^bitwig-help] Function has an LED (Adam,
+    2026-11-02); Novation's documents don't say so, and Bitwig's code lights 66.
   - On the XL 3, choosing a DAW mode on the device changed nothing it sends and was left to the
     host.[^xl3-test6] That the Launch Control 3 behaves the same is an inference.
 - **Relative encoders.** Feature controls 69 (top row) and 72 (bottom row), 127 on and 0 off. In
@@ -244,8 +244,7 @@ by Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   `LAUNCH-CONTROL-XL3.md`, section 9).
 - **Buttons.** Mute, and PFL while Function is held (Adam, 2026-11-02, from the review of that date:
   a toggle could leave the buttons on PFL by mistake on stage). The buttons are orange for mute and
-  yellow for PFL, Function rests dim yellow and lights bright yellow while they are on PFL (if it
-  has an LED, section 4), and the
+  yellow for PFL, Function rests dim yellow and lights bright yellow while they are on PFL, and the
   screen names the change. Function also stays bright yellow, and the home screen reads "PFL on,
   buttons Mute", while any channel's PFL is on, so a PFL left on after Function is released still
   shows (Adam, 2026-11-02, from the UI review of that date). This needs Function to send its release, as the XL 3's buttons do

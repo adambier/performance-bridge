@@ -99,7 +99,7 @@ public struct ControlsGuide: Equatable, Sendable {
             Table(controlHeading: "Control (in each column)", actionHeading: "What it does for that column's channel", rows: [
                 Row("Bottom encoder", "Level in Main Out"),
                 Row("Top encoder", "Pan, or a send: **Page ▼** / **▲** steps it through Pan, then each output in the Outputs list"),
-                Row("Button", "Mute; PFL while **Function** (labeled \"DAW\" underneath) is held (orange for mute, yellow for PFL, dim when off). Function (if it has a light) rests dim yellow; it lights bright yellow while held, and also while any channel's PFL is on, so a PFL left on still shows"),
+                Row("Button", "Mute; PFL while **Function** (labeled \"DAW\" underneath) is held (orange for mute, yellow for PFL, dim when off). Function rests dim yellow; it lights bright yellow while held, and also while any channel's PFL is on, so a PFL left on still shows"),
             ]),
         ],
         notes: [
