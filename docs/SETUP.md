@@ -185,14 +185,15 @@ Choose **Settings…** from the menu and open the **Channel Layout** tab.
   them on the hardware controllers. The **Control Room** outputs (those assigned in TotalMix FX's control room:
   Phones, and so on) and the **Hardware Outputs** are ordered in their own sections, since control room outputs
   always come first.
-- Click a channel's name (a pencil appears beside it when the pointer is over its row) to give it a **label** for the hardware controllers, e.g., a short name for mixing. The label shows only on the hardware controllers; the name the strip would show without it (TotalMix FX's name, or "PB 1/2" and so on for a playback) is shown dimmed beside the label. Clear the label to go back to that name. A playback without a label shows as "PB 1/2" and so on, whatever its name in TotalMix FX, since an unnamed playback otherwise has its output's hardware name, which can be the same as an input's, and Performance Bridge can't tell that from a name you gave it. The Sources list says so.
+- Click a channel's name (a pencil appears beside it when the pointer is over its row) to give it a **label** for the hardware controllers, e.g., a short name for mixing. The label shows only on the hardware controllers; the name the strip would show without it (TotalMix FX's name, or "PB 1/2" and so on for a playback) is shown dimmed beside the label. Clear the label to go back to that name.
+- A playback without a label shows as "PB 1/2" and so on, whatever its name in TotalMix FX: an unnamed playback carries the hardware name of the output with the same number (e.g., "SPDIF"), so it can look like an input, and Performance Bridge can't tell such a name from one you gave the playback. Give a playback a label to name it. A note under the Sources list says so.
 - The order and the labels are kept when Performance Bridge restarts.
 - **Restore TotalMix FX Order** puts the view back in TotalMix FX's order. It is dimmed when the order is already TotalMix FX's.
 - To take a channel off the hardware controllers, hide it in TotalMix FX (Step 2). The layout has no hide setting of its own.
 - Set channel colors in TotalMix FX's own Channel Layout window (Step 2). With a Launch Control, give each output its send
   rows feed (e.g., each headphone output) a color of its own: a send row lights in its output's color, so the color
   shows which output it feeds.
-- The note at the bottom repeats the rule for channels hidden in TotalMix FX.
+- The notes at the bottom repeat the rule for channels hidden in TotalMix FX, where colors are set, what labels do, and how playbacks are named.
 
 ## Step 6: Use the hardware controllers
 

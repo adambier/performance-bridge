@@ -101,7 +101,7 @@ struct LayoutView: View {
                 Text("Channel colors can be set in the same window.")
                 Text("Labels show only on the hardware controllers. Clear a label to go back to the name shown dimmed beside it.")
                 if view == .sources {
-                    Text("Playbacks show as \u{201C}PB 1/2\u{201D} and so on, whatever their names in TotalMix FX: TotalMix FX gives an unnamed playback its output\u{2019}s hardware name, which Performance Bridge can\u{2019}t tell from a name you gave it. Give a playback a label to name it on the hardware controllers.")
+                    Text("A playback without a label shows as \u{201C}PB 1/2\u{201D} and so on, whatever its name in TotalMix FX: an unnamed playback carries the hardware name of the output with the same number (e.g., \u{201C}SPDIF\u{201D}), so it can look like an input, and Performance Bridge can\u{2019}t tell such a name from one you gave the playback. Give a playback a label to name it on the hardware controllers.")
                 }
             }
             .font(.callout)
