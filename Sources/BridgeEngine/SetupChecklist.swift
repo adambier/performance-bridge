@@ -63,7 +63,7 @@ public enum SetupChecklist {
                         state: .done, detail: "No other program is using port \(outgoing), so TotalMix FX’s messages can reach Performance Bridge.")
             : SetupStep(id: "port", title: "Port \(outgoing) is in use",
                         state: .problem,
-                        detail: "Another program is using port \(outgoing), the port TotalMix FX sends to. Quit it (for example, another OSC remote or a developer tool left running).\n\nPerformance Bridge keeps trying."))
+                        detail: "Another program is using port \(outgoing), the port TotalMix FX sends to (its “Port (outgoing)”, in Options → Mixer Settings… (F3) → OSC). Quit it (for example, another OSC remote or a developer tool left running), or choose another port, the same in TotalMix FX and in Performance Bridge’s Settings, on the Connections tab.\n\nPerformance Bridge keeps trying."))
 
         steps.append(versionStep(status: status, running: totalMixRunning, version: totalMixVersion))
 
@@ -78,7 +78,7 @@ public enum SetupChecklist {
             4. “Compatibility (Mode)”: Global OSC.
             5. “Port (incoming)”: \(incoming).
             6. Under “Remote Controller Address”, “Port (outgoing)”: \(outgoing).
-            7. “Host”: localhost (if Performance Bridge runs on this Mac).
+            7. Under “Remote Controller Address”, “Host”: localhost (if Performance Bridge runs on this Mac).
             [image: totalmix-osc-tab]
             8. Click Details and check “Send changes” and “Send status”.
             [image: totalmix-osc-details]
@@ -131,7 +131,7 @@ public enum SetupChecklist {
             steps.append(SetupStep(id: "roto", title: "Roto-Control found, connecting", state: .waiting, detail: rotoBusy))
         } else {
             steps.append(SetupStep(id: "roto", title: "Roto-Control not found", state: .waiting,
-                                   detail: "Connect the Roto-Control by USB. If it’s connected, try another cable or USB port.\n\nIf a Launch Control XL 3 or Launch Control 3 is plugged in instead, Performance Bridge switches to it by itself. Otherwise, choose it in Performance Bridge’s Settings, on the Connections tab."))
+                                   detail: "Connect the Roto-Control by USB. If it’s connected, try another cable or USB port.\n\nIf a Launch Control XL 3 or Launch Control 3 is plugged in instead, Performance Bridge switches to it by itself. Otherwise, choose it in Performance Bridge’s Settings, on the Connections tab, and click Apply."))
         }
 
         if let name = status.launchControlName {
@@ -144,7 +144,7 @@ public enum SetupChecklist {
                                        detail: "If it stays here, quit any other program that uses its DAW ports, such as a DAW with its Launch Control integration."))
             } else {
                 steps.append(SetupStep(id: "launchcontrol", title: "\(name) not found", state: .waiting,
-                                       detail: "Connect the Launch Control by USB. If it’s connected, check that the model chosen in Performance Bridge’s Settings, on the Connections tab, is the one connected, then try another cable or USB port."))
+                                       detail: "Connect the Launch Control by USB. If it’s connected, check that the model chosen in Performance Bridge’s Settings, on the Connections tab, is the one connected (click Apply after changing it), then try another cable or USB port."))
             }
         }
 
@@ -160,7 +160,7 @@ public enum SetupChecklist {
         let colorTip = status.launchControlName == nil ? ""
             : " Give each output the send rows feed (e.g., each headphone output) a color of its own: a send row lights in its output’s color, so the color shows which output it feeds."
         steps.append(SetupStep(id: "hide", title: "Hide channels in TotalMix FX", state: .instruction,
-                               detail: "Hide and show channels in TotalMix FX: choose Options → Channel Layout…, or right-click the channel and choose Change Channel Layout. Under “Hide Channel in”, check or uncheck the box for Performance Bridge’s OSC Controller.\n\nChannel colors can be set in the same window." + colorTip))
+                               detail: "Hide and show channels in TotalMix FX: choose Options → Channel Layout…, select the channel’s row (on the Inputs, Playbacks, or Outputs tab), and under “Hide Channel in”, check or uncheck the box for Performance Bridge’s OSC Controller. Or right-click the channel and choose Change Channel Layout.\n\nThen choose Refresh Channels from TotalMix FX from Performance Bridge’s menu, since TotalMix FX doesn’t announce the change.\n\nChannel colors can be set in the same window." + colorTip))
         steps.append(SetupStep(id: "order", title: "Set the order of the channels", state: .optional,
                                detail: "Set the order of the channels, and give them short labels for the hardware controllers, on the Channel Layout tab of Performance Bridge’s Settings."))
         return steps

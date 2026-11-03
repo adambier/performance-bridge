@@ -61,8 +61,10 @@ with neither a footnote nor a test record behind it is an inference, and says so
     window](#test-20-2026-11-02-changes-made-in-totalmix-fxs-window).
 [^test-21]: Test 21 (2026-11-02), section 6: [the Cue/PFL to
     menu](#test-21-2026-11-02-the-cuepfl-to-menu).
+[^test-22]: Test 22 (2026-11-02), section 6: [no answer to a PFL, Live Mode off or
+    on](#test-22-2026-11-02-no-answer-to-a-pfl-live-mode-off-or-on).
 
-**Status.** Twenty-one tests so far (section 6). Tests 1–5 cover what TotalMix FX sends with "Send
+**Status.** Twenty-two tests so far (section 6). Tests 1–5 cover what TotalMix FX sends with "Send
 faders in linear scale" off and on, and the fader messages it accepts; the later ones cover hiding,
 the control room, settings files, names, groups, and the marks and wheel scales the hardware
 controllers copy.
@@ -518,4 +520,20 @@ and its "Cue/PFL to" submenu, and took a screenshot (published as
   a note saying to choose a headphone output. A planned interlock that would block PFL while it is
   Main (Adam, 2026-11-02) waits for a way to read the setting.
 - What `cuechan` does report is not known; the inference is an output whose CUE button is on.
+
+### Test 22 (2026-11-02): no answer to a PFL, Live Mode off or on
+
+**Setup.** TotalMix FX "2.10 (1)" with a Digiface AES, controller 1 (ports 7001 and 9001), "Re-send
+received" off in Details. Performance Bridge quit. `sbdev roundtrip /input/0/pfl 1` (the ADI-2
+input), once with Live Mode off and once on (`pfl-livemode-off-1102.log`, `pfl-livemode-on-1102.log`).
+
+**Findings:**
+- Both times, nothing came back within 1 s (status and level messages left out).
+- With Live Mode on, the ADI-2 input's PFL button lit in TotalMix FX's window (seen).
+
+**Consequence.** TotalMix FX doesn't answer a PFL sent by a remote whether or not Live Mode is on,
+so the answer can't tell the app that a PFL did nothing; Live Mode still can't be read (test 6).
+The hardware controllers light PFL when pressed, and the Setup Guide keeps its note to turn Live
+Mode on. Inference, not tested: with "Re-send received" on, TotalMix FX might send the PFL back
+in both cases alike.
 

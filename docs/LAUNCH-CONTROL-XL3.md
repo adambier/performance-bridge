@@ -320,9 +320,10 @@ port names.
     Keep absolute mode if 1, 2, and 4 sound smooth and 3 is comfortable. If trims or fades are
     audibly stepped, or 2 is too coarse, use relative mode with finer steps (e.g., 0.1 dB for a
     slow step, more as the device accelerates).
-13. **The send-reset overlay.** In the app (1.0.2 or later), hold Shift a moment and turn a send
-    encoder: does the screen show "Send off (-oo)" / "Shift+turn: restore", or the encoder's own
-    display? Release Shift, then Shift + turn it again: "Send restored"?
+13. **The send-reset text.** Run in part: the overlay flashed too fast to read (Adam, 2026-11-02).
+    Now on the encoder's display: in the app (1.0.2 or later), hold Shift a moment and turn a send
+    encoder. Does its display read "Shift+turn: restore"? Release Shift: is its middle line the send
+    ("> Phones 1") again? Then Shift + turn it again: "Send restored"?
 
 ## 9. How Performance Bridge uses it
 
@@ -370,10 +371,11 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   - a level (the Launch Control 3's) above 0 dB comes down to 0 dB, and one at or below 0 dB
     stays: a reset never raises a level;
   - a send goes to −oo, and a second Shift + turn, after Shift is released and held again, brings it
-    back to where it was; the overlay is meant to say "Send off (-oo)" / "Shift+turn: restore",
-    then "Send restored" (Adam, 2026-11-02, from the UI review of that date; not yet seen on the
-    device, where the encoder's own display, which the turn brings up, may cover it: section 8,
-    item 13);
+    back to where it was; the encoder's own display then reads "Shift+turn: restore", then "Send
+    restored", on its middle line, which comes back when Shift is released (Adam, 2026-11-02, from
+    the UI review of that date). The overlay was tried first and flashed too fast to read, covered
+    at once by the encoder's display (seen by Adam, 2026-11-02); the encoder's display hasn't been
+    seen yet (section 8, item 13);
   - only once Shift has been held 0.3 s with no Page or Track press, and once per encoder per hold
     of Shift.
 

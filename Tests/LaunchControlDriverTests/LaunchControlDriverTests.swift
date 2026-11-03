@@ -483,19 +483,22 @@ final class LaunchControlDriverTests: XCTestCase {
         _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 1)
         let reset = driver.receive([0xBE, 0x0D, 0x7F], hub: &hub, now: 1.4)
         XCTAssertFalse(reset.core.messages.isEmpty, "the send goes to -oo")
-        XCTAssertTrue(reset.midi.contains(LaunchControlOutgoing.text(.overlay, field: 0, "Send off (-oo)") ?? [1]))
-        XCTAssertTrue(reset.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, "Shift+turn: restore") ?? [1]))
-        _ = driver.receive([0xB6, 0x3F, 0x00], hub: &hub, now: 2)
+        // On the encoder's own display (top 1), which the turn brings up; the overlay was covered.
+        let encoder = LaunchControlDisplayTarget.control(.encoder(row: 0, column: 0))
+        XCTAssertTrue(reset.midi.contains(LaunchControlOutgoing.text(encoder, field: 1, "Shift+turn: restore") ?? [1]))
+        let release = driver.receive([0xB6, 0x3F, 0x00], hub: &hub, now: 2)
+        XCTAssertFalse(release.midi.isEmpty, "Shift released: the encoder's function line comes back")
         _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 3)
         let restore = driver.receive([0xBE, 0x0D, 0x7F], hub: &hub, now: 3.4)
-        XCTAssertTrue(restore.midi.contains(LaunchControlOutgoing.text(.overlay, field: 0, "Send restored") ?? [1]))
+        XCTAssertTrue(restore.midi.contains(LaunchControlOutgoing.text(encoder, field: 1, "Send restored") ?? [1]))
         // Pan resets say nothing extra.
         _ = driver.receive([0xB6, 0x3F, 0x00], hub: &hub, now: 4)
         _ = driver.receive([0xBF, 0x1D, 127], hub: &hub, now: 4.1)
         _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 5)
         let panReset = driver.receive([0xBE, 0x1D, 0x7F], hub: &hub, now: 5.4)
         XCTAssertFalse(panReset.core.messages.isEmpty, "the pan goes to the center")
-        XCTAssertFalse(panReset.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, "Shift+turn: restore") ?? [1]))
+        XCTAssertFalse(panReset.midi.contains(LaunchControlOutgoing.text(.control(.encoder(row: 2, column: 0)), field: 1,
+                                                                          "Shift+turn: restore") ?? [1]))
     }
 
     func testAMuteOrPFLPressSaysSoOnTheScreen() {

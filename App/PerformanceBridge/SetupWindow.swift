@@ -228,7 +228,13 @@ struct SetupView: View {
     /// pixels), no wider than the page, with an exact height so no space is left around it.
     @ViewBuilder
     private func screenshots(for step: SetupStep) -> some View {
-        let names = (shots[step.id] ?? []).filter { Brand.resources.image(forResource: $0) != nil }
+        // None where the page has nothing to say about them: a step with no text (e.g., TotalMix FX
+        // not answering yet, on the channels page), or the version page while TotalMix FX isn't
+        // running (review of 2026-11-02).
+        let unexplained = step.detail.isEmpty && step.state != .done
+        let notRunning = step.id == "version" && step.state == .waiting
+        let names = unexplained || notRunning ? []
+            : (shots[step.id] ?? []).filter { Brand.resources.image(forResource: $0) != nil }
         if !names.isEmpty {
             VStack(alignment: .leading, spacing: 6) {
                 // Named for the app the screenshots show.

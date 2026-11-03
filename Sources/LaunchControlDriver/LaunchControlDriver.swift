@@ -136,6 +136,9 @@ public struct LaunchControlDriver: Sendable {
     private var sentPositions: [UInt8: UInt8] = [:]  // control number → position
     private var sentColors: [UInt8: LightColor] = [:]  // control number → color sent
     private var sentTexts: [String: String] = [:]  // "target/field" → text
+    /// Encoders whose display says a send was reset (`reset`), drawn as usual again when Shift is
+    /// released.
+    private var resetShown: [(Layer, Int)] = []
     private var sentConfig: [UInt8: UInt8] = [:]  // target byte → arrangement and flags
 
     /// How close to the level a fader's first value must be for the hub's pickup to take it, as a
@@ -374,6 +377,10 @@ public struct LaunchControlDriver: Sendable {
             shiftDownAt = pressed ? now : nil
             shiftUsedForNavigation = false
             resetThisShift = []
+            if !pressed {
+                for (layer, strip) in resetShown { step.midi += drawStrip(layer, strip, hub: hub) }
+                resetShown = []
+            }
             // Page and Track light for what they do with Shift held, and back on release.
             step.midi += drawNavigation(hub: hub)
         case .button(Self.functionButton, let pressed) where layout == .lc3:
@@ -638,14 +645,17 @@ public struct LaunchControlDriver: Sendable {
         guard let position = resetPosition(layer, current: current, previous: sendsBeforeReset[target]) else { return }
         if case .strips(_, _, .send, _) = mode(for: layer, first: 0) {
             if position == 0 { sendsBeforeReset[target] = current } else { sendsBeforeReset[target] = nil }
-            // Silencing a send is the one reset that takes something away, so say how to undo it
-            // (Adam, 2026-11-02, from the UI review of that date).
-            step.midi += position == 0
-                ? overlay("Send off (-oo)", "Shift+turn: restore")
-                : overlay("Send restored", ValueText.level(position: position))
         }
         take(hub.controlMoved(id(layer), strip: strip, to: position, now: now), hub: hub, into: &step)
         step.midi += drawOwnMove(layer, strip, hub: hub)
+        if case .strips(_, _, .send, _) = mode(for: layer, first: 0) {
+            // Silencing a send is the one reset that takes something away, so say how to undo it
+            // (Adam, 2026-11-02, from the UI review of that date). On the encoder's own display,
+            // which the turn brings up: the overlay was covered by it at once (Adam, 2026-11-02);
+            // its function line comes back when Shift is released.
+            step.midi += text(.control(element), 1, position == 0 ? "Shift+turn: restore" : "Send restored")
+            resetShown.append((layer, strip))
+        }
         let value = deviceValue(layer, position)
         guard connected, !inCustomMode, sentPositions[element.controlNumber] != value else { return }
         sentPositions[element.controlNumber] = value
