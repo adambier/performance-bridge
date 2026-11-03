@@ -96,7 +96,7 @@ public enum SetupChecklist {
 
         if status.channelCount > 0 {
             steps.append(SetupStep(id: "channels", title: "TotalMix FX has sent its channels", state: .done,
-                                   detail: "Performance Bridge has \(status.channelCount) of TotalMix FX’s channels. Channels hidden from its OSC Controller aren’t among them."))
+                                   detail: "Performance Bridge has detected \(status.channelCount) TotalMix FX channels. Channels hidden from its OSC Controller aren’t detected."))
         } else {
             steps.append(SetupStep(id: "channels", title: "TotalMix FX hasn’t sent its channels yet",
                                    state: .waiting,
@@ -179,7 +179,7 @@ public enum SetupChecklist {
         }
         if parsed.supportsGlobalOSC {
             return SetupStep(id: "version", title: "TotalMix FX \(text) has Global OSC", state: .done,
-                             detail: "Global OSC needs TotalMix FX 2.1 or later.")
+                             detail: "Global OSC is supported by TotalMix FX 2.1 or later.")
         }
         return SetupStep(id: "version", title: "TotalMix FX \(text) is too old", state: .problem,
                          detail: needs + " Update it from RME’s website.")
