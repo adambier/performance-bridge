@@ -1255,8 +1255,8 @@ public struct LaunchControlDriver: Sendable {
     /// A PFL button that is on: yellow.
     public static let pflOn: UInt8 = 13
     /// A PFL button that is off: yellow by exact RGB, dimmer than the palette's dimmest yellow (15),
-    /// chosen with `muteOff` (test 19), then made one step dimmer (Adam, 2026-11-02).
-    public static let pflOff = LightColor.rgb(RGB(10, 7, 0))
+    /// chosen with `muteOff` (test 19).
+    public static let pflOff = LightColor.rgb(RGB(16, 11, 0))
     /// Page and Track where they would move: white.
     public static let navigationOn: UInt8 = 3
     /// The Function button while the buttons are mute: PFL's color when off, as for any button that
