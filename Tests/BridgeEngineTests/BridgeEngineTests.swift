@@ -510,6 +510,19 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertTrue(lines[images[0] - 1].hasPrefix("2."), "each screenshot after the steps it shows")
         XCTAssertTrue(lines[images[1] - 1].hasPrefix("7."))
         XCTAssertTrue(lines[images[2] - 1].hasPrefix("8."))
+        var connected = status
+        connected.rotoConnected = true
+        connected.channelCount = 20
+        connected.launchControlName = "Launch Control XL 3"
+        connected.launchControlConnected = true
+        let all = SetupChecklist.steps(status: connected, settings: BridgeSettings(), totalMixRunning: true,
+                                       totalMixVersion: "2.10 (1)")
+        for id in ["port", "version", "totalmix", "channels", "meters", "roto", "launchcontrol"] {
+            let step = all.first { $0.id == id }
+            XCTAssertEqual(step?.state, .done, id)
+            XCTAssertFalse(step?.instructions.isEmpty ?? true, "\(id): Show Instructions has something to show")
+        }
+        XCTAssertTrue(all.first { $0.id == "version" }!.instructions.contains("About"))
         status.totalMixAnswering = false
         let waiting = SetupChecklist.steps(status: status, settings: BridgeSettings()).first { $0.id == "totalmix" }!
         XCTAssertEqual(waiting.detail, totalMix.instructions, "the same text as before it was done")

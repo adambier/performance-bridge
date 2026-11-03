@@ -593,8 +593,6 @@ public struct RotoDriver: Sendable {
         return elapsed < motorJitterTime && abs(position - target.position) <= motorJitter
     }
 
-    /// Whether a strip's knob is a level or a send (a fader position), whose scale is bent to the
-    /// indent; pans are not.
     /// How a mute that is on while TotalMix FX's Mute Master is off shows: its light flashes, on
     /// and off for this many seconds each, as on a Launch Control (Adam, 2026-11-02). Such a mute
     /// is only set and doesn't silence the channel (docs/TOTALMIX-OSC.md, the global mute
@@ -622,6 +620,8 @@ public struct RotoDriver: Sendable {
         return true
     }
 
+    /// Whether a strip's knob is a level or a send (a fader position), whose scale is bent to the
+    /// indent; pans are not.
     private func isLevel(_ index: Int, hub: SurfaceHub) -> Bool {
         guard let strips = hub.strips(of: id), strips.indices.contains(index),
               case .level? = strips[index].knobTarget else { return false }

@@ -140,10 +140,13 @@ struct SettingsWindowView: View {
     @State var tab: SettingsTab
     /// The Connections tab's edits, kept here so they survive a visit to the other tab.
     @State private var edited = SavedSettings.load()
+    /// The settings last applied, which Revert goes back to; kept here too, so a controller the app
+    /// chose by itself while the other tab showed is followed (review of 1.0.2).
+    @State private var saved = SavedSettings.load()
 
     var body: some View {
         TabView(selection: $tab) {
-            pane(.connections) { SettingsView(model: model, edited: $edited) }
+            pane(.connections) { SettingsView(model: model, edited: $edited, saved: $saved) }
                 .tabItem { Text(SettingsTab.connections.title) }
                 .tag(SettingsTab.connections)
             pane(.channelLayout) { LayoutView(model: model) }
@@ -153,6 +156,13 @@ struct SettingsWindowView: View {
         .padding(.top, 8)
         .frame(width: 480)
         .onAppear { show(tab) }
+        // The app chose the hardware controller by itself (BridgeModel.chooseControllerIfNeeded):
+        // show it, unless the user has already picked another here.
+        .onChange(of: model.autoChosen) { choice in
+            guard let choice else { return }
+            if edited.controller == saved.controller { edited.controller = choice }
+            saved.controller = choice
+        }
         .onChange(of: edited.controller) { _ in
             // The Connections tab grows or shrinks with the chosen controller's settings.
             DispatchQueue.main.async { Windows.fitToContent("settings") }
@@ -202,7 +212,8 @@ struct SettingsView: View {
     /// The edits, held by the Settings window so they survive switching tabs.
     @Binding var edited: SavedSettings
 
-    @State private var saved = SavedSettings.load()
+    /// The settings last applied (held by the Settings window).
+    @Binding var saved: SavedSettings
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -221,13 +232,6 @@ struct SettingsView: View {
         }
         .padding(20)
         .fixedSize(horizontal: false, vertical: true)
-        // The app chose the hardware controller by itself (BridgeModel.chooseControllerIfNeeded):
-        // show it, unless the user has already picked another here.
-        .onChange(of: model.autoChosen) { choice in
-            guard let choice else { return }
-            if edited.controller == saved.controller { edited.controller = choice }
-            saved.controller = choice
-        }
     }
 
     /// TotalMix FX's host and ports and the hardware controller, with Defaults, Revert, and Apply.

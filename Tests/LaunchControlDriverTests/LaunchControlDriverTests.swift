@@ -487,7 +487,8 @@ final class LaunchControlDriverTests: XCTestCase {
         let encoder = LaunchControlDisplayTarget.control(.encoder(row: 0, column: 0))
         XCTAssertTrue(reset.midi.contains(LaunchControlOutgoing.text(encoder, field: 1, "Shift+turn: restore") ?? [1]))
         let release = driver.receive([0xB6, 0x3F, 0x00], hub: &hub, now: 2)
-        XCTAssertFalse(release.midi.isEmpty, "Shift released: the encoder's function line comes back")
+        XCTAssertTrue(release.midi.contains(LaunchControlOutgoing.text(encoder, field: 1, "> Phones") ?? [1]),
+                      "Shift released: the encoder's function line comes back")
         _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 3)
         let restore = driver.receive([0xBE, 0x0D, 0x7F], hub: &hub, now: 3.4)
         XCTAssertTrue(restore.midi.contains(LaunchControlOutgoing.text(encoder, field: 1, "Send restored") ?? [1]))

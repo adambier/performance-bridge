@@ -328,7 +328,7 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 - `/input/0/mute 1` lit the ADI-2 input's M button (applied). `/input/0/mute 0` turned it off.
 - `/mix/in/0/8/faderlin 0.5` moved the ADI-2 input's fader in the ADAT 1/2 submix to −12.1 dB, which matches the spec's fader curve for position 0.5 (applied). `/mix/in/0/8/faderlin 0` returned it to the bottom.
 
-**Global mute.** The monitor reported `globalmute = 1` in the dumps before this recheck, and `globalmute = 0` after Adam turned it off with `/globalmute 0`. RME's manual calls this the Mute Master button in the Control Strip: it lights when any Mute button is pressed, and "all selected mutes can be switched off and on again" with it.[^rme-web-control-strip] With `globalmute = 0`, `/playback/0/mute 1` lit the AES M button only partially (Adam, screenshot 2026-10-31). A partial light shows a mute that is set but switched off by the Mute Master: the channel is not muted in the audio, and turning Mute Master on mutes every channel whose mute is set (Adam, 2026-11-02, from his use of TotalMix FX; first inferred from the partial light).
+**Global mute.** The monitor reported `globalmute = 1` in the dumps before this recheck, and `globalmute = 0` after Adam turned it off with `/globalmute 0`. RME's manual calls this the Mute Master button in the Control Strip: it lights when any Mute button is pressed, and "all selected mutes can be switched off and on again" with it.[^rme-web-control-strip] With `globalmute = 0`, `/playback/0/mute 1` lit the AES M button only partially (Adam, screenshot 2026-10-31). A partial light shows a mute that is set but switched off by the Mute Master: the channel is not muted in the audio, and turning Mute Master on mutes every channel whose mute is set (Adam, 2026-11-02, from his use of TotalMix FX; first inferred from the partial light; consistent with RME's description of the button).
 
 **Not tested:** the other controllers, other interfaces, and the effect of the earlier sends on the channels at addresses 1 and 3.
 
@@ -531,7 +531,8 @@ input), once with Live Mode off and once on (`pfl-livemode-off-1102.log`, `pfl-l
 - Both times, nothing came back within 1 s (status and level messages left out).
 - With Live Mode on, the ADI-2 input's PFL button lit in TotalMix FX's window (seen).
 
-**Consequence.** TotalMix FX doesn't answer a PFL sent by a remote whether or not Live Mode is on,
+**Consequence.** With "Re-send received" off (the setting the Setup Guide leaves alone), TotalMix FX
+doesn't answer a PFL sent by a remote whether or not Live Mode is on,
 so the answer can't tell the app that a PFL did nothing; Live Mode still can't be read (test 6).
 The hardware controllers light PFL when pressed, and the Setup Guide keeps its note to turn Live
 Mode on. Inference, not tested: with "Re-send received" on, TotalMix FX might send the PFL back

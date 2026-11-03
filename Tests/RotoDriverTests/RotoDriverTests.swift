@@ -281,7 +281,7 @@ final class RotoDriverTests: XCTestCase {
     func testAMuteFlashesWhileMuteMasterIsOff() {
         var (driver, hub, _) = connected()
         _ = driver.receive(cc(RotoCC.switchFirst + 2, 127), hub: &hub, now: 1)
-        XCTAssertEqual(driver.tick(now: 1.05, hub: hub), [], "steady while Mute Master is on")
+        XCTAssertEqual(driver.tick(now: 1.05, hub: hub), [], "steady while Mute Master is unreported")
         _ = hub.handle(.other(path: "globalmute", value: .number(0)), now: 2)
         let p = RotoDriver.blinkPeriod
         let dark = driver.tick(now: 3 * p + 0.01, hub: hub)   // an odd half: dark

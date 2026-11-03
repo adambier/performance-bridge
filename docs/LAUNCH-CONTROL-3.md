@@ -249,7 +249,9 @@ by Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   screen names the change. Function also stays bright yellow, and the home screen reads "PFL on,
   buttons Mute", while any channel's PFL is on, so a PFL left on after Function is released still
   shows (Adam, 2026-11-02, from the UI review of that date). This needs Function to send its release, as the XL 3's buttons do
-  (XL 3 test 1; for the Launch Control 3, an inference).
+  (XL 3 test 1; for the Launch Control 3, an inference). A button that is off, and Function at
+  rest, show an exact-RGB dim shade (XL 3 test 19); that the Launch Control 3's buttons take it too
+  is an inference.
 - **Paging.** Track < and > move by eight strips, and with Shift to the first or last
   page.[^xl3-use] The strips always show the channels, never the outputs.
 - **Mute and PFL presses** show on the overlay, as on the XL 3 (Adam, 2026-11-02).

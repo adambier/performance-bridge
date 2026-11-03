@@ -1026,7 +1026,8 @@ public struct LaunchControlDriver: Sendable {
         return bytes
     }
 
-    /// A strip button's light: bright when on, the dimmest shade when off; a mute that is on while
+    /// A strip button's light: bright when on, a dim exact-RGB shade when off (`muteOff`, `pflOff`);
+    /// a mute that is on while
     /// TotalMix FX's Mute Master is off (set but not silencing) flashes between the two,
     /// `blinkPeriod` each (docs/LAUNCH-CONTROL-XL3.md, test 15; Adam, 2026-11-02).
     private mutating func drawButton(_ layer: Layer, _ index: Int, hub: SurfaceHub) -> [UInt8] {
@@ -1168,8 +1169,8 @@ public struct LaunchControlDriver: Sendable {
 
     /// Shows two lines on the overlay (a temporary display not tied to a control), e.g., after
     /// Function or Page. It has been seen after a button press (docs/LAUNCH-CONTROL-XL3.md, test
-    /// 16); after an encoder turn (Shift + turn on a send), where the encoder's own display may
-    /// cover it, not yet (section 8, item 13).
+    /// 16); after Shift + turn on a send it has been seen to flash too fast to read (Adam,
+    /// 2026-11-02), so that text goes on the encoder's display instead (section 8, item 13).
     private mutating func overlay(_ first: String, _ second: String, _ third: String? = nil) -> [UInt8] {
         guard connected else { return [] }
         var bytes = configure(.overlay, third == nil ? .nameAndValue : .titleNameAndValue, quiet: false)
@@ -1260,7 +1261,8 @@ public struct LaunchControlDriver: Sendable {
     /// Page and Track where they would move: white.
     public static let navigationOn: UInt8 = 3
     /// The Function button while the buttons are mute: PFL's color when off, as for any button that
-    /// is off (Adam, 2026-11-02).
+    /// is off (Adam, 2026-11-02). That the Launch Control 3's Function button takes an exact color
+    /// as the strip buttons do is an inference (test 19 lit the XL 3's strip buttons only).
     public static let functionIdle = pflOff
     /// The hue of a send row whose output is left white in TotalMix FX: teal (33) for the top row,
     /// magenta (53) for the XL 3's middle row; neither is one of TotalMix FX's eight colors (Adam,

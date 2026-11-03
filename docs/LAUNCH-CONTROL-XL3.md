@@ -374,8 +374,8 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   - a send goes to −oo, and a second Shift + turn, after Shift is released and held again, brings it
     back to where it was; the encoder's own display then reads "Shift+turn: restore", then "Send
     restored", on its middle line, which comes back when Shift is released (Adam, 2026-11-02, from
-    the UI review of that date). The overlay was tried first and flashed too fast to read, covered
-    at once by the encoder's display (seen by Adam, 2026-11-02); the encoder's display hasn't been
+    the UI review of that date). The overlay was tried first and flashed too fast to read (seen by
+    Adam, 2026-11-02), presumably covered at once by the encoder's display (an inference); the encoder's display hasn't been
     seen yet (section 8, item 13);
   - only once Shift has been held 0.3 s with no Page or Track press, and once per encoder per hold
     of Shift.
