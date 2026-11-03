@@ -103,9 +103,6 @@ public struct MixerMirror: Sendable {
     public private(set) var meters: [ChannelRef: Double] = [:]
     /// The output channel (its left channel) assigned to each monitoring role in the control room.
     public private(set) var monitoring: [MonitoringRole: Int] = [:]
-    /// The monitoring roles TotalMix FX has reported, assigned or not (−1, none): a role missing from
-    /// `monitoring` but here is known to be unassigned.
-    public private(set) var reportedRoles: Set<MonitoringRole> = []
     /// TotalMix FX's Mute Master (`/globalmute`), or `nil` until TotalMix FX has reported it. While it is
     /// off, a channel's mute is only selected and doesn't silence it (docs/TOTALMIX-OSC.md, the
     /// global mute recheck of 2026-10-31, and Adam, 2026-11-02).
@@ -140,8 +137,7 @@ public struct MixerMirror: Sendable {
                   let role = MonitoringRole(rawValue: String(path.dropFirst("controlroom/".count))),
                   let number = value.number else { return nil }
             let assigned = number < 0 ? nil : Int(number.rounded())
-            let firstReport = reportedRoles.insert(role).inserted
-            if monitoring[role] == assigned { return firstReport ? .controlRoom : nil }
+            if monitoring[role] == assigned { return nil }
             monitoring[role] = assigned
             return .controlRoom
         case .snapshot:

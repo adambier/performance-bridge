@@ -97,8 +97,8 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(answer.midi.contains([0xB0, 0x1D, 5]), "Keys is red in TotalMix FX")
         XCTAssertTrue(answer.midi.contains([0xB0, 0x1E, 3]), "Vox is white")
         XCTAssertTrue(answer.midi.contains([0xB0, 0x21, 0]), "a blank strip's encoder is dark")
-        XCTAssertTrue(answer.midi.contains([0xB0, 0x0D, 45]),
-                      "the top row sends to Phones, a white output that isn't in the control room: blue")
+        XCTAssertTrue(answer.midi.contains([0xB0, 0x0D, LaunchControlDriver.sendRowHues[0]]),
+                      "the top row sends to Phones, a white output: the top row's own hue, teal")
         XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.stationary, field: 0, "In 1-3, PB 1") ?? []))
         XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.control(.fader(0)), field: 0, "Keys") ?? []))
         XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.control(.fader(0)), field: 1, "Level") ?? []))
@@ -396,10 +396,161 @@ final class LaunchControlDriverTests: XCTestCase {
 
     func testAnOutputsNewColorReachesItsSendRow() {
         var (driver, hub, midi) = connected(layout: .xl3)
-        XCTAssertTrue(midi.contains([0xB0, 0x0D, 45]), "Phones, white in TotalMix FX, is blue")
+        XCTAssertTrue(midi.contains([0xB0, 0x0D, LaunchControlDriver.sendRowHues[0]]), "Phones, white in TotalMix FX, is teal")
         let recolor = hub.handle(.channel(bus: .output, channel: 2, parameter: "color", value: .number(4)), now: 1)
         let step = driver.take(recolor, hub: &hub, now: 1)
         XCTAssertTrue(step.midi.contains([0xB0, 0x0D, 5]), "TotalMix FX's red reaches the top row at once")
+        let back = hub.handle(.channel(bus: .output, channel: 2, parameter: "color", value: .number(1)), now: 2)
+        XCTAssertTrue(driver.take(back, hub: &hub, now: 2).midi.contains([0xB0, 0x0D, LaunchControlDriver.sendRowHues[0]]),
+                      "white again: the row's hue again")
+    }
+
+    func testWhiteOutputsTakeEachRowsOwnHue() {
+        // Decision 3 of the Tier 3 review (Adam, 2026-11-02): white outputs show the row's hue, not
+        // a color by kind, so the two rows and the sources can be told apart.
+        let top = { (column: Int, color: UInt8) in LaunchControlOutgoing.color(.encoder(row: 0, column: column), color) ?? [] }
+        let middle = { (column: Int, color: UInt8) in LaunchControlOutgoing.color(.encoder(row: 1, column: column), color) ?? [] }
+        var (driver, hub, midi) = connected(layout: .xl3, outputs: [(4, "ADAT 1/2")], sendOutputs: [2, 4])
+        XCTAssertTrue(midi.contains(top(0, 33)), "top row (Phones): teal")
+        XCTAssertFalse(midi.contains(top(0, 45)), "no longer blue by kind")
+        let send = hub.handle(.mix(bus: .input, channel: 0, output: 4, parameter: "faderlin", value: .number(0.5)), now: 1)
+        XCTAssertTrue(driver.take(send, hub: &hub, now: 1).midi.contains(middle(0, 53)),
+                      "middle row (ADAT 1/2), lit once Keys has a send there: magenta")
+        let (_, _, lc3) = connected(layout: .lc3, outputs: [(4, "ADAT 1/2")], sendOutputs: [2])
+        XCTAssertTrue(lc3.contains(top(0, 33)), "the Launch Control 3's top row, sending: teal")
+    }
+
+    func testBrightnessFallsGeometricallyWithTheTravel() {
+        typealias D = LaunchControlDriver
+        XCTAssertNil(D.brightness(position: 0), "−oo: dark")
+        XCTAssertNil(D.brightness(position: FaderCurve.position(gainDB: nil)))
+        XCTAssertEqual(D.brightness(position: 1) ?? 0, 1, accuracy: 1e-9, "the top of the travel: full")
+        let lowest = D.brightness(position: FaderCurve.position(gainDB: -64)) ?? 0
+        XCTAssertEqual(lowest * 127, D.dimmestValue, accuracy: 0.5, "the bottom of the travel: the dimmest value")
+        // Equal steps of travel give equal ratios of brightness (test 17: geometric looked even).
+        let a = D.brightness(position: 0.3) ?? 0, b = D.brightness(position: 0.5) ?? 0, c = D.brightness(position: 0.7) ?? 0
+        XCTAssertEqual(b / a, c / b, accuracy: 1e-9)
+        var last = 0.0
+        for step in 1...100 {
+            let value = D.brightness(position: Double(step) / 100) ?? 0
+            XCTAssertGreaterThan(value, last, "brighter at every step up: \(step)")
+            last = value
+        }
+    }
+
+    func testShadedIsTheColorsExactRGBScaled() {
+        typealias D = LaunchControlDriver
+        XCTAssertEqual(D.shaded(21, position: 0), .palette(0), "−oo: dark")
+        XCTAssertEqual(D.shaded(5, position: 1), .rgb(D.RGB(127, 0, 0)), "full: red's exact color")
+        guard case .rgb(let low) = D.shaded(9, position: FaderCurve.position(gainDB: -64)) else { return XCTFail("orange") }
+        XCTAssertEqual(low, D.RGB(16, 5, 0), "orange dims only until its green reaches the dimmest lit value, keeping its hue")
+        guard case .rgb(let purple) = D.shaded(49, position: FaderCurve.position(gainDB: -64)) else { return XCTFail("purple") }
+        XCTAssertEqual(purple, D.RGB(5, 0, 40), "purple keeps its red, so it doesn't turn blue")
+        guard case .rgb(let redLow) = D.shaded(5, position: FaderCurve.position(gainDB: -64)) else { return XCTFail("red") }
+        XCTAssertEqual(redLow, D.RGB(5, 0, 0), "red dims all the way to the dimmest lit value")
+        XCTAssertNil(D.brightness(position: .nan), "not a number: dark, not a crash")
+        XCTAssertEqual(D.shaded(5, position: .nan), .palette(0))
+        XCTAssertNil(TotalMixValue.number(.nan).number, "TotalMix FX's NaN is no number")
+        XCTAssertEqual(D.RGB(1, 127, 0).scaled(0.08), D.RGB(1, 10, 0), "a lit part stays lit")
+        for color in D.paletteForTotalMixColor.values.sorted() + D.sendRowHues {
+            XCTAssertNotNil(D.paletteRGB[color], "every color the encoders use has its exact color: \(color)")
+        }
+        XCTAssertEqual(D.shaded(17, position: 0.5), .palette(17), "a color without an exact one stays undimmed")
+    }
+
+    func testEncodersShowTheButtonsYellow() {
+        // Test 18: palette yellow looks greener on the encoders than on the buttons.
+        typealias D = LaunchControlDriver
+        XCTAssertEqual(D.encoderColor(13), .rgb(D.RGB(127, 85, 0)))
+        XCTAssertEqual(D.encoderColor(9), .palette(9), "orange matched as it is")
+        var hub = SurfaceHub()
+        for event: TotalMixEvent in [.channel(bus: .input, channel: 0, parameter: "name", value: .text("Keys")),
+                                     .channel(bus: .input, channel: 0, parameter: "color", value: .number(7)),
+                                     .mix(bus: .input, channel: 0, output: 0, parameter: "faderlin", value: .number(0.5)),
+                                     .mix(bus: .input, channel: 0, output: 0, parameter: "balpan", value: .number(0)),
+                                     .other(path: "controlroom/mainout", value: .number(0))] {
+            _ = hub.handle(event, now: 0)
+        }
+        var driver = LaunchControlDriver(name: "lc", layout: .xl3)
+        _ = driver.start(hub: &hub, now: 0)
+        let midi = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0).midi
+        XCTAssertTrue(midi.contains(LaunchControlOutgoing.rgb(.encoder(row: 2, column: 0), red: 127, green: 85, blue: 0) ?? [1]),
+                      "a yellow channel's pan encoder, with the setting off: the matched yellow")
+        XCTAssertFalse(midi.contains([0xB0, 0x1D, 13]), "not palette yellow")
+
+        // A send row whose output is yellow: the matched yellow too, with the setting off.
+        var (sendDriver, sendHub, _) = connected(layout: .xl3)
+        let yellow = sendHub.handle(.channel(bus: .output, channel: 2, parameter: "color", value: .number(7)), now: 1)
+        XCTAssertTrue(sendDriver.take(yellow, hub: &sendHub, now: 1).midi.contains(
+            LaunchControlOutgoing.rgb(.encoder(row: 0, column: 0), red: 127, green: 85, blue: 0) ?? [1]), "the top row, sending to yellow Phones")
+    }
+
+    /// Keys (input 1/2, red in TotalMix FX) to Main Out at `db`.
+    private func keysLevel(_ hub: inout SurfaceHub, _ db: Double?, now: Double) -> CoreOutput {
+        hub.handle(.mix(bus: .input, channel: 0, output: 0, parameter: "faderlin",
+                        value: .number(FaderCurve.position(gainDB: db))), now: now)
+    }
+
+    func testLevelBrightnessIsOffByDefault() {
+        let level = { (color: UInt8) in LaunchControlOutgoing.color(.encoder(row: 1, column: 0), color) ?? [] }
+        var (driver, hub, midi) = connected(layout: .lc3, device: .lc3)
+        XCTAssertFalse(driver.levelBrightness)
+        XCTAssertTrue(midi.contains(level(5)), "Keys's level encoder: full red")
+        let step = driver.take(keysLevel(&hub, -50, now: 1), hub: &hub, now: 1)
+        XCTAssertFalse(step.midi.contains(level(7)), "no shading while off")
+    }
+
+    func testLevelBrightnessShadesLevelAndSendEncodersButNotPan() {
+        let level = { (color: UInt8) in LaunchControlOutgoing.color(.encoder(row: 1, column: 0), color) ?? [] }
+        let top = { (color: UInt8) in LaunchControlOutgoing.color(.encoder(row: 0, column: 0), color) ?? [] }
+        let rgb = { (row: Int, light: LaunchControlDriver.LightColor) -> [UInt8] in
+            guard case .rgb(let c) = light else { return [] }
+            return LaunchControlOutgoing.rgb(.encoder(row: row, column: 0), red: c.red, green: c.green, blue: c.blue, model: .lc3) ?? []
+        }
+        let red = { (db: Double?) in rgb(1, LaunchControlDriver.shaded(5, position: FaderCurve.position(gainDB: db))) }
+        let medium = red(-20), dim = red(-50)
+        var (driver, hub, _) = connected(layout: .lc3, device: .lc3)
+        _ = driver.take(keysLevel(&hub, 0, now: 0.5), hub: &hub, now: 0.5)
+        let on = driver.setLevelBrightness(true, hub: hub)
+        XCTAssertTrue(on.contains(red(0)), "Keys at 0 dB: red at about 55% (70 of 127)")
+        guard case .rgb(let vox) = LaunchControlDriver.shaded(3, position: 0.5) else { return XCTFail("white") }
+        XCTAssertTrue(on.contains(LaunchControlOutgoing.rgb(.encoder(row: 1, column: 1), red: vox.red, green: vox.green, blue: vox.blue, model: .lc3) ?? [1]),
+                      "Vox (white) at the test's 0.5: dimmed white")
+        var now = 1.0
+        for (db, expected, why) in [(-20.0 as Double?, medium, "−20 dB: dimmer"), (-50, dim, "−50 dB: dimmer still"),
+                                    (nil, level(0), "−oo: dark"), (-3, red(-3), "−3 dB: bright again")] {
+            now += 1
+            let step = driver.take(keysLevel(&hub, db, now: now), hub: &hub, now: now)
+            XCTAssertTrue(step.midi.contains(expected), why)
+        }
+        _ = driver.take(keysLevel(&hub, -50, now: 10), hub: &hub, now: 10)
+        XCTAssertTrue(driver.setLevelBrightness(false, hub: hub).contains(level(5)), "turned off: full color again")
+
+        // The user's own turn shades the encoder too: the hub doesn't echo a surface's own move
+        // (review of 2026-11-02).
+        _ = driver.take(keysLevel(&hub, 0, now: 11), hub: &hub, now: 11)
+        _ = driver.setLevelBrightness(true, hub: hub)
+        let turned = driver.receive([0xBF, 0x15, 10], hub: &hub, now: 12)
+        let turnedTo = hub.mirror.value(of: .level(ChannelRef(.input, 0), submix: 0)) ?? -1
+        XCTAssertTrue(turned.midi.contains(rgb(1, LaunchControlDriver.shaded(5, position: turnedTo))), "turned down on the device: dimmed to match")
+        XCTAssertTrue(driver.receive([0xBF, 0x15, 0], hub: &hub, now: 13).midi.contains(level(0)), "turned to −oo: dark")
+
+        // On, from the start (as after a reconnect): the level shaded, the pan row at full color.
+        var hubOn = hub
+        var fromStart = LaunchControlDriver(name: "lc2", layout: .lc3, levelBrightness: true)
+        _ = fromStart.start(hub: &hubOn, now: 20)
+        _ = fromStart.take(keysLevel(&hubOn, -20, now: 20), hub: &hubOn, now: 20)
+        let drawn = fromStart.receive([0x9F, 0x0C, 0x7F], hub: &hubOn, now: 21).midi
+        XCTAssertTrue(drawn.contains(medium), "Keys at −20 dB: dimmed red")
+        XCTAssertTrue(drawn.contains(top(5)), "Keys's pan: full red")
+
+        // A send row shades by the send's level: the top row sending to Phones, Keys's send at −50 dB.
+        var (sending, sendHub, _) = connected(layout: .lc3, device: .lc3, sendOutputs: [2])
+        _ = sending.setLevelBrightness(true, hub: sendHub)
+        let send = sendHub.handle(.mix(bus: .input, channel: 0, output: 2, parameter: "faderlin",
+                                       value: .number(FaderCurve.position(gainDB: -50))), now: 1)
+        XCTAssertTrue(sending.take(send, hub: &sendHub, now: 1).midi.contains(rgb(0, LaunchControlDriver.shaded(33, position: FaderCurve.position(gainDB: -50)))),
+                      "Phones (white, so teal) at −50 dB: dimmed teal")
     }
 
     func testTheAppCanSetASendRow() {
@@ -476,6 +627,18 @@ final class LaunchControlDriverTests: XCTestCase {
         _ = driver.receive([0xB0, 0x6B, 0x7F], hub: &hub, now: 7.1)
         XCTAssertEqual(driver.receive([0xBE, 0x1D, 0x7F], hub: &hub, now: 7.5).core.messages, [],
                        "no reset once Page or Track has been pressed in this hold of Shift")
+        _ = driver.receive([0xB6, 0x3F, 0x00], hub: &hub, now: 8)
+
+        // With level by brightness on, the reset darkens the send's light and the restore lights it.
+        _ = driver.setLevelBrightness(true, hub: hub)
+        _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 9)
+        XCTAssertTrue(driver.receive([0xBE, 0x0D, 0x7F], hub: &hub, now: 9.4).midi.contains([0xB0, 0x0D, 0]), "−oo: dark")
+        _ = driver.receive([0xB6, 0x3F, 0x00], hub: &hub, now: 10)
+        _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 11)
+        let lit = driver.receive([0xBE, 0x0D, 0x7F], hub: &hub, now: 11.4).midi
+        guard case .rgb(let teal) = LaunchControlDriver.shaded(33, position: sendBefore ?? -1) else { return XCTFail("teal") }
+        XCTAssertTrue(lit.contains(LaunchControlOutgoing.rgb(.encoder(row: 0, column: 0), red: teal.red, green: teal.green, blue: teal.blue) ?? [1]),
+                      "restored: teal, dimmed for the restored level")
     }
 
     func testShiftAndTurnNeverRaisesALevel() {

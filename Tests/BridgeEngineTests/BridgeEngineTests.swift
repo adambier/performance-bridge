@@ -66,6 +66,14 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertEqual(saved.all.map(\.0), [.xl3, .lc3])
         XCTAssertEqual(saved.all.first?.1, [targets[0], targets[2]])
         XCTAssertEqual(saved.all.last?.1, [targets[1]])
+
+        // Level by brightness: off unless saved on, and held with no device (Adam, 2026-11-02).
+        XCTAssertFalse(engine.status.launchControlLevelBrightness)
+        engine.setLaunchControlLevelBrightness(true)
+        XCTAssertTrue(engine.status.launchControlLevelBrightness)
+        var savedOn = BridgeSettings()
+        savedOn.launchControlLevelBrightness = true
+        XCTAssertTrue(BridgeEngine(settings: savedOn).status.launchControlLevelBrightness, "a saved setting is taken up")
         #endif
     }
 

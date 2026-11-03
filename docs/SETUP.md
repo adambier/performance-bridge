@@ -57,7 +57,7 @@ Checked on screen with TotalMix FX "2.10 (1)" on a Mac (2026-10-31); the screens
 8. Leave **Options → Submix linked to OSC Controller** as it is. It is a submenu with one item per OSC
    Controller, 1 to 4; all four were checked on the test Mac. RME's Global OSC document says "Follow Submix"
    should be off with Global OSC; this submenu is inferred to be that setting, since TotalMix FX has no item by
-   that name. The tests ran with it checked and Global OSC worked (`docs/TOTALMIX-OSC.md`, section 1); a run
+   that name. The tests ran with it checked and Global OSC worked ([`docs/TOTALMIX-OSC.md`](TOTALMIX-OSC.md), section 1); a run
    with it unchecked hasn't been compared.
 9. **Mute and PFL.** The hardware controllers' mute and PFL buttons depend on three settings in TotalMix FX's
    window, checked on screen:
@@ -65,15 +65,15 @@ Checked on screen with TotalMix FX "2.10 (1)" on a Mac (2026-10-31); the screens
    <img src="../App/PerformanceBridge/Resources/totalmix-control-strip.png" width="160" alt="TotalMix FX's Control Strip: the M, S, and F buttons, and the options panel with solo/pfl mode set to live">
 
    - **Mute Master.** Turn on the **M** button in the Control Strip, below the interface's name and "undo". While
-     it is off, a mute only selects the channel's mute and doesn't silence it (`docs/TOTALMIX-OSC.md`, the global
+     it is off, a mute only selects the channel's mute and doesn't silence it ([`docs/TOTALMIX-OSC.md`](TOTALMIX-OSC.md), the global
      mute recheck of 2026-10-31). Performance Bridge reads it: while it is off, the menu shows **Mute Master:
      Off**, the Setup Guide shows a warning, and on a Launch Control a mute that is on flashes.
    - **Live mode.** In the Control Strip, click **options** and, under **solo/pfl mode**, choose **live**. Without
      it, PFL from a hardware controller is accepted but has been observed to show nothing in TotalMix FX's window
-     (`docs/TOTALMIX-OSC.md`, test 6). TotalMix FX
+     ([`docs/TOTALMIX-OSC.md`](TOTALMIX-OSC.md), test 6). TotalMix FX
      doesn't send this setting over OSC, so Performance Bridge can't check it; the Setup Guide reminds you.
    - **Where PFL goes.** In the Control Room section, click **assign**, then **Cue/PFL to**, and choose a
-     headphone output, e.g., **Phones 1** (checked on screen; `docs/TOTALMIX-OSC.md`, test 21). Its
+     headphone output, e.g., **Phones 1** (checked on screen; [`docs/TOTALMIX-OSC.md`](TOTALMIX-OSC.md), test 21). Its
      default, **Main**, makes PFL replace what Main Out plays, so on stage the audience hears only the channel
      being checked (test 6). TotalMix FX doesn't send this setting over OSC (test 21), so Performance Bridge can't check it; the Setup
      Guide reminds you.
@@ -97,7 +97,7 @@ not show it grayed out. Checked on screen (2026-10-31) unless marked otherwise.
    <img src="../App/PerformanceBridge/Resources/totalmix-channel-layout.png" width="560" alt="TotalMix FX's Channel Layout window, Inputs tab, with the Hide Channel in boxes">
 
 4. Then choose **Refresh Channels from TotalMix FX** in Performance Bridge's menu: TotalMix FX doesn't announce
-   hidden or shown channels over OSC (`docs/TOTALMIX-OSC.md`, test 11). The app also refreshes by itself when
+   hidden or shown channels over OSC ([`docs/TOTALMIX-OSC.md`](TOTALMIX-OSC.md), test 11). The app also refreshes by itself when
    its Channel Layout tab opens and when TotalMix FX comes back after going quiet.
 
 The Channel Layout window's **Remote Controller** column lists M1–M4 and O1–O4 for each channel when nothing is hidden; what it
@@ -123,7 +123,8 @@ lowest device ID.
 
 With a Launch Control chosen, the Connections tab also shows its send rows below Apply. Their outputs can
 be chosen there at any time while TotalMix FX is open, with the Launch Control connected or not, and a
-change takes effect at once (Step 6).
+change takes effect at once (Step 6). Below them, **Show levels by brightness** (off by default) dims each
+level and send encoder's light with its level, from full at the top to dim at the bottom and dark at −oo. Pan encoders keep full brightness; the XL 3's faders have no lights.
 
 ## Step 4: Check the connections
 
@@ -192,7 +193,7 @@ and Speaker B) in TotalMix FX or with an ARC USB; the hardware controllers don't
 
 **Sends** set the headphone mixes and the other submixes. A send control sets how much of its channel goes to one other output, e.g.,
 Phones 1. A row of send controls is that output's whole submix, one channel per column. The outputs a send row can
-feed are the ones in Settings → Channel Layout → Outputs, in that order, except Main Out and Main Out B (they carry
+feed are the ones in **Settings… → Channel Layout → Outputs**, in that order, except Main Out and Main Out B (they carry
 the main mix) and the cue output (PFL uses it).
 
 ### Launch Control XL 3
@@ -214,10 +215,11 @@ the main mix) and the cue output (PFL uses it).
 | **Shift + turn an encoder** | Reset it: a pan to the center, a send to −oo (release Shift, then Shift + turn it again to bring it back). Hold Shift for a moment (0.3 s) first; after Page or Track in the same hold, turning does nothing. |
 
 - The two send rows never feed the same output: stepping one skips the output the other has.
-- The screen shows the channels on the page, counted in the order of Settings → Channel Layout with a stereo pair
+- The screen shows the channels on the page, counted in the order of **Settings… → Channel Layout** with a stereo pair
   counting once, and where each send row goes (e.g., "Inputs 1-7", "Top > Phones 1",
   "Mid > Phones 2"). Moving a control shows its channel, what it does, and its value. After each Page press the
-  screen names the row and its new output, and each send row's lights take the color of the output it feeds.
+  screen names the row and its new output, and each send row's lights take the color of the output it feeds: its
+  color in TotalMix FX, or, for an output left white, teal (a blue-green) for the top row and magenta for the middle row.
 - Page and Track are lit where they can move and dark at the ends. While Shift is held, Page lights for the middle
   row.
 - Each row's output is remembered when Performance Bridge restarts. It can also be chosen in Settings, at the
@@ -240,7 +242,7 @@ The Launch Control 3 works the same way, with fewer controls:
 
 Track works as on the XL 3, and Shift + turn resets an encoder as it does there; a level above 0 dB comes down to 0 dB,
 and one at or below 0 dB stays. The screen shows the channels on
-the page, the top row's function (e.g., "Top: Pan"), and the buttons' ("Buttons: Mute"; briefly "Buttons" over "PFL" while Function is held). The Launch Control 3 has not been tried on a device yet (`docs/LAUNCH-CONTROL-3.md`).
+the page, the top row's function (e.g., "Top: Pan"), and the buttons' ("Buttons: Mute"; briefly "Buttons" over "PFL" while Function is held). The Launch Control 3 has not been tried on a device yet ([`docs/LAUNCH-CONTROL-3.md`](LAUNCH-CONTROL-3.md)).
 
 ### Roto-Control
 

@@ -76,6 +76,9 @@ seen").
 [^test-13]: Test 13 (2026-11-02), section [10](#test-13-2026-11-02-button-shades-and-brightness).
 [^test-14]: Test 14 (2026-11-02), section [10](#test-14-2026-11-02-asking-for-daw-mode-twice).
 [^test-15]: Test 15 (2026-11-02), section [10](#test-15-2026-11-02-mute-master-shades-and-flashing).
+[^test-17]: Test 17 (2026-11-02), section [10](#test-17-2026-11-02-colors-and-brightness-for-101).
+[^test-18]: Test 18 (2026-11-02), section [10](#test-18-2026-11-02-the-101-build-in-the-app-and-two-adjustments).
+[^tm-marks]: `docs/TOTALMIX-OSC.md`, test 18 (2026-11-01), the marks on TotalMix FX's faders.
 
 ## 2. MIDI ports
 
@@ -287,7 +290,7 @@ port names.
    nothing until it passes the middle?
 8. **Relative encoders.** Run: they work as the guide says.[^test-2] `relative 1 on`: do encoders 1–8 report 77–84 with 65 and 63 for single
    steps?
-9. **Colors.** Run for indices 0–39 and RGB;[^test-4] 40–127 have not been seen yet. `palette 0`, `palette 40`, and `palette 80`. Compare with the guide's palette. Is 0
+9. **Colors.** Run for indices 0–39 and RGB;[^test-4] 33, 37, 45, 49, and 53 seen in test 17;[^test-17] the rest of 40–127 not yet. `palette 0`, `palette 40`, and `palette 80`. Compare with the guide's palette. Is 0
    off? Then `rgb b11 127 0 0`, and check the Track, Page, Record, Play, and Novation buttons for
    lights.
 10. **Screen.** Run.[^test-5] `display f1 2`, then `text f1 0 Mix`, `text f1 1 ADI-2`, `text f1 2 -6.0 dB`, and
@@ -400,12 +403,39 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   caught by the app's port check, not by this. Whether the device answers the question in a Custom
   Mode is untested, so the check is skipped there (review of 2026-11-02).
 - **Colors.** Level and pan encoders show their strip's TotalMix FX color from the palette; a blank
-  strip is dark. A send row shows the color of the output it sends to (an output left white in
-  TotalMix FX: green for a control room output, blue for another), so each row reads as one send, as
-  Ableton Live's integration lights send rows in the send's color (Logic Pro's and Cubase's use a
-  fixed color per row).[^ug-daw-chapters] Blue (45)
-  and purple (49) are past the part of the palette seen in test 4 (inference from the guide's
-  picture).
+  strip is dark. A send row shows the color of the output it sends to, so each row reads as one
+  send, as Ableton Live's integration lights send rows in the send's color.[^ug-daw-chapters] An
+  output left white in TotalMix FX (its default) shows the row's own hue instead, as Logic Pro's and
+  Cubase's integrations use a fixed color per row: teal (33) for the top row and magenta (53) for
+  the middle, neither one of TotalMix FX's eight colors, so the rows can be told apart from each
+  other and from the sources (Adam, 2026-11-02, from the Tier 3 review of that date; before 1.0.1,
+  a white output was green in the control room and blue otherwise). Both have been seen as named
+  and told apart from blue, purple, and green; cyan (37), tried first, looked too close to
+  blue.[^test-17] Blue (45) and purple (49) were seen as named in test 17 too.
+- **Level by brightness** (Adam, 2026-11-02, from the Tier 3 review of that date). A setting in
+  Settings → Connections, off by default, dims each send encoder continuously with its level, so
+  turning a control has a visible, proportional effect (it isn't meant for reading a level off the
+  light; Adam, 2026-11-02). The light is the color's exact RGB (SysEx 01h 53h), which matched each
+  palette color compared on the encoders,[^test-17] scaled so its brightness falls geometrically
+  from full at the top of the travel to a value of 5 at the bottom, and dark at −oo.
+  - In test 17, even steps of value and a 2.2 gamma curve bunched at the top, values down to about
+    80 looked close to full (64 the first clearly dimmer), and a geometric run from 80 down looked
+    close to even, while one from 127 bunched its first two or three steps.[^test-17] The curve as
+    built, geometric from 127, was seen to dim and brighten predictably as an encoder
+    turned.[^test-18] By the curve, a send at 0 dB is at about 55% (70 of 127; computed).
+  - In test 18, 9, 7, and 5 dimmed in turn and 4 and below looked dark, hence the floor at
+    5.[^test-18] A color with two lit parts dims only until its smaller part reaches 5, so the part
+    doesn't go dark first and change the hue: purple (16, 0, 127) stops at 5/16 of full and orange
+    (127, 40, 0) at 5/40. At those dimmest values, purple (5, 0, 40) was seen as purple beside blue
+    (0, 0, 40), "a bit close but distinguishable", and orange (16, 5, 0) as orange beside red
+    (16, 0, 0), "very different".[^test-18]
+  - Palette yellow (13) looks greener on the encoders than on the buttons, so the encoders show
+    yellow as 127, 85, 0, which matched the buttons' yellow best of those tried, with the setting on
+    or off. Palette orange (9) matched as it is; orange's exact color with the setting on (127, 40,
+    0) was matched on buttons only (test 13).[^test-18]
+  - Pan encoders keep full brightness, and the faders, which carry the level, have no lights. Red's,
+    green's, and grey's exact colors are inference (read off the guide's picture; grey's a guess),
+    and purple's (16, 0, 127) is inferred from 20 looking slightly redder; 16 itself was not lit.
 - **Screen.** Each fader and encoder has a three-line display (arrangement 2): the channel's name,
   what the control does ("Level", "Pan", "> Phones 1"), and the value in dB or as a pan, sent by
   the driver.[^test-5] The stationary display, the home screen, has three lines (arrangement 2): the
@@ -690,4 +720,85 @@ pressing the button turned the PFL off. No blue at start.
 
 **Consequence.** Function held for PFL works in the driver; on a Launch Control 3 it also needs
 Function to send its release (an inference, docs/LAUNCH-CONTROL-3.md).
+
+
+### Test 17 (2026-11-02): colors and brightness for 1.0.1
+
+**Setup.** Adam's Launch Control XL 3, firmware 1.2, LED brightness at its default. `sbdev lcxl` on
+branch `v1.0.1` (log `lcxl-101-colors-1103.log`), with `color` and `rgb` commands on the encoders.
+Seen by Adam.
+
+**Findings:**
+- Palette 37, 53, 45, and 49 showed as cyan, magenta, blue, and purple, all told apart, but cyan and
+  blue looked "pretty similar". Teal (33) looked "quite different" from blue; green (21) looked
+  different from all of them.
+- RGB against palette, one above the other: 0, 127, 76 matched teal (33); 127, 0, 127 matched
+  magenta (53); 0, 0, 127 matched blue (45); and 127, 127, 127 matched white (3), in hue and
+  brightness. Purple (49) looked a little bluer than 42, 0, 127; 20, 0, 127 was closer, still
+  slightly redder.
+- Brightness steps by RGB (red): 127, 38, 10, and dark all looked different; so did white at 127,
+  38, and 10.
+- Eight reds in even steps of value (127 down to 5): the brighter ones looked nearly the same, with
+  the big changes all at the dim end. On a 2.2 gamma curve (127, 94, 67, 45, 27, 15, 6, 2): still
+  bunched at the top. Geometric (127, 70, 39, 21, 12, 7, 4, 2): the first two or three bunched,
+  and the bottom changes were less distinct.
+- From 127 down (127, 96, 80, 64, 48, 40, 32, 24), 64 was the first that looked clearly dimmer than
+  127.
+- Geometric from 80 to 6 (80, 55, 38, 26, 18, 13, 9, 6): "pretty close" to even; 80 looked a little
+  dimmer than 127; 6 looked clearly lit, and brighter than 9.
+- A palette color after an RGB color on the same encoder, and the reverse (`rgb` 38, 0, 0; `color`
+  5; `rgb` 10, 0, 0; `color` 0): each showed the newest color, ending dark.
+
+**Consequence.**
+- The top send row's hue for white outputs is teal (33), not cyan (37).
+- Purple's exact color is 16, 0, 127. This is an inference from 20 being slightly redder; 16 itself
+  was not lit.
+- Level by brightness dims continuously: brightness falls geometrically from full at the top of the
+  travel to 9 at its bottom (Adam, 2026-11-02: "the act of adjusting the fader [should] cause a
+  predictable outcome"). The floor was set at 9, because 6 looked brighter than 9; test 18
+  lowered it to 5.
+- Since values down to about 80 looked close to full, the top of the travel changes little:
+  computed for the floor of 9, about the top 17% (above about +0.3 dB); with test 18's floor of
+  5, about the top 14% (above about +1.3 dB). Not seen.
+- The palette and RGB messages replace each other, so the driver can use either for any state.
+
+### Test 18 (2026-11-02): the 1.0.1 build in the app, and two adjustments
+
+**Setup.** Adam's Launch Control XL 3. The app from branch `v1.0.1` (commit `42888a3`; logs
+`app-101-xl3-1102.log`, `app-101-xl3-relaunch-1102.log`, `app-101-lc3sim-1102.log`), then
+`sbdev lcxl` (`lcxl-101-tune-1102.log`). TotalMix FX with ADAT 3/4 (white) on the top send row and
+Phones 2 (yellow) on the middle. Seen by Adam.
+
+**Findings:**
+- **Send-row colors** (setting off). The top row (ADAT 3/4, white) showed teal, which Adam saw as
+  cyan on its own. The middle row (Phones 2, yellow in TotalMix FX) showed "lime": yellow, but a
+  little greener than the yellow buttons.
+- **Show levels by brightness, turned on.** The send encoders dimmed at once to their levels, and
+  the pan row stayed at full color.
+- **Turning a send encoder by hand.** The light dimmed and brightened as the encoder turned, and
+  this "feels predictable"; the dimmest level "could be dimmer".
+- **Moving the send in TotalMix FX's window.** The light followed.
+- **Shift + turn.** A send at about the middle went to −oo, dark. A second Shift + turn brought it
+  back to −18.4 dB, lit at a medium brightness.
+- **The setting off.** Full color again at once.
+- **The setting on, then a relaunch.** It was remembered.
+- **The Launch Control 3 layout on the XL 3** (`lc3-sim`). The level row dimmed with the level
+  ("pretty much"; again, it could go dimmer), followed TotalMix FX's fader, and the top row
+  dimmed as a send and stayed at full color as pan.
+- **The dimmest value** (red, `sbdev lcxl`). 9, 7, and 5 each looked dimmer than the last; 4, 3,
+  and 2 looked dark.
+- **Yellow on the encoders.** Against a top button lit palette yellow (13), RGB 127, 85, 0 on an
+  encoder matched best; palette 13 and 127, 100, 0 were greener.
+- **Orange on the encoders.** Palette orange (9) matched the button's orange better than 127, 30, 0.
+- Several `sbdev` commands pasted at once lost some of them; one at a time worked.
+- **Two-part colors at their dimmest** (after the hue floor was added, `lcxl-101-hue-1102.log`):
+  purple at 5, 0, 40 looked purple beside blue at 0, 0, 40 ("a bit close but distinguishable"), and
+  orange at 16, 5, 0 looked orange beside red at 16, 0, 0 ("very different").
+
+**Consequence.**
+- The floor is 5.
+- Encoders show yellow as 127, 85, 0, with the setting on or off; buttons keep palette 13.
+- A color with two lit parts dims only until its smaller part reaches 5, which keeps purple and
+  orange recognizable at their dimmest.
+- Everything else in the 1.0.1 build behaved as section 9 describes.
 

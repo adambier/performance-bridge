@@ -45,7 +45,7 @@ words ("inference", "untested").
     (2026-10-29), section 9; firmware 3.3.0.
 [^test-3]: [Test 3](#test-3-2026-10-30-the-open-questions) (2026-10-30), section 9; firmware
     3.3.0.
-[^test-4]: [Test 4](#test-4-2026-10-30-rotodriver-with-totalmix-through-sbdev-bridge)
+[^test-4]: [Test 4](#test-4-2026-10-30-rotodriver-with-totalmix-fx-through-sbdev-bridge)
     (2026-10-30), section 9; firmware 3.3.0.
 [^test-5]: [Test 5](#test-5-2026-11-01-where-the-02-indent-is-and-send-knobs) (2026-11-01),
     section 9; firmware 3.3.0.
@@ -53,7 +53,7 @@ words ("inference", "untested").
     firmware 3.3.0.
 [^test-7]: [Test 7](#test-7-2026-11-01-the-fx-label) (2026-11-01), section 9; firmware 3.3.0.
 [^totalmix-test-5]: Test 5 (2026-10-28) of the TotalMix FX tests,
-    [docs/TOTALMIX-OSC.md](TOTALMIX-OSC.md#test-5-2026-10-28-does-totalmix-echo-a-command),
+    [docs/TOTALMIX-OSC.md](TOTALMIX-OSC.md#test-5-2026-10-28-does-totalmix-fx-echo-a-command),
     section 6.
 [^totalmix-meters]: [docs/TOTALMIX-OSC.md](TOTALMIX-OSC.md#3-addresses-this-project-uses),
     section 3, "Meter colors".

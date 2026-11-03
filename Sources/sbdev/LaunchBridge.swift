@@ -262,7 +262,7 @@ func launchBridge(_ arguments: ArraySlice<String>) -> Never {
     while let line = readLine() {
         if !session.run(line) { quit = true; break }
     }
-    if !quit, isatty(fileno(stdin)) == 0 {
+    if !quit, !standardInputIsTerminal() {
         while true { Thread.sleep(forTimeInterval: 60) }
     }
     session.close()

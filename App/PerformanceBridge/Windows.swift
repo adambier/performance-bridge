@@ -370,6 +370,18 @@ struct LaunchControlSendRowsView: View {
             }
             .font(.callout)
             .foregroundStyle(.secondary)
+
+            // Off by default (Adam, 2026-11-02); takes effect at once, like the send rows.
+            Toggle("Show levels by brightness", isOn: Binding(
+                get: { model.status.launchControlLevelBrightness },
+                set: { model.setLevelBrightness($0) }))
+                .padding(.top, 6)
+            Text(chosen == .lc3
+                 ? "The level and send encoders dim with their levels and go dark at −oo. Pan keeps full brightness."
+                 : "The send encoders dim with their levels and go dark at −oo. Pan keeps full brightness, and the faders have no lights.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 

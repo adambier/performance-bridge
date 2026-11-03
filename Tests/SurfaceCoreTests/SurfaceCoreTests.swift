@@ -688,12 +688,12 @@ final class ScaleAndTextTests: XCTestCase {
         XCTAssertEqual(hub.strips(of: id)?.compactMap { $0.info }.count, 1, "first page: the input, then blanks")
     }
 
-    func testAnUnassignedCueIsKnownOnlyOnceReported() {
+    func testAnUnassignedRoleChangesNothing() {
+        // Left from the PFL warning, removed when "Cue/PFL to" proved unreadable (TotalMix FX test
+        // 21): a role first reported as none no longer counts as a change (review of 2026-11-02).
         var mirror = MixerMirror()
-        XCTAssertFalse(mirror.reportedRoles.contains(.cue))
-        XCTAssertEqual(mirror.apply(.other(path: "controlroom/cuechan", value: .number(-1))), .controlRoom)
-        XCTAssertTrue(mirror.reportedRoles.contains(.cue))
-        XCTAssertNil(mirror.monitoring[.cue], "reported as none")
+        XCTAssertNil(mirror.apply(.other(path: "controlroom/cuechan", value: .number(-1))), "reported as none: nothing changes")
+        XCTAssertNil(mirror.monitoring[.cue])
         XCTAssertNil(mirror.apply(.other(path: "controlroom/cuechan", value: .number(-1))), "no change")
         XCTAssertEqual(mirror.apply(.other(path: "controlroom/cuechan", value: .number(6))), .controlRoom)
         XCTAssertEqual(mirror.monitoring[.cue], 6)

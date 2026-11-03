@@ -295,7 +295,7 @@ func launchControl(_ arguments: ArraySlice<String>) -> Never {
     while let line = readLine() {
         if !session.run(line) { quit = true; break }
     }
-    if !quit, isatty(fileno(stdin)) == 0 {
+    if !quit, !standardInputIsTerminal() {
         // Standard input is not a terminal and has ended: keep listening until Ctrl-C.
         while true { Thread.sleep(forTimeInterval: 60) }
     }
