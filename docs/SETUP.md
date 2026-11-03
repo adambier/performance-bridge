@@ -14,7 +14,7 @@ Open **Performance Bridge** from the Applications folder. It runs in the menu ba
 Setup Guide follows these steps one page at a time, with **Back** and **Continue**, and checks each one live where
 it can: whether TotalMix FX answers, whether it has sent its channels, whether meters arrive, and whether
 the hardware controller is connected. The marks across its top show every step at a glance (green when done);
-click one to go to its page, done or not. A finished page can still show its setup instructions: click **Show Setup
+click one to go to its page, done or not. A finished page can still show its setup instructions: click **Show
 Instructions**. It opens at the first step not done (or at the first note, once every check is done), by itself the first time the app runs; after
 that, choose **Setup Guide…** from the menu.
 
@@ -116,8 +116,9 @@ Launch Control 3.
 
 1. Connect the hardware controller to the Mac by USB. It can be connected before or after the app starts.
 2. In Performance Bridge, open **Settings… → Connections** and choose it from the **Controller** menu
-   under Hardware Controller. The Roto-Control is the default. Until a hardware controller has connected,
-   Performance Bridge chooses one by itself when the one chosen isn't plugged in and exactly one other is.
+   under Hardware Controller. The Roto-Control is the default. Until a hardware controller has connected (each time the app
+   starts) or you click Apply, Performance Bridge switches by itself to one that is plugged in when the one chosen isn't
+   and exactly one other is.
 3. Click **Apply**, just below the menu. Apply, **Revert**, and **Defaults** cover the TotalMix FX connection (host
    and ports) and the hardware controller; the send rows below them don't need Apply.
 

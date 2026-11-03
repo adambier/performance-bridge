@@ -121,7 +121,7 @@ public enum SetupChecklist {
             steps.append(SetupStep(id: "roto", title: "Roto-Control found, connecting", state: .waiting, detail: rotoBusy))
         } else {
             steps.append(SetupStep(id: "roto", title: "Roto-Control not found", state: .waiting,
-                                   detail: "Connect the Roto-Control by USB. If it’s connected, try another cable or USB port.\n\nA Launch Control XL 3 or Launch Control 3 plugged in instead is chosen by itself until a hardware controller has connected; after that, choose it in Performance Bridge’s Settings, on the Connections tab."))
+                                   detail: "Connect the Roto-Control by USB. If it’s connected, try another cable or USB port.\n\nIf a Launch Control XL 3 or Launch Control 3 is plugged in instead, Performance Bridge switches to it by itself. Otherwise, choose it in Performance Bridge’s Settings, on the Connections tab."))
         }
 
         if let name = status.launchControlName {
@@ -165,9 +165,11 @@ public enum SetupChecklist {
             return SetupStep(id: "version", title: "TotalMix FX isn’t running", state: .waiting,
                              detail: "Open TotalMix FX. " + needs)
         }
+        // The About window is under the TotalMix FX menu (Adam, 2026-11-02); the item's exact label
+        // hasn't been checked on screen.
         guard let text = version, let parsed = TotalMixVersion(text) else {
             return SetupStep(id: "version", title: "TotalMix FX’s version couldn’t be read", state: .instruction,
-                             detail: needs + " Check TotalMix FX’s version in its About window.")
+                             detail: needs + " To check TotalMix FX’s version, choose About from the TotalMix FX menu.")
         }
         if parsed.supportsGlobalOSC {
             return SetupStep(id: "version", title: "TotalMix FX \(text) has Global OSC", state: .done,

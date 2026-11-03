@@ -321,22 +321,22 @@ final class BridgeModel: ObservableObject {
 
     private static let setupShownKey = "setupShown"
 
-    /// Set once a hardware controller has connected, or the user has chosen one in Settings; until
-    /// then the app chooses the hardware controller by itself (Adam, 2026-11-02).
-    private static let controllerSettledKey = "controllerSettled"
+    /// Set once a hardware controller has connected in this launch, or the user has applied
+    /// Settings; until then the app chooses the hardware controller by itself (Adam, 2026-11-02:
+    /// each launch starts over).
+    private var controllerSettled = false
     /// The hardware controller the app last chose by itself, for the Settings window to follow.
     @Published private(set) var autoChosen: ControllerChoice?
 
-    /// Until a hardware controller has connected: if the one chosen isn't plugged in and exactly
-    /// one other is, chooses that one (Adam, 2026-11-02). Only the MIDI ports' names are read, so
-    /// nothing is sent to a device until it is chosen. Never after a hardware controller has
-    /// connected, since a Launch Control taken over this way leaves a DAW's session with it (see
-    /// AGENTS.md, section 3).
+    /// Until a hardware controller has connected in this launch, or the user has applied
+    /// Settings: if the one chosen isn't plugged in and exactly one other is, chooses that one
+    /// (Adam, 2026-11-02). Only the MIDI ports' names are read, so nothing is sent to a device
+    /// until it is chosen. Not after that in the same launch, since a Launch Control taken over this
+    /// way leaves a DAW's session with it (see AGENTS.md, section 3).
     private func chooseControllerIfNeeded() {
-        let defaults = UserDefaults.standard
-        guard !launchControlFromCommandLine, !defaults.bool(forKey: Self.controllerSettledKey) else { return }
+        guard !launchControlFromCommandLine, !controllerSettled else { return }
         if status.rotoConnected || status.launchControlConnected {
-            defaults.set(true, forKey: Self.controllerSettledKey)
+            controllerSettled = true
             return
         }
         var saved = SavedSettings.load()
@@ -494,12 +494,10 @@ final class BridgeModel: ObservableObject {
         engine.start()
     }
 
-    /// Saves new settings and restarts the engine with them. A hardware controller the user chooses
-    /// stays chosen: the app no longer chooses one by itself.
+    /// Saves new settings and restarts the engine with them. Once the user applies Settings, the
+    /// hardware controller they chose stays chosen for this launch.
     func apply(_ saved: SavedSettings, chosenByUser: Bool = true) {
-        if chosenByUser, saved.controller != SavedSettings.load().controller {
-            UserDefaults.standard.set(true, forKey: Self.controllerSettledKey)
-        }
+        if chosenByUser { controllerSettled = true }
         saved.save()
         engine.stop()
         engine = BridgeEngine(settings: Self.settings(saved, overrides: portOverrides))

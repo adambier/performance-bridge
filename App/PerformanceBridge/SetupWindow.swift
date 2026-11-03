@@ -143,7 +143,7 @@ struct SetupView: View {
             } else if !step.instructions.isEmpty || Self.screenshots[step.id] != nil {
                 // A done step's instructions and screenshots, on request: e.g., to set up another
                 // Mac the same way.
-                Button(showInstructions ? "Hide Setup Instructions" : "Show Setup Instructions") {
+                Button(showInstructions ? "Hide Instructions" : "Show Instructions") {
                     showInstructions.toggle()
                 }
                 if showInstructions {
