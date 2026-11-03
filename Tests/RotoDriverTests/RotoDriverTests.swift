@@ -278,6 +278,23 @@ final class RotoDriverTests: XCTestCase {
                        "a release does nothing")
     }
 
+    func testAMuteFlashesWhileMuteMasterIsOff() {
+        var (driver, hub, _) = connected()
+        _ = driver.receive(cc(RotoCC.switchFirst + 2, 127), hub: &hub, now: 1)
+        XCTAssertEqual(driver.tick(now: 1.05, hub: hub), [], "steady while Mute Master is unreported")
+        _ = hub.handle(.other(path: "globalmute", value: .number(0)), now: 2)
+        let p = RotoDriver.blinkPeriod
+        let dark = driver.tick(now: 3 * p + 0.01, hub: hub)   // an odd half: dark
+        XCTAssertEqual(dark, RotoFeedback.switchLight(2, on: false), "only the mute that is on")
+        XCTAssertEqual(driver.tick(now: 3 * p + 0.02, hub: hub), [], "sent only when it changes")
+        XCTAssertEqual(driver.tick(now: 4 * p + 0.01, hub: hub), RotoFeedback.switchLight(2, on: true))
+        _ = driver.tick(now: 5 * p + 0.01, hub: hub)
+        _ = hub.handle(.other(path: "globalmute", value: .number(1)), now: 5 * p + 0.02)
+        XCTAssertEqual(driver.tick(now: 5 * p + 0.03, hub: hub), RotoFeedback.switchLight(2, on: true),
+                       "Mute Master on: lit and steady again")
+        XCTAssertEqual(driver.tick(now: 6 * p + 0.01, hub: hub), [])
+    }
+
     func testModesMapOntoTheCore() {
         var (driver, hub, _) = connected()
         // SET MIX ALL TRACKS MODE: audio tracks, pan, record arm, send 0.

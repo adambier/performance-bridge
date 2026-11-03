@@ -247,6 +247,11 @@ bits is from Bitwig's and Logic's code.[^bitwig][^logic] The rest:
 
 - **Moving a knob.** The host sends the same CC pair the knob sends: the high 7 bits on CC 12–19, then the low 7 bits on CC 44–51.[^bitwig][^logic] Bitwig computes the 14-bit value as the parameter (0–1) times 16383, rounded.[^bitwig]
 - **Lighting a switch.** The host sends 127 (on) or 0 (off) on the switch's CC.[^ableton] In MIX mode this sets both the light and the label in the bottom half of the switch's screen. With 127 the light comes on in the mode's color and the label shows on that color: "ARM REC" in red; "MUTE" in orange; "SOLO" in yellow with type `02` and blue with type `01`. With 0 the light is off and the label gray (seen).[^test-2][^test-3] In mute and solo modes the label stays blank until the host first sets the light; "ARM REC" shows from the start (seen).[^test-3]
+- **Mute Master off.** While TotalMix FX's Mute Master is off, a mute that is on is only set
+  (`TOTALMIX-OSC.md`, the global mute recheck), so the driver flashes it: it sends 0 and 127 on the
+  switch's CC in turn, 0.5 s each, as the Launch Control driver flashes its mute buttons (Adam,
+  2026-11-02). From the bullet above, the "MUTE" label should flash between orange and gray with
+  the light (an inference: not yet seen on the device).
 - **Moving a knob.** The motor follows the host's position: 0 dB (13388) put knob 1 at about 3 o'clock, and the range runs from about 7 o'clock (0) to about 5 o'clock (16383), 300° of travel.[^test-2]
 - **Past the ends.** The knob has no physical stop (seen).[^test-2] Past an end it does one of two things[^test-2][^test-3]:
   - **Hold.** It goes silent and resists (seen). Forced on, it lets go and reports a position about 3,300–3,700 counts in from the other end, and carries on from there: 13004–13078 from 0, and 3325–3693 from 16383.

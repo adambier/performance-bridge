@@ -11,9 +11,12 @@
   from source".)
 
 Open **Performance Bridge** from the Applications folder. It runs in the menu bar, with no Dock icon. Its
-Setup Guide window follows these steps and checks each one live where it can: whether TotalMix FX answers,
-whether it has sent its channels, whether meters arrive, and whether the hardware controller is connected. It
-opens by itself the first time the app runs; after that, choose **Setup Guide…** from the menu.
+Setup Guide follows these steps one page at a time, with **Back** and **Continue**, and checks each one live where
+it can: whether TotalMix FX answers, whether it has sent its channels, whether meters arrive (Roto-Control only), and whether
+the hardware controller is connected. The marks across its top show every step at a glance (green when done);
+click one to go to its page, done or not. A finished page can still show its setup instructions: click **Show
+Instructions**. It opens at the first step not done (or at the first note, once every check is done), by itself the first time the app runs; after
+that, choose **Setup Guide…** from the menu.
 
 ## Step 1: Turn on Global OSC in TotalMix FX
 
@@ -37,12 +40,13 @@ Checked on screen with TotalMix FX "2.10 (1)" on a Mac (2026-10-31); the screens
      Bridge sends to TotalMix FX. The **Host** above it is your Mac's own name, shown for reference.
    - Under **Remote Controller Address**, **Host** is the computer Performance Bridge runs on (`localhost` or
      `127.0.0.1` on the same Mac), and **Port (outgoing)** is where TotalMix FX sends to Performance Bridge.
-   - Enter the same two ports in Performance Bridge's **Settings… → Connections**. Its defaults are 7001 and
+   - Enter the same two ports in Performance Bridge's **Settings… → Connections**, under the same labels,
+     **Port (incoming)** and **Port (outgoing)**. Its defaults are 7001 and
      9001, which RME's manual gives as typical values.
 
    <img src="../App/PerformanceBridge/Resources/totalmix-osc-tab.png" width="380" alt="Mixer Settings, OSC tab: controller 1 in use, ports 7001 and 9001, host localhost, Global OSC">
 
-6. In the OSC tab's **Options** group, check **Send Level Data** for meters on the hardware controllers and leave **Lock Remote
+6. In the OSC tab's **Options** group, check **Send Level Data** for meters on the Roto-Control (the Launch Controls have no meters) and leave **Lock Remote
    to Submix** off (Performance Bridge chooses submixes itself). The effect of **Number of faders per bank** on
    the app has not been tested.
 7. Click **Details**, which opens "Gobal OSC - Detailed Settings" (TotalMix FX's spelling), and check **Send
@@ -65,9 +69,10 @@ Checked on screen with TotalMix FX "2.10 (1)" on a Mac (2026-10-31); the screens
    <img src="../App/PerformanceBridge/Resources/totalmix-control-strip.png" width="160" alt="TotalMix FX's Control Strip: the M, S, and F buttons, and the options panel with solo/pfl mode set to live">
 
    - **Mute Master.** Turn on the **M** button in the Control Strip, below the interface's name and "undo". While
-     it is off, a mute only selects the channel's mute and doesn't silence it ([`docs/TOTALMIX-OSC.md`](TOTALMIX-OSC.md), the global
-     mute recheck of 2026-10-31). Performance Bridge reads it: while it is off, the menu shows **Mute Master:
-     Off**, the Setup Guide shows a warning, and on a Launch Control a mute that is on flashes.
+     it is off, a mute is only set and doesn't silence the channel; TotalMix FX shows its M button partly lit
+     ([`docs/TOTALMIX-OSC.md`](TOTALMIX-OSC.md), the global mute recheck of 2026-10-31). Turning on Mute Master
+     immediately mutes every channel whose mute is set. Performance Bridge reads it: while it is off, the menu shows **Mute Master:
+     Off**, the Setup Guide shows a warning, and on the hardware controller a mute that is on flashes.
    - **Live mode.** In the Control Strip, click **options** and, under **solo/pfl mode**, choose **live**. Without
      it, PFL from a hardware controller is accepted but has been observed to show nothing in TotalMix FX's window
      ([`docs/TOTALMIX-OSC.md`](TOTALMIX-OSC.md), test 6). TotalMix FX
@@ -111,12 +116,14 @@ Launch Control 3.
 
 1. Connect the hardware controller to the Mac by USB. It can be connected before or after the app starts.
 2. In Performance Bridge, open **Settings… → Connections** and choose it from the **Controller** menu
-   under Hardware Controller. The Roto-Control is the default.
+   under Hardware Controller. The Roto-Control is the default. Until a hardware controller has connected (each time the app
+   starts) or you click Apply, Performance Bridge switches by itself to one that is plugged in when the one chosen isn't
+   and exactly one other is.
 3. Click **Apply**, just below the menu. Apply, **Revert**, and **Defaults** cover the TotalMix FX connection (host
    and ports) and the hardware controller; the send rows below them don't need Apply.
 
 The app finds the controller by the names of its MIDI ports, which are fixed for each model, so there is
-no port to choose: the Roto-Control's port "Roto-Control", and a Launch Control's DAW ports ("LCXL3 1 DAW
+no port to choose: the Roto-Control's port "Roto-Control" and a Launch Control's DAW ports ("LCXL3 1 DAW
 In" and "Out" on a Launch Control XL 3, "LC3 1 DAW In" and "Out" on a Launch Control 3, the number being
 the device ID). With more than one Launch Control of the same model connected, it uses the one with the
 lowest device ID.
@@ -144,8 +151,8 @@ One more line appears only while TotalMix FX's Mute Master is off (Step 1, item 
 
 ### The menu-bar icon
 
-The Setup Guide also opens by itself, at most once per launch, for a problem that has never worked with
-the current settings: the port in use; TotalMix FX running but not answering for 30 seconds; or the
+The Setup Guide also opens by itself, at most once per launch and at that problem's step, for a problem
+that has never worked with the current settings: the port in use; TotalMix FX running but not answering for 30 seconds; or the
 hardware controller plugged in but not connected after 15 seconds. A hardware controller that isn't
 plugged in, or TotalMix FX not running, never opens it.
 
@@ -173,20 +180,23 @@ Choose **Settings…** from the menu and open the **Channel Layout** tab.
 - **Sources** are the channels the hardware controllers show. Drag a channel to change its place on them.
 - **Playbacks start on a new page**, under the Sources list, puts the first playback at the start of a new
   page of strips, after blank strips that fill the inputs' last page.
-- **Outputs** are the outputs the send controls can feed (Step 6). Their order is the order you step through
+- **Outputs** are the outputs the send controls can feed (Step 6); Main Out, Main Out B, and an output used only for
+  cue aren't listed, since the sends don't reach them. Their order is the order you step through
   them on the hardware controllers. The **Control Room** outputs (those assigned in TotalMix FX's control room:
   Phones, and so on) and the **Hardware Outputs** are ordered in their own sections, since control room outputs
   always come first.
-- Click a channel's name to give it a **label** for the hardware controllers, e.g., a short name for mixing. The label shows only on the hardware controllers; TotalMix FX keeps its own name, shown dimmed beside the label. Clear the label to show TotalMix FX's name again. A playback without a label shows as "PB 1/2" and so on, since an unnamed playback otherwise has its output's hardware name, which can be the same as an input's.
+- Click a channel's name (a pencil appears beside it when the pointer is over its row) to give it a **label** for the hardware controllers, e.g., a short name for mixing. The label shows only on the hardware controllers; the name the strip would show without it (TotalMix FX's name, or "PB 1/2" and so on for a playback) is shown dimmed beside the label. Clear the label to go back to that name. A playback without a label shows as "PB 1/2" and so on, since an unnamed playback otherwise has its output's hardware name, which can be the same as an input's.
 - The order and the labels are kept when Performance Bridge restarts.
 - **Restore TotalMix FX Order** puts the view back in TotalMix FX's order. It is dimmed when the order is already TotalMix FX's.
 - To take a channel off the hardware controllers, hide it in TotalMix FX (Step 2). The layout has no hide setting of its own.
-- Set channel colors in TotalMix FX's own Channel Layout window (Step 2).
+- Set channel colors in TotalMix FX's own Channel Layout window (Step 2). With a Launch Control, give each output its send
+  rows feed (e.g., each headphone output) a color of its own: a send row lights in its output's color, so the color
+  shows which output it feeds.
 - The note at the bottom repeats the rule for channels hidden in TotalMix FX.
 
 ## Step 6: Use the hardware controllers
 
-Every hardware controller works the same way: **each column of controls is one channel**, and every control in a
+Every hardware controller works the same way: **each column of controls is one channel** and every control in a
 column controls that channel. Levels and pans go into the submix of the output that TotalMix FX's control room
 assigns to Main Out and follow Main Out if it is reassigned there. Set the outputs themselves (e.g., Main Out's volume
 and Speaker B) in TotalMix FX or with an ARC USB; the hardware controllers don't change them.
@@ -204,8 +214,8 @@ the main mix) and the cue output (PFL uses it).
 | Top encoder | Send to the top row's output (e.g., Phones 1) |
 | Middle encoder | Send to the middle row's output (e.g., Phones 2) |
 | Bottom encoder | Pan in Main Out |
-| Top button | PFL (bright yellow when on, dim yellow when off) |
-| Bottom button | Mute (bright orange when on, dim orange when off; a mute that is on flashes while TotalMix FX's Mute Master is off) |
+| Top button | PFL (bright yellow when on, dim yellow when off; the screen briefly names the channel and says "PFL on" or "PFL off") |
+| Bottom button | Mute (bright orange when on, dim orange when off, and "Mute on" or "Mute off" on the screen; a mute that is on flashes while TotalMix FX's Mute Master is off) |
 
 | Button | What it does |
 |---|---|
@@ -225,8 +235,9 @@ the main mix) and the cue output (PFL uses it).
 - Each row's output is remembered when Performance Bridge restarts. It can also be chosen in Settings, at the
   bottom of the Connections tab, with the Launch Control connected or not; the change takes effect at once.
 - Press **Track <** and **Track >** together to go back to the first eight channels.
-- Solo/Arm, Mute/Select, Record, Play, and the Novation button do nothing in this release; they are kept free for
-  later uses (e.g., a connection to a DAW).
+- The **Novation button** brings TotalMix FX's window to the front. Press it again while TotalMix FX is in front to go back to the app you were in (if TotalMix FX came to the front some other way, the press hides it instead).
+- Solo/Arm, Mute/Select, Record, and Play do nothing in this release; they are kept free for later uses (e.g., a
+  connection to a DAW).
 - Level and pan are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so TotalMix FX's
   window shows the pans set here only while Main Out's output is selected in its bottom row (observed 2026-11-01).
 
@@ -238,11 +249,11 @@ The Launch Control 3 works the same way, with fewer controls:
 |---|---|
 | Bottom encoder | Level in Main Out |
 | Top encoder | Pan, or a send: **Page ▼** / **▲** steps it through Pan, then each output in the Outputs list |
-| Button | Mute; PFL while **Function** (labeled "DAW" underneath) is held (orange for mute, yellow for PFL, dim when off; Function rests dim yellow and lights bright yellow while held) |
+| Button | Mute; PFL while **Function** (labeled "DAW" underneath) is held (orange for mute, yellow for PFL, dim when off). Function rests dim yellow; it lights bright yellow while held, and also while any channel's PFL is on, so a PFL left on still shows |
 
-Track works as on the XL 3, and Shift + turn resets an encoder as it does there; a level above 0 dB comes down to 0 dB,
+Track works as on the XL 3 and Shift + turn resets an encoder as it does there; a level above 0 dB comes down to 0 dB,
 and one at or below 0 dB stays. The screen shows the channels on
-the page, the top row's function (e.g., "Top: Pan"), and the buttons' ("Buttons: Mute"; briefly "Buttons" over "PFL" while Function is held). The Launch Control 3 has not been tried on a device yet ([`docs/LAUNCH-CONTROL-3.md`](LAUNCH-CONTROL-3.md)).
+the page, the top row's function (e.g., "Top: Pan"), and the buttons' ("Buttons: Mute", or "PFL on, buttons Mute" while a PFL is on; briefly "Buttons" over "PFL" while Function is held). The Launch Control 3 has not been tried on a device yet ([`docs/LAUNCH-CONTROL-3.md`](LAUNCH-CONTROL-3.md)).
 
 ### Roto-Control
 
@@ -256,7 +267,7 @@ the same channels.
 - **TotalMix FX: Port N in Use.** Another program has the port. Quit `sbdev` or any other OSC remote.
 - **TotalMix FX: No Answer.** Check that Global OSC is on and that the ports in Settings match TotalMix FX's
   (Step 1). Then choose **Refresh Channels from TotalMix FX**.
-- **Roto-Control or Launch Control: Not Found.** Check the cable, and that the model chosen in Settings is the
+- **Roto-Control or Launch Control: Not Found.** Check the cable and that the model chosen in Settings is the
   one connected (Step 3).
 - **A channel is missing from the hardware controllers.** Check whether TotalMix FX hides it from the OSC Controller the app uses
   (Step 2).

@@ -46,7 +46,7 @@ struct LayoutView: View {
             // The hardware controllers show only the sources; the outputs' order is the order the
             // send controls step through them (Adam, 2026-11-01).
             Text(view == .outputs
-                 ? "Drag to set the order the send controls step through the outputs. Click a name to give it a label for the hardware controllers."
+                 ? "Drag to set the order the send controls step through the outputs. Click a name to give it a label for the hardware controllers. Main Out, Main Out B, and an output used only for cue aren’t listed, since the sends don’t reach them."
                  : "Drag to reorder. Click a name to give it a label for the hardware controllers.")
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -95,10 +95,10 @@ struct LayoutView: View {
 
             VStack(alignment: .leading, spacing: 10) {
                 // One short paragraph each, in callout size, for legibility (Adam, 2026-10-31).
-                Text("Hide and show channels in TotalMix FX’s own Channel Layout window: right-click the channel, choose Change Channel Layout, and check or uncheck the OSC Controller box under \u{201C}Hide Channel in.\u{201D}")
+                // Three notes, with the full TotalMix FX path (UI review of 2026-11-02).
+                Text("Channels that TotalMix FX hides from Performance Bridge’s OSC Controller aren’t shown. Hide and show them in TotalMix FX’s own Channel Layout window: Options → Channel Layout…, or right-click the channel and choose Change Channel Layout; under \u{201C}Hide Channel in\u{201D}, check or uncheck the OSC Controller box.")
                 Text("Channel colors can be set in the same window.")
-                Text("Labels show only on the hardware controllers. Clear a label to show TotalMix FX’s name again.")
-                Text("Channels that TotalMix FX hides from an OSC Controller are not shown on the hardware controllers connected through it.")
+                Text("Labels show only on the hardware controllers. Clear a label to go back to the name shown dimmed beside it.")
             }
             .font(.callout)
             .foregroundStyle(.secondary)
@@ -128,20 +128,9 @@ struct LayoutView: View {
     /// A group's rows: a drag handle and the channel's name.
     private func rows(_ group: [LayoutItem]) -> some DynamicViewContent {
         ForEach(group, id: \.channel) { item in
-            HStack(spacing: 8) {
-                Image(systemName: "line.3.horizontal")
-                    .foregroundStyle(.tertiary)
-                    .accessibilityHidden(true)
-                LabelField(item: item) { text in
-                    model.engine.setLabel(text, for: item.channel)
-                    reload()
-                }
-                if item.label != nil {
-                    // TotalMix FX's own name, for reference, while a label replaces it.
-                    Text(item.defaultName)
-                        .foregroundStyle(.tertiary)
-                        .lineLimit(1)
-                }
+            LayoutRow(item: item) { text in
+                model.engine.setLabel(text, for: item.channel)
+                reload()
             }
             .frame(minHeight: 24)
             .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
@@ -160,14 +149,57 @@ struct LayoutView: View {
         if isMonitoring { first.move(fromOffsets: source, toOffset: destination) }
         else { rest.move(fromOffsets: source, toOffset: destination) }
         items = first + rest
-        model.engine.setLayout(model.engine.layout.withOrder(view, items.map(\.channel)))
+        // The outputs list shows only the send targets: the outputs it leaves out (Main Out, Main
+        // Out B, and so on) keep their places, so the saved order matches TotalMix FX's whenever
+        // the listed ones do.
+        let all = model.engine.layoutItems(view).map(\.channel)
+        model.engine.setLayout(model.engine.layout.withOrder(view, items.map(\.channel), among: all))
         isTotalMixOrder = model.engine.isTotalMixOrder(view)
     }
 
-    /// Reads the view's channels again, after a change in the app or in TotalMix FX.
+    /// Reads the view's channels again, after a change in the app or in TotalMix FX. The outputs
+    /// view lists only the send targets, since in 1.0.x its order is only the order the sends step
+    /// through (Adam, 2026-11-02, from the UI review of that date).
     private func reload() {
-        items = model.engine.layoutItems(view)
+        let all = model.engine.layoutItems(view)
+        let sends = Set(model.status.sendTargets.map(\.output))
+        items = view == .outputs ? all.filter { sends.contains($0.channel.channel) } : all
         isTotalMixOrder = model.engine.isTotalMixOrder(view)
+    }
+}
+
+/// One row of the layout: a drag handle, the channel's name (its label, editable in place), a
+/// pencil right after the name while the pointer is over the row, and, beside a label, the name it
+/// replaces, dimmed. The pencil shows only on hover (Adam, 2026-11-02: a pencil on every row says
+/// nothing), as macOS lists reveal a row's controls where the pointer is.
+struct LayoutRow: View {
+    let item: LayoutItem
+    let commit: (String) -> Void
+    @State private var hovering = false
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "line.3.horizontal")
+                .foregroundStyle(.tertiary)
+                .accessibilityHidden(true)
+                .padding(.trailing, 2)
+            LabelField(item: item, commit: commit)
+                // As wide as the name, so the pencil sits right after it.
+                .fixedSize()
+            Image(systemName: "pencil")
+                .foregroundStyle(.secondary)
+                .opacity(hovering ? 1 : 0)
+                .accessibilityHidden(true)
+            if item.label != nil {
+                // The name the strip would show without the label, for reference.
+                Text(item.defaultName)
+                    .foregroundStyle(.tertiary)
+                    .lineLimit(1)
+            }
+            Spacer(minLength: 0)
+        }
+        .contentShape(Rectangle())
+        .onHover { hovering = $0 }
     }
 }
 
@@ -193,8 +225,10 @@ struct LabelField: View {
     }
 
     private func save() {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmed != (item.label ?? "") else { return }
+        var trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        // A label that is the name the strip would show anyway is no label (UI review of 2026-11-02).
+        if trimmed == item.defaultName { trimmed = "" }
+        guard trimmed != (item.label ?? "") else { text = item.label ?? ""; return }
         commit(trimmed)
     }
 }

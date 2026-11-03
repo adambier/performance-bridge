@@ -20,6 +20,9 @@ public struct LaunchControlStep: Equatable, Sendable {
     /// Messages for TotalMix FX, and updates for the other surfaces. This driver's own updates are
     /// already turned into `midi`.
     public var core = CoreOutput()
+    /// Whether the app should bring TotalMix FX's window to the front: the Novation button was
+    /// pressed (Adam, 2026-11-02).
+    public var showTotalMix = false
 
     /// Nothing to send.
     public init() {}
@@ -133,6 +136,9 @@ public struct LaunchControlDriver: Sendable {
     private var sentPositions: [UInt8: UInt8] = [:]  // control number → position
     private var sentColors: [UInt8: LightColor] = [:]  // control number → color sent
     private var sentTexts: [String: String] = [:]  // "target/field" → text
+    /// Encoders whose display says a send was reset (`reset`), drawn as usual again when Shift is
+    /// released.
+    private var resetShown: [(Layer, Int)] = []
     private var sentConfig: [UInt8: UInt8] = [:]  // target byte → arrangement and flags
 
     /// How close to the level a fader's first value must be for the hub's pickup to take it, as a
@@ -252,7 +258,7 @@ public struct LaunchControlDriver: Sendable {
             self.lastStart = now
             step.midi += startBytes()
         }
-        // Mutes selected while Mute Master is off flash; the lights are sent only when they change.
+        // Mutes set while Mute Master is off flash; the lights are sent only when they change.
         let lit = Int((now / Self.blinkPeriod).rounded(.down)) % 2 == 0
         if connected, !inCustomMode, lit != blinkLit, hub.mirror.muteMaster == false {
             blinkLit = lit
@@ -371,6 +377,10 @@ public struct LaunchControlDriver: Sendable {
             shiftDownAt = pressed ? now : nil
             shiftUsedForNavigation = false
             resetThisShift = []
+            if !pressed {
+                for (layer, strip) in resetShown { step.midi += drawStrip(layer, strip, hub: hub) }
+                resetShown = []
+            }
             // Page and Track light for what they do with Shift held, and back on release.
             step.midi += drawNavigation(hub: hub)
         case .button(Self.functionButton, let pressed) where layout == .lc3:
@@ -397,11 +407,21 @@ public struct LaunchControlDriver: Sendable {
         case .button:
             guard let (layer, strip) = switchControl(for: element) else { return }
             take(hub.switchPressed(id(layer), strip: strip, now: now), hub: hub, into: &step)
-            // A mute does nothing in the audio while TotalMix FX's Mute Master is off: say so where
-            // the eyes are (Adam, 2026-11-02).
-            if hub.mirror.muteMaster == false, !isPFLLayer(layer, hub: hub), infos[layer]?[strip] ?? nil != nil {
+            guard let info = infos[layer]?[strip] ?? nil else { return }
+            let isPFL = isPFLLayer(layer, hub: hub)
+            if hub.mirror.muteMaster == false, !isPFL {
+                // A mute does nothing in the audio while TotalMix FX's Mute Master is off: say so
+                // where the eyes are (Adam, 2026-11-02).
                 step.midi += overlay("Mute Master off", "in TotalMix FX")
+            } else {
+                // The screen says what the press did, as well as the light (Adam, 2026-11-02).
+                let on = switchOn[layer]?[strip] ?? false
+                step.midi += overlay(info.name, (isPFL ? "PFL" : "Mute") + (on ? " on" : " off"))
             }
+        case .novation:
+            // Brings TotalMix FX to the front, e.g., to see a setting the controller can't show
+            // (Adam, 2026-11-02; it had been left free).
+            step.showTotalMix = true
         case .pageUp, .pageDown:
             if shiftHeld { shiftUsedForNavigation = true }
             // Page steps the top send row's output; on the XL 3, Shift + Page the middle row's
@@ -628,6 +648,14 @@ public struct LaunchControlDriver: Sendable {
         }
         take(hub.controlMoved(id(layer), strip: strip, to: position, now: now), hub: hub, into: &step)
         step.midi += drawOwnMove(layer, strip, hub: hub)
+        if case .strips(_, _, .send, _) = mode(for: layer, first: 0) {
+            // Silencing a send is the one reset that takes something away, so say how to undo it
+            // (Adam, 2026-11-02, from the UI review of that date). On the encoder's own display,
+            // which the turn brings up: the overlay was covered by it at once (Adam, 2026-11-02);
+            // its function line comes back when Shift is released.
+            step.midi += text(.control(element), 1, position == 0 ? "Shift+turn: restore" : "Send restored")
+            resetShown.append((layer, strip))
+        }
         let value = deviceValue(layer, position)
         guard connected, !inCustomMode, sentPositions[element.controlNumber] != value else { return }
         sentPositions[element.controlNumber] = value
@@ -998,24 +1026,25 @@ public struct LaunchControlDriver: Sendable {
         return bytes
     }
 
-    /// A strip button's light: bright when on, the dimmest shade when off; a mute that is on while
-    /// TotalMix FX's Mute Master is off (selected but not silencing) flashes between the two,
+    /// A strip button's light: bright when on, a dim exact-RGB shade when off (`muteOff`, `pflOff`);
+    /// a mute that is on while
+    /// TotalMix FX's Mute Master is off (set but not silencing) flashes between the two,
     /// `blinkPeriod` each (docs/LAUNCH-CONTROL-XL3.md, test 15; Adam, 2026-11-02).
     private mutating func drawButton(_ layer: Layer, _ index: Int, hub: SurfaceHub) -> [UInt8] {
         guard let button = button(layer, index) else { return [] }
         let info = infos[layer]?[index] ?? nil
         let on = switchOn[layer]?[index] ?? false
-        let colorIndex: UInt8
+        let light: LightColor
         if info == nil {
-            colorIndex = 0
+            light = .palette(0)
         } else if isPFLLayer(layer, hub: hub) {
-            colorIndex = on ? Self.pflOn : Self.pflOff
+            light = on ? .palette(Self.pflOn) : Self.pflOff
         } else if on {
-            colorIndex = hub.mirror.muteMaster == false && !blinkLit ? Self.muteOff : Self.muteOn
+            light = hub.mirror.muteMaster == false && !blinkLit ? Self.muteOff : .palette(Self.muteOn)
         } else {
-            colorIndex = Self.muteOff
+            light = Self.muteOff
         }
-        return color(button, colorIndex)
+        return color(button, light)
     }
 
     private func isPFLLayer(_ layer: Layer, hub: SurfaceHub) -> Bool {
@@ -1067,7 +1096,8 @@ public struct LaunchControlDriver: Sendable {
     /// The stationary display (the home screen): what is on the page (`pageTitle`), then what isn't shown
     /// anywhere else on the device (Adam, 2026-11-01). XL 3: where each send row goes ("Top >
     /// Phones 1", "Mid > ADI-2 3/4"). Launch Control 3: the top row ("Top: Pan" or "Top > Phones 1")
-    /// and the buttons ("Buttons: Mute" or "Buttons: PFL"). Each strip's own name shows on its
+    /// and the buttons ("Buttons: Mute" or "Buttons: PFL", or "PFL on, buttons Mute" while a channel's
+    /// PFL is on with the buttons on mute). Each strip's own name shows on its
     /// control's display when the control moves. (Four-letter names in two rows of four were tried
     /// first and were unreadable; docs/LAUNCH-CONTROL-XL3.md, test 5.)
     func stationaryLines(hub: SurfaceHub) -> [String] {
@@ -1081,7 +1111,10 @@ public struct LaunchControlDriver: Sendable {
         if layout == .xl3 {
             return [title, row("Top", send(0), none: "none"), row("Mid", send(1), none: "none")]
         }
-        return [title, row("Top", send(0), none: "Pan"), "Buttons: " + (buttonsArePFL ? "PFL" : "Mute")]
+        // "PFL on" when a channel's PFL is on while the buttons are mute, since nothing else would
+        // show it once Function is released (UI review of 2026-11-02); 20 characters at most.
+        let buttons = buttonsArePFL ? "Buttons: PFL" : Self.anyPFL(hub) ? "PFL on, buttons Mute" : "Buttons: Mute"
+        return [title, row("Top", send(0), none: "Pan"), buttons]
     }
 
     /// The home screen's first line: what is on the page, each kind counted on its own in the
@@ -1126,13 +1159,18 @@ public struct LaunchControlDriver: Sendable {
         let usable = !shiftHeld || layout == .xl3
         bytes += color(.pageUp, usable && nextSend(row: row, by: -1, hub: hub) != nil ? Self.navigationOn : 0)
         bytes += color(.pageDown, usable && nextSend(row: row, by: 1, hub: hub) != nil ? Self.navigationOn : 0)
-        if layout == .lc3 { bytes += color(Self.functionButton, buttonsArePFL ? Self.pflOn : Self.functionIdle) }
+        // Lit bright yellow while the buttons are PFL, and also whenever a channel's PFL is on, so
+        // a PFL left on after Function is released still shows (UI review of 2026-11-02).
+        if layout == .lc3 {
+            bytes += color(Self.functionButton, buttonsArePFL || Self.anyPFL(hub) ? .palette(Self.pflOn) : Self.functionIdle)
+        }
         return bytes
     }
 
     /// Shows two lines on the overlay (a temporary display not tied to a control), e.g., after
-    /// Function or Page. That the overlay comes up with SysEx 04h 7Fh, as other displays do, is
-    /// an inference (not yet tried on the device).
+    /// Function or Page. It has been seen after a button press (docs/LAUNCH-CONTROL-XL3.md, test
+    /// 16); after Shift + turn on a send it has been seen to flash too fast to read (Adam,
+    /// 2026-11-02), so that text goes on the encoder's display instead (section 8, item 13).
     private mutating func overlay(_ first: String, _ second: String, _ third: String? = nil) -> [UInt8] {
         guard connected else { return [] }
         var bytes = configure(.overlay, third == nil ? .nameAndValue : .titleNameAndValue, quiet: false)
@@ -1177,6 +1215,18 @@ public struct LaunchControlDriver: Sendable {
         }
     }
 
+    /// The bytes that light `element` in `light` on `model`, as the driver sends them (e.g., for
+    /// tests).
+    public static func lightBytes(_ element: LaunchControlElement, _ light: LightColor,
+                                  model: LaunchControlModel = .xl3) -> [UInt8] {
+        switch light {
+        case .palette(let index):
+            return LaunchControlOutgoing.color(element, index) ?? []
+        case .rgb(let rgb):
+            return LaunchControlOutgoing.rgb(element, red: rgb.red, green: rgb.green, blue: rgb.blue, model: model) ?? []
+        }
+    }
+
     // MARK: - Text and colors
 
     /// The most characters a display field keeps: 20 (inference from the XL 3, test 5).
@@ -1185,31 +1235,35 @@ public struct LaunchControlDriver: Sendable {
     /// The label for a send: "> " and the output's name (AGENTS.md, house style).
     public static func sendLabel(_ name: String) -> String { "> " + name }
 
-    /// Palette colors for the buttons and the navigation lights. Mute is orange and PFL yellow on
-    /// every hardware controller, since the Roto-Control's firmware fixes those two and a host can
-    /// only turn them on or off (docs/ROTO-CONTROL.md, section 3); a button that is off shows the
-    /// dimmest shade of its color, so the two rows can still be told apart (Adam, 2026-11-02).
+    /// Colors for the buttons and the navigation lights. Mute is orange and PFL yellow on every
+    /// hardware controller, since the Roto-Control's firmware fixes those two and a host can only
+    /// turn them on or off (docs/ROTO-CONTROL.md, section 3); a button that is off shows a dim
+    /// shade of its color, so the two rows can still be told apart (Adam, 2026-11-02).
     /// The palette's first 40 colors have been seen to run as the guide's picture does
     /// (docs/LAUNCH-CONTROL-XL3.md, test 4), each hue a run of four from bright to dim: 5 red and
     /// 7 a darker red, 13 yellow and 15 a darker yellow, 3 white and 1 a dim grey; 9 orange and 11
     /// its dimmest (test 13).
     public static let muteOn: UInt8 = 9
-    /// A mute button that is off: the dimmest orange.
-    public static let muteOff: UInt8 = 11
+    /// A mute button that is off: orange by exact RGB, dimmer than the palette's dimmest orange
+    /// (11), so on and off differ more; chosen on the XL 3 with its LED brightness at 10 (Adam,
+    /// 2026-11-02; docs/LAUNCH-CONTROL-XL3.md, test 19).
+    public static let muteOff = LightColor.rgb(RGB(12, 4, 0))
     /// How a mute that is on while TotalMix FX's Mute Master is off shows: it flashes between bright
     /// and dim orange, `blinkPeriod` seconds each, drawn by the driver. The medium shade (10) was
     /// tried and was too close to the others to read, and the device has no flashing of its own
     /// (docs/LAUNCH-CONTROL-XL3.md, test 15; Adam, 2026-11-02).
-    public static let blinkPeriod: Double = 0.4
+    public static let blinkPeriod: Double = 0.5
     /// A PFL button that is on: yellow.
     public static let pflOn: UInt8 = 13
-    /// A PFL button that is off: the dimmest yellow.
-    public static let pflOff: UInt8 = 15
+    /// A PFL button that is off: yellow by exact RGB, dimmer than the palette's dimmest yellow (15),
+    /// chosen with `muteOff` (test 19).
+    public static let pflOff = LightColor.rgb(RGB(16, 11, 0))
     /// Page and Track where they would move: white.
     public static let navigationOn: UInt8 = 3
-    /// The Function button while the buttons are mute: the dimmest yellow, PFL's color when off,
-    /// as for any button that is off (Adam, 2026-11-02).
-    public static let functionIdle: UInt8 = 15
+    /// The Function button while the buttons are mute: PFL's color when off, as for any button that
+    /// is off (Adam, 2026-11-02). That the Launch Control 3's Function button takes an exact color
+    /// as the strip buttons do is an inference (test 19 lit the XL 3's strip buttons only).
+    public static let functionIdle = pflOff
     /// The hue of a send row whose output is left white in TotalMix FX: teal (33) for the top row,
     /// magenta (53) for the XL 3's middle row; neither is one of TotalMix FX's eight colors (Adam,
     /// 2026-11-02, from the Tier 3 review of that date). On the XL 3 both have been told apart from
@@ -1327,6 +1381,11 @@ public struct LaunchControlDriver: Sendable {
         }
         guard let fraction = brightness(position: position, floor: dimmestFraction(rgb)) else { return .palette(0) }
         return .rgb(rgb.scaled(fraction))
+    }
+
+    /// Whether any channel's PFL is on in TotalMix FX.
+    static func anyPFL(_ hub: SurfaceHub) -> Bool {
+        hub.mirror.channels.values.contains { $0.pfl }
     }
 
     /// The palette color for each of TotalMix FX's eight colors (1 white, 2 grey, 3 orange, 4 red,

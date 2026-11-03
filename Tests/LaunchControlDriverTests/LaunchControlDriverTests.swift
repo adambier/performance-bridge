@@ -103,8 +103,8 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.control(.fader(0)), field: 0, "Keys") ?? []))
         XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.control(.fader(0)), field: 1, "Level") ?? []))
         XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.control(.encoder(row: 0, column: 0)), field: 1, "> Phones") ?? []))
-        XCTAssertTrue(answer.midi.contains([0xB0, 0x25, 15]), "top buttons: PFL off, dark yellow")
-        XCTAssertTrue(answer.midi.contains([0xB0, 0x2D, LaunchControlDriver.muteOff]), "bottom buttons: mute off, dim orange")
+        XCTAssertTrue(answer.midi.contains(LaunchControlDriver.lightBytes(.button(row: 0, column: 0), LaunchControlDriver.pflOff)), "top buttons: PFL off, dim yellow")
+        XCTAssertTrue(answer.midi.contains(LaunchControlDriver.lightBytes(.button(row: 1, column: 0), LaunchControlDriver.muteOff)), "bottom buttons: mute off, dim orange")
         XCTAssertTrue(answer.midi.contains([0xB0, 0x66, 0]), "Track >: no more strips with four sources")
     }
 
@@ -141,7 +141,7 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(mute.midi.contains([0xB0, 0x2D, LaunchControlDriver.muteOn]), "mute on: orange")
     }
 
-    func testMuteMasterOffShowsMutesAsSelectedOnly() {
+    func testMuteMasterOffShowsMutesAsSetOnly() {
         var (driver, hub, _) = connected(layout: .xl3)
         let message = OSCMessage("/globalmute", [.float(0)])
         let event = try! XCTUnwrap(TotalMixEvent(message))
@@ -153,9 +153,9 @@ final class LaunchControlDriverTests: XCTestCase {
         let mute = driver.receive([0xB0, 0x2D, 0x7F], hub: &hub, now: 2)
         XCTAssertTrue(mute.midi.contains([0xB0, 0x2D, LaunchControlDriver.muteOn]))
         // It flashes: dim, then bright again, a blink period each (the device can't flash, test 15).
-        // Halves of 0.4 s from time 0: 2.4–2.8 bright, 2.8–3.2 dim, 3.2–3.6 bright.
+        // Halves of 0.5 s from time 0: 2.0–2.5 bright, 2.5–3.0 dim, 3.0–3.5 bright.
         XCTAssertTrue(driver.tick(hub: &hub, now: 2.45).midi.isEmpty, "still the bright half")
-        XCTAssertTrue(driver.tick(hub: &hub, now: 2.85).midi.contains([0xB0, 0x2D, LaunchControlDriver.muteOff]), "flash: dim")
+        XCTAssertTrue(driver.tick(hub: &hub, now: 2.85).midi.contains(LaunchControlDriver.lightBytes(.button(row: 1, column: 0), LaunchControlDriver.muteOff)), "flash: dim")
         XCTAssertTrue(driver.tick(hub: &hub, now: 2.9).midi.isEmpty, "once a half, and an unmuted button doesn't flash")
         XCTAssertTrue(driver.tick(hub: &hub, now: 3.25).midi.contains([0xB0, 0x2D, LaunchControlDriver.muteOn]), "flash: bright")
         XCTAssertTrue(mute.midi.contains(LaunchControlOutgoing.text(.overlay, field: 0, "Mute Master off", model: .xl3) ?? []),
@@ -220,7 +220,7 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertEqual(hub.strips(of: driver.id(.row0))?[0].knobTarget, .pan(keys, submix: 0), "top row: pan")
         XCTAssertTrue(midi.contains([0xF0, 0x00, 0x20, 0x29, 0x02, 0x16]), "the Launch Control 3's header")
         XCTAssertFalse(midi.contains([0xB6, 0x46]), "no fader pickup on a device without faders")
-        XCTAssertTrue(midi.contains([0xB0, 0x42, LaunchControlDriver.functionIdle]))
+        XCTAssertTrue(midi.contains(LaunchControlDriver.lightBytes(LaunchControlDriver.functionButton, LaunchControlDriver.functionIdle, model: .lc3)))
 
         let track = driver.receive([0xB0, 0x6B, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(hub.strips(of: driver.id(.row0))?[0].knobTarget, .level(keys, submix: 2), "Page ▼: send 1")
@@ -233,13 +233,15 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(driver.buttonsArePFL)
         XCTAssertEqual(hub.strips(of: driver.id(.row1))?[0].switchTarget, .pfl(keys))
         XCTAssertTrue(function.midi.contains([0xB0, 0x42, LaunchControlDriver.pflOn]), "Function lit yellow")
-        XCTAssertTrue(function.midi.contains([0xB0, 0x25, LaunchControlDriver.pflOff]), "buttons dark yellow")
+        XCTAssertTrue(function.midi.contains(LaunchControlDriver.lightBytes(.button(row: 0, column: 0), LaunchControlDriver.pflOff, model: .lc3)), "buttons dim yellow")
         XCTAssertEqual(driver.receive([0xB0, 0x25, 0x7F], hub: &hub, now: 5).core.messages,
                        [TotalMixCommand.set(.input, 0, "pfl", 1)])
         let release = driver.receive([0xB0, 0x42, 0x00], hub: &hub, now: 5.5)
         XCTAssertFalse(driver.buttonsArePFL, "PFL only while Function is held")
         XCTAssertEqual(hub.strips(of: driver.id(.row1))?[0].switchTarget, .mute(keys))
-        XCTAssertTrue(release.midi.contains([0xB0, 0x42, LaunchControlDriver.functionIdle]))
+        XCTAssertTrue(LaunchControlDriver.anyPFL(hub), "Keys's PFL is on")
+        XCTAssertFalse(release.midi.contains(LaunchControlDriver.lightBytes(LaunchControlDriver.functionButton, LaunchControlDriver.functionIdle, model: .lc3)),
+                       "Keys's PFL is still on, so Function stays lit (UI review of 2026-11-02)")
         let level = driver.receive([0xBF, 0x15, 127], hub: &hub, now: 6)
         XCTAssertEqual(level.core.messages.count, 1, "the bottom row's encoders follow, with no pickup")
     }
@@ -456,6 +458,68 @@ final class LaunchControlDriverTests: XCTestCase {
             XCTAssertNotNil(D.paletteRGB[color], "every color the encoders use has its exact color: \(color)")
         }
         XCTAssertEqual(D.shaded(17, position: 0.5), .palette(17), "a color without an exact one stays undimmed")
+    }
+
+    func testALaunchControl3ShowsAPFLLeftOn() {
+        // UI review of 2026-11-02: once Function is released, a PFL left on must still show.
+        var (driver, hub, midi) = connected(layout: .lc3, device: .lc3)
+        let function = LaunchControlOutgoing.color(LaunchControlDriver.functionButton, LaunchControlDriver.pflOn) ?? [1]
+        let idle = LaunchControlDriver.lightBytes(LaunchControlDriver.functionButton, LaunchControlDriver.functionIdle, model: .lc3)
+        XCTAssertTrue(midi.contains(idle), "Function rests dim yellow")
+        let on = hub.handle(.channel(bus: .input, channel: 2, parameter: "pfl", value: .number(1)), now: 1)
+        let step = driver.take(on, hub: &hub, now: 1)
+        XCTAssertTrue(step.midi.contains(function), "a PFL on: Function lit bright yellow")
+        XCTAssertTrue(step.midi.contains(LaunchControlOutgoing.text(.stationary, field: 2, "PFL on, buttons Mute", model: .lc3) ?? [1]),
+                      "and the home screen says so")
+        let off = hub.handle(.channel(bus: .input, channel: 2, parameter: "pfl", value: .number(0)), now: 2)
+        let cleared = driver.take(off, hub: &hub, now: 2)
+        XCTAssertTrue(cleared.midi.contains(idle), "every PFL off: Function rests again")
+        XCTAssertTrue(cleared.midi.contains(LaunchControlOutgoing.text(.stationary, field: 2, "Buttons: Mute", model: .lc3) ?? [1]))
+        XCTAssertLessThanOrEqual("PFL on, buttons Mute".count, LaunchControlDriver.fieldLength)
+    }
+
+    func testASendResetSaysHowToRestoreIt() {
+        var (driver, hub, _) = connected(layout: .xl3)
+        _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 1)
+        let reset = driver.receive([0xBE, 0x0D, 0x7F], hub: &hub, now: 1.4)
+        XCTAssertFalse(reset.core.messages.isEmpty, "the send goes to -oo")
+        // On the encoder's own display (top 1), which the turn brings up; the overlay was covered.
+        let encoder = LaunchControlDisplayTarget.control(.encoder(row: 0, column: 0))
+        XCTAssertTrue(reset.midi.contains(LaunchControlOutgoing.text(encoder, field: 1, "Shift+turn: restore") ?? [1]))
+        let release = driver.receive([0xB6, 0x3F, 0x00], hub: &hub, now: 2)
+        XCTAssertTrue(release.midi.contains(LaunchControlOutgoing.text(encoder, field: 1, "> Phones") ?? [1]),
+                      "Shift released: the encoder's function line comes back")
+        _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 3)
+        let restore = driver.receive([0xBE, 0x0D, 0x7F], hub: &hub, now: 3.4)
+        XCTAssertTrue(restore.midi.contains(LaunchControlOutgoing.text(encoder, field: 1, "Send restored") ?? [1]))
+        // Pan resets say nothing extra.
+        _ = driver.receive([0xB6, 0x3F, 0x00], hub: &hub, now: 4)
+        _ = driver.receive([0xBF, 0x1D, 127], hub: &hub, now: 4.1)
+        _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 5)
+        let panReset = driver.receive([0xBE, 0x1D, 0x7F], hub: &hub, now: 5.4)
+        XCTAssertFalse(panReset.core.messages.isEmpty, "the pan goes to the center")
+        XCTAssertFalse(panReset.midi.contains(LaunchControlOutgoing.text(.control(.encoder(row: 2, column: 0)), field: 1,
+                                                                          "Shift+turn: restore") ?? [1]))
+    }
+
+    func testAMuteOrPFLPressSaysSoOnTheScreen() {
+        var (driver, hub, _) = connected(layout: .xl3)
+        // Bottom button 1 (mute): on, then off.
+        let on = driver.receive([0xB0, 0x2D, 0x7F], hub: &hub, now: 1)
+        XCTAssertTrue(on.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, "Mute on") ?? [1]))
+        _ = driver.receive([0xB0, 0x2D, 0x00], hub: &hub, now: 1.1)
+        let off = driver.receive([0xB0, 0x2D, 0x7F], hub: &hub, now: 2)
+        XCTAssertTrue(off.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, "Mute off") ?? [1]))
+        // Top button 1 (PFL).
+        let pfl = driver.receive([0xB0, 0x25, 0x7F], hub: &hub, now: 3)
+        XCTAssertTrue(pfl.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, "PFL on") ?? [1]))
+    }
+
+    func testTheNovationButtonAsksForTotalMixFX() {
+        var (driver, hub, _) = connected(layout: .xl3)
+        XCTAssertTrue(driver.receive([0xB0, 104, 0x7F], hub: &hub, now: 1).showTotalMix)
+        XCTAssertFalse(driver.receive([0xB0, 104, 0x00], hub: &hub, now: 1.1).showTotalMix, "not on release")
+        XCTAssertFalse(driver.receive([0xB0, 0x6A, 0x7F], hub: &hub, now: 2).showTotalMix, "Page doesn't")
     }
 
     func testEncodersShowTheButtonsYellow() {

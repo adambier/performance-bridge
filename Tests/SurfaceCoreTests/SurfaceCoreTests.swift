@@ -180,6 +180,24 @@ final class LayoutTests: XCTestCase {
                       "dragging channels back into TotalMix FX's order counts as TotalMix FX's order")
     }
 
+    func testReorderingPartOfAViewKeepsTheRestInPlace() {
+        let hub = loadedHub(mode: .strips(view: .sources, first: 0, knob: .level, switch: .mute))
+        let all = PerformanceLayout().channels(.sources, in: hub.mirror)
+        XCTAssertGreaterThan(all.count, 3)
+        // List all but the first channel, as the outputs list leaves out Main Out, which comes first.
+        let left = all[0]
+        let shown = Array(all.dropFirst())
+        let swapped = PerformanceLayout().withOrder(.sources, shown.reversed(), among: all)
+        let channels = swapped.channels(.sources, in: hub.mirror)
+        XCTAssertEqual(channels.first, left, "the channel not listed keeps its place")
+        XCTAssertEqual(Array(channels.dropFirst()), shown.reversed())
+        let back = swapped.withOrder(.sources, shown, among: channels)
+        XCTAssertTrue(back.isTotalMixOrder(.sources, in: hub.mirror),
+                      "dragging the listed channels back is TotalMix FX's order again")
+        XCTAssertFalse(PerformanceLayout().withOrder(.sources, shown).isTotalMixOrder(.sources, in: hub.mirror),
+                       "saving only the listed channels would move the other one to the end")
+    }
+
     func testChannelsHiddenInTotalMixStayOutEvenWhenOrdered() {
         var mirror = MixerMirror()
         for event in setupEvents() { mirror.apply(event) }

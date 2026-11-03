@@ -246,10 +246,18 @@ by Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   a toggle could leave the buttons on PFL by mistake on stage). The buttons are orange for mute and
   yellow for PFL, Function rests dim yellow and lights bright yellow while they are on PFL (if it
   has an LED, section 4), and the
-  screen names the change. This needs Function to send its release, as the XL 3's buttons do
-  (XL 3 test 1; for the Launch Control 3, an inference).
+  screen names the change. Function also stays bright yellow, and the home screen reads "PFL on,
+  buttons Mute", while any channel's PFL is on, so a PFL left on after Function is released still
+  shows (Adam, 2026-11-02, from the UI review of that date). This needs Function to send its release, as the XL 3's buttons do
+  (XL 3 test 1; for the Launch Control 3, an inference). A button that is off, and Function at
+  rest, show an exact-RGB dim shade (XL 3 test 19); that the Launch Control 3's buttons take it too
+  is an inference.
 - **Paging.** Track < and > move by eight strips, and with Shift to the first or last
   page.[^xl3-use] The strips always show the channels, never the outputs.
+- **Mute and PFL presses** show on the overlay, as on the XL 3 (Adam, 2026-11-02).
+- **The Novation button** brings TotalMix FX's window to the front, as on the XL 3 (Adam,
+  2026-11-02); that it sends 104 here too is from Bitwig's integration, not yet seen on a device
+  (section 4).
 - **Levels.** Level and send encoders use the ARC USB's scale, as on the XL 3 (about 0.2 dB a
   value near 0 dB).[^xl3-use] `LAUNCH-CONTROL-XL3.md`, section 8, item 12, tests whether relative
   mode is needed.
@@ -259,7 +267,7 @@ by Adam (Adam asked for its efficiency and intuitiveness to be assessed).
 - **Screen and colors.** As on the XL 3:[^xl3-use] each encoder's display shows its channel, what
   it does, and the value; the encoders show their channel's color. The home
   screen shows the channels on the page, the top row's function ("Top: Pan" or "Top > Phones 1"),
-  and the buttons' ("Buttons: Mute" or "Buttons: PFL").
+  and the buttons' ("Buttons: Mute" or "Buttons: PFL", or "PFL on, buttons Mute" while a channel's PFL is on with the buttons on mute).
 - **Level by brightness.** As on the XL 3 (an off-by-default setting; Adam, 2026-11-02):[^xl3-use]
   the level encoders, and the top row when it is a send, dim continuously with their level, from
   full at the top of the travel to dim at the bottom and dark at −oo; pan keeps full brightness.

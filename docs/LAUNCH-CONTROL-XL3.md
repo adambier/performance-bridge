@@ -78,6 +78,7 @@ seen").
 [^test-15]: Test 15 (2026-11-02), section [10](#test-15-2026-11-02-mute-master-shades-and-flashing).
 [^test-17]: Test 17 (2026-11-02), section [10](#test-17-2026-11-02-colors-and-brightness-for-101).
 [^test-18]: Test 18 (2026-11-02), section [10](#test-18-2026-11-02-the-101-build-in-the-app-and-two-adjustments).
+[^test-19]: Test 19 (2026-11-02), section [10](#test-19-2026-11-02-dimmer-off-buttons).
 [^tm-marks]: `docs/TOTALMIX-OSC.md`, test 18 (2026-11-01), the marks on TotalMix FX's faders.
 
 ## 2. MIDI ports
@@ -320,6 +321,10 @@ port names.
     Keep absolute mode if 1, 2, and 4 sound smooth and 3 is comfortable. If trims or fades are
     audibly stepped, or 2 is too coarse, use relative mode with finer steps (e.g., 0.1 dB for a
     slow step, more as the device accelerates).
+13. **The send-reset text.** Run in part: the overlay flashed too fast to read (Adam, 2026-11-02).
+    Now on the encoder's display: in the app (1.0.2 or later), hold Shift a moment and turn a send
+    encoder. Does its display read "Shift+turn: restore"? Release Shift: is its middle line the send
+    ("> Phones 1") again? Then Shift + turn it again: "Send restored"?
 
 ## 9. How Performance Bridge uses it
 
@@ -367,7 +372,11 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   - a level (the Launch Control 3's) above 0 dB comes down to 0 dB, and one at or below 0 dB
     stays: a reset never raises a level;
   - a send goes to −oo, and a second Shift + turn, after Shift is released and held again, brings it
-    back to where it was;
+    back to where it was; the encoder's own display then reads "Shift+turn: restore", then "Send
+    restored", on its middle line, which comes back when Shift is released (Adam, 2026-11-02, from
+    the UI review of that date). The overlay was tried first and flashed too fast to read (seen by
+    Adam, 2026-11-02), presumably covered at once by the encoder's display (an inference); the encoder's display hasn't been
+    seen yet (section 8, item 13);
   - only once Shift has been held 0.3 s with no Page or Track press, and once per encoder per hold
     of Shift.
 
@@ -376,9 +385,10 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   with Shift held left the device's own value where it was.[^test-9]
 - **Buttons.** The top row is PFL (yellow) and the bottom row mute (orange), the colors the
   Roto-Control's firmware gives solo and mute, so every hardware controller shows them alike (Adam,
-  2026-11-02). A button that is off shows the dimmest shade of its color, so the two rows stay
-  recognizable (Adam, 2026-11-02). Orange's dimmest shade is index 11.[^test-13] The bright shades
-  have been observed to look as bright as full RGB values; more contrast is left to the device's own LED brightness setting.[^test-13] Solo/Arm and Mute/Select do nothing for now: in DAW mode
+  2026-11-02). A button that is off shows a dim shade of its color, so the two rows stay
+  recognizable (Adam, 2026-11-02): by exact RGB, yellow 16, 11, 0 and orange 12, 4, 0, dimmer than
+  the palette's dimmest shades (15 and 11), for more contrast with a button that is on.[^test-19]
+  The bright shades have been observed to look as bright as full RGB values.[^test-13] Solo/Arm and Mute/Select do nothing for now: in DAW mode
   the device leaves them to the host.[^test-6]
 - **Paging and views.** Track < and > move by eight strips, as the panel's labels say, and with
   Shift to the first or last page. (Novation's integrations move one track, and eight with Shift.
@@ -387,12 +397,17 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   2026-11-01.) The strips always show the channels (inputs and playbacks), never the outputs: the
   outputs are set up in TotalMix FX and left alone during a performance (Adam, 2026-11-01). Page
   and Track are lit where they would move.
-- **Free buttons.** Solo/Arm, Mute/Select, Record, Play, and the Novation button do nothing, so arm
-  and the transport stay free for a later connection to a DAW (Adam, 2026-11-01). The Novation
-  button was tried as a one-press "first page" and dropped as hard to find (Adam, 2026-11-02).
+- **Free buttons.** Solo/Arm, Mute/Select, Record, and Play do nothing, so arm and the transport
+  stay free for a later connection to a DAW (Adam, 2026-11-01).
+- **Mute and PFL presses** show on the overlay as well as the light: the channel's name and "Mute
+  on", "Mute off", "PFL on", or "PFL off" (Adam, 2026-11-02), or "Mute Master off" for a mute while
+  TotalMix FX's Mute Master is off.
+- **The Novation button** brings TotalMix FX's window to the front, and, with TotalMix FX already
+  in front, goes back to the app that was (Adam, 2026-11-02). It was
+  tried as a one-press "first page" earlier that day and dropped as hard to find.
 - **Both Track buttons together** go to the first page (Adam, 2026-11-02).
 - **Mute Master.** While TotalMix FX's Mute Master is off, a mute that is on flashes between bright
-  and dim orange (0.4 s each), and pressing a mute shows "Mute Master off / in TotalMix FX" on
+  and dim orange (0.5 s each; 0.4 s until Adam slowed it, 2026-11-02), and pressing a mute shows "Mute Master off / in TotalMix FX" on
   the screen (Adam, 2026-11-02). The medium shade was too close to the others, and no way to make
   the device flash a color by itself has been found, so the driver flashes it.[^test-15]
 - **Presence.** While connected, the driver asks for the surface mode (feature control 30) after
@@ -802,3 +817,18 @@ Phones 2 (yellow) on the middle. Seen by Adam.
   orange recognizable at their dimmest.
 - Everything else in the 1.0.1 build behaved as section 9 describes.
 
+### Test 19 (2026-11-02): dimmer off buttons
+
+**Setup.** Adam's XL 3 with its LED brightness setting at 10, `sbdev lcxl`
+(`lcxl-buttons-1102.log`). Seen by Adam.
+
+**Yellow, top buttons 1–5:** palette 13 (PFL on), palette 15 (PFL off until now), then RGB 16, 11, 0;
+10, 7, 0; and 7, 5, 0. Adam chose 16, 11, 0: the two dimmer ones were visible, highly so in the dark,
+but their yellow came close to the white of the button's translucent part. After seeing orange,
+Adam tried yellow one step dimmer (10, 7, 0) and went back to 16, 11, 0.
+
+**Orange, bottom buttons 1–5:** palette 9 (mute on), palette 11 (mute off until now), then RGB 24, 8, 0;
+16, 5, 0; and 12, 4, 0. Adam chose 12, 4, 0.
+
+**Consequence.** A button that is off is drawn by exact RGB, yellow 16, 11, 0 and orange 12, 4, 0
+(1.0.2). Not tried: other LED brightness settings.

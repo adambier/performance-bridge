@@ -20,6 +20,9 @@ import SurfaceCore
 #if canImport(LaunchControl)
 import LaunchControl
 #endif
+#if canImport(MIDITransport)
+import MIDITransport
+#endif
 // Sparkle (in-app updates) is linked by make-app.sh. Package.swift does not declare it, so
 // `swift run` compiles without it and the menu has no "Check for Updates…" item.
 #if canImport(Sparkle)
@@ -185,6 +188,20 @@ enum ControllerChoice: String, CaseIterable, Identifiable {
         case .launchControl3: return .lc3
         }
     }
+
+    /// The same hardware controller, as `DetectedController` names it.
+    var detected: DetectedController {
+        launchControl.map { .launchControl($0) } ?? .roto
+    }
+
+    /// The choice for a hardware controller found plugged in.
+    init(_ detected: DetectedController) {
+        switch detected {
+        case .roto: self = .roto
+        case .launchControl(.xl3): self = .launchControlXL3
+        case .launchControl(.lc3): self = .launchControl3
+        }
+    }
 }
 
 /// The settings kept between launches, in the user defaults.
@@ -288,6 +305,10 @@ final class BridgeModel: ObservableObject {
         watchTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.checkSetup() }
         }
+        // Once now, so the Setup Guide's first page knows whether TotalMix FX is running: the timer
+        // first fires after the window has opened (review of 1.0.2). No status has come from the
+        // engine yet, so only a TotalMix FX older than 2.1 can be reported now.
+        checkSetup()
         // The setup window opens by itself the first time the app runs; later, from the menu.
         if !UserDefaults.standard.bool(forKey: Self.setupShownKey) {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
@@ -299,6 +320,55 @@ final class BridgeModel: ObservableObject {
     }
 
     private static let setupShownKey = "setupShown"
+
+    /// The app that was in front when the Novation button last brought TotalMix FX forward.
+    private var appBeforeTotalMix: NSRunningApplication?
+
+    /// Brings TotalMix FX to the front; if it is already there, goes back to the app that was in
+    /// front before, or, if there is none to go back to, hides TotalMix FX so the next app comes
+    /// forward (Adam, 2026-11-02).
+    private func toggleTotalMix() {
+        guard let totalMix = Self.runningTotalMix() else { return }
+        if totalMix.isActive {
+            if let previous = appBeforeTotalMix, !previous.isTerminated, previous != totalMix {
+                previous.activate(options: [.activateIgnoringOtherApps])
+            } else {
+                totalMix.hide()
+            }
+            appBeforeTotalMix = nil
+        } else {
+            appBeforeTotalMix = NSWorkspace.shared.frontmostApplication
+            totalMix.activate(options: [.activateIgnoringOtherApps])
+        }
+    }
+
+    /// Set once a hardware controller has connected in this launch, or the user has applied
+    /// Settings; until then the app chooses the hardware controller by itself (Adam, 2026-11-02:
+    /// each launch starts over).
+    private var controllerSettled = false
+    /// The hardware controller the app last chose by itself, for the Settings window to follow.
+    @Published private(set) var autoChosen: ControllerChoice?
+
+    /// Until a hardware controller has connected in this launch, or the user has applied
+    /// Settings: if the one chosen isn't plugged in and exactly one other is, chooses that one
+    /// (Adam, 2026-11-02). Only the MIDI ports' names are read, so nothing is sent to a device
+    /// until it is chosen. Not after that in the same launch, since a Launch Control taken over this
+    /// way leaves a DAW's session with it (see AGENTS.md, section 3).
+    private func chooseControllerIfNeeded() {
+        guard !launchControlFromCommandLine, !controllerSettled else { return }
+        if status.rotoConnected || status.launchControlConnected {
+            controllerSettled = true
+            return
+        }
+        var saved = SavedSettings.load()
+        let found = DetectedController.found(among: MIDIConnection.sources(), rotoPortName: engine.settings.rotoPortName)
+        guard let target = DetectedController.switchTarget(chosen: saved.controller.detected, found: found) else { return }
+        let choice = ControllerChoice(target)
+        print("Choosing the \(choice.title): it is plugged in and the \(saved.controller.title) isn’t")
+        saved.controller = choice
+        apply(saved, chosenByUser: false)
+        autoChosen = choice
+    }
 
     /// The keys under which "worked with these settings" is kept: TotalMix FX's host and ports, and the
     /// Roto-Control's port name, as the engine uses them.
@@ -335,6 +405,7 @@ final class BridgeModel: ObservableObject {
         if watch.launchControlWorked, engine.settings.launchControl != nil {
             UserDefaults.standard.set(true, forKey: launchControlWorkedKey)
         }
+        chooseControllerIfNeeded()
         let attention = watch.needsAttention(status: status, now: now)
         if attention != needsAttention { needsAttention = attention }
         if let reason {
@@ -346,7 +417,7 @@ final class BridgeModel: ObservableObject {
             case .totalMixTooOld: print("Opening setup: TotalMix FX \(version ?? "") is older than 2.1")
             }
             fflush(stdout)
-            showSetup()
+            showSetup(openFor: reason.stepID)
         }
     }
 
@@ -370,9 +441,12 @@ final class BridgeModel: ObservableObject {
         return nil
     }
 
-    /// Opens the setup window.
-    func showSetup() {
-        Windows.show("setup", title: "Performance Bridge Setup Guide") { SetupView(model: self) }
+    /// Opens the setup window, at the step `openFor` names (e.g., a problem's), or at the first
+    /// step that isn't done.
+    func showSetup(openFor: String? = nil) {
+        // From the menu, an open guide stays on its page; a problem opens at its step.
+        if openFor == nil, Windows.front("setup") { return }
+        Windows.show("setup", title: "Performance Bridge Setup Guide") { SetupView(model: self, openFor: openFor) }
     }
 
     /// The engine's settings from the saved settings, the command line, and the menu's choices.
@@ -420,6 +494,11 @@ final class BridgeModel: ObservableObject {
         engine.onLaunchControlSendsChange = { layout, outputs in
             UserDefaults.standard.set(outputs.map { $0 ?? -1 }, forKey: Self.sendsKey(layout))
         }
+        // The Launch Control's Novation button brings TotalMix FX to the front, and with TotalMix FX
+        // already in front goes back to the app that was (Adam, 2026-11-02).
+        engine.onShowTotalMix = { [weak self] in
+            Task { @MainActor in self?.toggleTotalMix() }
+        }
         // For now the log goes to the Terminal the app was started from.
         engine.onLog = { line in
             print(line)
@@ -435,8 +514,10 @@ final class BridgeModel: ObservableObject {
         engine.start()
     }
 
-    /// Saves new settings and restarts the engine with them.
-    func apply(_ saved: SavedSettings) {
+    /// Saves new settings and restarts the engine with them. Once the user applies Settings, the
+    /// hardware controller they chose stays chosen for this launch.
+    func apply(_ saved: SavedSettings, chosenByUser: Bool = true) {
+        if chosenByUser { controllerSettled = true }
         saved.save()
         engine.stop()
         engine = BridgeEngine(settings: Self.settings(saved, overrides: portOverrides))
