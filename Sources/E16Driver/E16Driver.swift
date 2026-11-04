@@ -64,6 +64,9 @@ public struct E16Driver: Sendable {
     public private(set) var function = KnobFunction.level
     /// The send output (an index into `SurfaceHub.sendTargets`) SEND goes back to.
     private var lastSend = 0
+    /// How bright the rings are, 0…1, applied to every color sent: full was too bright for a
+    /// dark room (Adam, 2026-11-04). A lit part never goes below 1.
+    public var brightness: Double = 0.7
 
     /// How many strips the device shows at once.
     public static let stripCount = 16
@@ -554,18 +557,29 @@ public struct E16Driver: Sendable {
             let look = look(index, hub: hub)
             guard sentRings[index] != look else { continue }
             sentRings[index] = look
-            rings.append((index, look.ring))
-            leds += look.leds.map { (index, $0.index, $0.red, $0.green, $0.blue) }
+            rings.append((index, dimmed(look.ring)))
+            leds += look.leds.map { (index, $0.index, dim($0.red), dim($0.green), dim($0.blue)) }
         }
         return E16Outgoing.rings(rings) + E16Outgoing.leds(leds)
+    }
+
+    /// A part of a color at the driver's `brightness`; a lit part stays lit.
+    private func dim(_ part: UInt8) -> UInt8 {
+        guard part > 0 else { return 0 }
+        let scale = brightness.isFinite ? min(max(brightness, 0), 1) : 1
+        return UInt8(min(max((Double(part) * scale).rounded(), 1), 127))
+    }
+
+    private func dimmed(_ ring: E16Ring) -> E16Ring {
+        E16Ring(red: dim(ring.red), green: dim(ring.green), blue: dim(ring.blue), amount: ring.amount, bipolar: ring.bipolar)
     }
 
     private mutating func drawRing(_ index: Int, hub: SurfaceHub) -> [UInt8] {
         let look = look(index, hub: hub)
         guard sentRings[index] != look else { return [] }
         sentRings[index] = look
-        return E16Outgoing.rings([(encoder: index, ring: look.ring)])
-            + E16Outgoing.leds(look.leds.map { (index, $0.index, $0.red, $0.green, $0.blue) })
+        return E16Outgoing.rings([(encoder: index, ring: dimmed(look.ring))])
+            + E16Outgoing.leds(look.leds.map { (index, $0.index, dim($0.red), dim($0.green), dim($0.blue)) })
     }
 
     /// A strip's ring: dark for no channel; else its color (`rgb(for:)`, or for a send the

@@ -118,6 +118,7 @@ private extension Array where Element == UInt8 {
 private func connected() -> (driver: E16Driver, hub: SurfaceHub, midi: [UInt8]) {
     var hub = loadedHub()
     var driver = E16Driver(name: "e16")
+    driver.brightness = 1  // the tests read exact values
     let start = driver.start(hub: &hub, now: 0)
     let answer = driver.receive(ack, hub: &hub, now: 0)
     return (driver, hub, start.midi + answer.midi)
@@ -127,6 +128,7 @@ final class E16DriverTests: XCTestCase {
     func testStartAsksForRemoteModeAndDrawsOnceAnswered() {
         var hub = loadedHub()
         var driver = E16Driver(name: "e16")
+        driver.brightness = 1
         let start = driver.start(hub: &hub, now: 0)
         XCTAssertEqual(start.midi, E16Outgoing.enterRemoteMode)
         XCTAssertFalse(driver.isConnected)
@@ -306,6 +308,7 @@ final class E16DriverTests: XCTestCase {
             _ = hub.handle(.mix(bus: .input, channel: number, output: 0, parameter: "faderlin", value: .number(0.3)), now: 0)
         }
         var driver = E16Driver(name: "e16")
+        driver.brightness = 1
         _ = driver.start(hub: &hub, now: 0)
         let answer = driver.receive(ack, hub: &hub, now: 0)
         XCTAssertEqual(answer.midi.lastTitle, "LEVEL        1/2")
@@ -349,6 +352,23 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(half.midi.leds[1], nil, "the stripes are off")
         let back = driver.tick(hub: &hub, now: 1.1)
         XCTAssertEqual(back.midi.leds[1]?.map(\.index), [1, 3, 5, 7], "and on again")
+    }
+
+    func testBrightnessScalesEveryColorSent() {
+        var hub = loadedHub()
+        var driver = E16Driver(name: "e16")
+        driver.brightness = 0.5
+        _ = driver.start(hub: &hub, now: 0)
+        let answer = driver.receive(ack, hub: &hub, now: 0)
+        XCTAssertEqual(answer.midi.rings[0]?.r, 64, "Keys, red, at half")
+        XCTAssertEqual(answer.midi.rings[1]?.g, 64, "Vox, white, at half")
+        XCTAssertEqual(answer.midi.rings[0]?.amount, 8192, "the fill is the level, not dimmed")
+        _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 1)
+        let mute = driver.receive([0x80, 1, 0x00], hub: &hub, now: 1.1)
+        XCTAssertEqual(mute.midi.leds[1]?.first?.r, 64, "stripes too")
+        driver.brightness = 0.001
+        _ = driver.receive([0x90, 1, 0x7F, 0x80, 1, 0x00], hub: &hub, now: 2)
+        XCTAssertEqual(driver.take(hub.handle(.channel(bus: .input, channel: 2, parameter: "color", value: .number(4)), now: 3), hub: &hub, now: 3).midi.rings[1]?.r, 1, "a lit part stays lit")
     }
 
     func testLabelsLoseSpacesBeforeTheirEnd() {
