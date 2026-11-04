@@ -197,7 +197,7 @@ Choose **Settings…** from the menu and open the **Channel Layout** tab.
 
 ## Step 6: Use the hardware controllers
 
-The app has the same for the chosen hardware controller: choose **Controls Guide…** from Performance Bridge's menu.
+The app has the same, for every hardware controller: choose **Controls Guide…** from Performance Bridge's menu.
 
 Every hardware controller works the same way: **each column of controls is one channel** and every control in
 a column acts on that channel.
