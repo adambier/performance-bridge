@@ -500,8 +500,9 @@ public struct E16Driver: Sendable {
     }
 
     /// The LEDs a mute lights: the pair at the ring's bottom gap, where the eye lands looking at
-    /// the device from below, and one at each side (Adam, 2026-11-04).
-    public static let muteMarks = [0, 3, 12, 15]
+    /// the device from below, and the pair at the top. No single LED sits at 9 or 3 o'clock on
+    /// the device, so side marks looked off (Adam, 2026-11-04).
+    public static let muteMarks = [0, 7, 8, 15]
     /// How long a PFL's running LED stays on each LED, in seconds.
     public static let rotationStep: Double = 0.08
     /// Where a PFL's running LED is now (0–15), from `tick`.
