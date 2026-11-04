@@ -37,9 +37,9 @@ public struct E16Step: Equatable, Sendable {
 ///   surface's function is set (`function`);
 /// - a short push (under `pflHold`): mute, on release; a push held `pflHold`: PFL;
 /// - with Shift held the encoders are buttons (`ShiftButton`, as OXI's own firmware does it):
-///   LEVEL and PAN (encoders 1 and 2), the previous and next send output (7 and 8), the
-///   previous and next page of sixteen strips (15 and 16); the screen names them and the rings
-///   light the ones that do something;
+///   the modes LEVEL, PAN, and SEND (encoders 1–3), the previous and next send output (7 and
+///   8), the previous and next page of sixteen strips (15 and 16); the screen names them and
+///   the rings show the mode in use and which arrows go somewhere;
 /// - the ring shows the strip's color, filled to its level (bipolar for a pan), with red marks
 ///   while muted and a running white LED while on PFL (`look`); the screen's title shows the
 ///   function and the page, and for a moment the value of a turned encoder or the result of a
@@ -62,6 +62,8 @@ public struct E16Driver: Sendable {
 
     /// What the encoders do now: level, pan, or a send (an index into `SurfaceHub.sendTargets`).
     public private(set) var function = KnobFunction.level
+    /// The send output (an index into `SurfaceHub.sendTargets`) SEND goes back to.
+    private var lastSend = 0
 
     /// How many strips the device shows at once.
     public static let stripCount = 16
@@ -71,21 +73,24 @@ public struct E16Driver: Sendable {
     /// shorter push is released (Adam, 2026-11-04: Shift + push went to the button page).
     public static let pflHold: Double = 0.4
 
-    /// What an encoder does as a button while Shift is held.
+    /// What an encoder does as a button while Shift is held: a mode button (LEVEL, PAN, SEND:
+    /// one of them is in use) or a step button (an arrow: it goes somewhere, or nowhere).
     public enum ShiftButton: Hashable, Sendable {
         /// The encoders set levels.
         case level
         /// The encoders set pans.
         case pan
+        /// The encoders set sends, to the output last used.
+        case send
         /// The encoders set sends to the previous output, or the next.
         case output(Int)
         /// The previous page of strips, or the next.
         case page(Int)
 
-        /// The encoder each button is on: LEVEL and PAN on the first row, the outputs at the
-        /// end of the second, the pages at the end of the last (Adam, 2026-11-04).
+        /// The encoder each button is on: the modes on the first row, the output arrows at the
+        /// end of the second, the page arrows at the end of the last (Adam, 2026-11-04).
         public static let layout: [Int: ShiftButton] = [
-            0: .level, 1: .pan, 6: .output(-1), 7: .output(1), 14: .page(-1), 15: .page(1),
+            0: .level, 1: .pan, 2: .send, 6: .output(-1), 7: .output(1), 14: .page(-1), 15: .page(1),
         ]
 
         /// The label on the screen.
@@ -93,8 +98,17 @@ public struct E16Driver: Sendable {
             switch self {
             case .level: return "LEVL"
             case .pan: return "PAN"
+            case .send: return "SEND"
             case .output(let d): return d < 0 ? "<OUT" : "OUT>"
             case .page(let d): return d < 0 ? "<PG" : "PG>"
+            }
+        }
+
+        /// Whether this is a mode button (else an arrow).
+        public var isMode: Bool {
+            switch self {
+            case .level, .pan, .send: return true
+            case .output, .page: return false
             }
         }
     }
@@ -328,11 +342,16 @@ public struct E16Driver: Sendable {
         switch button {
         case .level: setFunction(.level, hub: &hub, now: now, into: &step)
         case .pan: setFunction(.pan, hub: &hub, now: now, into: &step)
+        case .send:
+            let count = hub.sendTargets.count
+            guard count > 0 else { return }
+            setFunction(.send(min(lastSend, count - 1)), hub: &hub, now: now, into: &step)
         case .output(let direction):
             let count = hub.sendTargets.count
             guard count > 0 else { return }
-            let current: Int? = { if case .send(let n) = function { return n } else { return nil } }()
-            let next = current.map { $0 + direction } ?? (direction > 0 ? 0 : count - 1)
+            // Not in SEND mode, either arrow enters it at the last output used.
+            let current: Int = { if case .send(let n) = function { return n } else { return min(lastSend, count - 1) - direction } }()
+            let next = current + direction
             guard (0..<count).contains(next) else { return }
             setFunction(.send(next), hub: &hub, now: now, into: &step)
         case .page(let direction):
@@ -343,6 +362,7 @@ public struct E16Driver: Sendable {
     private mutating func setFunction(_ next: KnobFunction, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
         guard next != function else { return }
         function = next
+        if case .send(let n) = next { lastSend = n }
         setModes(first: page.first, hub: &hub, now: now, into: &step)
         step.midi += drawLabels(hub: hub) + drawRings(hub: hub)
     }
@@ -351,11 +371,12 @@ public struct E16Driver: Sendable {
     func isAvailable(_ button: ShiftButton, hub: SurfaceHub) -> Bool {
         switch button {
         case .level, .pan: return true
+        case .send: return !hub.sendTargets.isEmpty
         case .output(let direction):
             let count = hub.sendTargets.count
             guard count > 0 else { return false }
-            guard case .send(let n) = function else { return true }
-            return (0..<count).contains(n + direction)
+            let current: Int = { if case .send(let n) = function { return n } else { return min(lastSend, count - 1) - direction } }()
+            return (0..<count).contains(current + direction)
         case .page(let direction):
             let current = page.first / Self.stripCount
             return (0..<pageCount).contains(current + direction)
@@ -543,34 +564,43 @@ public struct E16Driver: Sendable {
         return look
     }
 
-    /// A ring on the Shift page: full, in the button group's color (`buttonColors`: colors
-    /// TotalMix FX doesn't use for channels, so the page can't be mistaken for one of them;
-    /// Adam, 2026-11-04), bright for the function in use and while the button is held down,
-    /// dim otherwise; dark for a blank or a button that does nothing now.
+    /// A ring on the Shift page, full, in the button's color (`buttonColors`; Adam, 2026-11-04).
+    /// A mode button is dim, or at the medium level for the mode in use; an arrow is dim when
+    /// it goes somewhere and dark when it doesn't; any button is full while held down. A blank
+    /// is dark.
     func buttonRing(_ index: Int, hub: SurfaceHub) -> E16Ring {
         guard let button = ShiftButton.layout[index] else { return .off }
-        guard isAvailable(button, hub: hub) || pressedButton == index else { return .off }
         let rgb: (UInt8, UInt8, UInt8)
-        var chosen = false
+        var inUse = false
         switch button {
-        case .level: rgb = Self.buttonColors.level; chosen = function == .level
-        case .pan: rgb = Self.buttonColors.pan; chosen = function == .pan
-        case .output:
-            rgb = Self.buttonColors.output
-            if case .send = function { chosen = true }
+        case .level: rgb = Self.buttonColors.level; inUse = function == .level
+        case .pan: rgb = Self.buttonColors.pan; inUse = function == .pan
+        case .send:
+            rgb = Self.buttonColors.send
+            if case .send = function { inUse = true }
+        case .output: rgb = Self.buttonColors.send
         case .page: rgb = Self.buttonColors.page
         }
-        // Three levels, far apart (Adam, 2026-11-04): available, in use, and held down.
-        let scale: Double = pressedButton == index ? 1 : chosen ? 0.45 : 0.05
+        let scale: Double
+        if pressedButton == index { scale = 1 }
+        else if inUse { scale = Self.inUseLevel }
+        else if isAvailable(button, hub: hub) { scale = Self.availableLevel }
+        else { return .off }
         return E16Ring(red: UInt8(Double(rgb.0) * scale), green: UInt8(Double(rgb.1) * scale), blue: UInt8(Double(rgb.2) * scale), amount: 1)
     }
 
-    /// The Shift page's colors: teal for LEVEL, magenta for PAN, lime for the outputs, sky blue
-    /// for the pages. The page shows no channel colors, so they only need to differ from each
-    /// other; teal and sky blue looked alike side by side (Adam, 2026-11-04).
+    /// How bright an available button is, as a fraction of full; a twentieth, so it is far from
+    /// the mode in use (Adam, 2026-11-04).
+    public static let availableLevel = 0.05
+    /// How bright the mode in use is, as a fraction of full; between available and held down.
+    public static let inUseLevel = 0.45
+
+    /// The Shift page's colors (Adam, 2026-11-04): white for LEVEL, amber for PAN, a darker
+    /// green for SEND and the output arrows, a deep blue for the page arrows. The page shows no
+    /// channel colors, so they only need to differ from each other.
     public static let buttonColors: (level: (UInt8, UInt8, UInt8), pan: (UInt8, UInt8, UInt8),
-                                     output: (UInt8, UInt8, UInt8), page: (UInt8, UInt8, UInt8))
-        = ((0, 127, 110), (127, 0, 100), (100, 127, 0), (0, 90, 127))
+                                     send: (UInt8, UInt8, UInt8), page: (UInt8, UInt8, UInt8))
+        = ((127, 127, 127), (127, 70, 0), (0, 90, 0), (0, 0, 127))
 
     /// The LEDs a mute lights: the pair at the ring's bottom gap, where the eye lands looking at
     /// the device from below, and the pair at the top. No single LED sits at 9 or 3 o'clock on

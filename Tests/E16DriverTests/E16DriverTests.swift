@@ -217,15 +217,17 @@ final class E16DriverTests: XCTestCase {
         var (driver, hub, _) = connected()
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(shift.midi.lastTitle, "LEVEL           ", "the title stays")
-        XCTAssertEqual(shift.midi.lastLabels, ["LEVL", "PAN ", "    ", "    ", "    ", "    ", "<OUT", "OUT>",
+        XCTAssertEqual(shift.midi.lastLabels, ["LEVL", "PAN ", "SEND", "    ", "    ", "    ", "<OUT", "OUT>",
                                                "    ", "    ", "    ", "    ", "    ", "    ", "<PG ", "PG> "])
         let rings = shift.midi.rings
-        XCTAssertEqual(rings[0]?.g, 57, "LEVEL, in use: medium teal")
+        XCTAssertEqual(rings[0]?.g, 57, "LEVEL, in use: medium white")
         XCTAssertEqual(rings[0]?.amount, 16383)
-        XCTAssertEqual(rings[1]?.r, 6, "PAN: dim magenta")
-        XCTAssertEqual(rings[6]?.g, 6, "previous output: dim lime")
-        XCTAssertEqual(rings[2]?.amount, 0, "a blank is dark")
-        XCTAssertNil(rings[14], "an empty strip's ring was dark already")
+        XCTAssertEqual(rings[1]?.r, 6, "PAN: dim amber")
+        XCTAssertEqual(rings[2]?.g, 4, "SEND: dim green")
+        XCTAssertEqual(rings[6]?.g, 4, "either arrow enters SEND mode at the last output used")
+        XCTAssertEqual(rings[7]?.g, 4)
+        XCTAssertEqual(rings[3]?.amount, 0, "a blank is dark")
+        XCTAssertNil(rings[14], "no pages: an empty strip's ring was dark already")
         // A turn does nothing on the Shift page.
         XCTAssertEqual(driver.receive([0xB0, 1, 0x04], hub: &hub, now: 1.1).core.messages, [])
         // PAN.
@@ -237,14 +239,15 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(pan.core.messages, [], "no mute from a button")
         // A button held down is full bright, whatever it does.
         let down = driver.receive([0x90, 15, 0x7F], hub: &hub, now: 1.25)
-        XCTAssertEqual(down.midi.rings[15]?.b, 127, "NEXT page, pressed: bright, though it does nothing")
+        XCTAssertEqual(down.midi.rings[15]?.b, 127, "NEXT page, pressed: bright, though it goes nowhere")
         XCTAssertEqual(driver.receive([0x80, 15, 0x00], hub: &hub, now: 1.26).midi.rings[15]?.amount, 0, "dark again")
-        // Next output: the only send, Phones.
+        // Next output: the only send, Phones; the arrow enters SEND mode.
         let out = driver.receive([0x90, 7, 0x7F, 0x80, 7, 0x00], hub: &hub, now: 1.3)
         XCTAssertEqual(driver.function, .send(0))
         XCTAssertEqual(out.midi.lastTitle, "> PHONES        ")
+        XCTAssertEqual(out.midi.rings[2]?.g, 40, "SEND in use")
         XCTAssertEqual(out.midi.rings[7]?.amount, 0, "no next output: dark once released")
-        XCTAssertEqual(out.midi.rings[6]?.amount, 0, "no previous output either: dark")
+        XCTAssertEqual(out.midi.rings[6]?.amount, 0, "no previous output either")
         XCTAssertEqual(driver.receive([0x90, 7, 0x7F, 0x80, 7, 0x00], hub: &hub, now: 1.4).core.messages, [])
         XCTAssertEqual(driver.function, .send(0), "stays at the last output")
         // Release: the strips come back, in the send's color (white, Phones is white) and values.
@@ -256,9 +259,11 @@ final class E16DriverTests: XCTestCase {
         // A turn now sets the send.
         let turn = driver.receive([0xB0, 1, 0x01], hub: &hub, now: 3)
         XCTAssertEqual(turn.core.messages.map(\.address), ["/mix/in/0/2/faderlin"])
-        // Back to LEVEL.
-        _ = driver.receive([0x90, 16, 0x7F, 0x90, 0, 0x7F, 0x80, 0, 0x00, 0x90, 16, 0x00], hub: &hub, now: 4)
+        // LEVEL, then SEND goes back to Phones.
+        _ = driver.receive([0x90, 16, 0x7F, 0x90, 0, 0x7F, 0x80, 0, 0x00], hub: &hub, now: 4)
         XCTAssertEqual(driver.function, .level)
+        _ = driver.receive([0x90, 2, 0x7F, 0x80, 2, 0x00, 0x90, 16, 0x00], hub: &hub, now: 4.1)
+        XCTAssertEqual(driver.function, .send(0))
     }
 
     func testPanTurn() {
@@ -285,7 +290,7 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(answer.midi.lastTitle, "LEVEL        1/2")
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(shift.midi.rings[14]?.amount, 0, "no previous page: dark")
-        XCTAssertEqual(shift.midi.rings[15]?.b, 6, "sky blue, dim")
+        XCTAssertEqual(shift.midi.rings[15]?.b, 6, "blue, dim")
         let next = driver.receive([0x90, 15, 0x7F, 0x80, 15, 0x00], hub: &hub, now: 1.5)
         XCTAssertEqual(next.midi.lastTitle, "LEVEL        2/2")
         XCTAssertEqual(next.midi.rings[14]?.b, 6, "a previous page now")
