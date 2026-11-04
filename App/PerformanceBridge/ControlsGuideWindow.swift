@@ -15,6 +15,9 @@ import LaunchControl
 struct ControlsGuideView: View {
     @ObservedObject var model: BridgeModel
 
+    /// The page's width in points, padding included.
+    private static let width: CGFloat = 600
+
     /// The hardware controller in use: a Launch Control's layout (the Launch Control 3's when it
     /// is simulated on an XL 3), or the Roto-Control.
     private var controller: DetectedController {
@@ -27,6 +30,7 @@ struct ControlsGuideView: View {
             VStack(alignment: .leading, spacing: 14) {
                 Text(guide.title)
                     .font(.title2.weight(.semibold))
+                photo(guide)
                 ForEach(ControlsGuide.common + guide.introduction, id: \.self) { paragraph($0) }
                 ForEach(guide.tables.indices, id: \.self) { table(guide.tables[$0]) }
                 if !guide.notes.isEmpty {
@@ -44,9 +48,24 @@ struct ControlsGuideView: View {
                 }
             }
             .padding(20)
-            .frame(width: 600, alignment: .leading)
+            .frame(width: Self.width, alignment: .leading)
         }
         .frame(height: min((NSScreen.main?.visibleFrame.height ?? 800) - 120, 720))
+    }
+
+    /// The controller's photo, under the title, the full width of the page (the files are twice
+    /// that in pixels, for Retina screens), with an exact height so no space is left around it.
+    @ViewBuilder
+    private func photo(_ guide: ControlsGuide) -> some View {
+        if let image = Brand.resources.image(forResource: guide.image),
+           let rep = image.representations.first, rep.pixelsWide > 0 {
+            let width = Self.width - 40
+            Image(nsImage: image)
+                .resizable()
+                .interpolation(.high)
+                .frame(width: width, height: width * CGFloat(rep.pixelsHigh) / CGFloat(rep.pixelsWide))
+                .accessibilityLabel("Photo of the \(guide.title), seen from above")
+        }
     }
 
     /// A paragraph, with Markdown's **bold** shown as bold.

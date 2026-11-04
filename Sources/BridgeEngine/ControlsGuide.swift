@@ -36,6 +36,9 @@ public struct ControlsGuide: Equatable, Sendable {
 
     /// The controller's name, as the guide's title.
     public var title: String
+    /// The resource name of the controller's photo (`controller-*.png` in the app's resources, the
+    /// maker's top view, trimmed), shown under the title; docs/SETUP.md shows the same file.
+    public var image: String
     /// Paragraphs before the tables.
     public var introduction: [String]
     /// The tables.
@@ -62,6 +65,7 @@ public struct ControlsGuide: Equatable, Sendable {
 
     static let launchControlXL3 = ControlsGuide(
         title: "Launch Control XL 3",
+        image: "controller-launch-control-xl3",
         introduction: [],
         tables: [
             Table(controlHeading: "Control (in each column)", actionHeading: "What it does for that column's channel", rows: [
@@ -94,6 +98,7 @@ public struct ControlsGuide: Equatable, Sendable {
 
     static let launchControl3 = ControlsGuide(
         title: "Launch Control 3",
+        image: "controller-launch-control-3",
         introduction: ["The Launch Control 3 works the same way, with fewer controls:"],
         tables: [
             Table(controlHeading: "Control (in each column)", actionHeading: "What it does for that column's channel", rows: [
@@ -111,6 +116,7 @@ public struct ControlsGuide: Equatable, Sendable {
 
     static let rotoControl = ControlsGuide(
         title: "Roto-Control",
+        image: "controller-roto-control",
         introduction: [
             "Each of the eight knobs is a channel.",
             "Hold **SEL** to choose what the knobs control (Volume, Pan, or a send, \"FX\") and what the switches do (Mute or Solo; Solo is PFL here).",
