@@ -96,7 +96,14 @@ public struct E16Driver: Sendable {
     private var muteOn: [Bool] = Array(repeating: false, count: E16Driver.stripCount)
     private var pflOn: [Bool] = Array(repeating: false, count: E16Driver.stripCount)
     private var sentLabels: [UInt8]?
-    private var sentRings: [E16Ring?] = Array(repeating: nil, count: E16Driver.stripCount)
+    private var sentRings: [RingLook?] = Array(repeating: nil, count: E16Driver.stripCount)
+
+    /// How one encoder's ring is drawn: the ring, then single LEDs over it (the needles).
+    struct RingLook: Hashable {
+        var ring: E16Ring
+        var leds: [LED] = []
+        struct LED: Hashable { var index: Int; var red: UInt8; var green: UInt8; var blue: UInt8 }
+    }
 
     /// A driver for one device; `name` starts the hub surfaces' names.
     public init(name: String) {
@@ -155,9 +162,11 @@ public struct E16Driver: Sendable {
             step.midi += drawLabels(hub: hub)
         }
         let lit = Int((now / Self.blinkPeriod).rounded(.down)) % 2 == 0
-        if lit != blinkLit {
+        let phase = Int((now / Self.rotationStep).rounded(.down)) % 16
+        if lit != blinkLit || phase != rotation {
             blinkLit = lit
-            if hub.mirror.muteMaster == false { step.midi += drawRings(hub: hub) }
+            rotation = phase
+            step.midi += drawRings(hub: hub)  // only the rings that change are sent
         }
         return step
     }
@@ -433,51 +442,63 @@ public struct E16Driver: Sendable {
         }
     }
 
-    /// Every ring, sent only where it changed.
+    /// Every ring, sent only where it changed: one RING message for the rings, then one LED
+    /// message for the needles, so the needles are drawn over the rings.
     private mutating func drawRings(hub: SurfaceHub) -> [UInt8] {
-        var changed: [(Int, E16Ring)] = []
+        var rings: [(encoder: Int, ring: E16Ring)] = []
+        var leds: [(encoder: Int, led: Int, red: UInt8, green: UInt8, blue: UInt8)] = []
         for index in 0..<Self.stripCount {
-            let ring = ring(index, hub: hub)
-            if sentRings[index] != ring { sentRings[index] = ring; changed.append((index, ring)) }
+            let look = look(index, hub: hub)
+            guard sentRings[index] != look else { continue }
+            sentRings[index] = look
+            rings.append((index, look.ring))
+            leds += look.leds.map { (index, $0.index, $0.red, $0.green, $0.blue) }
         }
-        return E16Outgoing.rings(changed.map { (encoder: $0.0, ring: $0.1) })
+        return E16Outgoing.rings(rings) + E16Outgoing.leds(leds)
     }
 
     private mutating func drawRing(_ index: Int, hub: SurfaceHub) -> [UInt8] {
-        let ring = ring(index, hub: hub)
-        guard sentRings[index] != ring else { return [] }
-        sentRings[index] = ring
-        return E16Outgoing.rings([(encoder: index, ring: ring)])
+        let look = look(index, hub: hub)
+        guard sentRings[index] != look else { return [] }
+        sentRings[index] = look
+        return E16Outgoing.rings([(encoder: index, ring: look.ring)])
+            + E16Outgoing.leds(look.leds.map { (index, $0.index, $0.red, $0.green, $0.blue) })
     }
 
-    /// A strip's ring: dark for no channel; else its color (`color(for:)`, or for a send the
-    /// output's) filled to its value, bipolar for a pan; yellow while on PFL, orange while muted
-    /// (flashing while Mute Master is off), both with at least one LED lit so the state shows at
-    /// −oo.
-    func ring(_ index: Int, hub: SurfaceHub) -> E16Ring {
-        guard let info = infos[index], let value = knobValues[index] else { return .off }
+    /// A strip's ring: dark for no channel; else its color (`rgb(for:)`, or for a send the
+    /// output's) filled to its value, bipolar for a pan. A mute or a PFL that is on shows as a
+    /// shape over the fill, not as a color, since a channel can itself be any color (Adam,
+    /// 2026-11-04): a mute lights four red LEDs at the ring's quarter points (`muteMarks`), off
+    /// in every other half second while Mute Master is off; a PFL lights one white LED that
+    /// runs round the ring (`rotationStep` a step), the state to notice on stage.
+    func look(_ index: Int, hub: SurfaceHub) -> RingLook {
+        guard let info = infos[index], let value = knobValues[index] else { return RingLook(ring: .off) }
         var rgb = Self.rgb(for: info)
         if case .send(let n) = function, hub.sendTargets.indices.contains(n) {
             let output = ChannelRef(.output, hub.sendTargets[n])
             if let color = hub.mirror.channels[output]?.color, color != 1, let sendRGB = Self.totalMixRGB[color] { rgb = sendRGB }
         }
-        var amount = value
-        if pflOn[index] {
-            rgb = Self.pflRGB
-            amount = max(amount, 1.0 / 16)
-        } else if muteOn[index] {
-            rgb = hub.mirror.muteMaster == false && !blinkLit ? Self.muteDimRGB : Self.muteRGB
-            amount = max(amount, 1.0 / 16)
+        var look = RingLook(ring: E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: value, bipolar: isPan))
+        if muteOn[index], !(hub.mirror.muteMaster == false && !blinkLit) {
+            look.leds += Self.muteMarks.map { RingLook.LED(index: $0, red: Self.muteRGB.0, green: Self.muteRGB.1, blue: Self.muteRGB.2) }
         }
-        return E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: amount, bipolar: isPan)
+        if pflOn[index] {
+            look.leds.append(RingLook.LED(index: rotation, red: Self.pflRGB.0, green: Self.pflRGB.1, blue: Self.pflRGB.2))
+        }
+        return look
     }
 
-    /// Orange, for a mute that is on.
-    public static let muteRGB: (UInt8, UInt8, UInt8) = (127, 40, 0)
-    /// Dim orange, the other half of a flashing mute.
-    public static let muteDimRGB: (UInt8, UInt8, UInt8) = (30, 10, 0)
-    /// Yellow, for a PFL that is on.
-    public static let pflRGB: (UInt8, UInt8, UInt8) = (127, 85, 0)
+    /// The LEDs a mute lights: the ring's quarter points.
+    public static let muteMarks = [0, 5, 10, 15]
+    /// How long a PFL's running LED stays on each LED, in seconds.
+    public static let rotationStep: Double = 0.08
+    /// Where a PFL's running LED is now (0–15), from `tick`.
+    private var rotation = 0
+
+    /// Red, for a mute's marks.
+    public static let muteRGB: (UInt8, UInt8, UInt8) = (127, 0, 0)
+    /// White, for a PFL's running LED.
+    public static let pflRGB: (UInt8, UInt8, UInt8) = (127, 127, 127)
 
     /// An RGB (0–127 per part) for each of TotalMix FX's eight colors (1 white, 2 grey, 3 orange,
     /// 4 red, 5 blue, 6 green, 7 yellow, 8 pink; docs/TOTALMIX-OSC.md, test 7), as the Launch
@@ -490,7 +511,7 @@ public struct E16Driver: Sendable {
         5: (0, 0, 127),
         6: (0, 127, 0),
         7: (127, 85, 0),
-        8: (16, 0, 127),
+        8: (90, 0, 127),   // purple: (16, 0, 127) was too close to blue on the device (Adam, 2026-11-04)
     ]
 
     /// A strip's color: its TotalMix FX color, or white.
@@ -498,8 +519,13 @@ public struct E16Driver: Sendable {
         info.color.flatMap { totalMixRGB[$0] } ?? totalMixRGB[1]!
     }
 
-    /// `text` cut to `length` characters.
+    /// `text` cut to `length` characters; a longer text first loses a stereo pair's second
+    /// number ("PB 1/2" to "PB 1"), then its spaces ("PB 11/12" to "PB11").
     static func fit(_ text: String, _ length: Int) -> String {
-        String(text.prefix(length))
+        if text.count <= length { return text }
+        var short = text
+        if let slash = short.firstIndex(of: "/") { short = String(short[..<slash]) }
+        if short.count > length { short = short.filter { $0 != " " } }
+        return String(short.prefix(length))
     }
 }

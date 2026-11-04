@@ -89,6 +89,31 @@ private extension Array where Element == UInt8 {
     }
 }
 
+private let ledsID: [UInt8] = [0xF0, 0x00, 0x21, 0x5B, 0x02, 0x01, 0x06, 0x01]
+
+private extension Array where Element == UInt8 {
+    /// The single LEDs set by the LED messages, by encoder.
+    var leds: [Int: [LED]] {
+        var leds: [Int: [LED]] = [:]
+        for message in sysExMessages where message.starts(with: ledsID) {
+            let raw = E16Outgoing.unpack(Array(message[8..<(message.count - 1)]))
+            var i = 0
+            while i + 5 <= raw.count {
+                leds[Int(raw[i]), default: []].append(LED(index: Int(raw[i + 1]), r: raw[i + 2], g: raw[i + 3], b: raw[i + 4]))
+                i += 5
+            }
+        }
+        return leds
+    }
+}
+
+private struct LED: Equatable {
+    var index: Int, r: UInt8, g: UInt8, b: UInt8
+}
+
+private extension Array where Element == UInt8 {
+}
+
 /// A driver that has started and been answered by the device.
 private func connected() -> (driver: E16Driver, hub: SurfaceHub, midi: [UInt8]) {
     var hub = loadedHub()
@@ -155,25 +180,35 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(mute.core.messages.map(\.address), ["/input/2/mute"])
         XCTAssertEqual(mute.core.messages.first?.arguments.first, .float(1))
         XCTAssertEqual(mute.midi.lastTitle, "Vox MUTE ON     ")
-        XCTAssertEqual(mute.midi.rings[1]?.r, 127)
-        XCTAssertEqual(mute.midi.rings[1]?.g, 40, "orange")
-        XCTAssertEqual(mute.midi.rings[1]?.amount, 8192, "the fill is kept")
+        XCTAssertEqual(mute.midi.leds[1]?.map(\.index), [0, 5, 10, 15], "four red marks")
+        XCTAssertEqual(mute.midi.leds[1]?.first?.r, 127)
+        XCTAssertEqual(mute.midi.leds[1]?.first?.g, 0)
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 2)
         XCTAssertEqual(shift.midi.lastTitle, "PUSH=PFL TURN=FN")
         let pfl = driver.receive([0x90, 2, 0x7F, 0x80, 2, 0x00], hub: &hub, now: 2.1)  // Shift + push Gtr
         XCTAssertEqual(pfl.core.messages.map(\.address), ["/input/3/pfl"])
         XCTAssertEqual(pfl.midi.lastTitle, "Gtr PFL ON      ")
-        XCTAssertEqual(pfl.midi.rings[2]?.g, 85, "yellow")
+        XCTAssertEqual(pfl.midi.rings[2]?.amount, 8192)
+        XCTAssertEqual(pfl.midi.leds[2]?.count, 1, "one white LED")
+        XCTAssertEqual(pfl.midi.leds[2]?.first?.g, 127)
+        // It runs round the ring.
+        let later = driver.tick(hub: &hub, now: 2.2)
+        XCTAssertEqual(later.midi.leds.keys.sorted(), [2], "only the PFL ring is redrawn")
+        XCTAssertEqual(later.midi.leds[2]?.first?.index, Int((2.2 / E16Driver.rotationStep).rounded(.down)) % 16)
         let release = driver.receive([0x90, 16, 0x00], hub: &hub, now: 2.5)
         XCTAssertEqual(release.midi, [], "the overlay still shows")
         XCTAssertEqual(driver.tick(hub: &hub, now: 3.2).midi.lastTitle, "LEVEL           ")
-        // Shift held past the page hold after a push does not change the page.
-        XCTAssertEqual(driver.tick(hub: &hub, now: 4).midi, [])
+        // Shift held past the page hold after a push does not change the page; only the PFL's
+        // running LED is redrawn.
+        let quiet = driver.tick(hub: &hub, now: 4)
+        XCTAssertNil(quiet.midi.lastTitle)
+        XCTAssertEqual(quiet.midi.leds.keys.sorted(), [2])
         // A second push turns mute off.
         let unmute = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 5)
         XCTAssertEqual(unmute.core.messages.first?.arguments.first, .float(0))
         XCTAssertEqual(unmute.midi.lastTitle, "Vox MUTE OFF    ")
-        XCTAssertEqual(unmute.midi.rings[1]?.g, 127, "white again")
+        XCTAssertEqual(unmute.midi.rings[1]?.amount, 8192, "the fill again")
+        XCTAssertEqual(unmute.midi.leds[1], nil)
     }
 
     func testShiftTurnStepsTheFunction() {
@@ -235,7 +270,7 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(driver.tick(hub: &hub, now: 1.5).midi, [], "not held long enough")
         let page = driver.tick(hub: &hub, now: 2.1)
         XCTAssertEqual(page.midi.lastTitle, "PAGE 2 OF 2     ")
-        XCTAssertEqual(page.midi.lastLabels?.prefix(4), ["In 1", "In 1", "In 2", "PB 1"], "In 18, In 19, In 20, PB 1/2")
+        XCTAssertEqual(page.midi.lastLabels?.prefix(4), ["In18", "In19", "In20", "PB 1"], "In 18, In 19, In 20, PB 1/2")
         XCTAssertEqual(driver.tick(hub: &hub, now: 3.5).midi.lastTitle, "PUSH=PFL TURN=FN", "the overlay ended; once per hold")
         XCTAssertEqual(driver.tick(hub: &hub, now: 3.9).midi, [])
         let released = driver.receive([0x90, 16, 0x00], hub: &hub, now: 4)
@@ -249,9 +284,9 @@ final class E16DriverTests: XCTestCase {
         var (driver, hub, _) = connected()
         let output = hub.handle(.channel(bus: .input, channel: 2, parameter: "mute", value: .number(1)), now: 1)
         let step = driver.take(output, hub: &hub, now: 1)
-        XCTAssertEqual(step.midi.sysExMessages.count, 1, "one ring message, no labels")
+        XCTAssertEqual(step.midi.sysExMessages.count, 2, "one ring message and one LED message, no labels")
         XCTAssertEqual(step.midi.rings.keys.sorted(), [1])
-        XCTAssertEqual(step.midi.rings[1]?.g, 40, "muted: orange")
+        XCTAssertEqual(step.midi.leds[1]?.map(\.index), [0, 5, 10, 15], "muted: the marks")
         let rename = hub.handle(.channel(bus: .input, channel: 2, parameter: "name", value: .text("Vocal")), now: 2)
         let renamed = driver.take(rename, hub: &hub, now: 2)
         XCTAssertEqual(renamed.midi.lastLabels?[1], "Voca")
@@ -264,9 +299,19 @@ final class E16DriverTests: XCTestCase {
         let output = hub.handle(.other(path: "globalmute", value: .number(0)), now: 0.2)
         _ = driver.take(output, hub: &hub, now: 0.2)
         let half = driver.tick(hub: &hub, now: 0.6)
-        XCTAssertEqual(half.midi.rings[1]?.r, 30, "dim orange")
+        XCTAssertEqual(half.midi.rings[1]?.amount, 8192)
+        XCTAssertEqual(half.midi.leds[1], nil, "the marks are off")
         let back = driver.tick(hub: &hub, now: 1.1)
-        XCTAssertEqual(back.midi.rings[1]?.r, 127)
+        XCTAssertEqual(back.midi.leds[1]?.map(\.index), [0, 5, 10, 15], "and on again")
+    }
+
+    func testLabelsLoseSpacesBeforeTheirEnd() {
+        XCTAssertEqual(E16Driver.fit("PB 11", 4), "PB11")
+        XCTAssertEqual(E16Driver.fit("PB 1", 4), "PB 1")
+        XCTAssertEqual(E16Driver.fit("ADAT 3/4", 4), "ADAT")
+        XCTAssertEqual(E16Driver.fit("PB 1/2", 4), "PB 1")
+        XCTAssertEqual(E16Driver.fit("PB 11/12", 4), "PB11")
+        XCTAssertEqual(E16Driver.fit("Mic 1/2", 8), "Mic 1/2")
     }
 
     func testFunctionStepping() {
