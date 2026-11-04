@@ -565,11 +565,12 @@ public struct E16Driver: Sendable {
         return E16Ring(red: UInt8(Double(rgb.0) * scale), green: UInt8(Double(rgb.1) * scale), blue: UInt8(Double(rgb.2) * scale), amount: 1)
     }
 
-    /// The Shift page's colors: teal for LEVEL, sky blue for PAN, magenta for the outputs, lime
-    /// for the pages; none of TotalMix FX's eight (Adam, 2026-11-04).
+    /// The Shift page's colors: teal for LEVEL, magenta for PAN, lime for the outputs, sky blue
+    /// for the pages. The page shows no channel colors, so they only need to differ from each
+    /// other; teal and sky blue looked alike side by side (Adam, 2026-11-04).
     public static let buttonColors: (level: (UInt8, UInt8, UInt8), pan: (UInt8, UInt8, UInt8),
                                      output: (UInt8, UInt8, UInt8), page: (UInt8, UInt8, UInt8))
-        = ((0, 127, 110), (0, 90, 127), (127, 0, 100), (100, 127, 0))
+        = ((0, 127, 110), (127, 0, 100), (100, 127, 0), (0, 90, 127))
 
     /// The LEDs a mute lights: the pair at the ring's bottom gap, where the eye lands looking at
     /// the device from below, and the pair at the top. No single LED sits at 9 or 3 o'clock on

@@ -222,8 +222,8 @@ final class E16DriverTests: XCTestCase {
         let rings = shift.midi.rings
         XCTAssertEqual(rings[0]?.g, 57, "LEVEL, in use: medium teal")
         XCTAssertEqual(rings[0]?.amount, 16383)
-        XCTAssertEqual(rings[1]?.b, 6, "PAN: dim sky blue")
-        XCTAssertEqual(rings[10]?.r, 6, "previous output: dim magenta")
+        XCTAssertEqual(rings[1]?.r, 6, "PAN: dim magenta")
+        XCTAssertEqual(rings[10]?.g, 6, "previous output: dim lime")
         XCTAssertEqual(rings[2]?.amount, 0, "a blank is dark")
         XCTAssertNil(rings[14], "an empty strip's ring was dark already")
         // A turn does nothing on the Shift page.
@@ -232,7 +232,7 @@ final class E16DriverTests: XCTestCase {
         let pan = driver.receive([0x90, 1, 0x7F, 0x80, 1, 0x00], hub: &hub, now: 1.2)
         XCTAssertEqual(driver.function, .pan)
         XCTAssertEqual(pan.midi.lastTitle, "PAN             ", "said at once")
-        XCTAssertEqual(pan.midi.rings[1]?.b, 57, "now PAN is in use")
+        XCTAssertEqual(pan.midi.rings[1]?.r, 57, "now PAN is in use")
         XCTAssertEqual(pan.midi.rings[0]?.g, 6)
         XCTAssertEqual(pan.core.messages, [], "no mute from a button")
         // A button held down is full bright, whatever it does.
@@ -285,10 +285,10 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(answer.midi.lastTitle, "LEVEL        1/2")
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(shift.midi.rings[14]?.amount, 0, "no previous page: dark")
-        XCTAssertEqual(shift.midi.rings[15]?.g, 6, "lime, dim")
+        XCTAssertEqual(shift.midi.rings[15]?.b, 6, "sky blue, dim")
         let next = driver.receive([0x90, 15, 0x7F, 0x80, 15, 0x00], hub: &hub, now: 1.5)
         XCTAssertEqual(next.midi.lastTitle, "LEVEL        2/2")
-        XCTAssertEqual(next.midi.rings[14]?.g, 6, "a previous page now")
+        XCTAssertEqual(next.midi.rings[14]?.b, 6, "a previous page now")
         XCTAssertEqual(next.midi.rings[15]?.amount, 0, "no next page")
         let past = driver.receive([0x90, 15, 0x7F, 0x80, 15, 0x00], hub: &hub, now: 1.6)
         XCTAssertNil(past.midi.lastTitle, "nothing past the end")
