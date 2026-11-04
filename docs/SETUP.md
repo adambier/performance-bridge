@@ -213,6 +213,21 @@ The outputs a send row can
 feed are the ones in **Settings… → Channel Layout → Outputs**, in that order. Main Out and Main Out B (they carry
 the main mix) and the cue output (PFL uses it) aren't listed there.
 
+### Roto-Control
+
+<img src="../App/PerformanceBridge/Resources/controller-roto-control.png" width="560" alt="Melbourne Instruments Roto-Control, seen from above: eight knobs, each with a screen and a switch below it, and the MODE, LEARN, FUNC, SEL, and arrow buttons on the left">
+
+Each of the eight knobs is a channel.
+
+Hold **SEL** to choose what the knobs control (Volume, Pan, or a send, "FX")
+and what the switches do (Mute or Solo; Solo is PFL here).
+
+The < and > buttons page through the channels. Pressing
+both arrow buttons together switches the Roto-Control to its second track set ("MIX-RTN" on its screen), which shows
+the same channels.
+
+- A mute that is on flashes while TotalMix FX's Mute Master is off.
+
 ### Launch Control XL 3
 
 <img src="../App/PerformanceBridge/Resources/controller-launch-control-xl3.png" width="560" alt="Novation Launch Control XL 3, seen from above: three rows of eight encoders, eight faders, and two rows of eight buttons, with Page, Track, Shift, and Mode on the left">
@@ -268,21 +283,6 @@ The Launch Control 3 works the same way, with fewer controls:
   Function is held).
 - The **Novation button** brings TotalMix FX's window to the front, as on the XL 3.
 - The Launch Control 3 has not been tried on a device yet. See [`docs/LAUNCH-CONTROL-3.md`](LAUNCH-CONTROL-3.md).
-
-### Roto-Control
-
-<img src="../App/PerformanceBridge/Resources/controller-roto-control.png" width="560" alt="Melbourne Instruments Roto-Control, seen from above: eight knobs, each with a screen and a switch below it, and the MODE, LEARN, FUNC, SEL, and arrow buttons on the left">
-
-Each of the eight knobs is a channel.
-
-Hold **SEL** to choose what the knobs control (Volume, Pan, or a send, "FX")
-and what the switches do (Mute or Solo; Solo is PFL here).
-
-The < and > buttons page through the channels. Pressing
-both arrow buttons together switches the Roto-Control to its second track set ("MIX-RTN" on its screen), which shows
-the same channels.
-
-- A mute that is on flashes while TotalMix FX's Mute Master is off.
 
 The photos of the hardware controllers in this step are Novation's and Melbourne Instruments'.
 
