@@ -90,6 +90,8 @@ public struct E16Driver: Sendable {
     private var functionTurn = 0
     private var blinkLit = true
     private var overlay: (text: String, until: Double)?
+    /// The encoder held down, if any: its overlay stays until it is released (Adam, 2026-11-04).
+    private var heldEncoder: Int?
     private var page = (first: 0, count: 0)
     private var infos: [StripInfo?] = Array(repeating: nil, count: E16Driver.stripCount)
     private var knobValues: [Double?] = Array(repeating: nil, count: E16Driver.stripCount)
@@ -208,7 +210,12 @@ public struct E16Driver: Sendable {
         case .pushed(let encoder, true):
             guard (0..<Self.stripCount).contains(encoder) else { return }
             if shiftHeld { shiftUsed = true }
+            heldEncoder = encoder
             push(encoder, pfl: shiftHeld, hub: &hub, now: now, into: &step)
+        case .pushed(let encoder, false):
+            guard heldEncoder == encoder else { return }
+            heldEncoder = nil
+            if let overlay, overlay.until == .infinity { self.overlay = (overlay.text, now + Self.overlayTime) }
         case .shift(let down):
             shiftHeld = down
             shiftDownAt = down ? now : nil
@@ -228,6 +235,7 @@ public struct E16Driver: Sendable {
         shiftUsed = false
         functionTurn = 0
         overlay = nil
+        heldEncoder = nil
         blinkLit = true
         sentLabels = nil
         sentRings = Array(repeating: nil, count: Self.stripCount)
@@ -402,9 +410,10 @@ public struct E16Driver: Sendable {
         step.midi += drawLabels(hub: hub)
     }
 
-    /// Shows `text` in the title for `overlayTime`.
+    /// Shows `text` in the title for `overlayTime`, or while an encoder is held and `overlayTime`
+    /// after.
     private mutating func show(_ text: String, now: Double, into step: inout E16Step, hub: SurfaceHub) {
-        overlay = (text, now + Self.overlayTime)
+        overlay = (text, heldEncoder == nil ? now + Self.overlayTime : .infinity)
         step.midi += drawLabels(hub: hub)
     }
 
@@ -488,8 +497,9 @@ public struct E16Driver: Sendable {
         return look
     }
 
-    /// The LEDs a mute lights: the ring's quarter points.
-    public static let muteMarks = [0, 5, 10, 15]
+    /// The LEDs a mute lights: a pair at the top of the ring and one at each side. Not the ring's
+    /// end LEDs, which sit unevenly about the bottom gap on the device (Adam, 2026-11-04).
+    public static let muteMarks = [3, 7, 8, 12]
     /// How long a PFL's running LED stays on each LED, in seconds.
     public static let rotationStep: Double = 0.08
     /// Where a PFL's running LED is now (0–15), from `tick`.
