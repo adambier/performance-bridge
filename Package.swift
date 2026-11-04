@@ -23,6 +23,9 @@ import Foundation
 //                  submix, and the rules between surfaces and TotalMix FX; Foundation only
 //   RotoDriver     the Roto-Control's driver: its MIX mode on top of SurfaceCore; Foundation only
 //   LaunchControlDriver  the Launch Controls' driver on top of SurfaceCore; Foundation only
+//   OXIE16         OXI Instruments E16: its Remote Mode (the host draws the screen and the rings,
+//                  the device sends plain MIDI), from OXI's spec sheet; Foundation only
+//   E16Driver      the E16's driver on top of SurfaceCore; Foundation only
 //   BridgeEngine   TotalMix FX and a Roto-Control (and, if set, a Launch Control) connected through
 //                  SurfaceCore and the drivers, with the sockets, the MIDI ports, and a clock: what
 //                  the app runs
@@ -53,10 +56,12 @@ var targets: [Target] = [
     .target(name: "SurfaceCore", dependencies: ["OSCCodec", "TotalMixOSC"]),
     .target(name: "RotoDriver", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "SurfaceCore"]),
     .target(name: "LaunchControlDriver", dependencies: ["OSCCodec", "TotalMixOSC", "LaunchControl", "SurfaceCore"]),
+    .target(name: "OXIE16"),
+    .target(name: "E16Driver", dependencies: ["OSCCodec", "TotalMixOSC", "OXIE16", "SurfaceCore"]),
     .target(name: "BridgeEngine", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "MIDITransport", "UDPTransport",
-                                                 "SurfaceCore", "RotoDriver", "LaunchControl", "LaunchControlDriver"]),
+                                                 "SurfaceCore", "RotoDriver", "LaunchControl", "LaunchControlDriver", "OXIE16", "E16Driver"]),
     .executableTarget(name: "sbdev", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "LaunchControl", "MIDITransport", "UDPTransport",
-                                                   "SurfaceCore", "RotoDriver", "LaunchControlDriver"]),
+                                                   "SurfaceCore", "RotoDriver", "LaunchControlDriver", "OXIE16", "E16Driver"]),
 ]
 let products: [Product] = [
     .library(name: "OSCCodec", targets: ["OSCCodec"]),
@@ -68,13 +73,15 @@ let products: [Product] = [
     .library(name: "SurfaceCore", targets: ["SurfaceCore"]),
     .library(name: "RotoDriver", targets: ["RotoDriver"]),
     .library(name: "LaunchControlDriver", targets: ["LaunchControlDriver"]),
+    .library(name: "OXIE16", targets: ["OXIE16"]),
+    .library(name: "E16Driver", targets: ["E16Driver"]),
     .library(name: "BridgeEngine", targets: ["BridgeEngine"]),
     .executable(name: "sbdev", targets: ["sbdev"]),
 ]
 
 // A first look at the menu-bar app, run with `swift run PerformanceBridge` (macOS only).
 if onMac {
-    targets.append(.executableTarget(name: "PerformanceBridge", dependencies: ["BridgeEngine", "TotalMixOSC", "SurfaceCore", "MIDITransport", "LaunchControl", "LaunchControlDriver"],
+    targets.append(.executableTarget(name: "PerformanceBridge", dependencies: ["BridgeEngine", "TotalMixOSC", "SurfaceCore", "MIDITransport", "LaunchControl", "LaunchControlDriver", "E16Driver"],
                                      path: "App/PerformanceBridge", resources: [.process("Resources")]))
 }
 
@@ -90,6 +97,8 @@ if includeTests {
                                                                    "LaunchControl", "LaunchControlDriver", "MIDITransport"]))
     targets.append(.testTarget(name: "LaunchControlDriverTests", dependencies: ["LaunchControlDriver", "LaunchControl", "SurfaceCore", "TotalMixOSC", "OSCCodec"]))
     targets.append(.testTarget(name: "RotoDriverTests", dependencies: ["RotoDriver", "RotoControl", "SurfaceCore", "TotalMixOSC", "OSCCodec"]))
+    targets.append(.testTarget(name: "OXIE16Tests", dependencies: ["OXIE16"]))
+    targets.append(.testTarget(name: "E16DriverTests", dependencies: ["E16Driver", "OXIE16", "SurfaceCore", "TotalMixOSC", "OSCCodec"]))
 }
 
 let package = Package(
