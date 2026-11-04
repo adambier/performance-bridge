@@ -37,8 +37,8 @@ public struct E16Step: Equatable, Sendable {
 ///   surface's function is set (`function`);
 /// - a short push (under `pflHold`): mute, on release; a push held `pflHold`: PFL;
 /// - with Shift held the encoders are buttons (`ShiftButton`, as OXI's own firmware does it):
-///   the modes LEVEL, PAN, and SEND (encoders 1–3), the previous and next send output (7 and
-///   8), the previous and next page of sixteen strips (15 and 16); the screen names them and
+///   the modes LEVEL, PAN, and SEND (encoders 1–3), the previous and next send output (11 and
+///   12), the previous and next page of sixteen strips (15 and 16); the screen names them and
 ///   the rings show the mode in use and which arrows go somewhere;
 /// - the ring shows the strip's color, filled to its level (bipolar for a pan), with red marks
 ///   while muted and a running white LED while on PFL (`look`); the screen's title shows the
@@ -88,9 +88,9 @@ public struct E16Driver: Sendable {
         case page(Int)
 
         /// The encoder each button is on: the modes on the first row, the output arrows at the
-        /// end of the second, the page arrows at the end of the last (Adam, 2026-11-04).
+        /// end of the third, the page arrows at the end of the last (Adam, 2026-11-04).
         public static let layout: [Int: ShiftButton] = [
-            0: .level, 1: .pan, 2: .send, 6: .output(-1), 7: .output(1), 14: .page(-1), 15: .page(1),
+            0: .level, 1: .pan, 2: .send, 10: .output(-1), 11: .output(1), 14: .page(-1), 15: .page(1),
         ]
 
         /// The label on the screen.
