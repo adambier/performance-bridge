@@ -639,12 +639,14 @@ public struct E16Driver: Sendable {
         return look
     }
 
-    /// A ring on the Shift page, full, in the button's color (`buttonColors`; Adam, 2026-11-04).
-    /// A mode button is dim, or at the medium level for the mode in use; an arrow is dim when
-    /// it goes somewhere and dark when it doesn't; any button is full while held down. A blank
-    /// is dark.
+    /// A ring on the Shift page, in the button's color (`buttonColors`; Adam, 2026-11-04): a
+    /// quarter ring for a button that is available, the full ring for the mode in use, and the
+    /// full ring in white while a button is held down. The state is in the fill, not the
+    /// brightness, since the device's LEDs are nearly as bright at 3 as at 127 (seen
+    /// 2026-11-04). An arrow that goes nowhere, and a blank, are dark.
     func buttonRing(_ index: Int, hub: SurfaceHub) -> E16Ring {
         guard let button = ShiftButton.layout[index] else { return .off }
+        if pressedButton == index { return E16Ring(red: 127, green: 127, blue: 127, amount: 1) }
         let rgb: (UInt8, UInt8, UInt8)
         var inUse = false
         switch button {
@@ -656,23 +658,12 @@ public struct E16Driver: Sendable {
         case .output: rgb = Self.buttonColors.send
         case .page: rgb = Self.buttonColors.page
         }
-        let scale: Double
-        if pressedButton == index { scale = 1 }
-        else if inUse { scale = Self.inUseLevel }
-        else if isAvailable(button, hub: hub) { scale = Self.availableLevel }
-        else { return .off }
-        // A lit part never goes below `dimFloor`, so a deep color still shows when dim.
-        func part(_ v: UInt8) -> UInt8 { v == 0 ? 0 : UInt8(max((Double(v) * scale).rounded(), Self.dimFloor)) }
-        return E16Ring(red: part(rgb.0), green: part(rgb.1), blue: part(rgb.2), amount: 1)
+        guard inUse || isAvailable(button, hub: hub) else { return .off }
+        return E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: inUse ? 1 : Self.availableArc)
     }
 
-    /// How bright an available button is, as a fraction of full; far from the mode in use
-    /// (Adam, 2026-11-04).
-    public static let availableLevel = 0.03
-    /// The least a lit part of a dim button goes to, 0–127.
-    public static let dimFloor = 3.0
-    /// How bright the mode in use is, as a fraction of full; between available and held down.
-    public static let inUseLevel = 0.45
+    /// How much of the ring an available button lights, as a fraction.
+    public static let availableArc = 0.25
 
     /// The Shift page's colors (Adam, 2026-11-04): orange for LEVEL, magenta for PAN, a deep
     /// green for SEND and the output arrows, a deep blue for the page arrows. The page shows no
