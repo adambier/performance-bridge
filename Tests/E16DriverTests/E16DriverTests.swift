@@ -217,13 +217,13 @@ final class E16DriverTests: XCTestCase {
         var (driver, hub, _) = connected()
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(shift.midi.lastTitle, "LEVEL           ", "the title stays")
-        XCTAssertEqual(shift.midi.lastLabels, ["LEVL", "PAN ", "    ", "    ", "    ", "    ", "    ", "    ",
-                                               "    ", "    ", "<OUT", "OUT>", "    ", "    ", "<PG ", "PG> "])
+        XCTAssertEqual(shift.midi.lastLabels, ["LEVL", "PAN ", "    ", "    ", "    ", "    ", "<OUT", "OUT>",
+                                               "    ", "    ", "    ", "    ", "    ", "    ", "<PG ", "PG> "])
         let rings = shift.midi.rings
         XCTAssertEqual(rings[0]?.g, 57, "LEVEL, in use: medium teal")
         XCTAssertEqual(rings[0]?.amount, 16383)
         XCTAssertEqual(rings[1]?.r, 6, "PAN: dim magenta")
-        XCTAssertEqual(rings[10]?.g, 6, "previous output: dim lime")
+        XCTAssertEqual(rings[6]?.g, 6, "previous output: dim lime")
         XCTAssertEqual(rings[2]?.amount, 0, "a blank is dark")
         XCTAssertNil(rings[14], "an empty strip's ring was dark already")
         // A turn does nothing on the Shift page.
@@ -240,12 +240,12 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(down.midi.rings[15]?.b, 127, "NEXT page, pressed: bright, though it does nothing")
         XCTAssertEqual(driver.receive([0x80, 15, 0x00], hub: &hub, now: 1.26).midi.rings[15]?.amount, 0, "dark again")
         // Next output: the only send, Phones.
-        let out = driver.receive([0x90, 11, 0x7F, 0x80, 11, 0x00], hub: &hub, now: 1.3)
+        let out = driver.receive([0x90, 7, 0x7F, 0x80, 7, 0x00], hub: &hub, now: 1.3)
         XCTAssertEqual(driver.function, .send(0))
         XCTAssertEqual(out.midi.lastTitle, "> PHONES        ")
-        XCTAssertEqual(out.midi.rings[11]?.amount, 0, "no next output: dark once released")
-        XCTAssertEqual(out.midi.rings[10]?.amount, 0, "no previous output either: dark")
-        XCTAssertEqual(driver.receive([0x90, 11, 0x7F, 0x80, 11, 0x00], hub: &hub, now: 1.4).core.messages, [])
+        XCTAssertEqual(out.midi.rings[7]?.amount, 0, "no next output: dark once released")
+        XCTAssertEqual(out.midi.rings[6]?.amount, 0, "no previous output either: dark")
+        XCTAssertEqual(driver.receive([0x90, 7, 0x7F, 0x80, 7, 0x00], hub: &hub, now: 1.4).core.messages, [])
         XCTAssertEqual(driver.function, .send(0), "stays at the last output")
         // Release: the strips come back, in the send's color (white, Phones is white) and values.
         let release = driver.receive([0x90, 16, 0x00], hub: &hub, now: 2)
