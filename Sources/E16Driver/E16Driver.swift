@@ -561,7 +561,7 @@ public struct E16Driver: Sendable {
         case .page: rgb = Self.buttonColors.page
         }
         // Three levels, far apart (Adam, 2026-11-04): available, in use, and held down.
-        let scale: Double = pressedButton == index ? 1 : chosen ? 0.45 : 0.1
+        let scale: Double = pressedButton == index ? 1 : chosen ? 0.45 : 0.05
         return E16Ring(red: UInt8(Double(rgb.0) * scale), green: UInt8(Double(rgb.1) * scale), blue: UInt8(Double(rgb.2) * scale), amount: 1)
     }
 
