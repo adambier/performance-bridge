@@ -244,7 +244,7 @@ final class E16DriverTests: XCTestCase {
         _ = driver.receive([0xB0, 1, 0x78], hub: &hub, now: 4.3)
         XCTAssertEqual(driver.function, .level)
         _ = driver.receive([0x90, 16, 0x00], hub: &hub, now: 5)
-        XCTAssertEqual(driver.title(hub: hub), "LEVEL           ")
+        XCTAssertEqual(driver.title(hub: hub), "LEVEL", "the overlay, until it ends")
         XCTAssertEqual(driver.tick(hub: &hub, now: 7).midi, [], "Shift was used: no page change")
     }
 
