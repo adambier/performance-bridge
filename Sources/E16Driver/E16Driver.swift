@@ -556,11 +556,22 @@ public struct E16Driver: Sendable {
         for index in 0..<Self.stripCount {
             let look = look(index, hub: hub)
             guard sentRings[index] != look else { continue }
+            leds += clearedLEDs(index, next: look)
             sentRings[index] = look
             rings.append((index, dimmed(look.ring)))
             leds += look.leds.map { (index, $0.index, dim($0.red), dim($0.green), dim($0.blue)) }
         }
         return E16Outgoing.rings(rings) + E16Outgoing.leds(leds)
+    }
+
+    /// LEDs set individually before and not in `next`, turned off by the LED message: the
+    /// device has been seen to keep an encoder's label inverted once its LEDs were set that
+    /// way, through later RING and LABELS messages (Adam, 2026-11-04); whether an explicit off
+    /// clears it is being tried.
+    private func clearedLEDs(_ index: Int, next: RingLook) -> [(encoder: Int, led: Int, red: UInt8, green: UInt8, blue: UInt8)] {
+        guard let previous = sentRings[index] else { return [] }
+        let kept = Set(next.leds.map(\.index))
+        return previous.leds.map(\.index).filter { !kept.contains($0) }.map { (index, $0, 0, 0, 0) }
     }
 
     /// A part of a color at the driver's `brightness`; a lit part stays lit.
@@ -577,9 +588,10 @@ public struct E16Driver: Sendable {
     private mutating func drawRing(_ index: Int, hub: SurfaceHub) -> [UInt8] {
         let look = look(index, hub: hub)
         guard sentRings[index] != look else { return [] }
+        let cleared = clearedLEDs(index, next: look)
         sentRings[index] = look
         return E16Outgoing.rings([(encoder: index, ring: dimmed(look.ring))])
-            + E16Outgoing.leds(look.leds.map { (index, $0.index, dim($0.red), dim($0.green), dim($0.blue)) })
+            + E16Outgoing.leds(cleared + look.leds.map { (index, $0.index, dim($0.red), dim($0.green), dim($0.blue)) })
     }
 
     /// A strip's ring: dark for no channel; else its color (`rgb(for:)`, or for a send the

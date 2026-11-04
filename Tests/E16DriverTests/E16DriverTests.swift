@@ -232,7 +232,8 @@ final class E16DriverTests: XCTestCase {
         let unmute = driver.receive([0x80, 1, 0x00], hub: &hub, now: 7.1)
         XCTAssertEqual(unmute.core.messages.first?.arguments.first, .float(0))
         XCTAssertEqual(unmute.midi.lastTitle, "Vox MUTE OFF    ")
-        XCTAssertEqual(unmute.midi.leds[1], nil)
+        XCTAssertEqual(unmute.midi.leds[1]?.map(\.index), [1, 3, 5, 7], "the stripes are turned off explicitly")
+        XCTAssertEqual(unmute.midi.leds[1]?.map(\.r), [0, 0, 0, 0])
     }
 
     func testShiftPageButtons() {
@@ -349,7 +350,7 @@ final class E16DriverTests: XCTestCase {
         _ = driver.take(output, hub: &hub, now: 0.2)
         let half = driver.tick(hub: &hub, now: 0.6)
         XCTAssertEqual(half.midi.rings[1]?.amount, 0)
-        XCTAssertEqual(half.midi.leds[1], nil, "the stripes are off")
+        XCTAssertEqual(half.midi.leds[1]?.map(\.r), [0, 0, 0, 0], "the stripes are turned off")
         let back = driver.tick(hub: &hub, now: 1.1)
         XCTAssertEqual(back.midi.leds[1]?.map(\.index), [1, 3, 5, 7], "and on again")
     }
