@@ -48,10 +48,11 @@ public struct ControlsGuide: Equatable, Sendable {
 
     /// What every hardware controller has in common: paragraphs shown before each guide.
     public static let common: [String] = [
-        "Every hardware controller works the same way: **each column of controls is one channel** and every control in a column controls that channel.",
-        "Levels and pans go into the submix of the output that TotalMix FX's control room assigns to Main Out and follow Main Out if it is reassigned there. Set the outputs themselves (e.g., Main Out's volume and Speaker B) in TotalMix FX or with an ARC USB; the hardware controllers don't change them.",
+        "Every hardware controller works the same way: **each column of controls is one channel** and every control in a column acts on that channel.",
+        "Levels and pans go into Main Out's submix: the output TotalMix FX's control room assigns to Main Out, whichever it is. Set the outputs themselves (e.g., Main Out's volume and Speaker B) in TotalMix FX or with an ARC USB; the hardware controllers don't change them.",
         "**Sends** set the headphone mixes and the other submixes. A send control sets how much of its channel goes to one other output, e.g., Phones 1. A row of send controls is that output's whole submix, one channel per column.",
-        "The outputs a send row can feed are the ones in **Settings… → Channel Layout → Outputs**, in that order. Main Out and Main Out B (they carry the main mix) and the cue output (PFL uses it) aren't listed there.",
+        "The outputs a send row can feed are the ones in **Settings… → Channel Layout → Outputs**, in that order. Main Out and Main Out B (they carry the main mix) aren't listed there, nor is an output that has CUE on in TotalMix FX's Control Room.",
+        "**PFL** plays one channel alone in the output chosen in TotalMix FX's Control Room (click **assign**, then **Cue/PFL to**). That output is Main by default, which replaces the main mix, so choose a headphone output before a performance.",
     ]
 
     /// The guide for a hardware controller.
@@ -69,17 +70,17 @@ public struct ControlsGuide: Equatable, Sendable {
         introduction: [],
         tables: [
             Table(controlHeading: "Control (in each column)", actionHeading: "What it does for that column's channel", rows: [
-                Row("Fader", "Level in Main Out. The ticks read +6, +3, 0, −6, −10, −20, −40, −60, and −oo, as on TotalMix FX's faders."),
-                Row("Top encoder", "Send to the top row's output (e.g., Phones 1)"),
-                Row("Middle encoder", "Send to the middle row's output (e.g., Phones 2)"),
-                Row("Bottom encoder", "Pan in Main Out"),
-                Row("Top button", "PFL (bright yellow when on, dim yellow when off; the screen briefly names the channel and says \"PFL on\" or \"PFL off\")"),
-                Row("Bottom button", "Mute (bright orange when on, dim orange when off, and \"Mute on\" or \"Mute off\" on the screen, or \"Mute Master off\" while TotalMix FX's Mute Master is off; a mute that is on flashes while TotalMix FX's Mute Master is off)"),
+                Row("Fader", "Level in Main Out. The ticks read +6, +3, 0, −6, −10, −20, −40, −60, and −oo, as on TotalMix FX's faders. If a fader isn't where TotalMix FX has the level, it takes effect once it reaches it; its display shows the level meanwhile."),
+                Row("Top encoder", "Send to the top row's output (e.g., Phones 1)."),
+                Row("Middle encoder", "Send to the middle row's output (e.g., Phones 2)."),
+                Row("Bottom encoder", "Pan in Main Out."),
+                Row("Top button", "PFL: bright yellow when on, dim yellow when off. The screen briefly names the channel and says \"PFL on\" or \"PFL off\"."),
+                Row("Bottom button", "Mute: bright orange when on, dim orange when off. The screen says \"Mute on\" or \"Mute off\", or \"Mute Master off\" while TotalMix FX's Mute Master is off; a mute that is on then flashes."),
             ]),
             Table(controlHeading: "Button", actionHeading: "What it does", rows: [
                 Row("**Track >** / **Track <**", "Show the next or previous eight channels. With **Shift**: the last or first eight."),
-                Row("**Page ▼** / **Page ▲**", "Change the output the **top** encoder row feeds, to the next or previous one in the Outputs list."),
-                Row("**Shift + Page ▼** / **▲**", "The same for the **middle** encoder row."),
+                Row("**Page ▲** / **Page ▼**", "Change the output the **top** encoder row feeds, to the previous or next one in the Outputs list."),
+                Row("**Shift + Page ▲** / **▼**", "The same for the **middle** encoder row."),
                 Row("**Shift + turn an encoder**", "Reset it: a pan to the center, a send to −oo (release Shift, then Shift + turn it again to bring it back). Hold Shift for a moment (0.3 s) first; after Page or Track in the same hold, turning does nothing."),
             ]),
         ],
@@ -88,39 +89,41 @@ public struct ControlsGuide: Equatable, Sendable {
             "The screen shows the channels on the page, counted in the order of **Settings… → Channel Layout** with a stereo pair counting once, and where each send row goes (e.g., \"Inputs 1-7\", \"Top > Phones 1\", \"Mid > Phones 2\").",
             "Moving a control shows its channel, what it does, and its value.",
             "After each Page press the screen names the row and its new output, and each send row's lights take the color of the output it feeds: its color in TotalMix FX, or, for an output left white, teal (a blue-green) for the top row and magenta for the middle row.",
+            "With **Show levels by brightness** on (Settings… → Connections), the send encoders dim with their level and are dark at −oo.",
             "Page and Track are lit where they can move and dark at the ends. While Shift is held, Page lights for the middle row.",
             "Each row's output is remembered when Performance Bridge restarts. It can also be chosen in Settings, at the bottom of the Connections tab, with the Launch Control connected or not; the change takes effect at once.",
             "Press **Track <** and **Track >** together to go back to the first eight channels.",
             "The **Novation button** brings TotalMix FX's window to the front. Press it again while TotalMix FX is in front to go back to the app you were in (if TotalMix FX came to the front some other way, the press hides it instead).",
             "Solo/Arm, Mute/Select, Record, and Play do nothing in this release; they are kept free for later uses (e.g., a connection to a DAW).",
-            "Level and pan are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so TotalMix FX's window shows the pans set here only while Main Out's output is selected in its bottom row (observed 2026-11-01).",
+            "Levels and pans are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so TotalMix FX's window shows the levels and pans set here only while Main Out's output is selected in its bottom row.",
         ])
 
     static let launchControl3 = ControlsGuide(
         title: "Launch Control 3",
         image: "controller-launch-control-3",
-        introduction: [],
+        introduction: [
+            "The Launch Control 3 has not been tried on a device yet; everything below is from Novation's documents and from the XL 3.",
+        ],
         tables: [
             Table(controlHeading: "Control (in each column)", actionHeading: "What it does for that column's channel", rows: [
-                Row("Bottom encoder", "Level in Main Out"),
-                Row("Top encoder", "Pan, or a send: **Page ▼** / **▲** steps it through Pan, then each output in the Outputs list"),
-                Row("Button", "Mute; PFL while **Function** (labeled \"DAW\" underneath) is held (orange for mute, yellow for PFL, dim when off). Function rests dim yellow; it lights bright yellow while held, and also while any channel's PFL is on, so a PFL left on still shows"),
+                Row("Bottom encoder", "Level in Main Out."),
+                Row("Top encoder", "Pan, or a send: **Page ▲** / **▼** steps it through Pan, then each output in the Outputs list."),
+                Row("Button", "Mute, or PFL while **Function** (printed \"DAW\" beneath it) is held. Orange for mute, yellow for PFL, dim when off. Function rests dim yellow and lights bright yellow while held, and while any channel's PFL is on, so a PFL left on still shows."),
             ]),
             Table(controlHeading: "Button", actionHeading: "What it does", rows: [
                 Row("**Track >** / **Track <**", "Show the next or previous eight channels. With **Shift**: the last or first eight."),
-                Row("**Page ▼** / **Page ▲**", "Change what the top encoder row does: Pan, then each output in the Outputs list, in order."),
+                Row("**Page ▲** / **Page ▼**", "Change what the top encoder row does: Pan, then each output in the Outputs list, in order."),
                 Row("**Shift + turn an encoder**", "Reset it: a pan to the center, a level above 0 dB down to 0 dB (one at or below 0 dB stays), a send to −oo (release Shift, then Shift + turn it again to bring it back). Hold Shift for a moment (0.3 s) first; after Page or Track in the same hold, turning does nothing."),
             ]),
         ],
         notes: [
-            "The screen shows the channels on the page, counted in the order of **Settings… → Channel Layout** with a stereo pair counting once, the top row's function (e.g., \"Top: Pan\"), and the buttons' (\"Buttons: Mute\", or \"PFL on, buttons Mute\" while a PFL is on; briefly \"Buttons\" over \"PFL\" while Function is held).",
+            "The screen shows the channels on the page, counted in the order of **Settings… → Channel Layout** with a stereo pair counting once, the top row's function (e.g., \"Top: Pan\"), and the buttons' (\"Buttons: Mute\", or \"PFL on, buttons Mute\" while a PFL is on; \"Buttons: PFL\" while Function is held).",
             "Moving a control shows its channel, what it does, and its value.",
-            "After each Page press the screen names the top row's new function.",
+            "After each Page press the screen names the top row's new function. As a send, the row's lights take the color of the output it feeds: its color in TotalMix FX, or teal (a blue-green) for an output left white.",
             "The top row's function is remembered when Performance Bridge restarts. It can also be chosen in Settings, at the bottom of the Connections tab, with the Launch Control connected or not; the change takes effect at once.",
             "Press **Track <** and **Track >** together to go back to the first eight channels.",
             "The **Novation button** brings TotalMix FX's window to the front. Press it again while TotalMix FX is in front to go back to the app you were in (if TotalMix FX came to the front some other way, the press hides it instead).",
-            "Level and pan are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so TotalMix FX's window shows the pans set here only while Main Out's output is selected in its bottom row (observed 2026-11-01 on a Launch Control XL 3).",
-            "The Launch Control 3 has not been tried on a device yet.",
+            "Levels and pans are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so TotalMix FX's window shows the levels and pans set here only while Main Out's output is selected in its bottom row.",
         ])
 
     static let rotoControl = ControlsGuide(
@@ -129,21 +132,21 @@ public struct ControlsGuide: Equatable, Sendable {
         introduction: [],
         tables: [
             Table(controlHeading: "Control (in each column)", actionHeading: "What it does for that column's channel", rows: [
-                Row("Knob", "Level in Main Out, pan in Main Out, or a send, by the knob mode (hold **SEL**, below). On a level or send knob the indent is 0 dB. Touching a knob selects its channel (for **FUNC**, below) and holds it: TotalMix FX doesn't move a knob while it is touched."),
+                Row("Knob", "Level in Main Out, pan in Main Out, or a send, by the knob mode (hold **SEL**, below). A level knob's faint indent is 0 dB; a send knob has no indent, but 0 dB is at the same position. Touching a knob usually selects its channel (for **FUNC**, below; the Roto-Control misses some touches) and holds it: TotalMix FX doesn't move a knob while it is touched or turning."),
                 Row("Screen", "The channel's name, in its TotalMix FX color, and its meter. While a knob turns, its value."),
-                Row("Switch", "Mute or PFL, by the switch mode (hold **SEL**). The Roto-Control's SOLO is PFL here; ARM REC does nothing in this release."),
+                Row("Switch", "Mute or PFL, by the switch mode (hold **SEL**): orange for mute, yellow for PFL. The Roto-Control's SOLO is PFL here; ARM REC does nothing in this release."),
             ]),
             Table(controlHeading: "Button", actionHeading: "What it does", rows: [
-                Row("**<** / **>**", "Show the previous or next eight channels. In the single-channel view (**FUNC**), the previous or next page of sends."),
-                Row("**<** and **>** together", "Switch to the Roto-Control's second track set (\"MIX-RTN\" on its screen). It shows the same channels, on the same page; press both again to go back."),
-                Row("**SEL** (hold)", "Choose the knob mode with the switch under VOLUME, PAN, or the send (labeled \"FX\"; press that switch again to step through the sends), and the switch mode with the switch under MUTE or SOLO (ARM does nothing). The modes are kept when the Roto-Control is switched off."),
-                Row("**FUNC**", "One channel across everything: the channel whose knob was last touched, with knob 1 level, knob 2 pan, and knobs 3–8 its first six sends; **<** and **>** page through eight more sends at a time. The switches do nothing in this view. Press **FUNC** again to go back to eight channels."),
-                Row("**MODE**", "The Roto-Control's own mode menu. Performance Bridge works in its MIX mode; PLUGIN mode shows no plugins in this release, and MIDI mode is not used."),
-                Row("**LEARN**, the transport button, and the transport switches", "Nothing in this release (learn belongs to PLUGIN mode; the transport is kept for a later connection to a DAW)."),
+                Row("**←** / **→**", "Show the previous or next eight channels. In the single-channel view (**FUNC**), the previous or next page of sends."),
+                Row("**←** and **→** together", "Switch to the Roto-Control's second track set (\"MIX-RTN\" on its screen). It shows the same channels, on the same page; press both again to go back."),
+                Row("**SEL** (hold)", "Choose the knob mode with the switch under VOLUME, PAN, or the send (labeled \"FX\"; pressing it again has been seen to step through the sends), and the switch mode with the switch under MUTE or SOLO (ARM does nothing). The modes are kept when the Roto-Control is switched off."),
+                Row("**FUNC**", "All of one channel's controls: the channel whose knob was last touched (the first channel until one is), with knob 1 level, knob 2 pan, and knobs 3–8 its first six sends; **←** and **→** page through eight more sends at a time. The switches do nothing in this view. Press **FUNC** again to go back to eight channels."),
+                Row("**MODE**", "The Roto-Control's own mode menu. Performance Bridge works in its MIX mode; press **MODE**, then MIX, to return to it. PLUGIN mode shows no plugins in this release, and MIDI mode is not used."),
+                Row("**LEARN**, the loop button, the ⊕ button, and the transport switches", "Nothing in this release. Learn belongs to PLUGIN mode; the loop button and the transport switches are kept for a later connection to a DAW; the ⊕ button is track grouping, which TotalMix FX has no use for."),
             ]),
         ],
         notes: [
-            "A mute that is on flashes while TotalMix FX's Mute Master is off.",
+            "A mute that is on flashes while TotalMix FX's Mute Master is off (to be checked on the device).",
             "The knob and switch modes, and the track set, are the Roto-Control's own and are kept between sessions; Performance Bridge follows them and can't set them, so a session can start with the knobs on a send. Hold **SEL** to check.",
         ])
 }
