@@ -217,16 +217,25 @@ the main mix) and the cue output (PFL uses it) aren't listed there.
 
 <img src="../App/PerformanceBridge/Resources/controller-roto-control.png" width="556" alt="Melbourne Instruments Roto-Control, seen from above: eight knobs, each with a screen and a switch below it, and the MODE, LEARN, FUNC, SEL, and arrow buttons on the left">
 
-Each of the eight knobs is a channel.
+| Control (in each column) | What it does for that column's channel |
+|---|---|
+| Knob | Level in Main Out, pan in Main Out, or a send, by the knob mode (hold **SEL**, below). On a level or send knob the indent is 0 dB. Touching a knob selects its channel (for **FUNC**, below) and holds it: TotalMix FX doesn't move a knob while it is touched. |
+| Screen | The channel's name, in its TotalMix FX color, and its meter. While a knob turns, its value. |
+| Switch | Mute or PFL, by the switch mode (hold **SEL**). The Roto-Control's SOLO is PFL here; ARM REC does nothing in this release. |
 
-Hold **SEL** to choose what the knobs control (Volume, Pan, or a send, "FX")
-and what the switches do (Mute or Solo; Solo is PFL here).
-
-The < and > buttons page through the channels. Pressing
-both arrow buttons together switches the Roto-Control to its second track set ("MIX-RTN" on its screen), which shows
-the same channels.
+| Button | What it does |
+|---|---|
+| **<** / **>** | Show the previous or next eight channels. In the single-channel view (**FUNC**), the previous or next page of sends. |
+| **<** and **>** together | Switch to the Roto-Control's second track set ("MIX-RTN" on its screen). It shows the same channels, on the same page; press both again to go back. |
+| **SEL** (hold) | Choose the knob mode with the switch under VOLUME, PAN, or the send (labeled "FX"; press that switch again to step through the sends), and the switch mode with the switch under MUTE or SOLO (ARM does nothing). The modes are kept when the Roto-Control is switched off. |
+| **FUNC** | One channel across everything: the channel whose knob was last touched, with knob 1 level, knob 2 pan, and knobs 3–8 its first six sends; **<** and **>** page through eight more sends at a time. The switches do nothing in this view. Press **FUNC** again to go back to eight channels. |
+| **MODE** | The Roto-Control's own mode menu. Performance Bridge works in its MIX mode; PLUGIN mode shows no plugins in this release, and MIDI mode is not used. |
+| **LEARN**, the transport button, and the transport switches | Nothing in this release (learn belongs to PLUGIN mode; the transport is kept for a later connection to a DAW). |
 
 - A mute that is on flashes while TotalMix FX's Mute Master is off.
+- The knob and switch modes, and the track set, are the Roto-Control's own and are kept between sessions; Performance Bridge
+  follows them and can't set them, so a session can start with the knobs on a send. Hold **SEL** to check.
+- Details and the test records are in [`docs/ROTO-CONTROL.md`](ROTO-CONTROL.md).
 
 ### Launch Control XL 3
 
