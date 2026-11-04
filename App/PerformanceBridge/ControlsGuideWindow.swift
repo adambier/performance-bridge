@@ -17,6 +17,8 @@ struct ControlsGuideView: View {
     @ObservedObject var model: BridgeModel
     /// The controller the guide shows.
     @State private var shown: ControllerChoice
+    /// Whether the title has scrolled out of view, so the bar shows it instead.
+    @State private var titleScrolledAway = false
 
     /// The page's width in points, padding included.
     private static let width: CGFloat = 600
@@ -47,6 +49,13 @@ struct ControlsGuideView: View {
             // The controller menu has a bar of its own above the guide, so it neither scrolls nor
             // overlaps anything; the title scrolls with the guide (Adam, 2026-11-04).
             HStack {
+                // The title takes the bar's left once it has scrolled out of view
+                // (Adam, 2026-11-04).
+                if titleScrolledAway {
+                    Text(guide.title)
+                        .font(.headline)
+                        .transition(.opacity)
+                }
                 Spacer()
                 Picker("Hardware controller", selection: $shown) {
                     ForEach(ControllerChoice.allCases) { choice in
@@ -66,6 +75,10 @@ struct ControlsGuideView: View {
                     Text(guide.title)
                         .font(.title2.weight(.semibold))
                         .id("top")
+                        .background(GeometryReader { proxy in
+                            Color.clear.preference(key: TitleBottomKey.self,
+                                                   value: proxy.frame(in: .named("guide")).maxY)
+                        })
                     photo(guide)
                     ForEach(ControlsGuide.common + guide.introduction, id: \.self) { paragraph($0) }
                     ForEach(guide.tables.indices, id: \.self) { table(guide.tables[$0]) }
@@ -85,6 +98,10 @@ struct ControlsGuideView: View {
                 }
                 .padding(20)
                 .frame(width: Self.width, alignment: .leading)
+            }
+            .coordinateSpace(name: "guide")
+            .onPreferenceChange(TitleBottomKey.self) { bottom in
+                withAnimation(.easeInOut(duration: 0.15)) { titleScrolledAway = bottom < 0 }
             }
             // A new controller starts at the top of its guide (Adam, 2026-11-04).
             .onChange(of: shown) { _ in scroller.scrollTo("top", anchor: .top) }
@@ -141,4 +158,10 @@ struct ControlsGuideView: View {
         .padding(12)
         .background(RoundedRectangle(cornerRadius: 8).fill(Color.secondary.opacity(0.08)))
     }
+}
+
+/// Where the guide's title ends, in the scroll view's coordinates; below 0 means scrolled away.
+private struct TitleBottomKey: PreferenceKey {
+    static var defaultValue: CGFloat = 1
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
 }
