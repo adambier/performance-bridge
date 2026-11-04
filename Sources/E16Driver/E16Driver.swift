@@ -670,12 +670,12 @@ public struct E16Driver: Sendable {
     public static let totalMixRGB: [Int: (UInt8, UInt8, UInt8)] = [
         1: (127, 127, 127),
         2: (0, 110, 127),  // grey as cyan, the hue TotalMix FX leaves free: a dim grey looked like a dimmer white or a level, and blue-greys like blue (Adam, 2026-11-04)
-        3: (127, 40, 0),
+        3: (127, 25, 0),   // orange, redder, so yellow stays yellow (Adam, 2026-11-04)
         4: (127, 0, 0),
         5: (0, 0, 127),
         6: (0, 127, 0),
-        7: (127, 110, 0),  // yellow: (127, 85, 0) read as orange next to orange (Adam, 2026-11-04)
-        8: (90, 0, 127),   // purple: (16, 0, 127) was too close to blue on the device (Adam, 2026-11-04)
+        7: (127, 85, 0),
+        8: (70, 0, 127),   // purple: (16, 0, 127) was too close to blue on the device, (90, 0, 127) read as magenta (Adam, 2026-11-04)
     ]
 
     /// A strip's color: its TotalMix FX color, or white.
