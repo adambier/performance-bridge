@@ -47,6 +47,7 @@ let usage = """
       sbdev bridge [options]    (sbdev bridge --help for the options)
       sbdev lcxl [options]      talks to a Launch Control XL 3 (sbdev lcxl --help)
       sbdev lcbridge [options]  TotalMix FX and a Launch Control, as the app will (sbdev lcbridge --help)
+      sbdev e16 [command]       probes an OXI E16's Remote Mode (sbdev e16 --help)
 
     Defaults: --host localhost --in-port 7001 --out-port 9001 (Performance Bridge's defaults;
     RME's manual gives them as typical values).
@@ -307,6 +308,7 @@ case "bridge": bridge(arguments.dropFirst())
 case "midi": midiMonitor(arguments.dropFirst())
 case "lcxl": launchControl(arguments.dropFirst())
 case "lcbridge": launchBridge(arguments.dropFirst())
+case "e16": e16(arguments.dropFirst())
 case "-h", "--help", "help": print(usage); exit(0)
 default: fail("Unknown command \(command).\n\n\(usage)")
 }
