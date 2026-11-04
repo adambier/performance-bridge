@@ -99,18 +99,27 @@ public struct ControlsGuide: Equatable, Sendable {
     static let launchControl3 = ControlsGuide(
         title: "Launch Control 3",
         image: "controller-launch-control-3",
-        introduction: ["The Launch Control 3 works the same way, with fewer controls:"],
+        introduction: [],
         tables: [
             Table(controlHeading: "Control (in each column)", actionHeading: "What it does for that column's channel", rows: [
                 Row("Bottom encoder", "Level in Main Out"),
                 Row("Top encoder", "Pan, or a send: **Page ▼** / **▲** steps it through Pan, then each output in the Outputs list"),
                 Row("Button", "Mute; PFL while **Function** (labeled \"DAW\" underneath) is held (orange for mute, yellow for PFL, dim when off). Function rests dim yellow; it lights bright yellow while held, and also while any channel's PFL is on, so a PFL left on still shows"),
             ]),
+            Table(controlHeading: "Button", actionHeading: "What it does", rows: [
+                Row("**Track >** / **Track <**", "Show the next or previous eight channels. With **Shift**: the last or first eight."),
+                Row("**Page ▼** / **Page ▲**", "Change what the top encoder row does: Pan, then each output in the Outputs list, in order."),
+                Row("**Shift + turn an encoder**", "Reset it: a pan to the center, a level above 0 dB down to 0 dB (one at or below 0 dB stays), a send to −oo (release Shift, then Shift + turn it again to bring it back). Hold Shift for a moment (0.3 s) first; after Page or Track in the same hold, turning does nothing."),
+            ]),
         ],
         notes: [
-            "Track works as on the XL 3 and Shift + turn resets an encoder as it does there; a level above 0 dB comes down to 0 dB, and one at or below 0 dB stays.",
-            "The screen shows the channels on the page, the top row's function (e.g., \"Top: Pan\"), and the buttons' (\"Buttons: Mute\", or \"PFL on, buttons Mute\" while a PFL is on; briefly \"Buttons\" over \"PFL\" while Function is held).",
-            "The **Novation button** brings TotalMix FX's window to the front, as on the XL 3.",
+            "The screen shows the channels on the page, counted in the order of **Settings… → Channel Layout** with a stereo pair counting once, the top row's function (e.g., \"Top: Pan\"), and the buttons' (\"Buttons: Mute\", or \"PFL on, buttons Mute\" while a PFL is on; briefly \"Buttons\" over \"PFL\" while Function is held).",
+            "Moving a control shows its channel, what it does, and its value.",
+            "After each Page press the screen names the top row's new function.",
+            "The top row's function is remembered when Performance Bridge restarts. It can also be chosen in Settings, at the bottom of the Connections tab, with the Launch Control connected or not; the change takes effect at once.",
+            "Press **Track <** and **Track >** together to go back to the first eight channels.",
+            "The **Novation button** brings TotalMix FX's window to the front. Press it again while TotalMix FX is in front to go back to the app you were in (if TotalMix FX came to the front some other way, the press hides it instead).",
+            "Level and pan are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so TotalMix FX's window shows the pans set here only while Main Out's output is selected in its bottom row (observed 2026-11-01 on a Launch Control XL 3).",
             "The Launch Control 3 has not been tried on a device yet.",
         ])
 

@@ -215,7 +215,7 @@ the main mix) and the cue output (PFL uses it) aren't listed there.
 
 ### Roto-Control
 
-<img src="../App/PerformanceBridge/Resources/controller-roto-control.png" width="560" alt="Melbourne Instruments Roto-Control, seen from above: eight knobs, each with a screen and a switch below it, and the MODE, LEARN, FUNC, SEL, and arrow buttons on the left">
+<img src="../App/PerformanceBridge/Resources/controller-roto-control.png" width="558" alt="Melbourne Instruments Roto-Control, seen from above: eight knobs, each with a screen and a switch below it, and the MODE, LEARN, FUNC, SEL, and arrow buttons on the left">
 
 Each of the eight knobs is a channel.
 
@@ -230,7 +230,7 @@ the same channels.
 
 ### Launch Control XL 3
 
-<img src="../App/PerformanceBridge/Resources/controller-launch-control-xl3.png" width="172" alt="Novation Launch Control XL 3, seen from above: three rows of eight encoders, eight faders, and two rows of eight buttons, with Page, Track, Shift, and Mode on the left">
+<img src="../App/PerformanceBridge/Resources/controller-launch-control-xl3.png" width="168" alt="Novation Launch Control XL 3, seen from above: three rows of eight encoders, eight faders, and two rows of eight buttons, with Page, Track, Shift, and Mode on the left">
 
 | Control (in each column) | What it does for that column's channel |
 |---|---|
@@ -267,9 +267,7 @@ the same channels.
 
 ### Launch Control 3
 
-<img src="../App/PerformanceBridge/Resources/controller-launch-control-3.png" width="304" alt="Novation Launch Control 3, seen from above: two rows of eight encoders and one row of eight buttons, with Page, Track, Shift, Mode, and Function on the left">
-
-The Launch Control 3 works the same way, with fewer controls:
+<img src="../App/PerformanceBridge/Resources/controller-launch-control-3.png" width="334" alt="Novation Launch Control 3, seen from above: two rows of eight encoders and one row of eight buttons, with Page, Track, Shift, Mode, and Function on the left">
 
 | Control (in each column) | What it does for that column's channel |
 |---|---|
@@ -277,11 +275,24 @@ The Launch Control 3 works the same way, with fewer controls:
 | Top encoder | Pan, or a send: **Page ▼** / **▲** steps it through Pan, then each output in the Outputs list |
 | Button | Mute; PFL while **Function** (labeled "DAW" underneath) is held (orange for mute, yellow for PFL, dim when off). Function rests dim yellow; it lights bright yellow while held, and also while any channel's PFL is on, so a PFL left on still shows |
 
-- Track works as on the XL 3 and Shift + turn resets an encoder as it does there; a level above 0 dB comes down to 0 dB,
-  and one at or below 0 dB stays. The screen shows the channels on the page, the top row's function (e.g., "Top: Pan"),
-  and the buttons' ("Buttons: Mute", or "PFL on, buttons Mute" while a PFL is on; briefly "Buttons" over "PFL" while
-  Function is held).
-- The **Novation button** brings TotalMix FX's window to the front, as on the XL 3.
+| Button | What it does |
+|---|---|
+| **Track >** / **Track <** | Show the next or previous eight channels. With **Shift**: the last or first eight. |
+| **Page ▼** / **Page ▲** | Change what the top encoder row does: Pan, then each output in the Outputs list, in order. |
+| **Shift + turn an encoder** | Reset it: a pan to the center, a level above 0 dB down to 0 dB (one at or below 0 dB stays), a send to −oo (release Shift, then Shift + turn it again to bring it back). Hold Shift for a moment (0.3 s) first; after Page or Track in the same hold, turning does nothing. |
+
+- The screen shows the channels on the page, counted in the order of **Settings… → Channel Layout** with a stereo pair
+  counting once, the top row's function (e.g., "Top: Pan"), and the buttons' ("Buttons: Mute", or "PFL on, buttons Mute"
+  while a PFL is on; briefly "Buttons" over "PFL" while Function is held).
+- Moving a control shows its channel, what it does, and its value.
+- After each Page press the screen names the top row's new function.
+- The top row's function is remembered when Performance Bridge restarts. It can also be chosen in Settings, at the
+  bottom of the Connections tab, with the Launch Control connected or not; the change takes effect at once.
+- Press **Track <** and **Track >** together to go back to the first eight channels.
+- The **Novation button** brings TotalMix FX's window to the front. Press it again while TotalMix FX is in front to go back to the app you were in (if TotalMix FX came to the front some other way, the press hides it instead).
+- Level and pan are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so TotalMix FX's
+  window shows the pans set here only while Main Out's output is selected in its bottom row (observed 2026-11-01 on a
+  Launch Control XL 3).
 - The Launch Control 3 has not been tried on a device yet. See [`docs/LAUNCH-CONTROL-3.md`](LAUNCH-CONTROL-3.md).
 
 The photos of the hardware controllers in this step are Novation's and Melbourne Instruments'.
