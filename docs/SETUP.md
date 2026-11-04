@@ -230,7 +230,7 @@ the same channels.
 
 ### Launch Control XL 3
 
-<img src="../App/PerformanceBridge/Resources/controller-launch-control-xl3.png" width="280" alt="Novation Launch Control XL 3, seen from above: three rows of eight encoders, eight faders, and two rows of eight buttons, with Page, Track, Shift, and Mode on the left">
+<img src="../App/PerformanceBridge/Resources/controller-launch-control-xl3.png" width="172" alt="Novation Launch Control XL 3, seen from above: three rows of eight encoders, eight faders, and two rows of eight buttons, with Page, Track, Shift, and Mode on the left">
 
 | Control (in each column) | What it does for that column's channel |
 |---|---|
@@ -267,7 +267,7 @@ the same channels.
 
 ### Launch Control 3
 
-<img src="../App/PerformanceBridge/Resources/controller-launch-control-3.png" width="560" alt="Novation Launch Control 3, seen from above: two rows of eight encoders and one row of eight buttons, with Page, Track, Shift, Mode, and Function on the left">
+<img src="../App/PerformanceBridge/Resources/controller-launch-control-3.png" width="304" alt="Novation Launch Control 3, seen from above: two rows of eight encoders and one row of eight buttons, with Page, Track, Shift, Mode, and Function on the left">
 
 The Launch Control 3 works the same way, with fewer controls:
 
