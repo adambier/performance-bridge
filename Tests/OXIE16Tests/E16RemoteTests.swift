@@ -41,8 +41,8 @@ final class E16RemoteTests: XCTestCase {
         XCTAssertEqual(String(decoding: raw[0..<16], as: UTF8.self), "A title that is ")
         XCTAssertEqual(String(decoding: raw[16..<20], as: UTF8.self), "AN 1")
         XCTAssertEqual(String(decoding: raw[20..<24], as: UTF8.self), "Long")
-        XCTAssertEqual(String(decoding: raw[24..<28], as: UTF8.self), "?   ")
-        XCTAssertEqual(String(decoding: raw[28..<32], as: UTF8.self), "    ")
+        XCTAssertEqual(Array(raw[24..<28]), [0x3F, 0, 0, 0], "cut to ASCII, null-padded")
+        XCTAssertEqual(Array(raw[28..<32]), [0, 0, 0, 0])
     }
 
     func testParserDecodesTurnsPushesShiftAndTheAck() {

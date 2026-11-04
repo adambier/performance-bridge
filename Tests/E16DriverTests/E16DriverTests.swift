@@ -64,14 +64,19 @@ private extension Array where Element == UInt8 {
     var lastTitle: String? {
         guard let labels = sysExMessages.last(where: { $0.starts(with: labelsID) }) else { return nil }
         let raw = E16Outgoing.unpack(Array(labels[8..<(labels.count - 1)]))
-        return String(decoding: raw[0..<16], as: UTF8.self)
+        return Self.text(raw[0..<16])
+    }
+
+    /// Text as the device shows it: without its null padding.
+    static func text(_ bytes: ArraySlice<UInt8>) -> String {
+        String(decoding: bytes.prefix { $0 != 0 }, as: UTF8.self)
     }
 
     /// The labels of the last LABELS message, if any.
     var lastLabels: [String]? {
         guard let labels = sysExMessages.last(where: { $0.starts(with: labelsID) }) else { return nil }
         let raw = E16Outgoing.unpack(Array(labels[8..<(labels.count - 1)]))
-        return (0..<16).map { String(decoding: raw[(16 + $0 * 4)..<(20 + $0 * 4)], as: UTF8.self) }
+        return (0..<16).map { Self.text(raw[(16 + $0 * 4)..<(20 + $0 * 4)]) }
     }
 
     /// The rings set by the RING messages, by encoder, last one wins.
@@ -136,8 +141,8 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(driver.tick(hub: &hub, now: 1.1).midi, E16Outgoing.enterRemoteMode, "asked again after a second")
         let answer = driver.receive(ack, hub: &hub, now: 1.2)
         XCTAssertTrue(driver.isConnected)
-        XCTAssertEqual(answer.midi.lastTitle, "LEVEL           ")
-        XCTAssertEqual(answer.midi.lastLabels?.prefix(5), ["Keys", "Vox ", "Gtr ", "PB 1", "    "])
+        XCTAssertEqual(answer.midi.lastTitle, "LEVEL")
+        XCTAssertEqual(answer.midi.lastLabels?.prefix(5), ["Keys", "Vox", "Gtr", "PB 1", ""])
         let rings = answer.midi.rings
         XCTAssertEqual(rings[0]?.r, 127, "Keys is red")
         XCTAssertEqual(rings[0]?.amount, 8192, "at 0.5")
@@ -163,11 +168,11 @@ final class E16DriverTests: XCTestCase {
         let position = 0.5 + 4 * E16Driver.levelStep
         XCTAssertEqual(step.core.messages.first?.arguments.first, .float(Float(position)))
         XCTAssertEqual(step.midi.rings[1]?.amount, Int((position * 16383).rounded()))
-        XCTAssertEqual(step.midi.lastTitle, ("Vox " + ValueText.level(position: position)).padding(toLength: 16, withPad: " ", startingAt: 0))
+        XCTAssertEqual(step.midi.lastTitle, "Vox " + ValueText.level(position: position))
         // The title goes back to the function after a second.
         XCTAssertEqual(driver.tick(hub: &hub, now: 1.5).midi, [])
         XCTAssertNil(driver.tick(hub: &hub, now: 1.5).midi.lastTitle)
-        XCTAssertEqual(driver.tick(hub: &hub, now: 2.1).midi.lastTitle, "LEVEL           ")
+        XCTAssertEqual(driver.tick(hub: &hub, now: 2.1).midi.lastTitle, "LEVEL")
         // Counter-clockwise, to the bottom and no further.
         let down = driver.receive([0xB0, 2, 0x78], hub: &hub, now: 3)  // −8
         XCTAssertEqual(down.core.messages.first?.arguments.first, .float(Float(position - 8 * E16Driver.levelStep)))
@@ -184,7 +189,7 @@ final class E16DriverTests: XCTestCase {
         let up = driver.receive([0x80, 1, 0x00], hub: &hub, now: 1.2)
         XCTAssertEqual(up.core.messages.map(\.address), ["/input/2/mute"])
         XCTAssertEqual(up.core.messages.first?.arguments.first, .float(1))
-        XCTAssertEqual(up.midi.lastTitle, "Vox MUTE ON     ")
+        XCTAssertEqual(up.midi.lastTitle, "Vox MUTE ON")
         XCTAssertEqual(up.midi.rings[1]?.amount, 0, "the fill goes dark")
         XCTAssertEqual(up.midi.leds[1]?.map(\.index), [1, 3, 5, 7], "every other LED up to the level, red")
         XCTAssertEqual(up.midi.leds[1]?.first?.r, 127)
@@ -193,14 +198,14 @@ final class E16DriverTests: XCTestCase {
         _ = driver.receive([0x90, 2, 0x7F], hub: &hub, now: 2)  // push Gtr
         let counting = driver.tick(hub: &hub, now: 2.3)
         XCTAssertEqual(counting.core.messages, [])
-        XCTAssertEqual(counting.midi.lastTitle, "Gtr PFL ON      ")
+        XCTAssertEqual(counting.midi.lastTitle, "Gtr PFL ON")
         XCTAssertEqual(counting.midi.rings[2]?.r, 127, "a white arc")
         XCTAssertEqual(counting.midi.rings[2]?.amount, Int((0.3 * 16383).rounded()), "0.3 s of 1 s")
         XCTAssertEqual(counting.midi.leds[2], nil)
         XCTAssertEqual(driver.tick(hub: &hub, now: 2.95).midi.rings[2]?.amount, Int((0.9 * 16383).rounded()))
         let pfl = driver.tick(hub: &hub, now: 3.05)
         XCTAssertEqual(pfl.core.messages.map(\.address), ["/input/3/pfl"])
-        XCTAssertEqual(driver.title(hub: hub), "Gtr PFL ON", "the same words the countdown showed")
+        XCTAssertEqual(driver.title(hub: hub), "Gtr PFL ON","the same words the countdown showed")
         XCTAssertEqual(pfl.midi.rings[2]?.amount, 0, "the arc is gone and the fill stays dark")
         XCTAssertEqual(pfl.midi.leds[2]?.map(\.index), [1, 3, 5, 7], "every other LED up to the level, white")
         XCTAssertEqual(pfl.midi.leds[2]?.first?.g, 127)
@@ -209,12 +214,12 @@ final class E16DriverTests: XCTestCase {
         let release = driver.receive([0x80, 2, 0x00], hub: &hub, now: 5)
         XCTAssertEqual(release.core.messages, [], "no mute")
         _ = driver.tick(hub: &hub, now: 6.1)
-        XCTAssertEqual(driver.title(hub: hub), "LEVEL           ", "a second after the release")
+        XCTAssertEqual(driver.title(hub: hub), "LEVEL", "a second after the release")
         XCTAssertEqual(driver.tick(hub: &hub, now: 6.2).midi, [], "nothing moves on its own")
         // Holding again counts down the other way and turns PFL off.
         _ = driver.receive([0x90, 2, 0x7F], hub: &hub, now: 7)
         let reverse = driver.tick(hub: &hub, now: 7.5)
-        XCTAssertEqual(reverse.midi.lastTitle, "Gtr PFL OFF     ")
+        XCTAssertEqual(reverse.midi.lastTitle, "Gtr PFL OFF")
         XCTAssertEqual(reverse.midi.rings[2]?.amount, Int((0.5 * 16383).rounded()), "half way down")
         let off = driver.tick(hub: &hub, now: 8.05)
         XCTAssertEqual(off.core.messages.first?.arguments.first, .float(0))
@@ -225,13 +230,13 @@ final class E16DriverTests: XCTestCase {
         _ = driver.tick(hub: &hub, now: 8.5)
         let short = driver.receive([0x80, 3, 0x00], hub: &hub, now: 8.6)
         XCTAssertEqual(short.core.messages.map(\.address), ["/playback/0/mute"])
-        XCTAssertEqual(short.midi.lastTitle, "PB 1/2 MUTE ON  ")
+        XCTAssertEqual(short.midi.lastTitle, "PB 1/2 MUTE ON")
         XCTAssertEqual(short.midi.leds[3]?.map(\.index), [1, 3, 5, 7], "the stripes, no arc")
         // A second short push turns mute off.
         _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 7)
         let unmute = driver.receive([0x80, 1, 0x00], hub: &hub, now: 7.1)
         XCTAssertEqual(unmute.core.messages.first?.arguments.first, .float(0))
-        XCTAssertEqual(unmute.midi.lastTitle, "Vox MUTE OFF    ")
+        XCTAssertEqual(unmute.midi.lastTitle, "Vox MUTE OFF")
         XCTAssertEqual(unmute.midi.leds[1]?.map(\.index), [1, 3, 5, 7], "the stripes are turned off explicitly")
         XCTAssertEqual(unmute.midi.leds[1]?.map(\.r), [0, 0, 0, 0])
     }
@@ -239,9 +244,9 @@ final class E16DriverTests: XCTestCase {
     func testShiftPageButtons() {
         var (driver, hub, _) = connected()
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
-        XCTAssertEqual(shift.midi.lastTitle, "LEVEL           ", "the title stays")
-        XCTAssertEqual(shift.midi.lastLabels, ["LEVL", "PAN ", "SEND", "    ", "    ", "    ", "    ", "    ",
-                                               "    ", "    ", "<SND", "SND>", "    ", "    ", "    ", "    "],
+        XCTAssertEqual(shift.midi.lastTitle, "LEVEL", "the title stays")
+        XCTAssertEqual(shift.midi.lastLabels, ["LEVL", "PAN", "SEND", "", "", "", "", "",
+                                               "", "", "<SND", "SND>", "", "", "", ""],
                        "one page: no page arrows")
         let rings = shift.midi.rings
         XCTAssertEqual(rings[0]?.r, 57, "LEVEL, in use: medium orange")
@@ -257,7 +262,7 @@ final class E16DriverTests: XCTestCase {
         // PAN.
         let pan = driver.receive([0x90, 1, 0x7F, 0x80, 1, 0x00], hub: &hub, now: 1.2)
         XCTAssertEqual(driver.function, .pan)
-        XCTAssertEqual(pan.midi.lastTitle, "PAN             ", "said at once")
+        XCTAssertEqual(pan.midi.lastTitle, "PAN", "said at once")
         XCTAssertEqual(pan.midi.rings[1]?.r, 57, "now PAN is in use")
         XCTAssertEqual(pan.midi.rings[0]?.r, 4)
         XCTAssertEqual(pan.core.messages, [], "no mute from a button")
@@ -268,7 +273,7 @@ final class E16DriverTests: XCTestCase {
         // Next output: the only send, Phones; the arrow enters SEND mode.
         let out = driver.receive([0x90, 11, 0x7F, 0x80, 11, 0x00], hub: &hub, now: 1.3)
         XCTAssertEqual(driver.function, .send(0))
-        XCTAssertEqual(out.midi.lastTitle, "> PHONES        ")
+        XCTAssertEqual(out.midi.lastTitle, "> PHONES")
         XCTAssertEqual(out.midi.rings[2]?.g, 27, "SEND in use")
         XCTAssertEqual(out.midi.rings[11]?.amount, 0, "no next output: dark once released")
         XCTAssertEqual(out.midi.rings[10]?.amount, 0, "no previous output either")
@@ -276,10 +281,10 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(driver.function, .send(0), "stays at the last output")
         // Release: the strips come back, in the send's color (white, Phones is white) and values.
         let release = driver.receive([0x90, 16, 0x00], hub: &hub, now: 2)
-        XCTAssertEqual(release.midi.lastLabels?.prefix(2), ["Keys", "Vox "])
+        XCTAssertEqual(release.midi.lastLabels?.prefix(2), ["Keys", "Vox"])
         XCTAssertEqual(release.midi.rings[0]?.r, 127)
         XCTAssertEqual(release.midi.rings[0]?.amount, 8192)
-        XCTAssertEqual(release.midi.lastTitle, "> PHONES        ")
+        XCTAssertEqual(release.midi.lastTitle, "> PHONES")
         // A turn now sets the send.
         let turn = driver.receive([0xB0, 1, 0x01], hub: &hub, now: 3)
         XCTAssertEqual(turn.core.messages.map(\.address), ["/mix/in/0/2/faderlin"])
@@ -297,7 +302,7 @@ final class E16DriverTests: XCTestCase {
         let step = driver.receive([0xB0, 1, 0x02], hub: &hub, now: 2)
         XCTAssertEqual(step.core.messages.map(\.address), ["/mix/in/0/0/balpan"])
         XCTAssertEqual(step.core.messages.first?.arguments.first, .float(Float(2 * E16Driver.panStep * 2)))
-        XCTAssertEqual(step.midi.lastTitle, "Keys R2         ")
+        XCTAssertEqual(step.midi.lastTitle, "Keys R2")
         XCTAssertEqual(step.midi.rings[0]?.bipolar, true)
     }
 
@@ -324,7 +329,7 @@ final class E16DriverTests: XCTestCase {
         XCTAssertNil(past.midi.lastTitle, "nothing past the end")
         XCTAssertEqual(past.midi.rings[15]?.amount, 0, "lit while down, dark again")
         let release = driver.receive([0x90, 16, 0x00], hub: &hub, now: 2)
-        XCTAssertEqual(release.midi.lastLabels?.prefix(4), ["In18", "In19", "In20", "PB 1"], "In 18, In 19, In 20, PB 1/2")
+        XCTAssertEqual(release.midi.lastLabels?.prefix(4), ["In18","In19","In20","PB 1"],"In 18, In 19, In 20, PB 1/2")
         _ = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 3)
         let back = driver.receive([0x90, 14, 0x7F, 0x80, 14, 0x00], hub: &hub, now: 3.5)
         XCTAssertEqual(back.midi.lastTitle, "LEVEL        1/2")

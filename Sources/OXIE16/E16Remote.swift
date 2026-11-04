@@ -117,20 +117,22 @@ public enum E16Outgoing {
     }
 
     /// OLED LABELS (`06 03`): a title of `titleLength` characters and `encoderCount` labels of
-    /// `labelLength` characters each, in the device's own knob layout. Text is cut or padded with
-    /// spaces; characters outside printable ASCII become `?`.
+    /// `labelLength` characters each, in the device's own knob layout. Text is cut, or padded
+    /// with null bytes (the sheet allows spaces or nulls; with spaces the device centered the
+    /// title with its padding, so a short title sat off center; Adam, 2026-11-04); characters
+    /// outside printable ASCII become `?`.
     public static func labels(title: String, labels: [String]) -> [UInt8] {
         var raw = ascii(title, titleLength)
         for i in 0..<encoderCount { raw += ascii(i < labels.count ? labels[i] : "", labelLength) }
         return message([0x06, 0x03], payload: raw)
     }
 
-    /// `text` as `length` bytes of printable ASCII, cut or padded with spaces.
+    /// `text` as `length` bytes of printable ASCII, cut or padded with null bytes.
     public static func ascii(_ text: String, _ length: Int) -> [UInt8] {
         let bytes = text.unicodeScalars.map { scalar -> UInt8 in
             scalar.isASCII && scalar.value >= 32 && scalar.value < 127 ? UInt8(scalar.value) : 0x3F
         }
-        return Array((bytes + Array(repeating: 0x20, count: length)).prefix(length))
+        return Array((bytes + Array(repeating: 0x00, count: length)).prefix(length))
     }
 }
 

@@ -65,8 +65,8 @@ public struct E16Driver: Sendable {
     /// The send output (an index into `SurfaceHub.sendTargets`) SEND goes back to.
     private var lastSend = 0
     /// How bright the rings are, 0…1, applied to every color sent: full was too bright for a
-    /// dark room (Adam, 2026-11-04). A lit part never goes below 1.
-    public var brightness: Double = 0.7
+    /// dark room, and 70% still a little (Adam, 2026-11-04). A lit part never goes below 1.
+    public var brightness: Double = 0.55
 
     /// How many strips the device shows at once.
     public static let stripCount = 16
@@ -531,7 +531,8 @@ public struct E16Driver: Sendable {
         if let overlay { return overlay.text }
         let pageText = pageCount > 1 ? " \(page.first / Self.stripCount + 1)/\(pageCount)" : ""
         let width = E16Outgoing.titleLength - pageText.count
-        return Self.fit(functionName(hub: hub), width).padding(toLength: width, withPad: " ", startingAt: 0) + pageText
+        let name = Self.fit(functionName(hub: hub), width)
+        return pageText.isEmpty ? name : name.padding(toLength: width, withPad: " ", startingAt: 0) + pageText
     }
 
     /// The function's name for the title: "LEVEL", "PAN", or "> " and the send's output.
