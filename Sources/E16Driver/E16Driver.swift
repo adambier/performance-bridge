@@ -669,7 +669,7 @@ public struct E16Driver: Sendable {
     /// Control driver renders them.
     public static let totalMixRGB: [Int: (UInt8, UInt8, UInt8)] = [
         1: (127, 127, 127),
-        2: (14, 20, 34),   // grey as a cool slate: (40, 40, 40) looked like a dimmer white (Adam, 2026-11-04)
+        2: (50, 85, 127),  // grey as a steel blue at full brightness: (40, 40, 40) looked like a dimmer white, and a dim slate suggested a level (Adam, 2026-11-04)
         3: (127, 40, 0),
         4: (127, 0, 0),
         5: (0, 0, 127),
