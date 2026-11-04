@@ -196,7 +196,7 @@ public struct E16Driver: Sendable {
     }
 
     /// What is due as time passes: ENTER asked again while the device hasn't answered, a push
-    /// held long enough for PFL, an overlay ending, flashing mutes, and running PFL LEDs.
+    /// held long enough for PFL (with its countdown), an overlay ending, and flashing mutes.
     public mutating func tick(hub: inout SurfaceHub, now: Double) -> E16Step {
         var step = E16Step()
         if !connected, let lastEnter, now - lastEnter >= Self.enterInterval {
@@ -209,14 +209,14 @@ public struct E16Driver: Sendable {
                 self.held = (held.encoder, held.since, true)
                 pfl(held.encoder, hub: &hub, now: now, into: &step)
             } else {
-                // The countdown: the title's bar and the ring's sweep follow the hold.
-                let stepIndex = Int((now - held.since) / Self.countdownStep)
+                // The countdown: the title says what the hold does, and a white arc grows round
+                // the ring like a clock face (Adam, 2026-11-04).
+                let stepIndex = Int((now - held.since) / Self.countdownStep + 1e-6)
                 if stepIndex != countdownShown {
+                    let first = countdownShown < 0
                     countdownShown = stepIndex
-                    if let info = infos[held.encoder] {
-                        let filled = Int((Double(stepIndex) * Self.countdownStep / Self.pflHold * 6).rounded(.down))
-                        let bar = String(repeating: "#", count: min(filled, 6)) + String(repeating: ".", count: max(6 - filled, 0))
-                        overlay = (Self.fit(info.name, 5) + " PFL " + bar, .infinity)
+                    if first, let info = infos[held.encoder] {
+                        overlay = (Self.fit(info.name, 4) + (pflOn[held.encoder] ? " HOLD:PFLOFF" : " HOLD:PFL ON"), .infinity)
                         step.midi += drawLabels(hub: hub)
                     }
                     step.midi += drawRing(held.encoder, hub: hub)
@@ -228,11 +228,9 @@ public struct E16Driver: Sendable {
             step.midi += drawLabels(hub: hub)
         }
         let lit = Int((now / Self.blinkPeriod).rounded(.down)) % 2 == 0
-        let phase = Int((now / Self.rotationStep).rounded(.down)) % 16
-        if lit != blinkLit || phase != rotation {
+        if lit != blinkLit {
             blinkLit = lit
-            rotation = phase
-            step.midi += drawRings(hub: hub)  // only the rings that change are sent
+            if hub.mirror.muteMaster == false { step.midi += drawRings(hub: hub) }  // only the rings that change
         }
         return step
     }
@@ -580,17 +578,23 @@ public struct E16Driver: Sendable {
             let output = ChannelRef(.output, hub.sendTargets[n])
             if let color = hub.mirror.channels[output]?.color, color != 1, let sendRGB = Self.totalMixRGB[color] { rgb = sendRGB }
         }
+        if let held, held.encoder == index, !held.didPFL, countdownShown >= 0 {
+            // The countdown: a white arc from empty to full over the hold, in place of the fill;
+            // from full to empty when the hold turns PFL off (Adam, 2026-11-04).
+            let progress = min(Double(countdownShown) * Self.countdownStep / Self.pflHold, 1)
+            let amount = pflOn[index] ? 1 - progress : progress
+            return RingLook(ring: E16Ring(red: Self.pflRGB.0, green: Self.pflRGB.1, blue: Self.pflRGB.2, amount: amount))
+        }
         var look = RingLook(ring: E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: value, bipolar: isPan))
         if muteOn[index], !(hub.mirror.muteMaster == false && !blinkLit) {
             look.leds += Self.muteMarks.map { RingLook.LED(index: $0, red: Self.muteRGB.0, green: Self.muteRGB.1, blue: Self.muteRGB.2) }
         }
         if pflOn[index] {
-            look.leds.append(RingLook.LED(index: rotation, red: Self.pflRGB.0, green: Self.pflRGB.1, blue: Self.pflRGB.2))
-        }
-        if let held, held.encoder == index, !held.didPFL, countdownShown >= 0 {
-            // The countdown's sweep: a white LED from the ring's start to its end over the hold.
-            let position = min(Int(Double(countdownShown) * Self.countdownStep / Self.pflHold * 15), 15)
-            look.leds.append(RingLook.LED(index: position, red: Self.pflRGB.0, green: Self.pflRGB.1, blue: Self.pflRGB.2))
+            // Every other LED of the fill turned white: a striped fill.
+            let lit = Int((min(max(value, 0), 1) * 16).rounded())
+            for led in stride(from: 1, to: max(lit, 2), by: 2) {
+                look.leds.append(RingLook.LED(index: led, red: Self.pflRGB.0, green: Self.pflRGB.1, blue: Self.pflRGB.2))
+            }
         }
         return look
     }
@@ -630,26 +634,23 @@ public struct E16Driver: Sendable {
     /// How bright the mode in use is, as a fraction of full; between available and held down.
     public static let inUseLevel = 0.45
 
-    /// The Shift page's colors (Adam, 2026-11-04): white for LEVEL, magenta for PAN, a deep
-    /// green for SEND and the output arrows, a deep blue for the page arrows; the three modes
-    /// as far apart as the ring can show. The page shows no channel colors, so they only need
-    /// to differ from each other.
+    /// The Shift page's colors (Adam, 2026-11-04): yellow for LEVEL, orange for PAN, a deep
+    /// green for SEND and the output arrows, a deep blue for the page arrows. The page shows no
+    /// channel colors, so they only need to differ from each other. Color is an extra cue: the
+    /// buttons' positions and labels, and the brighter ring of the mode in use, carry the
+    /// meaning, since yellow, orange, and green are hard to tell apart with a red-green color
+    /// deficiency.
     public static let buttonColors: (level: (UInt8, UInt8, UInt8), pan: (UInt8, UInt8, UInt8),
                                      send: (UInt8, UInt8, UInt8), page: (UInt8, UInt8, UInt8))
-        = ((127, 127, 127), (127, 0, 100), (0, 60, 0), (0, 0, 127))
+        = ((127, 85, 0), (127, 30, 0), (0, 60, 0), (0, 0, 127))
 
     /// The LEDs a mute lights: the pair at the ring's bottom gap, where the eye lands looking at
     /// the device from below, and the pair at the top. No single LED sits at 9 or 3 o'clock on
     /// the device, so side marks looked off (Adam, 2026-11-04).
     public static let muteMarks = [0, 7, 8, 15]
-    /// How long a PFL's running LED stays on each LED, in seconds.
-    public static let rotationStep: Double = 0.08
-    /// Where a PFL's running LED is now (0–15), from `tick`.
-    private var rotation = 0
-
     /// Red, for a mute's marks.
     public static let muteRGB: (UInt8, UInt8, UInt8) = (127, 0, 0)
-    /// White, for a PFL's running LED.
+    /// White, for a PFL's stripes and the countdown.
     public static let pflRGB: (UInt8, UInt8, UInt8) = (127, 127, 127)
 
     /// An RGB (0–127 per part) for each of TotalMix FX's eight colors (1 white, 2 grey, 3 orange,
