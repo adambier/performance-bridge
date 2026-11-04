@@ -237,7 +237,7 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(pan.core.messages, [], "no mute from a button")
         // A button held down is full bright, whatever it does.
         let down = driver.receive([0x90, 15, 0x7F], hub: &hub, now: 1.25)
-        XCTAssertEqual(down.midi.rings[15]?.g, 127, "NEXT page, pressed: bright, though it does nothing")
+        XCTAssertEqual(down.midi.rings[15]?.b, 127, "NEXT page, pressed: bright, though it does nothing")
         XCTAssertEqual(driver.receive([0x80, 15, 0x00], hub: &hub, now: 1.26).midi.rings[15]?.amount, 0, "dark again")
         // Next output: the only send, Phones.
         let out = driver.receive([0x90, 11, 0x7F, 0x80, 11, 0x00], hub: &hub, now: 1.3)
