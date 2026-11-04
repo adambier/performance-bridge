@@ -235,12 +235,12 @@ before a performance.
 | **SEL** (hold) | Choose the knob mode with the switch under VOLUME, PAN, or the send (labeled "FX"; pressing it again has been seen to step through the sends), and the switch mode with the switch under MUTE or SOLO (ARM does nothing). The modes are kept when the Roto-Control is switched off. |
 | **FUNC** | All of one channel's controls: the channel whose knob was last touched (the first channel until one is), with knob 1 level, knob 2 pan, and knobs 3–8 its first six sends; **←** and **→** page through eight more sends at a time. The switches do nothing in this view. Press **FUNC** again to go back to eight channels. |
 | **MODE** | The Roto-Control's own mode menu. Performance Bridge works in its MIX mode; press **MODE**, then MIX, to return to it. PLUGIN mode shows no plugins in this release, and MIDI mode is not used. |
-| **LEARN**, the loop button, the ⊕ button, and the transport switches | Nothing in this release. Learn belongs to PLUGIN mode; the loop button and the transport switches are kept for a later connection to a DAW; the ⊕ button is track grouping, which TotalMix FX has no use for. |
+| **LEARN**, the tape button, the ⊕ button, and the transport switches | Nothing in this release. Learn belongs to PLUGIN mode; the tape button switches the eight switches to transport controls, kept for a later connection to a DAW (press it again to get mute or PFL back); the ⊕ button is track grouping, which TotalMix FX has no use for (it blinks green until pressed again). |
 
-- A mute that is on flashes while TotalMix FX's Mute Master is off (to be checked on the device).
+- A mute that is on flashes while TotalMix FX's Mute Master is off.
 - The knob and switch modes, and the track set, are the Roto-Control's own and are kept between sessions;
-  Performance Bridge follows them and can't set them, so a session can start with the knobs on a send. Hold
-  **SEL** to check.
+  Performance Bridge follows them and can't set them, so a session can start with the knobs on a send. The
+  small screen above MODE shows both (e.g., "MIX-TRACKS" and "KNOBS-VOL").
 - Details and the test records are in [`docs/ROTO-CONTROL.md`](ROTO-CONTROL.md).
 
 ### Launch Control XL 3
@@ -291,9 +291,6 @@ before a performance.
 
 <img src="../App/PerformanceBridge/Resources/controller-launch-control-3.png" width="328" alt="Novation Launch Control 3, seen from above: two rows of eight encoders and one row of eight buttons, with Page, Track, Shift, Mode, and Function on the left">
 
-The Launch Control 3 has not been tried on a device yet; everything below is from Novation's documents and
-from the XL 3.
-
 | Control (in each column) | What it does for that column's channel |
 |---|---|
 | Bottom encoder | Level in Main Out. |
@@ -322,7 +319,8 @@ from the XL 3.
 - Levels and pans are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so
   TotalMix FX's window shows the levels and pans set here only while Main Out's output is selected in its
   bottom row.
-- See [`docs/LAUNCH-CONTROL-3.md`](LAUNCH-CONTROL-3.md).
+- The Launch Control 3 has not been tried on a device yet; everything above is from Novation's documents and from the
+  XL 3. See [`docs/LAUNCH-CONTROL-3.md`](LAUNCH-CONTROL-3.md).
 
 The photos of the hardware controllers in this step are Novation's and Melbourne Instruments'.
 
