@@ -43,48 +43,45 @@ struct ControlsGuideView: View {
 
     var body: some View {
         let guide = ControlsGuide.guide(for: controller)
-        VStack(spacing: 0) {
-            // The title and the controller menu stay put; only the guide below them scrolls
-            // (Adam, 2026-11-04).
-            HStack(alignment: .firstTextBaseline) {
+        ScrollView(.vertical) {
+            VStack(alignment: .leading, spacing: 14) {
                 Text(guide.title)
                     .font(.title2.weight(.semibold))
-                Spacer()
-                Picker("Hardware controller", selection: $shown) {
-                    ForEach(ControllerChoice.allCases) { choice in
-                        Text(choice.title).tag(choice)
-                    }
-                }
-                .labelsHidden()
-                .fixedSize()
-                .accessibilityLabel("Hardware controller shown")
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 20)
-            .padding(.bottom, 12)
-            Divider()
-            ScrollView(.vertical) {
-                VStack(alignment: .leading, spacing: 14) {
-                    photo(guide)
-                    ForEach(ControlsGuide.common + guide.introduction, id: \.self) { paragraph($0) }
-                    ForEach(guide.tables.indices, id: \.self) { table(guide.tables[$0]) }
-                    if !guide.notes.isEmpty {
-                        Text("Notes")
-                            .font(.headline)
-                            .padding(.top, 4)
-                        VStack(alignment: .leading, spacing: 12) {
-                            ForEach(guide.notes, id: \.self) { note in
-                                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                                    Text("•").foregroundStyle(.secondary)
-                                    paragraph(note)
-                                }
+                    // Room for the menu beside it.
+                    .padding(.trailing, 200)
+                photo(guide)
+                ForEach(ControlsGuide.common + guide.introduction, id: \.self) { paragraph($0) }
+                ForEach(guide.tables.indices, id: \.self) { table(guide.tables[$0]) }
+                if !guide.notes.isEmpty {
+                    Text("Notes")
+                        .font(.headline)
+                        .padding(.top, 4)
+                    VStack(alignment: .leading, spacing: 12) {
+                        ForEach(guide.notes, id: \.self) { note in
+                            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                                Text("•").foregroundStyle(.secondary)
+                                paragraph(note)
                             }
                         }
                     }
                 }
-                .padding(20)
-                .frame(width: Self.width, alignment: .leading)
             }
+            .padding(20)
+            .frame(width: Self.width, alignment: .leading)
+        }
+        // The controller menu stays in the top right while the guide, title included, scrolls
+        // under it (Adam, 2026-11-04).
+        .overlay(alignment: .topTrailing) {
+            Picker("Hardware controller", selection: $shown) {
+                ForEach(ControllerChoice.allCases) { choice in
+                    Text(choice.title).tag(choice)
+                }
+            }
+            .labelsHidden()
+            .fixedSize()
+            .accessibilityLabel("Hardware controller shown")
+            .padding(.top, 20)
+            .padding(.trailing, 20)
         }
         .frame(width: Self.width, height: min((NSScreen.main?.visibleFrame.height ?? 800) - 120, 720))
         // Follow a change of controller in Settings while the window is open.
