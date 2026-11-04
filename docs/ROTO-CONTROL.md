@@ -127,7 +127,7 @@ The Roto-Control drives MIX mode, and the host answers.
 | SET ALL TRACKS MODE | `0C 05 <set>` | The user switched between audio and master/return tracks. |
 | SET FIRST TRACK | `0A 06 <first:2>` | The user paged the tracks; `first` is a multiple of 8. |
 | ROTO SELECT TRACK | `0A 09 <index:2>` | The user selected a track. |
-| TOGGLE TRACK GROUPING | `0C 06 <index:2>` | The user toggled grouping on the selected track. Pressing the ⊕ button by itself sends nothing; it blinks green until pressed again (seen).[^test-12] |
+| TOGGLE TRACK GROUPING | `0C 06 <index:2>` | The user toggled grouping on the selected track. Pressing the (+) button by itself sends nothing; it blinks green until pressed again (seen).[^test-12] |
 | REQUEST SEND TRACK NAMES | `0C 07 <send>` | The host should send the block of eight send names that holds `send`. |
 | REQUEST TRANSPORT STATUS | `0A 0A` | The host should send TRANSPORT STATUS. |
 
@@ -608,7 +608,7 @@ expected; pressing both arrows kept the page. No stall.
 freezes seen in test 4 and test 10's run 1 can't be shown by one session; that it helps stays an
 inference.
 
-### Test 12 (2026-11-04): the tape and ⊕ buttons, Mute Master flashing, and the MENU screen
+### Test 12 (2026-11-04): the tape and (+) buttons, Mute Master flashing, and the MENU screen
 
 **Setup.** Adam's Roto-Control, firmware 3.3.0, in MIX mode. Runs 1 and 2 with `sbdev roto --raw`
 (claiming `02`), log `roto-icons-1104.log`; runs 3 and 4 with the app (branch `v1.0.4`), log
@@ -620,7 +620,7 @@ the first three.
   transport switches on the screens (seen). A second press sent SET MIX ALL TRACKS MODE with the
   modes unchanged (63.9 s), and `sbdev` redrew the page. So the tape button enters and leaves
   transport mode, and the host sees each change.
-- **Run 2: the ⊕ button** (right of SEL). One press sent nothing; the button blinked green (seen).
+- **Run 2: the (+) button** (right of SEL). One press sent nothing; the button blinked green (seen).
   A second press sent nothing and the blinking stopped (seen). Nothing else was pressed in between,
   so what a track switch would send while it blinks (TOGGLE TRACK GROUPING, by the SysEx doc's
   description) is untested.
@@ -632,6 +632,6 @@ the first three.
   above MODE read "MIX-TRACKS >" on its first line and "KNOBS-PAN" on its second (seen): it shows
   the track set and the knob mode without holding SEL.
 
-**Consequences.** The Controls Guide names the tape button and the ⊕ button, says Mute Master
+**Consequences.** The Controls Guide names the tape button and the (+) button, says Mute Master
 flashing as standing behavior, and points to the MENU screen for the current modes.
 
