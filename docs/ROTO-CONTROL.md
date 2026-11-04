@@ -52,13 +52,15 @@ words ("inference", "untested").
 [^test-6]: [Test 6](#test-6-2026-11-01-the-hold-rule-and-a-power-cycle) (2026-11-01), section 9;
     firmware 3.3.0.
 [^test-7]: [Test 7](#test-7-2026-11-01-the-fx-label) (2026-11-01), section 9; firmware 3.3.0.
+[^test-12]: [Test 12](#test-12-2026-11-04-the-tape-and--buttons-mute-master-flashing-and-the-menu-screen)
+    (2026-11-04), section 9; firmware 3.3.0.
 [^totalmix-test-5]: Test 5 (2026-10-28) of the TotalMix FX tests,
     [docs/TOTALMIX-OSC.md](TOTALMIX-OSC.md#test-5-2026-10-28-does-totalmix-fx-echo-a-command),
     section 6.
 [^totalmix-meters]: [docs/TOTALMIX-OSC.md](TOTALMIX-OSC.md#3-addresses-this-project-uses),
     section 3, "Meter colors".
 
-**Status.** Ten tests so far (section 9), with firmware 3.3.0. Section 8 lists what is still
+**Status.** Twelve tests so far (section 9), with firmware 3.3.0. Section 8 lists what is still
 open.
 
 ## 1. Two interfaces
@@ -125,7 +127,7 @@ The Roto-Control drives MIX mode, and the host answers.
 | SET ALL TRACKS MODE | `0C 05 <set>` | The user switched between audio and master/return tracks. |
 | SET FIRST TRACK | `0A 06 <first:2>` | The user paged the tracks; `first` is a multiple of 8. |
 | ROTO SELECT TRACK | `0A 09 <index:2>` | The user selected a track. |
-| TOGGLE TRACK GROUPING | `0C 06 <index:2>` | The user toggled grouping on the selected track. |
+| TOGGLE TRACK GROUPING | `0C 06 <index:2>` | The user toggled grouping on the selected track. Pressing the (+) button by itself sends nothing; it blinks green until pressed again (seen).[^test-12] |
 | REQUEST SEND TRACK NAMES | `0C 07 <send>` | The host should send the block of eight send names that holds `send`. |
 | REQUEST TRANSPORT STATUS | `0A 0A` | The host should send TRANSPORT STATUS. |
 
@@ -250,8 +252,7 @@ bits is from Bitwig's and Logic's code.[^bitwig][^logic] The rest:
 - **Mute Master off.** While TotalMix FX's Mute Master is off, a mute that is on is only set
   (`TOTALMIX-OSC.md`, the global mute recheck), so the driver flashes it: it sends 0 and 127 on the
   switch's CC in turn, 0.5 s each, as the Launch Control driver flashes its mute buttons (Adam,
-  2026-11-02). From the bullet above, the "MUTE" label should flash between orange and gray with
-  the light (an inference: not yet seen on the device).
+  2026-11-02). The light and the "MUTE" label both flash orange with it (seen).[^test-12]
 - **Moving a knob.** The motor follows the host's position: 0 dB (13388) put knob 1 at about 3 o'clock, and the range runs from about 7 o'clock (0) to about 5 o'clock (16383), 300° of travel.[^test-2]
 - **Past the ends.** The knob has no physical stop (seen).[^test-2] Past an end it does one of two things[^test-2][^test-3]:
   - **Hold.** It goes silent and resists (seen). Forced on, it lets go and reports a position about 3,300–3,700 counts in from the other end, and carries on from there: 13004–13078 from 0, and 3325–3693 from 16383.
@@ -606,4 +607,31 @@ expected; pressing both arrows kept the page. No stall.
 **Consequence.** Holding page draws back has no visible effect on the device. Whether it prevents the
 freezes seen in test 4 and test 10's run 1 can't be shown by one session; that it helps stays an
 inference.
+
+### Test 12 (2026-11-04): the tape and (+) buttons, Mute Master flashing, and the MENU screen
+
+**Setup.** Adam's Roto-Control, firmware 3.3.0, in MIX mode. Runs 1 and 2 with `sbdev roto --raw`
+(claiming `02`), log `roto-icons-1104.log`; runs 3 and 4 with the app (branch `v1.0.4`), log
+`app-mutemaster-1104.log`. Seen by Adam; the review of the Controls Guide (2026-11-04) asked for
+the first three.
+
+- **Run 1: the tape button** (left column, second row, left side, printed with two tape reels).
+  One press sent REQUEST TRANSPORT STATUS (31.7 s) and nothing else, and the switches became the
+  transport switches on the screens (seen). A second press sent SET MIX ALL TRACKS MODE with the
+  modes unchanged (63.9 s), and `sbdev` redrew the page. So the tape button enters and leaves
+  transport mode, and the host sees each change.
+- **Run 2: the (+) button** (right of SEL). One press sent nothing; the button blinked green (seen).
+  A second press sent nothing and the blinking stopped (seen). Nothing else was pressed in between,
+  so what a track switch would send while it blinks (TOGGLE TRACK GROUPING, by the SysEx doc's
+  description) is untested.
+- **Run 3: Mute Master flashing.** With the switches in mute mode and channel 1's mute on, and
+  TotalMix FX's Mute Master off, channel 1's light and its "MUTE" label both flashed orange
+  (seen). Section 6's rule is confirmed. The Mute button's place in TotalMix FX's window was not
+  checked on screen by the author; Adam found it.
+- **Run 4: the MENU screen.** After the knob mode was changed to pan with SEL, the small screen
+  above MODE read "MIX-TRACKS >" on its first line and "KNOBS-PAN" on its second (seen): it shows
+  the track set and the knob mode without holding SEL.
+
+**Consequences.** The Controls Guide names the tape button and the (+) button, says Mute Master
+flashing as standing behavior, and points to the MENU screen for the current modes.
 

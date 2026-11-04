@@ -515,6 +515,10 @@ final class BridgeEngineTests: XCTestCase {
             let guide = ControlsGuide.guide(for: controller)
             let setup = section(step6, from: "### \(guide.title)\n", to: "\n### ")
             XCTAssertFalse(setup.isEmpty, "\(guide.title): its section in Step 6")
+            // The controller's photo: in the app's resources, and shown by the same section.
+            let photo = "App/PerformanceBridge/Resources/\(guide.image).png"
+            XCTAssertTrue(FileManager.default.fileExists(atPath: root.appendingPathComponent(photo).path), photo)
+            XCTAssertTrue(setup.contains("<img src=\"../\(photo)\""), "\(guide.title): its photo in Step 6")
             let flat = flatten(setup)
             for table in guide.tables {
                 XCTAssertTrue(setup.contains("| \(table.controlHeading) | \(table.actionHeading) |"), table.controlHeading)
