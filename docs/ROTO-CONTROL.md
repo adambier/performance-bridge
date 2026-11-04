@@ -406,7 +406,8 @@ marked "seen".
   send. While SEL is held the Roto-Control showed a send name from an earlier run, so the host must
   send the names in every knob mode.
 - **Single-track mode:** knob 3 set the focused input's level into the first send's submix. Switches
-  1 and 2 sent no CC at all in single-track mode (run 5), so a host cannot use them there.
+  1 and 2 sent no CC at all in single-track mode (run 5), so a host cannot use them there; that
+  all eight behave alike is an inference.
 - **Knob reports on connecting** (run 6): within 0.6 s of the driver sending knob positions on
   connecting, knobs 5–7 reported positions near the ones sent (for example 0.444, 0.458, and
   0.456 for a position of about 0.46), and the driver passed them on to TotalMix FX. The user is not
@@ -626,8 +627,8 @@ the first three.
   description) is untested.
 - **Run 3: Mute Master flashing.** With the switches in mute mode and channel 1's mute on, and
   TotalMix FX's Mute Master off, channel 1's light and its "MUTE" label both flashed orange
-  (seen). Section 6's rule is confirmed. The Mute button's place in TotalMix FX's window was not
-  checked on screen by the author; Adam found it.
+  (seen). Section 6's rule is confirmed. The Mute Master button's place in TotalMix FX's window was
+  not checked on screen before the run; Adam found it.
 - **Run 4: the MENU screen.** After the knob mode was changed to pan with SEL, the small screen
   above MODE read "MIX-TRACKS >" on its first line and "KNOBS-PAN" on its second (seen): it shows
   the track set and the knob mode without holding SEL.

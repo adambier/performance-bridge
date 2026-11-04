@@ -121,4 +121,4 @@ Command Line Tools are enough; the first build downloads Sparkle). Open it with
 
 ## License
 
-MIT; see [LICENSE](LICENSE).
+MIT; see [LICENSE](LICENSE). The three photos of the hardware controllers in `App/PerformanceBridge/Resources/` (`controller-*.png`) are Novation's and Melbourne Instruments' images, shown with attribution; they are not covered by the MIT license.
