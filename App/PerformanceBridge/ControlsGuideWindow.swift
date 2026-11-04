@@ -75,10 +75,13 @@ struct ControlsGuideView: View {
                     Text(guide.title)
                         .font(.title2.weight(.semibold))
                         .id("top")
-                        .background(GeometryReader { proxy in
-                            Color.clear.preference(key: TitleBottomKey.self,
-                                                   value: proxy.frame(in: .named("guide")).maxY)
-                        })
+                    // A marker just under the title: once it has passed the top of the scroll
+                    // view, the title is out of sight.
+                    GeometryReader { proxy in
+                        Color.clear.preference(key: TitleBottomKey.self,
+                                               value: proxy.frame(in: .named("guide")).minY)
+                    }
+                    .frame(height: 0)
                     photo(guide)
                     ForEach(ControlsGuide.common + guide.introduction, id: \.self) { paragraph($0) }
                     ForEach(guide.tables.indices, id: \.self) { table(guide.tables[$0]) }
@@ -101,7 +104,10 @@ struct ControlsGuideView: View {
             }
             .coordinateSpace(name: "guide")
             .onPreferenceChange(TitleBottomKey.self) { bottom in
-                withAnimation(.easeInOut(duration: 0.15)) { titleScrolledAway = bottom < 0 }
+                let away = bottom < 0
+                if away != titleScrolledAway {
+                    withAnimation(.easeInOut(duration: 0.15)) { titleScrolledAway = away }
+                }
             }
             // A new controller starts at the top of its guide (Adam, 2026-11-04).
             .onChange(of: shown) { _ in scroller.scrollTo("top", anchor: .top) }
@@ -162,6 +168,6 @@ struct ControlsGuideView: View {
 
 /// Where the guide's title ends, in the scroll view's coordinates; below 0 means scrolled away.
 private struct TitleBottomKey: PreferenceKey {
-    static var defaultValue: CGFloat = 1
+    static let defaultValue: CGFloat = 1
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
 }
