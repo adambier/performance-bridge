@@ -183,8 +183,8 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(up.core.messages.map(\.address), ["/input/2/mute"])
         XCTAssertEqual(up.core.messages.first?.arguments.first, .float(1))
         XCTAssertEqual(up.midi.lastTitle, "Vox MUTE ON     ")
-        XCTAssertEqual(up.midi.rings[1]?.amount, 8192, "the fill is kept")
-        XCTAssertEqual(up.midi.leds[1]?.map(\.index), [1, 3, 5, 7], "every other LED of the fill red")
+        XCTAssertEqual(up.midi.rings[1]?.amount, 0, "the fill goes dark")
+        XCTAssertEqual(up.midi.leds[1]?.map(\.index), [1, 3, 5, 7], "every other LED up to the level, red")
         XCTAssertEqual(up.midi.leds[1]?.first?.r, 127)
         XCTAssertEqual(up.midi.leds[1]?.first?.g, 0)
         // Held: a countdown, PFL at 1 s, and no mute on release.
@@ -199,8 +199,8 @@ final class E16DriverTests: XCTestCase {
         let pfl = driver.tick(hub: &hub, now: 3.05)
         XCTAssertEqual(pfl.core.messages.map(\.address), ["/input/3/pfl"])
         XCTAssertEqual(pfl.midi.lastTitle, "Gtr PFL ON      ")
-        XCTAssertEqual(pfl.midi.rings[2]?.amount, 8192, "the fill is back")
-        XCTAssertEqual(pfl.midi.leds[2]?.map(\.index), [1, 3, 5, 7], "every other LED of the fill white: stripes")
+        XCTAssertEqual(pfl.midi.rings[2]?.amount, 0, "the arc is gone and the fill stays dark")
+        XCTAssertEqual(pfl.midi.leds[2]?.map(\.index), [1, 3, 5, 7], "every other LED up to the level, white")
         XCTAssertEqual(pfl.midi.leds[2]?.first?.g, 127)
         XCTAssertNil(driver.tick(hub: &hub, now: 4).midi.lastTitle, "the title stays while held")
         XCTAssertEqual(driver.title(hub: hub), "Gtr PFL ON")
@@ -238,9 +238,10 @@ final class E16DriverTests: XCTestCase {
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(shift.midi.lastTitle, "LEVEL           ", "the title stays")
         XCTAssertEqual(shift.midi.lastLabels, ["LEVL", "PAN ", "SEND", "    ", "    ", "    ", "    ", "    ",
-                                               "    ", "    ", "<SND", "SND>", "    ", "    ", "<PG ", "PG> "])
+                                               "    ", "    ", "<SND", "SND>", "    ", "    ", "    ", "    "],
+                       "one page: no page arrows")
         let rings = shift.midi.rings
-        XCTAssertEqual(rings[0]?.r, 57, "LEVEL, in use: medium yellow")
+        XCTAssertEqual(rings[0]?.r, 57, "LEVEL, in use: medium orange")
         XCTAssertEqual(rings[0]?.amount, 16383)
         XCTAssertEqual(rings[1]?.r, 4, "PAN: dim magenta")
         XCTAssertEqual(rings[2]?.g, 3, "SEND: dim green, at the floor")
@@ -344,7 +345,7 @@ final class E16DriverTests: XCTestCase {
         let output = hub.handle(.other(path: "globalmute", value: .number(0)), now: 0.2)
         _ = driver.take(output, hub: &hub, now: 0.2)
         let half = driver.tick(hub: &hub, now: 0.6)
-        XCTAssertEqual(half.midi.rings[1]?.amount, 8192)
+        XCTAssertEqual(half.midi.rings[1]?.amount, 0)
         XCTAssertEqual(half.midi.leds[1], nil, "the stripes are off")
         let back = driver.tick(hub: &hub, now: 1.1)
         XCTAssertEqual(back.midi.leds[1]?.map(\.index), [1, 3, 5, 7], "and on again")
