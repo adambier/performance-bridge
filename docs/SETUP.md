@@ -215,7 +215,7 @@ the main mix) and the cue output (PFL uses it) aren't listed there.
 
 ### Roto-Control
 
-<img src="../App/PerformanceBridge/Resources/controller-roto-control.png" width="558" alt="Melbourne Instruments Roto-Control, seen from above: eight knobs, each with a screen and a switch below it, and the MODE, LEARN, FUNC, SEL, and arrow buttons on the left">
+<img src="../App/PerformanceBridge/Resources/controller-roto-control.png" width="556" alt="Melbourne Instruments Roto-Control, seen from above: eight knobs, each with a screen and a switch below it, and the MODE, LEARN, FUNC, SEL, and arrow buttons on the left">
 
 Each of the eight knobs is a channel.
 
@@ -230,7 +230,7 @@ the same channels.
 
 ### Launch Control XL 3
 
-<img src="../App/PerformanceBridge/Resources/controller-launch-control-xl3.png" width="168" alt="Novation Launch Control XL 3, seen from above: three rows of eight encoders, eight faders, and two rows of eight buttons, with Page, Track, Shift, and Mode on the left">
+<img src="../App/PerformanceBridge/Resources/controller-launch-control-xl3.png" width="165" alt="Novation Launch Control XL 3, seen from above: three rows of eight encoders, eight faders, and two rows of eight buttons, with Page, Track, Shift, and Mode on the left">
 
 | Control (in each column) | What it does for that column's channel |
 |---|---|
@@ -267,7 +267,7 @@ the same channels.
 
 ### Launch Control 3
 
-<img src="../App/PerformanceBridge/Resources/controller-launch-control-3.png" width="334" alt="Novation Launch Control 3, seen from above: two rows of eight encoders and one row of eight buttons, with Page, Track, Shift, Mode, and Function on the left">
+<img src="../App/PerformanceBridge/Resources/controller-launch-control-3.png" width="328" alt="Novation Launch Control 3, seen from above: two rows of eight encoders and one row of eight buttons, with Page, Track, Shift, Mode, and Function on the left">
 
 | Control (in each column) | What it does for that column's channel |
 |---|---|
