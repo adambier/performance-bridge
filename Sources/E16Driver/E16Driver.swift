@@ -298,6 +298,8 @@ public struct E16Driver: Sendable {
             guard next != function else { functionTurn = 0; return }
             function = next
             setModes(first: page.first, hub: &hub, now: now, into: &step)
+            // Said at once, not only when Shift is released (Adam, 2026-11-04).
+            show(functionName(hub: hub), now: now, into: &step, hub: hub)
         }
         step.midi += drawLabels(hub: hub)
     }
@@ -497,9 +499,9 @@ public struct E16Driver: Sendable {
         return look
     }
 
-    /// The LEDs a mute lights: a pair at the top of the ring and one at each side. Not the ring's
-    /// end LEDs, which sit unevenly about the bottom gap on the device (Adam, 2026-11-04).
-    public static let muteMarks = [3, 7, 8, 12]
+    /// The LEDs a mute lights: the pair at the ring's bottom gap, where the eye lands looking at
+    /// the device from below, and one at each side (Adam, 2026-11-04).
+    public static let muteMarks = [0, 3, 12, 15]
     /// How long a PFL's running LED stays on each LED, in seconds.
     public static let rotationStep: Double = 0.08
     /// Where a PFL's running LED is now (0–15), from `tick`.
