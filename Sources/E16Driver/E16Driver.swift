@@ -216,7 +216,7 @@ public struct E16Driver: Sendable {
                     let first = countdownShown < 0
                     countdownShown = stepIndex
                     if first, let info = infos[held.encoder] {
-                        overlay = (Self.fit(info.name, 4) + (pflOn[held.encoder] ? " HOLD:PFLOFF" : " HOLD:PFL ON"), .infinity)
+                        overlay = (Self.fit(info.name, 7) + (pflOn[held.encoder] ? " PFL OFF" : " PFL ON"), .infinity)
                         step.midi += drawLabels(hub: hub)
                     }
                     step.midi += drawRing(held.encoder, hub: hub)

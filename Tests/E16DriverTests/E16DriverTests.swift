@@ -191,7 +191,7 @@ final class E16DriverTests: XCTestCase {
         _ = driver.receive([0x90, 2, 0x7F], hub: &hub, now: 2)  // push Gtr
         let counting = driver.tick(hub: &hub, now: 2.3)
         XCTAssertEqual(counting.core.messages, [])
-        XCTAssertEqual(counting.midi.lastTitle, "Gtr HOLD:PFL ON ")
+        XCTAssertEqual(counting.midi.lastTitle, "Gtr PFL ON      ")
         XCTAssertEqual(counting.midi.rings[2]?.r, 127, "a white arc")
         XCTAssertEqual(counting.midi.rings[2]?.amount, Int((0.3 * 16383).rounded()), "0.3 s of 1 s")
         XCTAssertEqual(counting.midi.leds[2], nil)
@@ -212,7 +212,7 @@ final class E16DriverTests: XCTestCase {
         // Holding again counts down the other way and turns PFL off.
         _ = driver.receive([0x90, 2, 0x7F], hub: &hub, now: 7)
         let reverse = driver.tick(hub: &hub, now: 7.5)
-        XCTAssertEqual(reverse.midi.lastTitle, "Gtr HOLD:PFLOFF ")
+        XCTAssertEqual(reverse.midi.lastTitle, "Gtr PFL OFF     ")
         XCTAssertEqual(reverse.midi.rings[2]?.amount, Int((0.5 * 16383).rounded()), "half way down")
         let off = driver.tick(hub: &hub, now: 8.05)
         XCTAssertEqual(off.core.messages.first?.arguments.first, .float(0))
