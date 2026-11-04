@@ -83,13 +83,15 @@ struct ControlsGuideView: View {
         .onChange(of: model.engine.settings.launchControl?.layout) { _ in shown = Self.inUse(model) }
     }
 
-    /// The controller's photo, under the title, the full width of the page (the files are twice
-    /// that in pixels, for Retina screens), with an exact height so no space is left around it.
+    /// The controller's photo, under the title, at half its pixel width (the files are Retina
+    /// size: the Roto-Control's and the Launch Control 3's the page's width, the XL 3's half that,
+    /// since it is nearly square; Adam, 2026-11-04), with an exact height so no space is left
+    /// around it.
     @ViewBuilder
     private func photo(_ guide: ControlsGuide) -> some View {
         if let image = Brand.resources.image(forResource: guide.image),
            let rep = image.representations.first, rep.pixelsWide > 0 {
-            let width = Self.width - 40
+            let width = min(CGFloat(rep.pixelsWide) / 2, Self.width - 40)
             Image(nsImage: image)
                 .resizable()
                 .interpolation(.high)
