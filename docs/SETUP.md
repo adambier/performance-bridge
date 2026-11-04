@@ -197,86 +197,132 @@ Choose **Settings…** from the menu and open the **Channel Layout** tab.
 
 ## Step 6: Use the hardware controllers
 
-The app has the same for the chosen hardware controller: choose **Controls Guide…** from Performance Bridge's menu.
+The app has the same, for every hardware controller: choose **Controls Guide…** from Performance Bridge's menu.
 
-Every hardware controller works the same way: **each column of controls is one channel** and every control in a
-column controls that channel.
+Every hardware controller works the same way: **each column of controls is one channel** and every control in
+a column acts on that channel.
 
-Levels and pans go into the submix of the output that TotalMix FX's control room
-assigns to Main Out and follow Main Out if it is reassigned there. Set the outputs themselves (e.g., Main Out's volume
-and Speaker B) in TotalMix FX or with an ARC USB; the hardware controllers don't change them.
+Levels and pans go into Main Out's submix: the output TotalMix FX's control room assigns to Main Out,
+whichever it is. Set the outputs themselves (e.g., Main Out's volume and Speaker B) in TotalMix FX or with an
+ARC USB; the hardware controllers don't change them.
 
-**Sends** set the headphone mixes and the other submixes. A send control sets how much of its channel goes to one other output, e.g.,
-Phones 1. A row of send controls is that output's whole submix, one channel per column.
+**Sends** set the headphone mixes and the other submixes. A send control sets how much of its channel goes to
+one other output, e.g., Phones 1. A row of send controls is that output's whole submix, one channel per
+column.
 
-The outputs a send row can
-feed are the ones in **Settings… → Channel Layout → Outputs**, in that order. Main Out and Main Out B (they carry
-the main mix) and the cue output (PFL uses it) aren't listed there.
+The outputs a send row can feed are the ones in **Settings… → Channel Layout → Outputs**, in that order. Main
+Out and Main Out B (they carry the main mix) aren't listed there, nor is an output that has CUE on in TotalMix
+FX's Control Room.
 
-### Launch Control XL 3
+**PFL** plays one channel alone in the output chosen in TotalMix FX's Control Room (click **assign**, then
+**Cue/PFL to**). That output is Main by default, which replaces the main mix, so choose a headphone output
+before a performance.
+
+### Roto-Control
+
+<img src="../App/PerformanceBridge/Resources/controller-roto-control.png" width="556" alt="Melbourne Instruments Roto-Control, seen from above: eight knobs, each with a screen and a switch below it, and the MODE, LEARN, FUNC, SEL, and arrow buttons on the left">
 
 | Control (in each column) | What it does for that column's channel |
 |---|---|
-| Fader | Level in Main Out. The ticks read +6, +3, 0, −6, −10, −20, −40, −60, and −oo, as on TotalMix FX's faders. |
-| Top encoder | Send to the top row's output (e.g., Phones 1) |
-| Middle encoder | Send to the middle row's output (e.g., Phones 2) |
-| Bottom encoder | Pan in Main Out |
-| Top button | PFL (bright yellow when on, dim yellow when off; the screen briefly names the channel and says "PFL on" or "PFL off") |
-| Bottom button | Mute (bright orange when on, dim orange when off, and "Mute on" or "Mute off" on the screen, or "Mute Master off" while TotalMix FX's Mute Master is off; a mute that is on flashes while TotalMix FX's Mute Master is off) |
+| Knob | Level in Main Out, pan in Main Out, or a send, by the knob mode (hold **SEL**, below). A level knob's faint indent is 0 dB; a send knob has no indent, but 0 dB is at the same position. Touching a knob usually selects its channel (for **FUNC**, below; the Roto-Control misses some touches) and holds it: TotalMix FX doesn't move a knob while it is touched or turning. |
+| Screen | The channel's name, in its TotalMix FX color, and its meter. While a knob turns, its value. |
+| Switch | Mute or PFL, by the switch mode (hold **SEL**): orange for mute, yellow for PFL. The Roto-Control's SOLO is PFL here; ARM REC does nothing in this release. |
+
+| Button | What it does |
+|---|---|
+| **←** / **→** | Show the previous or next eight channels. In the single-channel view (**FUNC**), the previous or next page of sends. |
+| **←** and **→** together | Switch to the Roto-Control's second track set ("MIX-RTN" on its screen). It shows the same channels, on the same page; press both again to go back. |
+| **SEL** (hold) | Choose the knob mode with the switch under VOLUME, PAN, or the send (labeled "FX"; pressing it again has been seen to step through the sends), and the switch mode with the switch under MUTE or SOLO (ARM does nothing). The modes are kept when the Roto-Control is switched off. |
+| **FUNC** | All of one channel's controls: the channel whose knob was last touched (the first channel until one is), with knob 1 level, knob 2 pan, and knobs 3–8 its first six sends; **←** and **→** page through eight more sends at a time. The switches do nothing in this view. Press **FUNC** again to go back to eight channels. |
+| **MODE** | The Roto-Control's own mode menu. Performance Bridge works in its MIX mode; press **MODE**, then MIX, to return to it. PLUGIN mode shows no plugins in this release, and MIDI mode is not used. |
+| **LEARN**, the tape button, the (+) button, and the transport switches | Nothing in this release. Learn belongs to PLUGIN mode; the tape button switches the eight switches to transport controls, kept for a later connection to a DAW (press it again to get mute or PFL back); the (+) button is track grouping, which TotalMix FX has no use for (it blinks green until pressed again). |
+
+- A mute that is on flashes while TotalMix FX's Mute Master is off.
+- The knob and switch modes, and the track set, are the Roto-Control's own and are kept between sessions;
+  Performance Bridge follows them and can't set them, so a session can start with the knobs on a send. The
+  small screen above MODE shows both (e.g., "MIX-TRACKS" and "KNOBS-VOL").
+- Details and the test records are in [`docs/ROTO-CONTROL.md`](ROTO-CONTROL.md).
+
+### Launch Control XL 3
+
+<img src="../App/PerformanceBridge/Resources/controller-launch-control-xl3.png" width="165" alt="Novation Launch Control XL 3, seen from above: three rows of eight encoders, eight faders, and two rows of eight buttons, with Page, Track, Shift, and Mode on the left">
+
+| Control (in each column) | What it does for that column's channel |
+|---|---|
+| Fader | Level in Main Out. The ticks read +6, +3, 0, −6, −10, −20, −40, −60, and −oo, as on TotalMix FX's faders. If a fader isn't where TotalMix FX has the level, it takes effect once it reaches it; its display shows the level meanwhile. |
+| Top encoder | Send to the top row's output (e.g., Phones 1). |
+| Middle encoder | Send to the middle row's output (e.g., Phones 2). |
+| Bottom encoder | Pan in Main Out. |
+| Top button | PFL: bright yellow when on, dim yellow when off. The screen briefly names the channel and says "PFL on" or "PFL off". |
+| Bottom button | Mute: bright orange when on, dim orange when off. The screen says "Mute on" or "Mute off", or "Mute Master off" while TotalMix FX's Mute Master is off; a mute that is on then flashes. |
 
 | Button | What it does |
 |---|---|
 | **Track >** / **Track <** | Show the next or previous eight channels. With **Shift**: the last or first eight. |
-| **Page ▼** / **Page ▲** | Change the output the **top** encoder row feeds, to the next or previous one in the Outputs list. |
-| **Shift + Page ▼** / **▲** | The same for the **middle** encoder row. |
+| **Page ▲** / **Page ▼** | Change the output the **top** encoder row feeds, to the previous or next one in the Outputs list. |
+| **Shift + Page ▲** / **▼** | The same for the **middle** encoder row. |
 | **Shift + turn an encoder** | Reset it: a pan to the center, a send to −oo (release Shift, then Shift + turn it again to bring it back). Hold Shift for a moment (0.3 s) first; after Page or Track in the same hold, turning does nothing. |
 
 - The two send rows never feed the same output: stepping one skips the output the other has.
-- The screen shows the channels on the page, counted in the order of **Settings… → Channel Layout** with a stereo pair
-  counting once, and where each send row goes (e.g., "Inputs 1-7", "Top > Phones 1",
-  "Mid > Phones 2"). Moving a control shows its channel, what it does, and its value. After each Page press the
-  screen names the row and its new output, and each send row's lights take the color of the output it feeds: its
-  color in TotalMix FX, or, for an output left white, teal (a blue-green) for the top row and magenta for the middle row.
-- Page and Track are lit where they can move and dark at the ends. While Shift is held, Page lights for the middle
-  row.
+- The screen shows the channels on the page, counted in the order of **Settings… → Channel Layout** with a
+  stereo pair counting once, and where each send row goes (e.g., "Inputs 1-7", "Top > Phones 1", "Mid > Phones
+  2").
+- Moving a control shows its channel, what it does, and its value.
+- After each Page press the screen names the row and its new output, and each send row's lights take the color
+  of the output it feeds: its color in TotalMix FX, or, for an output left white, teal (a blue-green) for the
+  top row and magenta for the middle row.
+- With **Show levels by brightness** on (Settings… → Connections), the send encoders dim with their level and
+  are dark at −oo.
+- Page and Track are lit where they can move and dark at the ends. While Shift is held, Page lights for the
+  middle row.
 - Each row's output is remembered when Performance Bridge restarts. It can also be chosen in Settings, at the
   bottom of the Connections tab, with the Launch Control connected or not; the change takes effect at once.
 - Press **Track <** and **Track >** together to go back to the first eight channels.
-- The **Novation button** brings TotalMix FX's window to the front. Press it again while TotalMix FX is in front to go back to the app you were in (if TotalMix FX came to the front some other way, the press hides it instead).
-- Solo/Arm, Mute/Select, Record, and Play do nothing in this release; they are kept free for later uses (e.g., a
-  connection to a DAW).
-- Level and pan are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so TotalMix FX's
-  window shows the pans set here only while Main Out's output is selected in its bottom row (observed 2026-11-01).
+- The **Novation button** brings TotalMix FX's window to the front. Press it again while TotalMix FX is in
+  front to go back to the app you were in (if TotalMix FX came to the front some other way, the press hides it
+  instead).
+- Solo/Arm, Mute/Select, Record, and Play do nothing in this release; they are kept free for later uses (e.g.,
+  a connection to a DAW).
+- Levels and pans are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so
+  TotalMix FX's window shows the levels and pans set here only while Main Out's output is selected in its
+  bottom row.
 
 ### Launch Control 3
 
-The Launch Control 3 works the same way, with fewer controls:
+<img src="../App/PerformanceBridge/Resources/controller-launch-control-3.png" width="328" alt="Novation Launch Control 3, seen from above: two rows of eight encoders and one row of eight buttons, with Page, Track, Shift, Mode, and Function on the left">
 
 | Control (in each column) | What it does for that column's channel |
 |---|---|
-| Bottom encoder | Level in Main Out |
-| Top encoder | Pan, or a send: **Page ▼** / **▲** steps it through Pan, then each output in the Outputs list |
-| Button | Mute; PFL while **Function** (labeled "DAW" underneath) is held (orange for mute, yellow for PFL, dim when off). Function rests dim yellow; it lights bright yellow while held, and also while any channel's PFL is on, so a PFL left on still shows |
+| Bottom encoder | Level in Main Out. |
+| Top encoder | Pan, or a send: **Page ▲** / **▼** steps it through Pan, then each output in the Outputs list. |
+| Button | Mute, or PFL while **Function** (printed "DAW" beneath it) is held. Orange for mute, yellow for PFL, dim when off. Function rests dim yellow and lights bright yellow while held, and while any channel's PFL is on, so a PFL left on still shows. |
 
-- Track works as on the XL 3 and Shift + turn resets an encoder as it does there; a level above 0 dB comes down to 0 dB,
-  and one at or below 0 dB stays. The screen shows the channels on the page, the top row's function (e.g., "Top: Pan"),
-  and the buttons' ("Buttons: Mute", or "PFL on, buttons Mute" while a PFL is on; briefly "Buttons" over "PFL" while
-  Function is held).
-- The **Novation button** brings TotalMix FX's window to the front, as on the XL 3.
-- The Launch Control 3 has not been tried on a device yet. See [`docs/LAUNCH-CONTROL-3.md`](LAUNCH-CONTROL-3.md).
+| Button | What it does |
+|---|---|
+| **Track >** / **Track <** | Show the next or previous eight channels. With **Shift**: the last or first eight. |
+| **Page ▲** / **Page ▼** | Change what the top encoder row does: Pan, then each output in the Outputs list, in order. |
+| **Shift + turn an encoder** | Reset it: a pan to the center, a level above 0 dB down to 0 dB (one at or below 0 dB stays), a send to −oo (release Shift, then Shift + turn it again to bring it back). Hold Shift for a moment (0.3 s) first; after Page or Track in the same hold, turning does nothing. |
 
-### Roto-Control
+- The screen shows the channels on the page, counted in the order of **Settings… → Channel Layout** with a
+  stereo pair counting once, the top row's function (e.g., "Top: Pan"), and the buttons' ("Buttons: Mute", or
+  "PFL on, buttons Mute" while a PFL is on; "Buttons: PFL" while Function is held).
+- Moving a control shows its channel, what it does, and its value.
+- After each Page press the screen names the top row's new function. As a send, the row's lights take the
+  color of the output it feeds: its color in TotalMix FX, or teal (a blue-green) for an output left white.
+- The top row's function is remembered when Performance Bridge restarts. It can also be chosen in Settings, at
+  the bottom of the Connections tab, with the Launch Control connected or not; the change takes effect at
+  once.
+- Press **Track <** and **Track >** together to go back to the first eight channels.
+- The **Novation button** brings TotalMix FX's window to the front. Press it again while TotalMix FX is in
+  front to go back to the app you were in (if TotalMix FX came to the front some other way, the press hides it
+  instead).
+- Levels and pans are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so
+  TotalMix FX's window shows the levels and pans set here only while Main Out's output is selected in its
+  bottom row.
+- The Launch Control 3 has not been tried on a device yet; everything above is from Novation's documents and from the
+  XL 3. See [`docs/LAUNCH-CONTROL-3.md`](LAUNCH-CONTROL-3.md).
 
-Each of the eight knobs is a channel.
-
-Hold **SEL** to choose what the knobs control (Volume, Pan, or a send, "FX")
-and what the switches do (Mute or Solo; Solo is PFL here).
-
-The < and > buttons page through the channels. Pressing
-both arrow buttons together switches the Roto-Control to its second track set ("MIX-RTN" on its screen), which shows
-the same channels.
-
-- A mute that is on flashes while TotalMix FX's Mute Master is off.
+The photos of the hardware controllers in this step are Novation's and Melbourne Instruments'.
 
 ## If something does not work
 

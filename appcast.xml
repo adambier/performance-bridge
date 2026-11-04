@@ -3,6 +3,18 @@
     <channel>
         <title>Performance Bridge</title>
         <item>
+            <title>1.0.4</title>
+            <pubDate>Wed, 04 Nov 2026 12:59:25 -0800</pubDate>
+            <sparkle:version>365</sparkle:version>
+            <sparkle:shortVersionString>1.0.4</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[**Controls Guide:** a photo of each hardware controller, a menu to choose the controller shown, and every control, button, and button combination of the Roto-Control in tables. Each guide stands alone.
+
+**Fixes:** the guide's text corrected against the device tests (the Roto-Control's send knobs have no indent; a knob is held while touched or turning; what the Outputs list leaves out).
+]]></description>
+            <enclosure url="https://github.com/adambier/performance-bridge/releases/download/v1.0.4/Performance-Bridge-1.0.4.zip" length="5817527" type="application/octet-stream" sparkle:edSignature="xcZkAY6jHkJkyMhrJVAYdvx5tX3Q7GA18PJLcWVsGUZqbM0e0VnKT+6k3NbQI27+qpHV0YYKqwsGL4d+R5XxBg=="/>
+        </item>
+        <item>
             <title>1.0.3</title>
             <pubDate>Mon, 02 Nov 2026 22:06:46 -0800</pubDate>
             <sparkle:version>336</sparkle:version>
