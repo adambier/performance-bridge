@@ -14,6 +14,9 @@ let e16Usage = """
       sbdev e16 labels [--port N] <title> [label…]
                                       enters Remote Mode and shows a title (16 characters) and up to
                                       16 labels (4 characters each); leaves Remote Mode on Control-C
+      sbdev e16 palette [--port N]    enters Remote Mode and shows candidate colors, one per ring,
+                                      full, named on the screen (TotalMix FX's own first); leaves
+                                      Remote Mode on Control-C
       sbdev e16 demo [--port N] [--rate HZ]
                                       enters Remote Mode, shows 16 named channels with colored rings,
                                       and reacts: a turn moves its ring, a push toggles its color,
@@ -147,6 +150,23 @@ func e16(_ arguments: ArraySlice<String>) -> Never {
 
     case "demo":
         e16Demo(session, rate: rate)
+
+    case "palette":
+        installExitOnInterrupt()
+        guard session.enter() else { exit(1) }
+        // TotalMix FX's colors as the driver renders them, then candidates for its grey.
+        let colors: [(String, UInt8, UInt8, UInt8)] = [
+            ("WHIT", 127, 127, 127), ("BLUE", 0, 0, 127), ("GREN", 0, 127, 0), ("PURP", 90, 0, 127),
+            ("ORNG", 127, 40, 0), ("YELO", 127, 85, 0), ("RED", 127, 0, 0), ("", 0, 0, 0),
+            ("STEL", 50, 85, 127), ("ICE", 90, 110, 127), ("SLAT", 70, 80, 110), ("CYAN", 0, 110, 127),
+            ("TEAL", 0, 127, 110), ("MINT", 60, 127, 90), ("LILC", 100, 90, 127), ("GRAY", 40, 40, 40),
+        ]
+        session.send(E16Outgoing.labels(title: "TM / GREY TRIALS", labels: colors.map { $0.0 }))
+        session.send(E16Outgoing.rings(colors.enumerated().map { (i, c) in
+            (encoder: i, ring: E16Ring(red: c.1, green: c.2, blue: c.3, amount: c.0.isEmpty ? 0 : 1))
+        }))
+        print("Rows 1–2: TotalMix FX's colors. Rows 3–4: candidates for grey. Control-C leaves Remote Mode."); flushOutput()
+        while true { Thread.sleep(forTimeInterval: 60) }
 
     default:
         fail("Unknown e16 command \(command).\n\n\(e16Usage)")
