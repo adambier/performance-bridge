@@ -40,10 +40,10 @@ public struct E16Step: Equatable, Sendable {
 ///   the modes LEVEL, PAN, and SEND (encoders 1–3), the previous and next send output (11 and
 ///   12), the previous and next page of sixteen strips (15 and 16); the screen names them and
 ///   the rings show the mode in use and which arrows go somewhere;
-/// - the ring shows the strip's color, filled to its level (bipolar for a pan), with red marks
-///   while muted and a running white LED while on PFL (`look`); the screen's title shows the
-///   function and the page, and for a moment the value of a turned encoder or the result of a
-///   push.
+/// - the ring shows the strip's color, filled to its level (bipolar for a pan), and the switch
+///   states by shape and motion, orange for mute and yellow for PFL (`look`, and the rules in
+///   its comment); the screen's title shows the function and the page, "PFL" while any PFL is
+///   on, and for a moment the value of a turned encoder or the result of a push.
 ///
 /// **Layers.** The hub gives a surface one switch per strip, and the E16's push is mute or PFL,
 /// so the driver adds two hub surfaces: the main one (the knob's function, with mute) and a PFL
@@ -77,8 +77,16 @@ public struct E16Driver: Sendable {
     /// second, with a countdown on the screen and the ring, since a hand resting on an encoder
     /// must not put a channel on PFL by mistake (Adam, 2026-11-04).
     public static let pflHold: Double = 1
+    /// How long a push may last before the countdown starts drawing, in seconds, so a tap to mute
+    /// never flashes the countdown (UI review, 2026-11-04).
+    public static let tapTime: Double = 0.25
     /// How often the countdown is redrawn, in seconds.
     public static let countdownStep: Double = 0.1
+    /// The PFL heartbeat: the ring is a complete yellow ring for `heartbeatOn` of each
+    /// `heartbeatPeriod`, then dips to what is underneath for the rest.
+    public static let heartbeatPeriod: Double = 1
+    /// How long the heartbeat's ring is complete, in seconds.
+    public static let heartbeatOn: Double = 0.8
 
     /// What an encoder does as a button while Shift is held: a mode button (LEVEL, PAN, SEND:
     /// one of them is in use) or a step button (an arrow: it goes somewhere, or nowhere).
@@ -103,7 +111,7 @@ public struct E16Driver: Sendable {
         /// The label on the screen.
         public var label: String {
             switch self {
-            case .level: return "LEVL"
+            case .level: return "LVL"
             case .pan: return "PAN"
             case .send: return "SEND"
             case .output(let d): return d < 0 ? "<SND" : "SND>"
@@ -135,6 +143,8 @@ public struct E16Driver: Sendable {
     private var lastEnter: Double?
     private var shiftHeld = false
     private var blinkLit = true
+    /// Whether PFL rings are in the complete-ring phase of their heartbeat now.
+    private var heartbeatHigh = true
     private var overlay: (text: String, until: Double)?
     /// The encoder held down, if any, since when, and whether the hold has already toggled PFL.
     /// Its overlay stays until it is released (Adam, 2026-11-04).
@@ -152,11 +162,11 @@ public struct E16Driver: Sendable {
     private var sentLabels: [UInt8]?
     private var sentRings: [RingLook?] = Array(repeating: nil, count: E16Driver.stripCount)
 
-    /// How one encoder's ring is drawn: the ring, then single LEDs over it (the needles).
+    /// How one encoder's ring is drawn: a RING message alone. The single-LED message is never
+    /// used: on the device it is a persistent override that outlives later fills and inverts the
+    /// encoder's label until a power cycle (seen 2026-11-04).
     struct RingLook: Hashable {
         var ring: E16Ring
-        var leds: [LED] = []
-        struct LED: Hashable { var index: Int; var red: UInt8; var green: UInt8; var blue: UInt8 }
     }
 
     /// A driver for one device; `name` starts the hub surfaces' names.
@@ -211,15 +221,16 @@ public struct E16Driver: Sendable {
             if now - held.since >= Self.pflHold {
                 self.held = (held.encoder, held.since, true)
                 pfl(held.encoder, hub: &hub, now: now, into: &step)
-            } else {
-                // The countdown: the title says what the hold does, and a white arc grows round
-                // the ring like a clock face (Adam, 2026-11-04).
-                let stepIndex = Int((now - held.since) / Self.countdownStep + 1e-6)
+            } else if now - held.since >= Self.tapTime {
+                // The countdown, after the tap window: the title says where the hold leads, and
+                // a yellow arc sweeps the ring (growing for PFL on, shrinking for off; Adam and
+                // the UI review, 2026-11-04).
+                let stepIndex = Int((now - held.since - Self.tapTime) / Self.countdownStep + 1e-6)
                 if stepIndex != countdownShown {
                     let first = countdownShown < 0
                     countdownShown = stepIndex
                     if first, let info = infos[held.encoder] {
-                        overlay = (Self.fit(info.name, 7) + (pflOn[held.encoder] ? " PFL OFF" : " PFL ON"), .infinity)
+                        overlay = (Self.fit(info.name, 7) + (pflOn[held.encoder] ? " -> PFL OFF" : " -> PFL"), .infinity)
                         step.midi += drawLabels(hub: hub)
                     }
                     step.midi += drawRing(held.encoder, hub: hub)
@@ -231,9 +242,11 @@ public struct E16Driver: Sendable {
             step.midi += drawLabels(hub: hub)
         }
         let lit = Int((now / Self.blinkPeriod).rounded(.down)) % 2 == 0
-        if lit != blinkLit {
+        let high = now.truncatingRemainder(dividingBy: Self.heartbeatPeriod) < Self.heartbeatOn
+        if lit != blinkLit || high != heartbeatHigh {
             blinkLit = lit
-            if hub.mirror.muteMaster == false { step.midi += drawRings(hub: hub) }  // only the rings that change
+            heartbeatHigh = high
+            step.midi += drawRings(hub: hub)  // only the rings that change are sent
         }
         return step
     }
@@ -349,19 +362,18 @@ public struct E16Driver: Sendable {
     private mutating func mute(_ encoder: Int, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
         take(hub.switchPressed(id(.main), strip: encoder, now: now), hub: hub, into: &step)
         guard let info = infos[encoder] else { return }
-        if hub.mirror.muteMaster == false {
-            // A mute does nothing in the audio while TotalMix FX's Mute Master is off: say so.
-            show("MUTE MASTER OFF", now: now, into: &step, hub: hub)
-        } else {
-            show(Self.fit(info.name, 7) + " MUTE" + (muteOn[encoder] ? " ON" : " OFF"), now: now, into: &step, hub: hub)
-        }
+        // While Mute Master is off a mute is "set", TotalMix FX's own notion, and does nothing in
+        // the audio; the ring's blink says so continuously, so the title says what the press did.
+        let on = muteOn[encoder]
+        let result = hub.mirror.muteMaster == false ? (on ? " MUTE SET" : " MUTE CLR") : (on ? " MUTE ON" : " MUTE OFF")
+        show(Self.fit(info.name, 7) + result, now: now, into: &step, hub: hub)
     }
 
     /// A push held `pflHold`: toggles the strip's PFL and says so on the screen.
     private mutating func pfl(_ encoder: Int, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
         take(hub.switchPressed(id(.pfl), strip: encoder, now: now), hub: hub, into: &step)
         guard let info = infos[encoder] else { return }
-        show(Self.fit(info.name, 8) + " PFL" + (pflOn[encoder] ? " ON" : " OFF"), now: now, into: &step, hub: hub)
+        show(Self.fit(info.name, 7) + " PFL" + (pflOn[encoder] ? " ON" : " OFF"), now: now, into: &step, hub: hub)
     }
 
     /// A button on the Shift page pressed.
@@ -524,15 +536,18 @@ public struct E16Driver: Sendable {
         return bytes
     }
 
-    /// The title: an overlay while one shows; else the function ("LEVEL", "PAN", "> PHONES 1")
-    /// and, with more than one page, the page. The same with Shift held, so the choice made
-    /// there shows at once and stays (Adam, 2026-11-04).
+    /// The title: an overlay while one shows; else the function ("LEVEL", "PAN", "> PHONES 1"),
+    /// "PFL" while any strip's PFL is on (TotalMix FX doesn't echo a PFL and "Cue/PFL to" can't
+    /// be read, so the app's own record is the only one; UI review, 2026-11-04), and, with more
+    /// than one page, the page. The same with Shift held, so the choice made there shows at
+    /// once and stays (Adam, 2026-11-04).
     public func title(hub: SurfaceHub) -> String {
         if let overlay { return overlay.text }
-        let pageText = pageCount > 1 ? " \(page.first / Self.stripCount + 1)/\(pageCount)" : ""
-        let width = E16Outgoing.titleLength - pageText.count
+        var tail = pageCount > 1 ? " \(page.first / Self.stripCount + 1)/\(pageCount)" : ""
+        if pflOn.contains(true) { tail = " PFL" + tail }
+        let width = E16Outgoing.titleLength - tail.count
         let name = Self.fit(functionName(hub: hub), width)
-        return pageText.isEmpty ? name : name.padding(toLength: width, withPad: " ", startingAt: 0) + pageText
+        return tail.isEmpty ? name : name.padding(toLength: width, withPad: " ", startingAt: 0) + tail
     }
 
     /// The function's name for the title: "LEVEL", "PAN", or "> " and the send's output.
@@ -549,32 +564,16 @@ public struct E16Driver: Sendable {
         }
     }
 
-    /// Every ring, sent only where it changed: one RING message for the rings, then one LED
-    /// message for the needles, so the needles are drawn over the rings.
+    /// Every ring, sent only where it changed, in one RING message.
     private mutating func drawRings(hub: SurfaceHub) -> [UInt8] {
         var rings: [(encoder: Int, ring: E16Ring)] = []
-        var cleared: [(encoder: Int, led: Int, red: UInt8, green: UInt8, blue: UInt8)] = []
-        var leds: [(encoder: Int, led: Int, red: UInt8, green: UInt8, blue: UInt8)] = []
         for index in 0..<Self.stripCount {
             let look = look(index, hub: hub)
             guard sentRings[index] != look else { continue }
-            cleared += clearedLEDs(index, next: look)
             sentRings[index] = look
             rings.append((index, dimmed(look.ring)))
-            leds += look.leds.map { (index, $0.index, dim($0.red), dim($0.green), dim($0.blue)) }
         }
-        // The offs first: sent after the ring, they punched holes in its fill (seen 2026-11-04).
-        return E16Outgoing.leds(cleared) + E16Outgoing.rings(rings) + E16Outgoing.leds(leds)
-    }
-
-    /// LEDs set individually before and not in `next`, turned off by the LED message: the
-    /// device has been seen to keep an encoder's label inverted once its LEDs were set that
-    /// way, through later RING and LABELS messages (Adam, 2026-11-04); whether an explicit off
-    /// clears it is being tried.
-    private func clearedLEDs(_ index: Int, next: RingLook) -> [(encoder: Int, led: Int, red: UInt8, green: UInt8, blue: UInt8)] {
-        guard let previous = sentRings[index] else { return [] }
-        let kept = Set(next.leds.map(\.index))
-        return previous.leds.map(\.index).filter { !kept.contains($0) }.map { (index, $0, 0, 0, 0) }
+        return E16Outgoing.rings(rings)
     }
 
     /// A part of a color at the driver's `brightness`; a lit part stays lit.
@@ -591,62 +590,64 @@ public struct E16Driver: Sendable {
     private mutating func drawRing(_ index: Int, hub: SurfaceHub) -> [UInt8] {
         let look = look(index, hub: hub)
         guard sentRings[index] != look else { return [] }
-        let cleared = clearedLEDs(index, next: look)
         sentRings[index] = look
-        return E16Outgoing.leds(cleared) + E16Outgoing.rings([(encoder: index, ring: dimmed(look.ring))])
-            + E16Outgoing.leds(look.leds.map { (index, $0.index, dim($0.red), dim($0.green), dim($0.blue)) })
+        return E16Outgoing.rings([(encoder: index, ring: dimmed(look.ring))])
     }
 
-    /// A strip's ring: dark for no channel; else its color (`rgb(for:)`, or for a send the
-    /// output's) filled to its value, bipolar for a pan. A mute or a PFL that is on shows as a
-    /// shape over the fill, not as a color, since a channel can itself be any color (Adam,
-    /// 2026-11-04): a mute lights four red LEDs at the ring's quarter points (`muteMarks`), off
-    /// in every other half second while Mute Master is off; a PFL lights one white LED that
-    /// runs round the ring (`rotationStep` a step), the state to notice on stage.
+    /// A strip's ring, by the rules from the UI review (2026-11-04), drawn with RING messages
+    /// alone:
+    /// - dark means no channel: a strip with a channel always lights at least one LED (`floor`,
+    ///   as OXI's own "Color Indicator" setting does);
+    /// - a complete ring always means a switch is on: a level never fills the last LED (`cap`);
+    /// - color is the second cue, shape and motion the first: orange for mute, yellow for PFL,
+    ///   the colors the other surfaces use;
+    /// - one meaning per motion: steady is a value or a state; a symmetric blink (full orange
+    ///   ring ↔ half ring, `blinkPeriod` each) is a mute that is set but not in effect while
+    ///   TotalMix FX's Mute Master is off; the heartbeat (`heartbeatOn` of each
+    ///   `heartbeatPeriod` a complete yellow ring, then a dip to what is underneath: the level,
+    ///   or the mute's ring) is PFL; a one-shot yellow arc growing (or, for PFL off, shrinking)
+    ///   is the push held for PFL.
     func look(_ index: Int, hub: SurfaceHub) -> RingLook {
         if shiftHeld { return RingLook(ring: buttonRing(index, hub: hub)) }
         guard let info = infos[index], let value = knobValues[index] else { return RingLook(ring: .off) }
+        if let held, held.encoder == index, !held.didPFL, countdownShown >= 0 {
+            let progress = min(Double(countdownShown) * Self.countdownStep / (Self.pflHold - Self.tapTime), 1)
+            let amount = pflOn[index] ? 1 - progress : progress
+            return RingLook(ring: E16Ring(red: Self.pflRGB.0, green: Self.pflRGB.1, blue: Self.pflRGB.2, amount: amount))
+        }
         var rgb = Self.rgb(for: info)
         if case .send(let n) = function, hub.sendTargets.indices.contains(n) {
             let output = ChannelRef(.output, hub.sendTargets[n])
             if let color = hub.mirror.channels[output]?.color, color != 1, let sendRGB = Self.totalMixRGB[color] { rgb = sendRGB }
         }
-        if let held, held.encoder == index, !held.didPFL, countdownShown >= 0 {
-            // The countdown: a white arc from empty to full over the hold, in place of the fill;
-            // from full to empty when the hold turns PFL off (Adam, 2026-11-04).
-            let progress = min(Double(countdownShown) * Self.countdownStep / Self.pflHold, 1)
-            let amount = pflOn[index] ? 1 - progress : progress
-            return RingLook(ring: E16Ring(red: Self.pflRGB.0, green: Self.pflRGB.1, blue: Self.pflRGB.2, amount: amount))
+        let level: E16Ring = isPan
+            ? E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: value, bipolar: true)
+            : E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: min(max(value, Self.floor), Self.cap))
+        var underneath = level
+        if muteOn[index] {
+            let amount = hub.mirror.muteMaster == false && !blinkLit ? 0.5 : 1
+            underneath = E16Ring(red: Self.muteRGB.0, green: Self.muteRGB.1, blue: Self.muteRGB.2, amount: amount)
         }
-        guard muteOn[index] || pflOn[index] else {
-            return RingLook(ring: E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: value, bipolar: isPan))
+        if pflOn[index], heartbeatHigh {
+            return RingLook(ring: E16Ring(red: Self.pflRGB.0, green: Self.pflRGB.1, blue: Self.pflRGB.2, amount: 1))
         }
-        // A mute or a PFL: the ring dark, with every other LED up to the level in the
-        // indicator's color alone, white for a PFL (which wins when both are on) and red for a
-        // mute, off in every other half second while Mute Master is off. At least the first
-        // two LEDs, so the state shows at -oo.
-        var look = RingLook(ring: .off)
-        let lit = max(Int((min(max(value, 0), 1) * 16).rounded()), 2)
-        let color: (UInt8, UInt8, UInt8)?
-        if pflOn[index] { color = Self.pflRGB }
-        else if hub.mirror.muteMaster == false && !blinkLit { color = nil }
-        else { color = Self.muteRGB }
-        if let color {
-            for led in stride(from: 1, to: lit, by: 2) {
-                look.leds.append(RingLook.LED(index: led, red: color.0, green: color.1, blue: color.2))
-            }
-        }
-        return look
+        return RingLook(ring: underneath)
     }
 
+    /// The least a strip with a channel lights, as a fraction of the ring: one LED.
+    public static let floor = 1.0 / 16
+    /// The most a level lights, as a fraction of the ring: fifteen LEDs, so a complete ring is
+    /// a switch.
+    public static let cap = 15.0 / 16
+
     /// A ring on the Shift page, in the button's color (`buttonColors`; Adam, 2026-11-04): a
-    /// quarter ring for a button that is available, the full ring for the mode in use, and the
-    /// full ring in white while a button is held down. The state is in the fill, not the
-    /// brightness, since the device's LEDs are nearly as bright at 3 as at 127 (seen
-    /// 2026-11-04). An arrow that goes nowhere, and a blank, are dark.
+    /// quarter ring for a button that is available, the full ring for the mode in use and for
+    /// any button while it is held down (in its own color, so a mode press shows its result and
+    /// keeps it; UI review, 2026-11-04). The state is in the fill, not the brightness, since the
+    /// device's LEDs are nearly as bright at 3 as at 127 (seen 2026-11-04). An arrow that goes
+    /// nowhere, and a blank, are dark.
     func buttonRing(_ index: Int, hub: SurfaceHub) -> E16Ring {
         guard let button = ShiftButton.layout[index] else { return .off }
-        if pressedButton == index { return E16Ring(red: 127, green: 127, blue: 127, amount: 1) }
         let rgb: (UInt8, UInt8, UInt8)
         var inUse = false
         switch button {
@@ -658,31 +659,27 @@ public struct E16Driver: Sendable {
         case .output: rgb = Self.buttonColors.send
         case .page: rgb = Self.buttonColors.page
         }
-        guard inUse || isAvailable(button, hub: hub) else { return .off }
-        return E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: inUse ? 1 : Self.availableArc)
+        let pressed = pressedButton == index
+        guard inUse || pressed || isAvailable(button, hub: hub) else { return .off }
+        return E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: inUse || pressed ? 1 : Self.availableArc)
     }
 
     /// How much of the ring an available button lights, as a fraction.
     public static let availableArc = 0.25
 
-    /// The Shift page's colors (Adam, 2026-11-04): orange for LEVEL, magenta for PAN, a deep
-    /// green for SEND and the output arrows, a deep blue for the page arrows. The page shows no
-    /// channel colors, so they only need to differ from each other. Color is an extra cue: the
-    /// buttons' positions and labels, and the brighter ring of the mode in use, carry the
-    /// meaning, since orange and green are hard to tell apart with a red-green color
-    /// deficiency.
+    /// The Shift page's colors (Adam and the UI review, 2026-11-04): white for LEVEL (orange is
+    /// the mute color), magenta for PAN, a deep green for SEND and the output arrows, a deep
+    /// blue for the page arrows. The page shows no channel colors, so they only need to differ
+    /// from each other. Color is an extra cue: the buttons' positions and labels, and the ring
+    /// fills, carry the meaning.
     public static let buttonColors: (level: (UInt8, UInt8, UInt8), pan: (UInt8, UInt8, UInt8),
                                      send: (UInt8, UInt8, UInt8), page: (UInt8, UInt8, UInt8))
-        = ((127, 40, 0), (127, 0, 100), (0, 60, 0), (0, 0, 127))
+        = ((127, 127, 127), (127, 0, 100), (0, 60, 0), (0, 0, 127))
 
-    /// The LEDs a mute lights: the pair at the ring's bottom gap, where the eye lands looking at
-    /// the device from below, and the pair at the top. No single LED sits at 9 or 3 o'clock on
-    /// the device, so side marks looked off (Adam, 2026-11-04).
-    public static let muteMarks = [0, 7, 8, 15]
-    /// Red, for a mute's stripes.
-    public static let muteRGB: (UInt8, UInt8, UInt8) = (127, 0, 0)
-    /// White, for a PFL's stripes and the countdown.
-    public static let pflRGB: (UInt8, UInt8, UInt8) = (127, 127, 127)
+    /// Orange, for a mute, as on the other surfaces.
+    public static let muteRGB: (UInt8, UInt8, UInt8) = (127, 25, 0)
+    /// Yellow, for a PFL and for the countdown, as on the other surfaces.
+    public static let pflRGB: (UInt8, UInt8, UInt8) = (127, 85, 0)
 
     /// An RGB (0–127 per part) for each of TotalMix FX's eight colors (1 white, 2 grey, 3 orange,
     /// 4 red, 5 blue, 6 green, 7 yellow, 8 pink; docs/TOTALMIX-OSC.md, test 7), as the Launch
@@ -703,13 +700,27 @@ public struct E16Driver: Sendable {
         info.color.flatMap { totalMixRGB[$0] } ?? totalMixRGB[1]!
     }
 
-    /// `text` cut to `length` characters; a longer text first loses a stereo pair's second
-    /// number ("PB 1/2" to "PB 1"), then its spaces ("PB 11/12" to "PB11").
+    /// `text` cut to `length` characters, keeping what tells strips apart (UI review,
+    /// 2026-11-04): a name that fits is kept as is; one that ends in a number or a pair ("ADAT
+    /// 3/4", "PB 11/12") keeps its first number, loses "/n", and shortens its word: first the
+    /// space goes, then vowels after the word's first letter, then letters from the end ("ADT3",
+    /// "AD11", "PB 1", "PB11", "Mic1", "Anl1"); anything else is cut ("Tonv").
     static func fit(_ text: String, _ length: Int) -> String {
         if text.count <= length { return text }
-        var short = text
-        if let slash = short.firstIndex(of: "/") { short = String(short[..<slash]) }
-        if short.count > length { short = short.filter { $0 != " " } }
-        return String(short.prefix(length))
+        let parts = text.split(separator: " ", omittingEmptySubsequences: true).map(String.init)
+        if parts.count >= 2, let last = parts.last, let number = last.split(separator: "/").first, Int(number) != nil {
+            var word = parts.dropLast().joined(separator: " ")
+            let digits = String(number)
+            let room = length - digits.count
+            if word.count + 1 + digits.count <= length { return word + " " + digits }
+            if word.count + digits.count <= length { return word + digits }  // all the letters, no space
+            let vowels: Set<Character> = ["a", "e", "i", "o", "u", "A", "E", "I", "O", "U"]
+            var kept = ""
+            for (i, c) in word.enumerated() where i == 0 || !vowels.contains(c) { kept.append(c) }
+            word = kept
+            if word.count + 1 + digits.count <= length { return word + " " + digits }
+            return String(word.prefix(max(room, 0))) + digits
+        }
+        return String(text.prefix(length))
     }
 }
