@@ -222,7 +222,7 @@ final class E16DriverTests: XCTestCase {
         let rings = shift.midi.rings
         XCTAssertEqual(rings[0]?.g, 57, "LEVEL, in use: medium teal")
         XCTAssertEqual(rings[0]?.amount, 16383)
-        XCTAssertEqual(rings[1]?.g, 6, "PAN: dim")
+        XCTAssertEqual(rings[1]?.b, 6, "PAN: dim sky blue")
         XCTAssertEqual(rings[10]?.r, 6, "previous output: dim magenta")
         XCTAssertEqual(rings[2]?.amount, 0, "a blank is dark")
         XCTAssertNil(rings[14], "an empty strip's ring was dark already")
@@ -232,7 +232,7 @@ final class E16DriverTests: XCTestCase {
         let pan = driver.receive([0x90, 1, 0x7F, 0x80, 1, 0x00], hub: &hub, now: 1.2)
         XCTAssertEqual(driver.function, .pan)
         XCTAssertEqual(pan.midi.lastTitle, "PAN             ", "said at once")
-        XCTAssertEqual(pan.midi.rings[1]?.g, 57, "now PAN is in use")
+        XCTAssertEqual(pan.midi.rings[1]?.b, 57, "now PAN is in use")
         XCTAssertEqual(pan.midi.rings[0]?.g, 6)
         XCTAssertEqual(pan.core.messages, [], "no mute from a button")
         // A button held down is full bright, whatever it does.

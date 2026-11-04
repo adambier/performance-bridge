@@ -553,8 +553,8 @@ public struct E16Driver: Sendable {
         let rgb: (UInt8, UInt8, UInt8)
         var chosen = false
         switch button {
-        case .level: rgb = Self.buttonColors.function; chosen = function == .level
-        case .pan: rgb = Self.buttonColors.function; chosen = function == .pan
+        case .level: rgb = Self.buttonColors.level; chosen = function == .level
+        case .pan: rgb = Self.buttonColors.pan; chosen = function == .pan
         case .output:
             rgb = Self.buttonColors.output
             if case .send = function { chosen = true }
@@ -565,10 +565,11 @@ public struct E16Driver: Sendable {
         return E16Ring(red: UInt8(Double(rgb.0) * scale), green: UInt8(Double(rgb.1) * scale), blue: UInt8(Double(rgb.2) * scale), amount: 1)
     }
 
-    /// The Shift page's colors: teal for LEVEL and PAN, magenta for the outputs, lime for the
-    /// pages; none of TotalMix FX's eight.
-    public static let buttonColors: (function: (UInt8, UInt8, UInt8), output: (UInt8, UInt8, UInt8), page: (UInt8, UInt8, UInt8))
-        = ((0, 127, 110), (127, 0, 100), (100, 127, 0))
+    /// The Shift page's colors: teal for LEVEL, sky blue for PAN, magenta for the outputs, lime
+    /// for the pages; none of TotalMix FX's eight (Adam, 2026-11-04).
+    public static let buttonColors: (level: (UInt8, UInt8, UInt8), pan: (UInt8, UInt8, UInt8),
+                                     output: (UInt8, UInt8, UInt8), page: (UInt8, UInt8, UInt8))
+        = ((0, 127, 110), (0, 90, 127), (127, 0, 100), (100, 127, 0))
 
     /// The LEDs a mute lights: the pair at the ring's bottom gap, where the eye lands looking at
     /// the device from below, and the pair at the top. No single LED sits at 9 or 3 o'clock on
