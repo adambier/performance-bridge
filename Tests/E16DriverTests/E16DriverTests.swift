@@ -175,90 +175,101 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(driver.title(hub: hub), "Vox -oo")
     }
 
-    func testPushTogglesMuteAndShiftPushPFL() {
+    func testAShortPushMutesOnReleaseAndAHeldPushIsPFL() {
         var (driver, hub, _) = connected()
-        let mute = driver.receive([0x90, 1, 0x7F, 0x80, 1, 0x00], hub: &hub, now: 1)  // push Vox
-        XCTAssertEqual(mute.core.messages.map(\.address), ["/input/2/mute"])
-        XCTAssertEqual(mute.core.messages.first?.arguments.first, .float(1))
-        XCTAssertEqual(mute.midi.lastTitle, "Vox MUTE ON     ")
-        XCTAssertEqual(mute.midi.leds[1]?.map(\.index), [0, 7, 8, 15], "four red marks")
-        XCTAssertEqual(mute.midi.leds[1]?.first?.r, 127)
-        XCTAssertEqual(mute.midi.leds[1]?.first?.g, 0)
-        let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 2)
-        XCTAssertEqual(shift.midi.lastTitle, "PUSH=PFL TURN=FN")
-        let pfl = driver.receive([0x90, 2, 0x7F, 0x80, 2, 0x00], hub: &hub, now: 2.1)  // Shift + push Gtr
+        let down = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 1)  // push Vox
+        XCTAssertEqual(down.core.messages, [], "nothing until release")
+        let up = driver.receive([0x80, 1, 0x00], hub: &hub, now: 1.2)
+        XCTAssertEqual(up.core.messages.map(\.address), ["/input/2/mute"])
+        XCTAssertEqual(up.core.messages.first?.arguments.first, .float(1))
+        XCTAssertEqual(up.midi.lastTitle, "Vox MUTE ON     ")
+        XCTAssertEqual(up.midi.rings[1]?.amount, 8192, "the fill is kept")
+        XCTAssertEqual(up.midi.leds[1]?.map(\.index), [0, 7, 8, 15], "four red marks")
+        XCTAssertEqual(up.midi.leds[1]?.first?.r, 127)
+        XCTAssertEqual(up.midi.leds[1]?.first?.g, 0)
+        // Held: PFL at 0.4 s, and no mute on release.
+        _ = driver.receive([0x90, 2, 0x7F], hub: &hub, now: 2)  // push Gtr
+        XCTAssertEqual(driver.tick(hub: &hub, now: 2.3).core.messages, [])
+        let pfl = driver.tick(hub: &hub, now: 2.45)
         XCTAssertEqual(pfl.core.messages.map(\.address), ["/input/3/pfl"])
         XCTAssertEqual(pfl.midi.lastTitle, "Gtr PFL ON      ")
         XCTAssertEqual(pfl.midi.rings[2]?.amount, 8192)
-        XCTAssertEqual(pfl.midi.leds[2]?.count, 1, "one white LED")
-        XCTAssertEqual(pfl.midi.leds[2]?.first?.g, 127)
-        // It runs round the ring.
-        let later = driver.tick(hub: &hub, now: 2.2)
+        XCTAssertEqual(pfl.midi.leds[2]?.map(\.g), pfl.midi.leds[2]?.map { _ in 127 }, "a white LED")
+        XCTAssertNil(driver.tick(hub: &hub, now: 4).midi.lastTitle, "the title stays while held")
+        XCTAssertEqual(driver.title(hub: hub), "Gtr PFL ON")
+        let release = driver.receive([0x80, 2, 0x00], hub: &hub, now: 5)
+        XCTAssertEqual(release.core.messages, [], "no mute")
+        _ = driver.tick(hub: &hub, now: 6.1)
+        XCTAssertEqual(driver.title(hub: hub), "LEVEL           ", "a second after the release")
+        // The PFL's LED runs round the ring.
+        let later = driver.tick(hub: &hub, now: 6.2)
         XCTAssertEqual(later.midi.leds.keys.sorted(), [2], "only the PFL ring is redrawn")
-        XCTAssertEqual(later.midi.leds[2]?.first?.index, Int((2.2 / E16Driver.rotationStep).rounded(.down)) % 16)
-        let release = driver.receive([0x90, 16, 0x00], hub: &hub, now: 2.5)
-        XCTAssertEqual(release.midi, [], "the overlay still shows")
-        XCTAssertEqual(driver.tick(hub: &hub, now: 3.2).midi.lastTitle, "LEVEL           ")
-        // Shift held past the page hold after a push does not change the page; only the PFL's
-        // running LED is redrawn.
-        let quiet = driver.tick(hub: &hub, now: 4)
-        XCTAssertNil(quiet.midi.lastTitle)
-        XCTAssertEqual(quiet.midi.leds.keys.sorted(), [2])
-        // A second push turns mute off.
-        let unmute = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 5)
+        XCTAssertEqual(later.midi.leds[2]?.first?.index, Int((6.2 / E16Driver.rotationStep).rounded(.down)) % 16)
+        // A second short push turns mute off.
+        _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 7)
+        let unmute = driver.receive([0x80, 1, 0x00], hub: &hub, now: 7.1)
         XCTAssertEqual(unmute.core.messages.first?.arguments.first, .float(0))
         XCTAssertEqual(unmute.midi.lastTitle, "Vox MUTE OFF    ")
-        XCTAssertEqual(unmute.midi.rings[1]?.amount, 8192, "the fill again")
         XCTAssertEqual(unmute.midi.leds[1], nil)
     }
 
-    func testShiftTurnStepsTheFunction() {
+    func testShiftPageButtons() {
         var (driver, hub, _) = connected()
-        _ = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
-        var step = driver.receive([0xB0, 1, 0x03], hub: &hub, now: 1.1)
-        XCTAssertEqual(driver.function, .level, "three units are not enough")
-        XCTAssertEqual(step.core.messages, [])
-        step = driver.receive([0xB0, 1, 0x03], hub: &hub, now: 1.2)
+        let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
+        XCTAssertEqual(shift.midi.lastTitle, "LEVEL           ", "the title stays")
+        XCTAssertEqual(shift.midi.lastLabels, ["LEVL", "PAN ", "    ", "    ", "<OUT", "OUT>", "    ", "    ",
+                                               "    ", "    ", "    ", "    ", "    ", "    ", "    ", "    "],
+                       "one page: no page buttons")
+        let rings = shift.midi.rings
+        XCTAssertEqual(rings[0]?.g, 127, "LEVEL, chosen: bright teal")
+        XCTAssertEqual(rings[0]?.amount, 16383)
+        XCTAssertEqual(rings[1]?.g, 31, "PAN: dim")
+        XCTAssertEqual(rings[4]?.r, 31, "previous output: dim magenta")
+        XCTAssertEqual(rings[2]?.amount, 0, "a blank is dark")
+        XCTAssertNil(rings[14], "an empty strip's ring was dark already")
+        // A turn does nothing on the Shift page.
+        XCTAssertEqual(driver.receive([0xB0, 1, 0x04], hub: &hub, now: 1.1).core.messages, [])
+        // PAN.
+        let pan = driver.receive([0x90, 1, 0x7F, 0x80, 1, 0x00], hub: &hub, now: 1.2)
         XCTAssertEqual(driver.function, .pan)
-        XCTAssertEqual(step.midi.lastTitle, "PAN             ", "said at once")
-        XCTAssertEqual(step.midi.rings[0]?.bipolar, true)
-        XCTAssertEqual(step.midi.rings[0]?.amount, 8192, "centered")
-        step = driver.receive([0xB0, 1, 0x08], hub: &hub, now: 1.3)
+        XCTAssertEqual(pan.midi.lastTitle, "PAN             ", "said at once")
+        XCTAssertEqual(pan.midi.rings[1]?.g, 127, "now PAN is bright")
+        XCTAssertEqual(pan.midi.rings[0]?.g, 31)
+        XCTAssertEqual(pan.core.messages, [], "no mute from a button")
+        // Next output: the only send, Phones.
+        let out = driver.receive([0x90, 5, 0x7F, 0x80, 5, 0x00], hub: &hub, now: 1.3)
         XCTAssertEqual(driver.function, .send(0))
-        step = driver.receive([0xB0, 1, 0x08], hub: &hub, now: 1.4)
-        XCTAssertEqual(driver.function, .send(0), "no further send")
-        XCTAssertEqual(driver.title(hub: hub), "> PHONES")
+        XCTAssertEqual(out.midi.lastTitle, "> PHONES        ")
+        XCTAssertEqual(out.midi.rings[5]?.amount, 0, "no next output: dark")
+        XCTAssertEqual(out.midi.rings[4]?.amount, 0, "no previous output either: dark")
+        XCTAssertEqual(driver.receive([0x90, 5, 0x7F, 0x80, 5, 0x00], hub: &hub, now: 1.4).core.messages, [])
+        XCTAssertEqual(driver.function, .send(0), "stays at the last output")
+        // Release: the strips come back, in the send's color (white, Phones is white) and values.
         let release = driver.receive([0x90, 16, 0x00], hub: &hub, now: 2)
-        XCTAssertNil(release.midi.lastTitle, "already shown")
-        _ = driver.tick(hub: &hub, now: 3)
-        XCTAssertEqual(driver.title(hub: hub), "> PHONES        ", "and kept after the overlay")
+        XCTAssertEqual(release.midi.lastLabels?.prefix(2), ["Keys", "Vox "])
+        XCTAssertEqual(release.midi.rings[0]?.r, 127)
+        XCTAssertEqual(release.midi.rings[0]?.amount, 8192)
+        XCTAssertEqual(release.midi.lastTitle, "> PHONES        ")
         // A turn now sets the send.
         let turn = driver.receive([0xB0, 1, 0x01], hub: &hub, now: 3)
         XCTAssertEqual(turn.core.messages.map(\.address), ["/mix/in/0/2/faderlin"])
-        // Back toward level.
-        _ = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 4)
-        _ = driver.receive([0xB0, 1, 0x78], hub: &hub, now: 4.1)
-        XCTAssertEqual(driver.function, .pan)
-        _ = driver.receive([0xB0, 1, 0x78], hub: &hub, now: 4.2)
+        // Back to LEVEL.
+        _ = driver.receive([0x90, 16, 0x7F, 0x90, 0, 0x7F, 0x80, 0, 0x00, 0x90, 16, 0x00], hub: &hub, now: 4)
         XCTAssertEqual(driver.function, .level)
-        _ = driver.receive([0xB0, 1, 0x78], hub: &hub, now: 4.3)
-        XCTAssertEqual(driver.function, .level)
-        _ = driver.receive([0x90, 16, 0x00], hub: &hub, now: 5)
-        XCTAssertEqual(driver.title(hub: hub), "LEVEL", "the overlay, until it ends")
-        XCTAssertEqual(driver.tick(hub: &hub, now: 7).midi, [], "Shift was used: no page change")
     }
 
     func testPanTurn() {
         var (driver, hub, _) = connected()
-        _ = driver.receive([0x90, 16, 0x7F, 0xB0, 1, 0x06, 0x90, 16, 0x00], hub: &hub, now: 1)
+        _ = driver.receive([0x90, 16, 0x7F, 0x90, 1, 0x7F, 0x80, 1, 0x00, 0x90, 16, 0x00], hub: &hub, now: 1)
         XCTAssertEqual(driver.function, .pan)
         let step = driver.receive([0xB0, 1, 0x02], hub: &hub, now: 2)
         XCTAssertEqual(step.core.messages.map(\.address), ["/mix/in/0/0/balpan"])
         XCTAssertEqual(step.core.messages.first?.arguments.first, .float(Float(2 * E16Driver.panStep * 2)))
         XCTAssertEqual(step.midi.lastTitle, "Keys R2         ")
+        XCTAssertEqual(step.midi.rings[0]?.bipolar, true)
     }
 
-    func testShiftHeldGoesToTheNextPage() {
+    func testPageButtons() {
         var hub = loadedHub()
         // Twenty sources: inputs 5–20 join.
         for number in 4..<20 {
@@ -270,18 +281,19 @@ final class E16DriverTests: XCTestCase {
         let answer = driver.receive(ack, hub: &hub, now: 0)
         XCTAssertEqual(answer.midi.lastTitle, "LEVEL        1/2")
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
-        XCTAssertEqual(shift.midi.lastTitle, "PUSH=PFL TURN=FN")
-        XCTAssertEqual(driver.tick(hub: &hub, now: 1.5).midi, [], "not held long enough")
-        let page = driver.tick(hub: &hub, now: 2.1)
-        XCTAssertEqual(page.midi.lastTitle, "PAGE 2 OF 2     ")
-        XCTAssertEqual(page.midi.lastLabels?.prefix(4), ["In18", "In19", "In20", "PB 1"], "In 18, In 19, In 20, PB 1/2")
-        XCTAssertEqual(driver.tick(hub: &hub, now: 3.5).midi.lastTitle, "PUSH=PFL TURN=FN", "the overlay ended; once per hold")
-        XCTAssertEqual(driver.tick(hub: &hub, now: 3.9).midi, [])
-        let released = driver.receive([0x90, 16, 0x00], hub: &hub, now: 4)
-        XCTAssertEqual(released.midi.lastTitle, "LEVEL        2/2")
-        // Wraps to the first page.
-        _ = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 5)
-        XCTAssertEqual(driver.tick(hub: &hub, now: 6.1).midi.lastTitle, "PAGE 1 OF 2     ")
+        XCTAssertEqual(shift.midi.lastLabels?[14], "    ", "no previous page")
+        XCTAssertEqual(shift.midi.lastLabels?[15], "PG> ")
+        XCTAssertEqual(shift.midi.rings[15]?.g, 31, "lime, dim")
+        let next = driver.receive([0x90, 15, 0x7F, 0x80, 15, 0x00], hub: &hub, now: 1.5)
+        XCTAssertEqual(next.midi.lastTitle, "LEVEL        2/2")
+        XCTAssertEqual(next.midi.lastLabels?[14], "<PG ")
+        XCTAssertEqual(next.midi.lastLabels?[15], "    ", "no next page")
+        XCTAssertEqual(driver.receive([0x90, 15, 0x7F, 0x80, 15, 0x00], hub: &hub, now: 1.6).midi, [], "nothing past the end")
+        let release = driver.receive([0x90, 16, 0x00], hub: &hub, now: 2)
+        XCTAssertEqual(release.midi.lastLabels?.prefix(4), ["In18", "In19", "In20", "PB 1"], "In 18, In 19, In 20, PB 1/2")
+        _ = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 3)
+        let back = driver.receive([0x90, 14, 0x7F, 0x80, 14, 0x00], hub: &hub, now: 3.5)
+        XCTAssertEqual(back.midi.lastTitle, "LEVEL        1/2")
     }
 
     func testTotalMixChangesRedrawOnlyWhatChanged() {
@@ -299,7 +311,7 @@ final class E16DriverTests: XCTestCase {
 
     func testMuteFlashesWhileMuteMasterIsOff() {
         var (driver, hub, _) = connected()
-        _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 0.1)
+        _ = driver.receive([0x90, 1, 0x7F, 0x80, 1, 0x00], hub: &hub, now: 0.1)
         let output = hub.handle(.other(path: "globalmute", value: .number(0)), now: 0.2)
         _ = driver.take(output, hub: &hub, now: 0.2)
         let half = driver.tick(hub: &hub, now: 0.6)
@@ -307,17 +319,6 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(half.midi.leds[1], nil, "the marks are off")
         let back = driver.tick(hub: &hub, now: 1.1)
         XCTAssertEqual(back.midi.leds[1]?.map(\.index), [0, 7, 8, 15], "and on again")
-    }
-
-    func testAPushsMessageStaysWhileTheEncoderIsHeld() {
-        var (driver, hub, _) = connected()
-        let down = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 1)
-        XCTAssertEqual(down.midi.lastTitle, "Vox MUTE ON     ")
-        XCTAssertNil(driver.tick(hub: &hub, now: 5).midi.lastTitle, "still held: still shown")
-        XCTAssertEqual(driver.title(hub: hub), "Vox MUTE ON")
-        _ = driver.receive([0x80, 1, 0x00], hub: &hub, now: 6)
-        XCTAssertNil(driver.tick(hub: &hub, now: 6.5).midi.lastTitle)
-        XCTAssertEqual(driver.tick(hub: &hub, now: 7.1).midi.lastTitle, "LEVEL           ", "a second after the release")
     }
 
     func testLabelsLoseSpacesBeforeTheirEnd() {
@@ -329,12 +330,4 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(E16Driver.fit("Mic 1/2", 8), "Mic 1/2")
     }
 
-    func testFunctionStepping() {
-        XCTAssertEqual(E16Driver.function(after: .level, by: 1, sendCount: 2), .pan)
-        XCTAssertEqual(E16Driver.function(after: .pan, by: 1, sendCount: 2), .send(0))
-        XCTAssertEqual(E16Driver.function(after: .send(1), by: 1, sendCount: 2), .send(1))
-        XCTAssertEqual(E16Driver.function(after: .send(0), by: -1, sendCount: 2), .pan)
-        XCTAssertEqual(E16Driver.function(after: .level, by: -1, sendCount: 2), .level)
-        XCTAssertEqual(E16Driver.function(after: .pan, by: 1, sendCount: 0), .pan)
-    }
 }

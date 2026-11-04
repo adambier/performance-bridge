@@ -33,13 +33,16 @@ public struct E16Step: Equatable, Sendable {
 ///
 /// **Layout** (decided with Adam, 2026-11-04; docs/OXI-E16.md, section 6). Sixteen strips, one
 /// encoder each, always the sources:
-/// - turn: the strip's level in the home submix, or, after Shift + turn has stepped the
-///   surface's function, its pan or its send to one output (`function`);
-/// - push: mute; Shift + push: PFL;
-/// - Shift held `pageHold` seconds with nothing else pressed or turned: the next page of sixteen;
-/// - the ring shows the strip's color, filled to its level (bipolar for a pan), orange while
-///   muted and yellow while on PFL; the screen's title shows the function and the page, and
-///   for a moment the value of a turned encoder or the result of a press.
+/// - turn: the strip's level in the home submix, or its pan or its send to one output, as the
+///   surface's function is set (`function`);
+/// - a short push (under `pflHold`): mute, on release; a push held `pflHold`: PFL;
+/// - with Shift held the encoders are buttons (`ShiftButton`, as OXI's own firmware does it):
+///   LEVEL and PAN, the previous and next send output, the previous and next page of sixteen
+///   strips; the screen names them and the rings light the ones that do something;
+/// - the ring shows the strip's color, filled to its level (bipolar for a pan), with red marks
+///   while muted and a running white LED while on PFL (`look`); the screen's title shows the
+///   function and the page, and for a moment the value of a turned encoder or the result of a
+///   push.
 ///
 /// **Layers.** The hub gives a surface one switch per strip, and the E16's push is mute or PFL,
 /// so the driver adds two hub surfaces: the main one (the knob's function, with mute) and a PFL
@@ -63,13 +66,37 @@ public struct E16Driver: Sendable {
     public static let stripCount = 16
     /// How often ENTER REMOTE MODE is sent again until the device answers, in seconds.
     public static let enterInterval: Double = 1
-    /// How long Shift must be held, with nothing else pressed or turned, to go to the next page,
-    /// in seconds (Adam, 2026-11-04: with sixteen strips a page change is rare, so a long hold is
-    /// safer than a tap).
-    public static let pageHold: Double = 1
-    /// How much of a Shift + turn, in the device's own units, steps the function once: the
-    /// encoders have no detents, so a small turn must not step twice.
-    public static let functionStepUnits = 6
+    /// How long a push must be held to be PFL rather than mute, in seconds. A mute acts when a
+    /// shorter push is released (Adam, 2026-11-04: Shift + push went to the button page).
+    public static let pflHold: Double = 0.4
+
+    /// What an encoder does as a button while Shift is held.
+    public enum ShiftButton: Hashable, Sendable {
+        /// The encoders set levels.
+        case level
+        /// The encoders set pans.
+        case pan
+        /// The encoders set sends to the previous output, or the next.
+        case output(Int)
+        /// The previous page of strips, or the next.
+        case page(Int)
+
+        /// The encoder each button is on: LEVEL and PAN on the first row, the outputs on the
+        /// second, the pages at the end of the last (Adam, 2026-11-04).
+        public static let layout: [Int: ShiftButton] = [
+            0: .level, 1: .pan, 4: .output(-1), 5: .output(1), 14: .page(-1), 15: .page(1),
+        ]
+
+        /// The label on the screen.
+        public var label: String {
+            switch self {
+            case .level: return "LEVL"
+            case .pan: return "PAN"
+            case .output(let d): return d < 0 ? "<OUT" : "OUT>"
+            case .page(let d): return d < 0 ? "<PG" : "PG>"
+            }
+        }
+    }
     /// How far one unit of a turn moves a level or send, as a fraction of the fader's travel. The
     /// device sends 1–8 units a message with its own acceleration.
     public static let levelStep: Double = 0.0025
@@ -85,13 +112,11 @@ public struct E16Driver: Sendable {
     private var connected = false
     private var lastEnter: Double?
     private var shiftHeld = false
-    private var shiftDownAt: Double?
-    private var shiftUsed = false
-    private var functionTurn = 0
     private var blinkLit = true
     private var overlay: (text: String, until: Double)?
-    /// The encoder held down, if any: its overlay stays until it is released (Adam, 2026-11-04).
-    private var heldEncoder: Int?
+    /// The encoder held down, if any, since when, and whether the hold has already toggled PFL.
+    /// Its overlay stays until it is released (Adam, 2026-11-04).
+    private var held: (encoder: Int, since: Double, didPFL: Bool)?
     private var page = (first: 0, count: 0)
     private var infos: [StripInfo?] = Array(repeating: nil, count: E16Driver.stripCount)
     private var knobValues: [Double?] = Array(repeating: nil, count: E16Driver.stripCount)
@@ -146,8 +171,8 @@ public struct E16Driver: Sendable {
         return E16Outgoing.exitRemoteMode
     }
 
-    /// What is due as time passes: ENTER asked again while the device hasn't answered, a Shift
-    /// hold turning into a page change, an overlay ending, and flashing mutes.
+    /// What is due as time passes: ENTER asked again while the device hasn't answered, a push
+    /// held long enough for PFL, an overlay ending, flashing mutes, and running PFL LEDs.
     public mutating func tick(hub: inout SurfaceHub, now: Double) -> E16Step {
         var step = E16Step()
         if !connected, let lastEnter, now - lastEnter >= Self.enterInterval {
@@ -155,9 +180,9 @@ public struct E16Driver: Sendable {
             step.midi += E16Outgoing.enterRemoteMode
         }
         guard connected else { return step }
-        if shiftHeld, !shiftUsed, let down = shiftDownAt, now - down >= Self.pageHold {
-            shiftUsed = true
-            nextPage(hub: &hub, now: now, into: &step)
+        if let held, !held.didPFL, now - held.since >= Self.pflHold {
+            self.held = (held.encoder, held.since, true)
+            pfl(held.encoder, hub: &hub, now: now, into: &step)
         }
         if let overlay, now >= overlay.until {
             self.overlay = nil
@@ -200,28 +225,25 @@ public struct E16Driver: Sendable {
         }
         switch event {
         case .turned(let encoder, let delta):
-            guard (0..<Self.stripCount).contains(encoder) else { return }
-            if shiftHeld {
-                shiftUsed = true
-                stepFunction(by: delta, hub: &hub, now: now, into: &step)
-            } else {
-                turn(encoder, by: delta, hub: &hub, now: now, into: &step)
-            }
+            guard (0..<Self.stripCount).contains(encoder), !shiftHeld else { return }
+            turn(encoder, by: delta, hub: &hub, now: now, into: &step)
         case .pushed(let encoder, true):
             guard (0..<Self.stripCount).contains(encoder) else { return }
-            if shiftHeld { shiftUsed = true }
-            heldEncoder = encoder
-            push(encoder, pfl: shiftHeld, hub: &hub, now: now, into: &step)
+            if shiftHeld {
+                if let button = ShiftButton.layout[encoder] { press(button, hub: &hub, now: now, into: &step) }
+            } else {
+                held = (encoder, now, false)
+            }
         case .pushed(let encoder, false):
-            guard heldEncoder == encoder else { return }
-            heldEncoder = nil
+            guard let held, held.encoder == encoder else { return }
+            self.held = nil
+            if !held.didPFL, !shiftHeld { mute(encoder, hub: &hub, now: now, into: &step) }
             if let overlay, overlay.until == .infinity { self.overlay = (overlay.text, now + Self.overlayTime) }
         case .shift(let down):
             shiftHeld = down
-            shiftDownAt = down ? now : nil
-            shiftUsed = false
-            functionTurn = 0
-            step.midi += drawLabels(hub: hub)
+            held = nil
+            overlay = nil
+            step.midi += drawLabels(hub: hub) + drawRings(hub: hub)
         default:
             break
         }
@@ -231,11 +253,8 @@ public struct E16Driver: Sendable {
         connected = true
         lastEnter = nil
         shiftHeld = false
-        shiftDownAt = nil
-        shiftUsed = false
-        functionTurn = 0
         overlay = nil
-        heldEncoder = nil
+        held = nil
         blinkLit = true
         sentLabels = nil
         sentRings = Array(repeating: nil, count: Self.stripCount)
@@ -273,67 +292,76 @@ public struct E16Driver: Sendable {
         }
     }
 
-    /// A push: toggles the strip's mute, or its PFL with Shift, and says so on the screen.
-    private mutating func push(_ encoder: Int, pfl: Bool, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
-        let layer: Layer = pfl ? .pfl : .main
-        take(hub.switchPressed(id(layer), strip: encoder, now: now), hub: hub, into: &step)
+    /// A short push released: toggles the strip's mute and says so on the screen.
+    private mutating func mute(_ encoder: Int, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
+        take(hub.switchPressed(id(.main), strip: encoder, now: now), hub: hub, into: &step)
         guard let info = infos[encoder] else { return }
-        if !pfl, hub.mirror.muteMaster == false {
+        if hub.mirror.muteMaster == false {
             // A mute does nothing in the audio while TotalMix FX's Mute Master is off: say so.
             show("MUTE MASTER OFF", now: now, into: &step, hub: hub)
         } else {
-            let on = pfl ? pflOn[encoder] : muteOn[encoder]
-            show(Self.fit(info.name, 8) + " " + (pfl ? "PFL" : "MUTE") + (on ? " ON" : " OFF"), now: now, into: &step, hub: hub)
+            show(Self.fit(info.name, 7) + " MUTE" + (muteOn[encoder] ? " ON" : " OFF"), now: now, into: &step, hub: hub)
         }
     }
 
-    /// Shift + turn: steps the surface's function once per `functionStepUnits` units, level ↔ pan
-    /// ↔ each send in order.
-    private mutating func stepFunction(by delta: Int, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
-        functionTurn += delta
-        while abs(functionTurn) >= Self.functionStepUnits {
-            let direction = functionTurn > 0 ? 1 : -1
-            functionTurn -= direction * Self.functionStepUnits
-            let next = Self.function(after: function, by: direction, sendCount: hub.sendTargets.count)
-            guard next != function else { functionTurn = 0; return }
-            function = next
-            setModes(first: page.first, hub: &hub, now: now, into: &step)
-            // Said at once, not only when Shift is released (Adam, 2026-11-04).
-            show(functionName(hub: hub), now: now, into: &step, hub: hub)
-        }
-        step.midi += drawLabels(hub: hub)
+    /// A push held `pflHold`: toggles the strip's PFL and says so on the screen.
+    private mutating func pfl(_ encoder: Int, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
+        take(hub.switchPressed(id(.pfl), strip: encoder, now: now), hub: hub, into: &step)
+        guard let info = infos[encoder] else { return }
+        show(Self.fit(info.name, 8) + " PFL" + (pflOn[encoder] ? " ON" : " OFF"), now: now, into: &step, hub: hub)
     }
 
-    /// The function `direction` (±1) steps from `function`: level, pan, then each send in
-    /// order; the same function at either end.
-    static func function(after function: KnobFunction, by direction: Int, sendCount: Int) -> KnobFunction {
-        let index: Int
-        switch function {
-        case .level: index = 0
-        case .pan: index = 1
-        case .send(let n): index = 2 + n
-        }
-        let next = min(max(index + direction, 0), 1 + max(sendCount, 0))
-        switch next {
-        case 0: return .level
-        case 1: return .pan
-        default: return .send(next - 2)
+    /// A button on the Shift page pressed.
+    private mutating func press(_ button: ShiftButton, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
+        switch button {
+        case .level: setFunction(.level, hub: &hub, now: now, into: &step)
+        case .pan: setFunction(.pan, hub: &hub, now: now, into: &step)
+        case .output(let direction):
+            let count = hub.sendTargets.count
+            guard count > 0 else { return }
+            let current: Int? = { if case .send(let n) = function { return n } else { return nil } }()
+            let next = current.map { $0 + direction } ?? (direction > 0 ? 0 : count - 1)
+            guard (0..<count).contains(next) else { return }
+            setFunction(.send(next), hub: &hub, now: now, into: &step)
+        case .page(let direction):
+            movePage(by: direction, hub: &hub, now: now, into: &step)
         }
     }
 
-    /// Goes to the next page of sixteen strips, or back to the first past the end, and shows the
-    /// page in the title.
-    private mutating func nextPage(hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
+    private mutating func setFunction(_ next: KnobFunction, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
+        guard next != function else { return }
+        function = next
+        setModes(first: page.first, hub: &hub, now: now, into: &step)
+        step.midi += drawLabels(hub: hub) + drawRings(hub: hub)
+    }
+
+    /// Whether a Shift button does something now: an output or page beyond the ends does not.
+    func isAvailable(_ button: ShiftButton, hub: SurfaceHub) -> Bool {
+        switch button {
+        case .level, .pan: return true
+        case .output(let direction):
+            let count = hub.sendTargets.count
+            guard count > 0 else { return false }
+            guard case .send(let n) = function else { return true }
+            return (0..<count).contains(n + direction)
+        case .page(let direction):
+            let current = page.first / Self.stripCount
+            return (0..<pageCount).contains(current + direction)
+        }
+    }
+
+    /// How many pages of strips there are.
+    var pageCount: Int { max(1, Int((Double(page.count) / Double(Self.stripCount)).rounded(.up))) }
+
+    /// Moves both layers a page (`direction` ±1), staying within the view.
+    private mutating func movePage(by direction: Int, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
         let primary = id(.main)
-        let pageCount = max(1, Int((Double(page.count) / Double(Self.stripCount)).rounded(.up)))
-        let current = page.first / Self.stripCount
-        let next = (current + 1) % pageCount
-        var output = hub.setMode(primary, mode(for: .main, first: next * Self.stripCount), now: now)
+        var output = hub.page(primary, by: direction, now: now)
         if case .strips(_, let first, _, _)? = hub.mode(of: primary) {
             output.append(hub.setMode(id(.pfl), mode(for: .pfl, first: first), now: now))
         }
         take(output, hub: hub, into: &step)
-        show("PAGE \(page.first / Self.stripCount + 1) OF \(pageCount)", now: now, into: &step, hub: hub)
+        step.midi += drawLabels(hub: hub) + drawRings(hub: hub)
     }
 
     // MARK: - Modes
@@ -415,25 +443,28 @@ public struct E16Driver: Sendable {
     /// Shows `text` in the title for `overlayTime`, or while an encoder is held and `overlayTime`
     /// after.
     private mutating func show(_ text: String, now: Double, into step: inout E16Step, hub: SurfaceHub) {
-        overlay = (text, heldEncoder == nil ? now + Self.overlayTime : .infinity)
+        overlay = (text, held == nil ? now + Self.overlayTime : .infinity)
         step.midi += drawLabels(hub: hub)
     }
 
     /// The screen: the title and the sixteen labels, sent only when they change.
     private mutating func drawLabels(hub: SurfaceHub) -> [UInt8] {
         guard connected else { return [] }
-        let bytes = E16Outgoing.labels(title: title(hub: hub), labels: infos.map { Self.fit($0?.name ?? "", 4) })
+        let labels: [String] = (0..<Self.stripCount).map { index in
+            if shiftHeld { return ShiftButton.layout[index].map { isAvailable($0, hub: hub) ? $0.label : "" } ?? "" }
+            return Self.fit(infos[index]?.name ?? "", 4)
+        }
+        let bytes = E16Outgoing.labels(title: title(hub: hub), labels: labels)
         guard bytes != sentLabels else { return [] }
         sentLabels = bytes
         return bytes
     }
 
-    /// The title: an overlay while one shows; with Shift held, what Shift does; else the
-    /// function ("LEVEL", "PAN", "> PHONES 1") and, with more than one page, the page.
+    /// The title: an overlay while one shows; else the function ("LEVEL", "PAN", "> PHONES 1")
+    /// and, with more than one page, the page. The same with Shift held, so the choice made
+    /// there shows at once and stays (Adam, 2026-11-04).
     public func title(hub: SurfaceHub) -> String {
         if let overlay { return overlay.text }
-        if shiftHeld { return "PUSH=PFL TURN=FN" }
-        let pageCount = max(1, Int((Double(page.count) / Double(Self.stripCount)).rounded(.up)))
         let pageText = pageCount > 1 ? " \(page.first / Self.stripCount + 1)/\(pageCount)" : ""
         let width = E16Outgoing.titleLength - pageText.count
         return Self.fit(functionName(hub: hub), width).padding(toLength: width, withPad: " ", startingAt: 0) + pageText
@@ -483,6 +514,7 @@ public struct E16Driver: Sendable {
     /// in every other half second while Mute Master is off; a PFL lights one white LED that
     /// runs round the ring (`rotationStep` a step), the state to notice on stage.
     func look(_ index: Int, hub: SurfaceHub) -> RingLook {
+        if shiftHeld { return RingLook(ring: buttonRing(index, hub: hub)) }
         guard let info = infos[index], let value = knobValues[index] else { return RingLook(ring: .off) }
         var rgb = Self.rgb(for: info)
         if case .send(let n) = function, hub.sendTargets.indices.contains(n) {
@@ -498,6 +530,31 @@ public struct E16Driver: Sendable {
         }
         return look
     }
+
+    /// A ring on the Shift page: full, in the button group's color (`buttonColors`: colors
+    /// TotalMix FX doesn't use for channels, so the page can't be mistaken for one of them;
+    /// Adam, 2026-11-04), bright for the function in use and dim otherwise; dark for a blank or
+    /// a button that does nothing now.
+    func buttonRing(_ index: Int, hub: SurfaceHub) -> E16Ring {
+        guard let button = ShiftButton.layout[index], isAvailable(button, hub: hub) else { return .off }
+        let rgb: (UInt8, UInt8, UInt8)
+        var chosen = false
+        switch button {
+        case .level: rgb = Self.buttonColors.function; chosen = function == .level
+        case .pan: rgb = Self.buttonColors.function; chosen = function == .pan
+        case .output:
+            rgb = Self.buttonColors.output
+            if case .send = function { chosen = true }
+        case .page: rgb = Self.buttonColors.page
+        }
+        let scale: Double = chosen ? 1 : 0.25
+        return E16Ring(red: UInt8(Double(rgb.0) * scale), green: UInt8(Double(rgb.1) * scale), blue: UInt8(Double(rgb.2) * scale), amount: 1)
+    }
+
+    /// The Shift page's colors: teal for LEVEL and PAN, magenta for the outputs, lime for the
+    /// pages; none of TotalMix FX's eight.
+    public static let buttonColors: (function: (UInt8, UInt8, UInt8), output: (UInt8, UInt8, UInt8), page: (UInt8, UInt8, UInt8))
+        = ((0, 127, 110), (127, 0, 100), (100, 127, 0))
 
     /// The LEDs a mute lights: the pair at the ring's bottom gap, where the eye lands looking at
     /// the device from below, and the pair at the top. No single LED sits at 9 or 3 o'clock on
