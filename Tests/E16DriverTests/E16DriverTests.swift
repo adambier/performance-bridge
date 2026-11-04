@@ -198,7 +198,7 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(driver.tick(hub: &hub, now: 2.95).midi.rings[2]?.amount, Int((0.9 * 16383).rounded()))
         let pfl = driver.tick(hub: &hub, now: 3.05)
         XCTAssertEqual(pfl.core.messages.map(\.address), ["/input/3/pfl"])
-        XCTAssertEqual(pfl.midi.lastTitle, "Gtr PFL ON      ")
+        XCTAssertEqual(driver.title(hub: hub), "Gtr PFL ON", "the same words the countdown showed")
         XCTAssertEqual(pfl.midi.rings[2]?.amount, 0, "the arc is gone and the fill stays dark")
         XCTAssertEqual(pfl.midi.leds[2]?.map(\.index), [1, 3, 5, 7], "every other LED up to the level, white")
         XCTAssertEqual(pfl.midi.leds[2]?.first?.g, 127)
@@ -216,7 +216,7 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(reverse.midi.rings[2]?.amount, Int((0.5 * 16383).rounded()), "half way down")
         let off = driver.tick(hub: &hub, now: 8.05)
         XCTAssertEqual(off.core.messages.first?.arguments.first, .float(0))
-        XCTAssertEqual(off.midi.lastTitle, "Gtr PFL OFF     ")
+        XCTAssertEqual(driver.title(hub: hub), "Gtr PFL OFF")
         _ = driver.receive([0x80, 2, 0x00], hub: &hub, now: 8.1)
         // A push let go during the countdown is a mute, and the countdown is gone.
         _ = driver.receive([0x90, 3, 0x7F], hub: &hub, now: 8)  // push Tracks
