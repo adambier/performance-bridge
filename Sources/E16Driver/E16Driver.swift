@@ -37,8 +37,9 @@ public struct E16Step: Equatable, Sendable {
 ///   surface's function is set (`function`);
 /// - a short push (under `pflHold`): mute, on release; a push held `pflHold`: PFL;
 /// - with Shift held the encoders are buttons (`ShiftButton`, as OXI's own firmware does it):
-///   LEVEL and PAN, the previous and next send output, the previous and next page of sixteen
-///   strips; the screen names them and the rings light the ones that do something;
+///   LEVEL and PAN (encoders 1 and 2), the previous and next send output (11 and 12), the
+///   previous and next page of sixteen strips (15 and 16); the screen names them and the rings
+///   light the ones that do something;
 /// - the ring shows the strip's color, filled to its level (bipolar for a pan), with red marks
 ///   while muted and a running white LED while on PFL (`look`); the screen's title shows the
 ///   function and the page, and for a moment the value of a turned encoder or the result of a
@@ -81,10 +82,10 @@ public struct E16Driver: Sendable {
         /// The previous page of strips, or the next.
         case page(Int)
 
-        /// The encoder each button is on: LEVEL and PAN on the first row, the outputs on the
-        /// second, the pages at the end of the last (Adam, 2026-11-04).
+        /// The encoder each button is on: LEVEL and PAN on the first row, the outputs at the
+        /// end of the third, the pages at the end of the last (Adam, 2026-11-04).
         public static let layout: [Int: ShiftButton] = [
-            0: .level, 1: .pan, 4: .output(-1), 5: .output(1), 14: .page(-1), 15: .page(1),
+            0: .level, 1: .pan, 10: .output(-1), 11: .output(1), 14: .page(-1), 15: .page(1),
         ]
 
         /// The label on the screen.
@@ -117,6 +118,9 @@ public struct E16Driver: Sendable {
     /// The encoder held down, if any, since when, and whether the hold has already toggled PFL.
     /// Its overlay stays until it is released (Adam, 2026-11-04).
     private var held: (encoder: Int, since: Double, didPFL: Bool)?
+    /// The Shift-page button held down, if any: its ring is full bright while it is (Adam,
+    /// 2026-11-04).
+    private var pressedButton: Int?
     private var page = (first: 0, count: 0)
     private var infos: [StripInfo?] = Array(repeating: nil, count: E16Driver.stripCount)
     private var knobValues: [Double?] = Array(repeating: nil, count: E16Driver.stripCount)
@@ -230,11 +234,17 @@ public struct E16Driver: Sendable {
         case .pushed(let encoder, true):
             guard (0..<Self.stripCount).contains(encoder) else { return }
             if shiftHeld {
+                pressedButton = encoder
                 if let button = ShiftButton.layout[encoder] { press(button, hub: &hub, now: now, into: &step) }
+                step.midi += drawRing(encoder, hub: hub)
             } else {
                 held = (encoder, now, false)
             }
         case .pushed(let encoder, false):
+            if pressedButton == encoder {
+                pressedButton = nil
+                step.midi += drawRing(encoder, hub: hub)
+            }
             guard let held, held.encoder == encoder else { return }
             self.held = nil
             if !held.didPFL, !shiftHeld { mute(encoder, hub: &hub, now: now, into: &step) }
@@ -242,6 +252,7 @@ public struct E16Driver: Sendable {
         case .shift(let down):
             shiftHeld = down
             held = nil
+            pressedButton = nil
             overlay = nil
             step.midi += drawLabels(hub: hub) + drawRings(hub: hub)
         default:
@@ -255,6 +266,7 @@ public struct E16Driver: Sendable {
         shiftHeld = false
         overlay = nil
         held = nil
+        pressedButton = nil
         blinkLit = true
         sentLabels = nil
         sentRings = Array(repeating: nil, count: Self.stripCount)
@@ -451,7 +463,7 @@ public struct E16Driver: Sendable {
     private mutating func drawLabels(hub: SurfaceHub) -> [UInt8] {
         guard connected else { return [] }
         let labels: [String] = (0..<Self.stripCount).map { index in
-            if shiftHeld { return ShiftButton.layout[index].map { isAvailable($0, hub: hub) ? $0.label : "" } ?? "" }
+            if shiftHeld { return ShiftButton.layout[index]?.label ?? "" }
             return Self.fit(infos[index]?.name ?? "", 4)
         }
         let bytes = E16Outgoing.labels(title: title(hub: hub), labels: labels)
@@ -533,10 +545,11 @@ public struct E16Driver: Sendable {
 
     /// A ring on the Shift page: full, in the button group's color (`buttonColors`: colors
     /// TotalMix FX doesn't use for channels, so the page can't be mistaken for one of them;
-    /// Adam, 2026-11-04), bright for the function in use and dim otherwise; dark for a blank or
-    /// a button that does nothing now.
+    /// Adam, 2026-11-04), bright for the function in use and while the button is held down,
+    /// dim otherwise; dark for a blank or a button that does nothing now.
     func buttonRing(_ index: Int, hub: SurfaceHub) -> E16Ring {
-        guard let button = ShiftButton.layout[index], isAvailable(button, hub: hub) else { return .off }
+        guard let button = ShiftButton.layout[index] else { return .off }
+        guard isAvailable(button, hub: hub) || pressedButton == index else { return .off }
         let rgb: (UInt8, UInt8, UInt8)
         var chosen = false
         switch button {
@@ -547,9 +560,8 @@ public struct E16Driver: Sendable {
             if case .send = function { chosen = true }
         case .page: rgb = Self.buttonColors.page
         }
-        // Available but not in use: much dimmer than in use, so the two can't be confused (Adam,
-        // 2026-11-04: a quarter was too close).
-        let scale: Double = chosen ? 1 : 0.1
+        // Three levels, far apart (Adam, 2026-11-04): available, in use, and held down.
+        let scale: Double = pressedButton == index ? 1 : chosen ? 0.45 : 0.1
         return E16Ring(red: UInt8(Double(rgb.0) * scale), green: UInt8(Double(rgb.1) * scale), blue: UInt8(Double(rgb.2) * scale), amount: 1)
     }
 
