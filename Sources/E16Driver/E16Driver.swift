@@ -70,8 +70,12 @@ public struct E16Driver: Sendable {
     /// How often ENTER REMOTE MODE is sent again until the device answers, in seconds.
     public static let enterInterval: Double = 1
     /// How long a push must be held to be PFL rather than mute, in seconds. A mute acts when a
-    /// shorter push is released (Adam, 2026-11-04: Shift + push went to the button page).
-    public static let pflHold: Double = 0.4
+    /// shorter push is released (Adam, 2026-11-04: Shift + push went to the button page). A
+    /// second, with a countdown on the screen and the ring, since a hand resting on an encoder
+    /// must not put a channel on PFL by mistake (Adam, 2026-11-04).
+    public static let pflHold: Double = 1
+    /// How often the countdown is redrawn, in seconds.
+    public static let countdownStep: Double = 0.1
 
     /// What an encoder does as a button while Shift is held: a mode button (LEVEL, PAN, SEND:
     /// one of them is in use) or a step button (an arrow: it goes somewhere, or nowhere).
@@ -99,7 +103,7 @@ public struct E16Driver: Sendable {
             case .level: return "LEVL"
             case .pan: return "PAN"
             case .send: return "SEND"
-            case .output(let d): return d < 0 ? "<OUT" : "OUT>"
+            case .output(let d): return d < 0 ? "<SND" : "SND>"
             case .page(let d): return d < 0 ? "<PG" : "PG>"
             }
         }
@@ -135,6 +139,8 @@ public struct E16Driver: Sendable {
     /// The Shift-page button held down, if any: its ring is full bright while it is (Adam,
     /// 2026-11-04).
     private var pressedButton: Int?
+    /// The countdown step last drawn for a held push.
+    private var countdownShown = -1
     private var page = (first: 0, count: 0)
     private var infos: [StripInfo?] = Array(repeating: nil, count: E16Driver.stripCount)
     private var knobValues: [Double?] = Array(repeating: nil, count: E16Driver.stripCount)
@@ -198,9 +204,24 @@ public struct E16Driver: Sendable {
             step.midi += E16Outgoing.enterRemoteMode
         }
         guard connected else { return step }
-        if let held, !held.didPFL, now - held.since >= Self.pflHold {
-            self.held = (held.encoder, held.since, true)
-            pfl(held.encoder, hub: &hub, now: now, into: &step)
+        if let held, !held.didPFL {
+            if now - held.since >= Self.pflHold {
+                self.held = (held.encoder, held.since, true)
+                pfl(held.encoder, hub: &hub, now: now, into: &step)
+            } else {
+                // The countdown: the title's bar and the ring's sweep follow the hold.
+                let stepIndex = Int((now - held.since) / Self.countdownStep)
+                if stepIndex != countdownShown {
+                    countdownShown = stepIndex
+                    if let info = infos[held.encoder] {
+                        let filled = Int((Double(stepIndex) * Self.countdownStep / Self.pflHold * 6).rounded(.down))
+                        let bar = String(repeating: "#", count: min(filled, 6)) + String(repeating: ".", count: max(6 - filled, 0))
+                        overlay = (Self.fit(info.name, 5) + " PFL " + bar, .infinity)
+                        step.midi += drawLabels(hub: hub)
+                    }
+                    step.midi += drawRing(held.encoder, hub: hub)
+                }
+            }
         }
         if let overlay, now >= overlay.until {
             self.overlay = nil
@@ -253,6 +274,7 @@ public struct E16Driver: Sendable {
                 step.midi += drawRing(encoder, hub: hub)
             } else {
                 held = (encoder, now, false)
+                countdownShown = -1
             }
         case .pushed(let encoder, false):
             if pressedButton == encoder {
@@ -261,8 +283,12 @@ public struct E16Driver: Sendable {
             }
             guard let held, held.encoder == encoder else { return }
             self.held = nil
-            if !held.didPFL, !shiftHeld { mute(encoder, hub: &hub, now: now, into: &step) }
+            if !held.didPFL, !shiftHeld {
+                overlay = nil  // the countdown
+                mute(encoder, hub: &hub, now: now, into: &step)
+            }
             if let overlay, overlay.until == .infinity { self.overlay = (overlay.text, now + Self.overlayTime) }
+            step.midi += drawRing(encoder, hub: hub)
         case .shift(let down):
             shiftHeld = down
             held = nil
@@ -561,6 +587,11 @@ public struct E16Driver: Sendable {
         if pflOn[index] {
             look.leds.append(RingLook.LED(index: rotation, red: Self.pflRGB.0, green: Self.pflRGB.1, blue: Self.pflRGB.2))
         }
+        if let held, held.encoder == index, !held.didPFL, countdownShown >= 0 {
+            // The countdown's sweep: a white LED from the ring's start to its end over the hold.
+            let position = min(Int(Double(countdownShown) * Self.countdownStep / Self.pflHold * 15), 15)
+            look.leds.append(RingLook.LED(index: position, red: Self.pflRGB.0, green: Self.pflRGB.1, blue: Self.pflRGB.2))
+        }
         return look
     }
 
@@ -586,21 +617,26 @@ public struct E16Driver: Sendable {
         else if inUse { scale = Self.inUseLevel }
         else if isAvailable(button, hub: hub) { scale = Self.availableLevel }
         else { return .off }
-        return E16Ring(red: UInt8(Double(rgb.0) * scale), green: UInt8(Double(rgb.1) * scale), blue: UInt8(Double(rgb.2) * scale), amount: 1)
+        // A lit part never goes below `dimFloor`, so a deep color still shows when dim.
+        func part(_ v: UInt8) -> UInt8 { v == 0 ? 0 : UInt8(max((Double(v) * scale).rounded(), Self.dimFloor)) }
+        return E16Ring(red: part(rgb.0), green: part(rgb.1), blue: part(rgb.2), amount: 1)
     }
 
-    /// How bright an available button is, as a fraction of full; a twentieth, so it is far from
-    /// the mode in use (Adam, 2026-11-04).
-    public static let availableLevel = 0.05
+    /// How bright an available button is, as a fraction of full; far from the mode in use
+    /// (Adam, 2026-11-04).
+    public static let availableLevel = 0.03
+    /// The least a lit part of a dim button goes to, 0–127.
+    public static let dimFloor = 3.0
     /// How bright the mode in use is, as a fraction of full; between available and held down.
     public static let inUseLevel = 0.45
 
-    /// The Shift page's colors (Adam, 2026-11-04): white for LEVEL, amber for PAN, a darker
-    /// green for SEND and the output arrows, a deep blue for the page arrows. The page shows no
-    /// channel colors, so they only need to differ from each other.
+    /// The Shift page's colors (Adam, 2026-11-04): white for LEVEL, magenta for PAN, a deep
+    /// green for SEND and the output arrows, a deep blue for the page arrows; the three modes
+    /// as far apart as the ring can show. The page shows no channel colors, so they only need
+    /// to differ from each other.
     public static let buttonColors: (level: (UInt8, UInt8, UInt8), pan: (UInt8, UInt8, UInt8),
                                      send: (UInt8, UInt8, UInt8), page: (UInt8, UInt8, UInt8))
-        = ((127, 127, 127), (127, 70, 0), (0, 90, 0), (0, 0, 127))
+        = ((127, 127, 127), (127, 0, 100), (0, 60, 0), (0, 0, 127))
 
     /// The LEDs a mute lights: the pair at the ring's bottom gap, where the eye lands looking at
     /// the device from below, and the pair at the top. No single LED sits at 9 or 3 o'clock on

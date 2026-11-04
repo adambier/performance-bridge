@@ -187,10 +187,14 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(up.midi.leds[1]?.map(\.index), [0, 7, 8, 15], "four red marks")
         XCTAssertEqual(up.midi.leds[1]?.first?.r, 127)
         XCTAssertEqual(up.midi.leds[1]?.first?.g, 0)
-        // Held: PFL at 0.4 s, and no mute on release.
+        // Held: a countdown, PFL at 1 s, and no mute on release.
         _ = driver.receive([0x90, 2, 0x7F], hub: &hub, now: 2)  // push Gtr
-        XCTAssertEqual(driver.tick(hub: &hub, now: 2.3).core.messages, [])
-        let pfl = driver.tick(hub: &hub, now: 2.45)
+        let counting = driver.tick(hub: &hub, now: 2.3)
+        XCTAssertEqual(counting.core.messages, [])
+        XCTAssertEqual(counting.midi.lastTitle, "Gtr PFL #.....  ")
+        XCTAssertEqual(counting.midi.leds[2]?.map(\.index), [3], "the sweep: 0.2 s of 1 s, 3 LEDs in")
+        XCTAssertEqual(driver.tick(hub: &hub, now: 2.95).midi.lastTitle, "Gtr PFL #####.  ")
+        let pfl = driver.tick(hub: &hub, now: 3.05)
         XCTAssertEqual(pfl.core.messages.map(\.address), ["/input/3/pfl"])
         XCTAssertEqual(pfl.midi.lastTitle, "Gtr PFL ON      ")
         XCTAssertEqual(pfl.midi.rings[2]?.amount, 8192)
@@ -205,6 +209,13 @@ final class E16DriverTests: XCTestCase {
         let later = driver.tick(hub: &hub, now: 6.2)
         XCTAssertEqual(later.midi.leds.keys.sorted(), [2], "only the PFL ring is redrawn")
         XCTAssertEqual(later.midi.leds[2]?.first?.index, Int((6.2 / E16Driver.rotationStep).rounded(.down)) % 16)
+        // A push let go during the countdown is a mute, and the countdown is gone.
+        _ = driver.receive([0x90, 3, 0x7F], hub: &hub, now: 8)  // push Tracks
+        _ = driver.tick(hub: &hub, now: 8.5)
+        let short = driver.receive([0x80, 3, 0x00], hub: &hub, now: 8.6)
+        XCTAssertEqual(short.core.messages.map(\.address), ["/playback/0/mute"])
+        XCTAssertEqual(short.midi.lastTitle, "PB 1/2 MUTE ON  ")
+        XCTAssertEqual(short.midi.leds[3]?.map(\.index), [0, 7, 8, 15], "the marks, no sweep")
         // A second short push turns mute off.
         _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 7)
         let unmute = driver.receive([0x80, 1, 0x00], hub: &hub, now: 7.1)
@@ -218,14 +229,14 @@ final class E16DriverTests: XCTestCase {
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(shift.midi.lastTitle, "LEVEL           ", "the title stays")
         XCTAssertEqual(shift.midi.lastLabels, ["LEVL", "PAN ", "SEND", "    ", "    ", "    ", "    ", "    ",
-                                               "    ", "    ", "<OUT", "OUT>", "    ", "    ", "<PG ", "PG> "])
+                                               "    ", "    ", "<SND", "SND>", "    ", "    ", "<PG ", "PG> "])
         let rings = shift.midi.rings
         XCTAssertEqual(rings[0]?.g, 57, "LEVEL, in use: medium white")
         XCTAssertEqual(rings[0]?.amount, 16383)
-        XCTAssertEqual(rings[1]?.r, 6, "PAN: dim amber")
-        XCTAssertEqual(rings[2]?.g, 4, "SEND: dim green")
-        XCTAssertEqual(rings[10]?.g, 4, "either arrow enters SEND mode at the last output used")
-        XCTAssertEqual(rings[11]?.g, 4)
+        XCTAssertEqual(rings[1]?.r, 4, "PAN: dim magenta")
+        XCTAssertEqual(rings[2]?.g, 3, "SEND: dim green, at the floor")
+        XCTAssertEqual(rings[10]?.g, 3, "either arrow enters SEND mode at the last output used")
+        XCTAssertEqual(rings[11]?.g, 3)
         XCTAssertEqual(rings[3]?.amount, 0, "a blank is dark")
         XCTAssertNil(rings[14], "no pages: an empty strip's ring was dark already")
         // A turn does nothing on the Shift page.
@@ -235,7 +246,7 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(driver.function, .pan)
         XCTAssertEqual(pan.midi.lastTitle, "PAN             ", "said at once")
         XCTAssertEqual(pan.midi.rings[1]?.r, 57, "now PAN is in use")
-        XCTAssertEqual(pan.midi.rings[0]?.g, 6)
+        XCTAssertEqual(pan.midi.rings[0]?.g, 4)
         XCTAssertEqual(pan.core.messages, [], "no mute from a button")
         // A button held down is full bright, whatever it does.
         let down = driver.receive([0x90, 15, 0x7F], hub: &hub, now: 1.25)
@@ -245,7 +256,7 @@ final class E16DriverTests: XCTestCase {
         let out = driver.receive([0x90, 11, 0x7F, 0x80, 11, 0x00], hub: &hub, now: 1.3)
         XCTAssertEqual(driver.function, .send(0))
         XCTAssertEqual(out.midi.lastTitle, "> PHONES        ")
-        XCTAssertEqual(out.midi.rings[2]?.g, 40, "SEND in use")
+        XCTAssertEqual(out.midi.rings[2]?.g, 27, "SEND in use")
         XCTAssertEqual(out.midi.rings[11]?.amount, 0, "no next output: dark once released")
         XCTAssertEqual(out.midi.rings[10]?.amount, 0, "no previous output either")
         XCTAssertEqual(driver.receive([0x90, 11, 0x7F, 0x80, 11, 0x00], hub: &hub, now: 1.4).core.messages, [])
@@ -290,10 +301,10 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(answer.midi.lastTitle, "LEVEL        1/2")
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(shift.midi.rings[14]?.amount, 0, "no previous page: dark")
-        XCTAssertEqual(shift.midi.rings[15]?.b, 6, "blue, dim")
+        XCTAssertEqual(shift.midi.rings[15]?.b, 4, "blue, dim")
         let next = driver.receive([0x90, 15, 0x7F, 0x80, 15, 0x00], hub: &hub, now: 1.5)
         XCTAssertEqual(next.midi.lastTitle, "LEVEL        2/2")
-        XCTAssertEqual(next.midi.rings[14]?.b, 6, "a previous page now")
+        XCTAssertEqual(next.midi.rings[14]?.b, 4, "a previous page now")
         XCTAssertEqual(next.midi.rings[15]?.amount, 0, "no next page")
         let past = driver.receive([0x90, 15, 0x7F, 0x80, 15, 0x00], hub: &hub, now: 1.6)
         XCTAssertNil(past.midi.lastTitle, "nothing past the end")
