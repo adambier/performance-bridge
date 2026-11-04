@@ -60,10 +60,12 @@ struct ControlsGuideView: View {
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
             Divider()
+            ScrollViewReader { scroller in
             ScrollView(.vertical) {
                 VStack(alignment: .leading, spacing: 14) {
                     Text(guide.title)
                         .font(.title2.weight(.semibold))
+                        .id("top")
                     photo(guide)
                     ForEach(ControlsGuide.common + guide.introduction, id: \.self) { paragraph($0) }
                     ForEach(guide.tables.indices, id: \.self) { table(guide.tables[$0]) }
@@ -83,6 +85,9 @@ struct ControlsGuideView: View {
                 }
                 .padding(20)
                 .frame(width: Self.width, alignment: .leading)
+            }
+            // A new controller starts at the top of its guide (Adam, 2026-11-04).
+            .onChange(of: shown) { _ in scroller.scrollTo("top", anchor: .top) }
             }
         }
         .frame(width: Self.width, height: min((NSScreen.main?.visibleFrame.height ?? 800) - 120, 720))
