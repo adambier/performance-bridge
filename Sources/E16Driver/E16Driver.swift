@@ -553,16 +553,18 @@ public struct E16Driver: Sendable {
     /// message for the needles, so the needles are drawn over the rings.
     private mutating func drawRings(hub: SurfaceHub) -> [UInt8] {
         var rings: [(encoder: Int, ring: E16Ring)] = []
+        var cleared: [(encoder: Int, led: Int, red: UInt8, green: UInt8, blue: UInt8)] = []
         var leds: [(encoder: Int, led: Int, red: UInt8, green: UInt8, blue: UInt8)] = []
         for index in 0..<Self.stripCount {
             let look = look(index, hub: hub)
             guard sentRings[index] != look else { continue }
-            leds += clearedLEDs(index, next: look)
+            cleared += clearedLEDs(index, next: look)
             sentRings[index] = look
             rings.append((index, dimmed(look.ring)))
             leds += look.leds.map { (index, $0.index, dim($0.red), dim($0.green), dim($0.blue)) }
         }
-        return E16Outgoing.rings(rings) + E16Outgoing.leds(leds)
+        // The offs first: sent after the ring, they punched holes in its fill (seen 2026-11-04).
+        return E16Outgoing.leds(cleared) + E16Outgoing.rings(rings) + E16Outgoing.leds(leds)
     }
 
     /// LEDs set individually before and not in `next`, turned off by the LED message: the
@@ -591,8 +593,8 @@ public struct E16Driver: Sendable {
         guard sentRings[index] != look else { return [] }
         let cleared = clearedLEDs(index, next: look)
         sentRings[index] = look
-        return E16Outgoing.rings([(encoder: index, ring: dimmed(look.ring))])
-            + E16Outgoing.leds(cleared + look.leds.map { (index, $0.index, dim($0.red), dim($0.green), dim($0.blue)) })
+        return E16Outgoing.leds(cleared) + E16Outgoing.rings([(encoder: index, ring: dimmed(look.ring))])
+            + E16Outgoing.leds(look.leds.map { (index, $0.index, dim($0.red), dim($0.green), dim($0.blue)) })
     }
 
     /// A strip's ring: dark for no channel; else its color (`rgb(for:)`, or for a send the

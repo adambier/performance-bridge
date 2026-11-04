@@ -239,6 +239,8 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(unmute.midi.lastTitle, "Vox MUTE OFF")
         XCTAssertEqual(unmute.midi.leds[1]?.map(\.index), [1, 3, 5, 7], "the stripes are turned off explicitly")
         XCTAssertEqual(unmute.midi.leds[1]?.map(\.r), [0, 0, 0, 0])
+        XCTAssertTrue(unmute.midi.sysExMessages.firstIndex(where: { $0.starts(with: ledsID) })! < unmute.midi.sysExMessages.firstIndex(where: { $0.starts(with: ringsID) })!,
+                      "the offs go before the ring, or they punch holes in its fill")
     }
 
     func testShiftPageButtons() {
