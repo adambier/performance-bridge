@@ -223,8 +223,8 @@ final class E16DriverTests: XCTestCase {
         let rings = shift.midi.rings
         XCTAssertEqual(rings[0]?.g, 127, "LEVEL, chosen: bright teal")
         XCTAssertEqual(rings[0]?.amount, 16383)
-        XCTAssertEqual(rings[1]?.g, 31, "PAN: dim")
-        XCTAssertEqual(rings[4]?.r, 31, "previous output: dim magenta")
+        XCTAssertEqual(rings[1]?.g, 12, "PAN: dim")
+        XCTAssertEqual(rings[4]?.r, 12, "previous output: dim magenta")
         XCTAssertEqual(rings[2]?.amount, 0, "a blank is dark")
         XCTAssertNil(rings[14], "an empty strip's ring was dark already")
         // A turn does nothing on the Shift page.
@@ -234,7 +234,7 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(driver.function, .pan)
         XCTAssertEqual(pan.midi.lastTitle, "PAN             ", "said at once")
         XCTAssertEqual(pan.midi.rings[1]?.g, 127, "now PAN is bright")
-        XCTAssertEqual(pan.midi.rings[0]?.g, 31)
+        XCTAssertEqual(pan.midi.rings[0]?.g, 12)
         XCTAssertEqual(pan.core.messages, [], "no mute from a button")
         // Next output: the only send, Phones.
         let out = driver.receive([0x90, 5, 0x7F, 0x80, 5, 0x00], hub: &hub, now: 1.3)
@@ -283,7 +283,7 @@ final class E16DriverTests: XCTestCase {
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(shift.midi.lastLabels?[14], "    ", "no previous page")
         XCTAssertEqual(shift.midi.lastLabels?[15], "PG> ")
-        XCTAssertEqual(shift.midi.rings[15]?.g, 31, "lime, dim")
+        XCTAssertEqual(shift.midi.rings[15]?.g, 12, "lime, dim")
         let next = driver.receive([0x90, 15, 0x7F, 0x80, 15, 0x00], hub: &hub, now: 1.5)
         XCTAssertEqual(next.midi.lastTitle, "LEVEL        2/2")
         XCTAssertEqual(next.midi.lastLabels?[14], "<PG ")

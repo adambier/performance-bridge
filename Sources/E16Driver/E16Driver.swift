@@ -547,7 +547,9 @@ public struct E16Driver: Sendable {
             if case .send = function { chosen = true }
         case .page: rgb = Self.buttonColors.page
         }
-        let scale: Double = chosen ? 1 : 0.25
+        // Available but not in use: much dimmer than in use, so the two can't be confused (Adam,
+        // 2026-11-04: a quarter was too close).
+        let scale: Double = chosen ? 1 : 0.1
         return E16Ring(red: UInt8(Double(rgb.0) * scale), green: UInt8(Double(rgb.1) * scale), blue: UInt8(Double(rgb.2) * scale), amount: 1)
     }
 
