@@ -586,13 +586,17 @@ public struct E16Driver: Sendable {
             return RingLook(ring: E16Ring(red: Self.pflRGB.0, green: Self.pflRGB.1, blue: Self.pflRGB.2, amount: amount))
         }
         var look = RingLook(ring: E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: value, bipolar: isPan))
-        if muteOn[index], !(hub.mirror.muteMaster == false && !blinkLit) {
-            look.leds += Self.muteMarks.map { RingLook.LED(index: $0, red: Self.muteRGB.0, green: Self.muteRGB.1, blue: Self.muteRGB.2) }
+        // Stripes over the fill: every other LED red for a mute, white for a PFL; both at once
+        // alternate red and white. At least the first two LEDs, so the state shows at -oo.
+        let lit = max(Int((min(max(value, 0), 1) * 16).rounded()), 2)
+        let mute = muteOn[index] && !(hub.mirror.muteMaster == false && !blinkLit)
+        if mute {
+            for led in stride(from: 1, to: lit, by: 2) {
+                look.leds.append(RingLook.LED(index: led, red: Self.muteRGB.0, green: Self.muteRGB.1, blue: Self.muteRGB.2))
+            }
         }
         if pflOn[index] {
-            // Every other LED of the fill turned white: a striped fill.
-            let lit = Int((min(max(value, 0), 1) * 16).rounded())
-            for led in stride(from: 1, to: max(lit, 2), by: 2) {
+            for led in stride(from: mute ? 0 : 1, to: lit, by: 2) {
                 look.leds.append(RingLook.LED(index: led, red: Self.pflRGB.0, green: Self.pflRGB.1, blue: Self.pflRGB.2))
             }
         }
@@ -634,21 +638,21 @@ public struct E16Driver: Sendable {
     /// How bright the mode in use is, as a fraction of full; between available and held down.
     public static let inUseLevel = 0.45
 
-    /// The Shift page's colors (Adam, 2026-11-04): yellow for LEVEL, orange for PAN, a deep
-    /// green for SEND and the output arrows, a deep blue for the page arrows. The page shows no
-    /// channel colors, so they only need to differ from each other. Color is an extra cue: the
-    /// buttons' positions and labels, and the brighter ring of the mode in use, carry the
-    /// meaning, since yellow, orange, and green are hard to tell apart with a red-green color
-    /// deficiency.
+    /// The Shift page's colors (Adam, 2026-11-04): yellow for LEVEL, magenta for PAN (orange was
+    /// the same as yellow when dim), a deep green for SEND and the output arrows, a deep blue
+    /// for the page arrows. The page shows no channel colors, so they only need to differ from
+    /// each other. Color is an extra cue: the buttons' positions and labels, and the brighter
+    /// ring of the mode in use, carry the meaning, since yellow and green are hard to tell
+    /// apart with a red-green color deficiency.
     public static let buttonColors: (level: (UInt8, UInt8, UInt8), pan: (UInt8, UInt8, UInt8),
                                      send: (UInt8, UInt8, UInt8), page: (UInt8, UInt8, UInt8))
-        = ((127, 85, 0), (127, 30, 0), (0, 60, 0), (0, 0, 127))
+        = ((127, 85, 0), (127, 0, 100), (0, 60, 0), (0, 0, 127))
 
     /// The LEDs a mute lights: the pair at the ring's bottom gap, where the eye lands looking at
     /// the device from below, and the pair at the top. No single LED sits at 9 or 3 o'clock on
     /// the device, so side marks looked off (Adam, 2026-11-04).
     public static let muteMarks = [0, 7, 8, 15]
-    /// Red, for a mute's marks.
+    /// Red, for a mute's stripes.
     public static let muteRGB: (UInt8, UInt8, UInt8) = (127, 0, 0)
     /// White, for a PFL's stripes and the countdown.
     public static let pflRGB: (UInt8, UInt8, UInt8) = (127, 127, 127)
