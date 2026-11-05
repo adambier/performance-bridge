@@ -301,7 +301,7 @@ final class E16DriverTests: XCTestCase {
     func testPushAndTurnPansAndCancelsThePush() {
         var (driver, hub, _) = connected()
         _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 1)  // push Vox
-        let turn = driver.receive([0xB0, 2, 0x02], hub: &hub, now: 1.1)
+        let turn = driver.receive([0xB0, 2, UInt8(E16Driver.panCenterUnits + 1)], hub: &hub, now: 1.1)  // past the sticky center
         XCTAssertEqual(turn.core.messages.map(\.address), ["/mix/in/2/0/balpan"], "pan, in LEVEL mode")
         XCTAssertEqual(turn.midi.rings[1]?.bipolar, true, "the ring shows the pan")
         XCTAssertEqual(turn.midi.rings[1].map { [$0.r, $0.g, $0.b] }, [127, 0, 0], "red off center, however little")
@@ -413,11 +413,34 @@ final class E16DriverTests: XCTestCase {
         var (driver, hub, _) = connected()
         _ = driver.receive([0x90, 16, 0x7F, 0x90, 1, 0x7F, 0x80, 1, 0x00, 0x90, 16, 0x00], hub: &hub, now: 1)
         XCTAssertEqual(driver.function, .pan)
-        let step = driver.receive([0xB0, 1, 0x02], hub: &hub, now: 2)
+        let step = driver.receive([0xB0, 1, UInt8(E16Driver.panCenterUnits + 2)], hub: &hub, now: 2)  // two units past center
         XCTAssertEqual(step.core.messages.map(\.address), ["/mix/in/0/0/balpan"])
         XCTAssertEqual(step.core.messages.first?.arguments.first, .float(Float(2 * E16Driver.panStep * 2)))
         XCTAssertEqual(step.midi.lastTitle, "Keys R2")
         XCTAssertEqual(step.midi.rings[0]?.bipolar, true)
+    }
+
+    func testPanCenterIsSticky() {
+        var (driver, hub, _) = connected()
+        _ = driver.receive([0x90, 16, 0x7F, 0x90, 1, 0x7F, 0x80, 1, 0x00, 0x90, 16, 0x00], hub: &hub, now: 1)  // PAN
+        let units = E16Driver.panCenterUnits
+        func turn(_ delta: Int, _ now: Double) -> String {
+            _ = driver.receive([0xB0, 1, UInt8(delta < 0 ? 128 + delta : delta)], hub: &hub, now: now)
+            return driver.title(hub: hub)
+        }
+        XCTAssertEqual(turn(units, 2), "Keys C", "held at center for \(units) units")
+        XCTAssertEqual(turn(1, 2.1), "Keys R1", "the next unit moves it")
+        XCTAssertEqual(turn(-8, 2.2), "Keys C", "a fast turn back stops at center")
+        XCTAssertEqual(turn(-(units - 1), 2.3), "Keys C")
+        XCTAssertEqual(turn(2, 2.4), "Keys C", "a turn the other way starts the count again")
+        XCTAssertEqual(turn(units - 1, 2.5), "Keys R1", "\(units + 1) units that way, in all")
+        XCTAssertEqual(turn(8, 2.6), "Keys R9")
+        XCTAssertEqual(turn(-20, 2.7), "Keys C", "crossing from the right stops at center too")
+        XCTAssertEqual(turn(-(units + 3), 2.8), "Keys L3")
+        // A level has no sticky point.
+        _ = driver.receive([0x90, 16, 0x7F, 0x90, 0, 0x7F, 0x80, 0, 0x00, 0x90, 16, 0x00], hub: &hub, now: 3)  // LEVEL
+        let level = driver.receive([0xB0, 1, 0x01], hub: &hub, now: 3.1)
+        XCTAssertEqual(level.core.messages.map(\.address), ["/mix/in/0/0/faderlin"])
     }
 
     func testPageButtons() {
