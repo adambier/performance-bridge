@@ -207,17 +207,31 @@ func e16(_ arguments: ArraySlice<String>) -> Never {
                 let d = E16Driver.scaled(c.1, brightness: brightness)
                 print(String(format: "%2d %-4@  full (%3d,%3d,%3d)  sent (%3d,%3d,%3d)", i + 1, c.0 as NSString, Int(c.1.0), Int(c.1.1), Int(c.1.2), Int(d.0), Int(d.1), Int(d.2)))
             }
-            print("Brightness \(percent)%. Type a percentage (e.g. 7) and press Return to change it; + or - steps by 1. Control-C leaves Remote Mode."); flushOutput()
+            print("Brightness \(percent)%. Turn any encoder to change it (1% a step), or type a percentage and press Return. Control-C leaves Remote Mode."); flushOutput()
         }
+        let state = NSLock()
         var current = brightness
         show(current)
+        session.onEvents { events in
+            var delta = 0
+            for case .turned(_, let d) in events { delta += d > 0 ? 1 : -1 }
+            guard delta != 0 else { return }
+            state.lock()
+            current = min(max(current + Double(delta) / 100, 0), 1)
+            let b = current
+            state.unlock()
+            show(b)
+        }
         while let line = readLine() {
             let text = line.trimmingCharacters(in: .whitespaces)
+            state.lock()
             if text == "+" { current = min(current + 0.01, 1) }
             else if text == "-" { current = max(current - 0.01, 0) }
             else if let n = Double(text.replacingOccurrences(of: "%", with: "")) { current = min(max(n / 100, 0), 1) }
-            else { print("A percentage, + or -."); flushOutput(); continue }
-            show(current)
+            else { state.unlock(); print("A percentage, + or -."); flushOutput(); continue }
+            let b = current
+            state.unlock()
+            show(b)
         }
         while true { Thread.sleep(forTimeInterval: 60) }
 
