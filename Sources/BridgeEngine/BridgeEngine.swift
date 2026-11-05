@@ -723,9 +723,10 @@ public final class BridgeEngine: @unchecked Sendable {
     }
 
     /// The lowest brightness the engine accepts, and the highest: the usable range on the
-    /// device, found by Adam with a 0–100% slider (2026-11-04). The app's slider shows this
-    /// range as 1–100; a pressed Shift button is always at the LEDs' full 127.
-    public static let e16MinimumBrightness = 0.10
+    /// device, found by Adam with a 0–100% slider and `sbdev e16 colors` (2026-11-04; 6% is
+    /// where orange and red are still distinct, with proportional dimming). The app's slider
+    /// shows this range as 1–100; a pressed Shift button is always at the LEDs' full 127.
+    public static let e16MinimumBrightness = 0.06
     /// See `e16MinimumBrightness`.
     public static let e16MaximumBrightness = 0.80
 

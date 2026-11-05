@@ -792,7 +792,7 @@ public struct E16Driver: Sendable {
         4: (127, 0, 0),
         5: (0, 0, 127),
         6: (0, 105, 0),    // green, slightly darker, further from PFL's yellow-green (Adam, 2026-11-04)
-        7: (127, 72, 0),   // yellow, a little toward orange, so PFL's yellow-green stays apart from it (Adam, 2026-11-04)
+        7: (127, 85, 0),   // yellow: at 6% (8, 5, 0), apart from orange's (8, 2, 0); PFL is greener now (Adam, 2026-11-04)
         8: (70, 0, 127),   // purple: (16, 0, 127) was too close to blue on the device, (90, 0, 127) read as magenta (Adam, 2026-11-04)
     ]
 
