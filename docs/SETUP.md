@@ -218,7 +218,7 @@ FX's Control Room.
 **Cue/PFL to**). That output is Main by default, which replaces the main mix, so choose a headphone output
 before a performance.
 
-### Roto-Control
+### Melbourne Instruments Roto-Control
 
 <img src="../App/PerformanceBridge/Resources/controller-roto-control.png" width="556" alt="Melbourne Instruments Roto-Control, seen from above: eight knobs, each with a screen and a switch below it, and the MODE, LEARN, FUNC, SEL, and arrow buttons on the left">
 
@@ -245,7 +245,7 @@ before a performance.
   small screen above MODE shows both (e.g., "MIX-TRACKS" and "KNOBS-VOL").
 - Details and the test records are in [`docs/ROTO-CONTROL.md`](ROTO-CONTROL.md).
 
-### OXI E16
+### OXI Instruments E16
 
 <img src="../App/PerformanceBridge/Resources/controller-oxi-e16.png" width="252" alt="OXI Instruments E16, seen from above: sixteen encoders with light rings in four rows of four, and a screen above them">
 
@@ -280,7 +280,7 @@ from TotalMix FX, filled to its level.
   quits, it gives the E16 back to its own firmware; if the E16 is ever left blank, switch it off and on.
 - Details and the test records are in [`docs/OXI-E16.md`](OXI-E16.md).
 
-### Launch Control XL 3
+### Novation Launch Control XL 3
 
 <img src="../App/PerformanceBridge/Resources/controller-launch-control-xl3.png" width="165" alt="Novation Launch Control XL 3, seen from above: three rows of eight encoders, eight faders, and two rows of eight buttons, with Page, Track, Shift, and Mode on the left">
 
@@ -326,7 +326,7 @@ from TotalMix FX, filled to its level.
   TotalMix FX's window shows the levels and pans set here only while Main Out's output is selected in its
   bottom row.
 
-### Launch Control 3
+### Novation Launch Control 3
 
 <img src="../App/PerformanceBridge/Resources/controller-launch-control-3.png" width="328" alt="Novation Launch Control 3, seen from above: two rows of eight encoders and one row of eight buttons, with Page, Track, Shift, Mode, and Function on the left">
 

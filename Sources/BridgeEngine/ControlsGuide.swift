@@ -34,7 +34,7 @@ public struct ControlsGuide: Equatable, Sendable {
         public var rows: [Row]
     }
 
-    /// The controller's name, as the guide's title.
+    /// The controller's name, with its maker's, as the guide's title (Adam, 2026-11-04).
     public var title: String
     /// The resource name of the controller's photo (`controller-*.png` in the app's resources, the
     /// maker's top view, trimmed), shown under the title; docs/SETUP.md shows the same file.
@@ -65,7 +65,7 @@ public struct ControlsGuide: Equatable, Sendable {
     }
 
     static let launchControlXL3 = ControlsGuide(
-        title: "Launch Control XL 3",
+        title: "Novation Launch Control XL 3",
         image: "controller-launch-control-xl3",
         introduction: [
             "**Each column of controls is one channel**, and every control in a column acts on that channel.",
@@ -101,7 +101,7 @@ public struct ControlsGuide: Equatable, Sendable {
         ])
 
     static let launchControl3 = ControlsGuide(
-        title: "Launch Control 3",
+        title: "Novation Launch Control 3",
         image: "controller-launch-control-3",
         introduction: [
             "**Each column of controls is one channel**, and every control in a column acts on that channel.",
@@ -129,7 +129,7 @@ public struct ControlsGuide: Equatable, Sendable {
         ])
 
     static let rotoControl = ControlsGuide(
-        title: "Roto-Control",
+        title: "Melbourne Instruments Roto-Control",
         image: "controller-roto-control",
         introduction: [
             "**Each column of controls is one channel**, and every control in a column acts on that channel.",
@@ -155,7 +155,7 @@ public struct ControlsGuide: Equatable, Sendable {
         ])
 
     static let e16 = ControlsGuide(
-        title: "OXI E16",
+        title: "OXI Instruments E16",
         image: "controller-oxi-e16",
         introduction: [
             "The E16 shows sixteen channels at once, one encoder each: the four rows of four are the channels in order, left to right and top to bottom. The screen names them, and each encoder's ring shows its channel's color from TotalMix FX, filled to its level.",
