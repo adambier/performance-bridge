@@ -76,7 +76,11 @@ public struct E16Driver: Sendable {
     public static let labelMaxWidth = 26
     /// How bright the rings are, 0…1, applied to every color sent: full was too bright for a
     /// dark room, and 70% still a little (Adam, 2026-11-04). A lit part never goes below 1.
-    public var brightness: Double = 0.55
+    public var brightness: Double = E16Driver.defaultBrightness
+    /// The brightness a new setting starts at.
+    public static let defaultBrightness = 0.55
+    /// The name of the device's first USB MIDI port, the one Remote Mode uses.
+    public static let defaultPortName = "OXI E16 Port 1"
 
     /// How many strips the device shows at once.
     public static let stripCount = 16
@@ -354,6 +358,15 @@ public struct E16Driver: Sendable {
         var output = CoreOutput()
         for layer in Layer.allCases { output.append(hub.resend(id(layer), now: now)) }
         take(output, hub: hub, into: &step)
+    }
+
+    /// Sets the rings' brightness from the app and redraws every ring at it, on a connected
+    /// device; kept for the next one otherwise.
+    public mutating func setBrightness(_ value: Double, hub: SurfaceHub) -> [UInt8] {
+        brightness = value
+        guard connected else { return [] }
+        sentRings = Array(repeating: nil, count: Self.stripCount)
+        return drawRings(hub: hub)
     }
 
     // MARK: - Controls
@@ -747,8 +760,9 @@ public struct E16Driver: Sendable {
 
     /// Orange, for a mute, as on the other surfaces.
     public static let muteRGB: (UInt8, UInt8, UInt8) = (127, 25, 0)
-    /// Yellow, for a PFL and for the countdown, as on the other surfaces.
-    public static let pflRGB: (UInt8, UInt8, UInt8) = (127, 85, 0)
+    /// Yellow, for a PFL and for the countdown: a lime-leaning yellow, apart from TotalMix FX's
+    /// channel yellow, which is nearer orange (Adam, 2026-11-04).
+    public static let pflRGB: (UInt8, UInt8, UInt8) = (100, 127, 0)
 
     /// An RGB (0–127 per part) for each of TotalMix FX's eight colors (1 white, 2 grey, 3 orange,
     /// 4 red, 5 blue, 6 green, 7 yellow, 8 pink; docs/TOTALMIX-OSC.md, test 7), as the Launch

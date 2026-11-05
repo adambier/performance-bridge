@@ -186,13 +186,13 @@ final class E16DriverTests: XCTestCase {
         let counting = driver.tick(hub: &hub, now: 2.55)
         XCTAssertEqual(counting.core.messages, [])
         XCTAssertEqual(counting.midi.lastTitle, "Gtr -> PFL")
-        XCTAssertEqual(counting.midi.rings[2]?.g, 85, "a yellow arc")
+        XCTAssertEqual(counting.midi.rings[2]?.r, E16Driver.pflRGB.0, "a yellow arc")
         XCTAssertEqual(counting.midi.rings[2]?.amount, Int((0.3 / 0.75 * 16383).rounded()), "0.3 s of the 0.75 s sweep")
         let pfl = driver.tick(hub: &hub, now: 3.05)
         XCTAssertEqual(pfl.core.messages.map(\.address), ["/input/3/pfl"])
         XCTAssertEqual(driver.title(hub: hub), "Gtr PFL ON")
         XCTAssertEqual(pfl.midi.rings[2]?.amount, 16383, "a complete yellow ring")
-        XCTAssertEqual(pfl.midi.rings[2]?.g, 85)
+        XCTAssertEqual(pfl.midi.rings[2]?.r, E16Driver.pflRGB.0)
         XCTAssertNil(driver.tick(hub: &hub, now: 4.5).midi.lastTitle, "the title stays while held")
         XCTAssertEqual(driver.title(hub: hub), "Gtr PFL ON")
         let release = driver.receive([0x80, 2, 0x00], hub: &hub, now: 5)
@@ -204,7 +204,7 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(dip.midi.rings[2]?.r, 127, "the level underneath, white")
         XCTAssertEqual(dip.midi.rings[2]?.b, 127)
         XCTAssertEqual(dip.midi.rings[2]?.amount, 8192)
-        XCTAssertEqual(driver.tick(hub: &hub, now: 7.05).midi.rings[2]?.g, 85, "and yellow again")
+        XCTAssertEqual(driver.tick(hub: &hub, now: 7.05).midi.rings[2]?.r, E16Driver.pflRGB.0, "and yellow again")
         // Holding again counts down the other way and turns PFL off.
         _ = driver.receive([0x90, 2, 0x7F], hub: &hub, now: 8)
         let reverse = driver.tick(hub: &hub, now: 8.65)
@@ -237,7 +237,7 @@ final class E16DriverTests: XCTestCase {
         _ = driver.receive([0x90, 1, 0x7F, 0x80, 1, 0x00], hub: &hub, now: 1)  // mute Vox
         _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 2)
         let on = driver.tick(hub: &hub, now: 3.05)  // PFL on
-        XCTAssertEqual(on.midi.rings[1]?.g, 85, "yellow")
+        XCTAssertEqual(on.midi.rings[1]?.r, E16Driver.pflRGB.0, "yellow")
         let dip = driver.tick(hub: &hub, now: 4.85)
         XCTAssertEqual(dip.midi.rings[1]?.g, 25, "the dip shows the mute's orange ring")
         XCTAssertEqual(dip.midi.rings[1]?.amount, 16383)

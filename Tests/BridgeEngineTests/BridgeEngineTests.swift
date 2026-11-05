@@ -80,6 +80,25 @@ final class BridgeEngineTests: XCTestCase {
         #endif
     }
 
+    /// The E16's brightness: 55% unless saved otherwise, held with no device, clamped, and a
+    /// must-have setting (Adam, 2026-11-04).
+    func testE16BrightnessIsHeldWithoutADevice() {
+        let engine = BridgeEngine(settings: BridgeSettings())
+        XCTAssertFalse(engine.status.e16Enabled, "off unless chosen")
+        XCTAssertEqual(engine.status.e16Brightness, 0.55)
+        engine.setE16Brightness(0.2)
+        XCTAssertEqual(engine.status.e16Brightness, 0.2)
+        engine.setE16Brightness(1.5)
+        XCTAssertEqual(engine.status.e16Brightness, 1, "clamped")
+        var saved = BridgeSettings()
+        saved.e16Enabled = true
+        saved.e16Brightness = 0.3
+        let fromSaved = BridgeEngine(settings: saved)
+        XCTAssertTrue(fromSaved.status.e16Enabled)
+        XCTAssertEqual(fromSaved.status.e16Brightness, 0.3, "a saved setting is taken up")
+        XCTAssertFalse(fromSaved.status.e16Found)
+    }
+
     func testMonitoringChoicesInOutputOrderWithNamesAndRoles() {
         var mirror = MixerMirror()
         let events: [TotalMixEvent] = [
