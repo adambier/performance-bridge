@@ -229,6 +229,10 @@ struct SettingsView: View {
                 LaunchControlSendRowsView(model: model, chosen: chosen)
                     .padding(.top, 6)
             }
+            if edited.controller == .e16 {
+                E16BrightnessView(model: model)
+                    .padding(.top, 6)
+            }
         }
         .padding(20)
         .fixedSize(horizontal: false, vertical: true)
@@ -303,6 +307,9 @@ struct SettingsView: View {
         if edited.controller == .roto {
             return "Connect the Roto-Control by USB. Performance Bridge finds it by the name of its MIDI port."
         }
+        if edited.controller == .e16 {
+            return "Connect the E16 by USB. Performance Bridge finds its first MIDI port (“OXI E16 Port 1”) by name and puts the E16 in its Remote Mode, which needs firmware 1.3.0 or later."
+        }
         let model = edited.controller.launchControl ?? .xl3
         return "Connect the \(model.name) by USB. Performance Bridge finds its DAW port (“\(model.portPrefix) 1 DAW”) by name; with more than one connected, it uses the one with the lowest device ID."
     }
@@ -344,6 +351,37 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
+        }
+    }
+}
+
+/// The E16's ring brightness, at the bottom of the Connections tab while the E16 is chosen: a
+/// must-have, since full brightness is unusable in a dark room (Adam, 2026-11-04). It takes effect
+/// at once on a connected E16 and is kept otherwise, like the Launch Control's send rows.
+struct E16BrightnessView: View {
+    @ObservedObject var model: BridgeModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Rings")
+                .font(.headline)
+            Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 10, verticalSpacing: 8) {
+                GridRow {
+                    Text("Brightness")
+                        .frame(width: 110, alignment: .trailing)
+                    Slider(value: Binding(
+                        get: { model.status.e16Brightness },
+                        set: { model.setE16Brightness($0) }), in: 0.05...1)
+                        .frame(width: 200)
+                    Text("\(Int((model.status.e16Brightness * 100).rounded()))%")
+                        .monospacedDigit()
+                        .frame(width: 40, alignment: .trailing)
+                }
+            }
+            Text("How bright the encoders’ light rings are. Changes take effect at once. Full brightness is too much for a dark room.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }

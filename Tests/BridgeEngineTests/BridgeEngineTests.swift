@@ -510,6 +510,12 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertNil(D.switchTarget(chosen: .launchControl(.xl3), found: [.roto, .launchControl(.lc3)]),
                      "several: the user chooses")
         XCTAssertNil(D.switchTarget(chosen: .roto, found: [.roto, .launchControl(.lc3)]), "the chosen one is there")
+        // The E16, by its first port, listed after the Roto-Control and before the Launch Controls
+        // (Adam, 2026-11-04).
+        let withE16 = [MIDIEndpointInfo(name: "LCXL3 1 DAW In", uniqueID: 1), MIDIEndpointInfo(name: "OXI E16 Port 1", uniqueID: 2),
+                       MIDIEndpointInfo(name: "OXI E16 Port 2", uniqueID: 3), MIDIEndpointInfo(name: "Roto-Control", uniqueID: 4)]
+        XCTAssertEqual(D.found(among: withE16, rotoPortName: "Roto"), [.roto, .e16, .launchControl(.xl3)])
+        XCTAssertEqual(D.switchTarget(chosen: .roto, found: [.e16]), .e16)
     }
 
     func testTheControlsGuideMatchesSetupMD() throws {
@@ -529,7 +535,7 @@ final class BridgeEngineTests: XCTestCase {
         func flatten(_ text: String) -> String { text.split(whereSeparator: \.isWhitespace).joined(separator: " ") }
         let common = flatten(String(step6[..<(step6.range(of: "### ")?.lowerBound ?? step6.endIndex)]))
         for paragraph in ControlsGuide.common { XCTAssertTrue(common.contains(flatten(paragraph)), paragraph) }
-        var guides: [DetectedController] = [.roto, .launchControl(.xl3), .launchControl(.lc3)]
+        var guides: [DetectedController] = [.roto, .e16, .launchControl(.xl3), .launchControl(.lc3)]
         while let controller = guides.popLast() {
             let guide = ControlsGuide.guide(for: controller)
             let setup = section(step6, from: "### \(guide.title)\n", to: "\n### ")

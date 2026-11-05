@@ -134,7 +134,21 @@ public enum SetupChecklist {
             steps.append(SetupStep(id: "roto", title: "Roto-Control found, connecting", state: .waiting, detail: rotoBusy))
         } else {
             steps.append(SetupStep(id: "roto", title: "Roto-Control not found", state: .waiting,
-                                   detail: "Connect the Roto-Control by USB. If it’s connected, try another cable or USB port.\n\nUntil a hardware controller connects or you click Apply in Settings, Performance Bridge switches by itself to a Launch Control XL 3 or Launch Control 3 that is the only hardware controller plugged in. Otherwise, choose it in Performance Bridge’s Settings, on the Connections tab, and click Apply."))
+                                   detail: "Connect the Roto-Control by USB. If it’s connected, try another cable or USB port.\n\nUntil a hardware controller connects or you click Apply in Settings, Performance Bridge switches by itself to an OXI E16, Launch Control XL 3, or Launch Control 3 that is the only hardware controller plugged in. Otherwise, choose it in Performance Bridge’s Settings, on the Connections tab, and click Apply."))
+        }
+
+        if status.e16Enabled {
+            if status.e16Connected {
+                steps.append(SetupStep(id: "e16", title: "OXI E16 is connected", state: .done,
+                                       detail: "It is in Remote Mode, and it controls TotalMix FX.",
+                                       instructions: "Connect the E16 by USB and switch it on. If it doesn’t connect, quit any other program that uses its first MIDI port (“OXI E16 Port 1”), and check that its firmware is 1.3.0 or later (1.2 has no Remote Mode)."))
+            } else if status.e16Found {
+                steps.append(SetupStep(id: "e16", title: "OXI E16 found, connecting", state: .waiting,
+                                       detail: "If it stays here, quit any other program that uses its first MIDI port (“OXI E16 Port 1”), and check that its firmware is 1.3.0 or later: firmware 1.2 has no Remote Mode. Update it with OXI’s Firmware Updater."))
+            } else {
+                steps.append(SetupStep(id: "e16", title: "OXI E16 not found", state: .waiting,
+                                       detail: "Connect the E16 by USB and switch it on. If it’s connected, try another cable or USB port.\n\nUntil a hardware controller connects or you click Apply in Settings, Performance Bridge switches by itself to a Roto-Control or Launch Control that is the only hardware controller plugged in."))
+            }
         }
 
         if let name = status.launchControlName {
@@ -147,7 +161,7 @@ public enum SetupChecklist {
                                        detail: "If it stays here, quit any other program that uses its DAW ports, such as a DAW with its Launch Control integration."))
             } else {
                 steps.append(SetupStep(id: "launchcontrol", title: "\(name) not found", state: .waiting,
-                                       detail: "Connect the Launch Control by USB. If it’s connected, check that the model chosen in Performance Bridge’s Settings, on the Connections tab, is the one connected (click Apply after changing it), then try another cable or USB port.\n\nUntil a hardware controller connects or you click Apply in Settings, Performance Bridge switches by itself to a Roto-Control or other Launch Control that is the only hardware controller plugged in."))
+                                       detail: "Connect the Launch Control by USB. If it’s connected, check that the model chosen in Performance Bridge’s Settings, on the Connections tab, is the one connected (click Apply after changing it), then try another cable or USB port.\n\nUntil a hardware controller connects or you click Apply in Settings, Performance Bridge switches by itself to a Roto-Control, other Launch Control, or OXI E16 that is the only hardware controller plugged in."))
             }
         }
 
@@ -204,10 +218,12 @@ public enum SetupChecklist {
     }
 
     /// Whether every step the surfaces need is done: TotalMix FX answering with its channels, the
-    /// Roto-Control connected if it is used, and the Launch Control connected if one is set.
+    /// Roto-Control connected if it is used, the Launch Control connected if one is set, and the
+    /// E16 connected if it is used.
     public static func isComplete(_ status: BridgeStatus) -> Bool {
         status.listening && status.totalMixAnswering && status.channelCount > 0
             && (!status.rotoEnabled || status.rotoConnected)
             && (status.launchControlName == nil || status.launchControlConnected)
+            && (!status.e16Enabled || status.e16Connected)
     }
 }

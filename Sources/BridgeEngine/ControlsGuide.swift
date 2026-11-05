@@ -61,6 +61,7 @@ public struct ControlsGuide: Equatable, Sendable {
         case .launchControl(.xl3): return launchControlXL3
         case .launchControl(.lc3): return launchControl3
         case .roto: return rotoControl
+        case .e16: return e16
         }
     }
 
@@ -146,5 +147,32 @@ public struct ControlsGuide: Equatable, Sendable {
         notes: [
             "A mute that is on flashes while TotalMix FX's Mute Master is off.",
             "The knob and switch modes, and the track set, are the Roto-Control's own and are kept between sessions; Performance Bridge follows them and can't set them, so a session can start with the knobs on a send. The small screen above MODE shows both (e.g., \"MIX-TRACKS\" and \"KNOBS-VOL\").",
+        ])
+
+    static let e16 = ControlsGuide(
+        title: "OXI E16",
+        image: "controller-oxi-e16",
+        introduction: [
+            "The E16 shows sixteen channels at once, one encoder each: the four rows of four are the channels in order, left to right and top to bottom. The screen names them, and each encoder's ring shows its channel's color from TotalMix FX, filled to its level.",
+        ],
+        tables: [
+            Table(controlHeading: "Control (each encoder)", actionHeading: "What it does for that encoder's channel", rows: [
+                Row("Turn", "Level in Main Out, pan in Main Out, or a send, by the mode (**Shift**, below). The screen shows the value while it turns; turning faster moves further."),
+                Row("Press and release", "Mute. The ring turns orange, and flashes while TotalMix FX's Mute Master is off; the screen says \"MUTE ON\" or \"MUTE OFF\"."),
+                Row("Hold for one second", "PFL. After a quarter second a yellow arc counts down around the ring; when it closes, PFL is on (or off) and the ring pulses yellow while it stays on. The screen says \"PFL ON\" or \"PFL OFF\" while the encoder is held."),
+            ]),
+            Table(controlHeading: "Shift + encoder (press)", actionHeading: "What it does", rows: [
+                Row("**1** LEVEL / **2** PAN / **3** SEND", "What a turn does: level (white), pan (magenta), or a send (green) to the last output used. The one in use lights brighter."),
+                Row("**11** <SEND / **12** SEND>", "The previous or next output in the Outputs list for the sends, entering SEND mode if it isn't on. Dark at the ends of the list."),
+                Row("**15** <PAGE / **16** PAGE>", "The previous or next sixteen channels (blue). Dark at the first and last page."),
+            ]),
+        ],
+        notes: [
+            "While Shift is held, the screen names each button and the rings show them: dim where a button is available, brighter for the one in use, and full while pressed; the other encoders go dark.",
+            "The top line of the screen shows the mode (LEVEL, PAN, or the send's output, e.g., \"> PHONES 1\"), with \"PFL\" at the right while any channel's PFL is on and the page (e.g., \"2/3\") when there is more than one.",
+            "A ring that is dark has no channel. A ring filled all the way around is a switch that is on: a level never fills the last light.",
+            "The brightness of the rings is set in **Settings… → Connections**; full brightness is too much for a dark room.",
+            "Levels and pans are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so TotalMix FX's window shows the levels and pans set here only while Main Out's output is selected in its bottom row.",
+            "The E16 needs firmware 1.3.0 or later (1.2 has no Remote Mode). When Performance Bridge quits, it gives the E16 back to its own firmware; if the E16 is ever left blank, switch it off and on.",
         ])
 }

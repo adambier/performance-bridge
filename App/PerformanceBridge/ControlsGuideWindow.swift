@@ -27,19 +27,17 @@ struct ControlsGuideView: View {
     }
 
     /// The hardware controller the engine runs with: a Launch Control's layout (the Launch Control
-    /// 3's when it is simulated on an XL 3), or the Roto-Control.
+    /// 3's when it is simulated on an XL 3), the E16, or the Roto-Control.
     private static func inUse(_ model: BridgeModel) -> ControllerChoice {
         switch model.engine.settings.launchControl?.layout {
         case .xl3: return .launchControlXL3
         case .lc3: return .launchControl3
-        case nil: return .roto
+        case nil: return model.engine.settings.e16Enabled ? .e16 : .roto
         }
     }
 
     /// The controller the guide shows, as the guide's own type.
-    private var controller: DetectedController {
-        shown.launchControl.map { .launchControl($0) } ?? .roto
-    }
+    private var controller: DetectedController { shown.detected }
 
     var body: some View {
         let guide = ControlsGuide.guide(for: controller)

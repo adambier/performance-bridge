@@ -10,22 +10,29 @@ import LaunchControl
 #if canImport(MIDITransport)
 import MIDITransport
 #endif
+#if canImport(E16Driver)
+import E16Driver
+#endif
 
 /// A hardware controller Performance Bridge can drive, as found among the MIDI ports.
 public enum DetectedController: Equatable, Sendable {
     /// Melbourne Instruments' Roto-Control.
     case roto
+    /// OXI Instruments' E16.
+    case e16
     /// A Novation Launch Control, by model.
     case launchControl(LaunchControlModel)
 
     /// The hardware controllers whose MIDI sources are among `sources`, in the order Settings
-    /// lists them (Roto-Control, Launch Control XL 3, Launch Control 3). The Roto-Control is found
-    /// as the engine finds it (`MIDIEndpointInfo.match` with `rotoPortName`), and a Launch Control
-    /// by its DAW port (`LaunchControlModel.dawPort(among:)`).
+    /// lists them (Roto-Control, OXI E16, Launch Control XL 3, Launch Control 3; Adam,
+    /// 2026-11-04). The Roto-Control is found as the engine finds it (`MIDIEndpointInfo.match`
+    /// with `rotoPortName`), the E16 by its first USB port (`E16Driver.defaultPortName`), and a
+    /// Launch Control by its DAW port (`LaunchControlModel.dawPort(among:)`).
     public static func found(among sources: [MIDIEndpointInfo], rotoPortName: String) -> [DetectedController] {
         var found: [DetectedController] = []
         if MIDIEndpointInfo.match(rotoPortName, in: sources) != nil { found.append(.roto) }
         let names = sources.map(\.name)
+        if names.contains(E16Driver.defaultPortName) { found.append(.e16) }
         for model in LaunchControlModel.allCases where model.dawPort(among: names) != nil {
             found.append(.launchControl(model))
         }
