@@ -41,7 +41,7 @@ public struct E16Step: Equatable, Sendable {
 ///   12), the previous and next page of sixteen strips (15 and 16); the screen names them and
 ///   the rings show the mode in use and which arrows go somewhere;
 /// - the ring shows the strip's color, filled to its level (bipolar for a pan), and the switch
-///   states by shape and motion, orange for mute and pink for PFL (`look`, and the rules in
+///   states by shape and motion, orange marks rotating for mute and pink for PFL (`look`, and the rules in
 ///   its comment); the screen's title shows the function and the page, "PFL" while any PFL is
 ///   on, and for a moment the value of a turned encoder or the result of a push.
 ///
@@ -165,11 +165,19 @@ public struct E16Driver: Sendable {
     /// How long each half of a flashing mute lasts, in seconds (a mute set while TotalMix FX's Mute
     /// Master is off, as on the other surfaces).
     public static let blinkPeriod: Double = 0.5
+    /// A mute's marks: four LEDs a quarter ring apart, moved one LED every `rotationStep`
+    /// seconds over the channel's level (Adam's choice, 2026-11-05, OXI's own rotating idiom;
+    /// a steady full ring had been one LED from a full-level orange channel).
+    public static let rotationStep: Double = 0.15
+    /// How many marks a mute shows.
+    public static let markCount = 4
 
     private var connected = false
     private var lastEnter: Double?
     private var shiftHeld = false
     private var blinkLit = true
+    /// The position of the mutes' marks, 0–15, advanced every `rotationStep`.
+    private var rotation = 0
     /// Whether PFL rings are in the complete-ring phase of their heartbeat now.
     private var heartbeatHigh = true
     private var overlay: (text: String, until: Double)?
@@ -192,14 +200,19 @@ public struct E16Driver: Sendable {
     private var shownScreen: (title: String, tail: String, labels: [String], drawn: Bool)?
     private var sentRings: [RingLook?] = Array(repeating: nil, count: E16Driver.stripCount)
 
-    /// How one encoder's ring is drawn: a RING message alone. The single-LED message is never
-    /// used: on the device it is a persistent override that outlives later fills and inverts the
-    /// encoder's label until a power cycle (seen 2026-11-04).
+    /// How one encoder's ring is drawn: a RING message, then LED messages for any marks. (A
+    /// LED message holds until the next RING for its ring: docs/OXI-E16.md, test 5. An earlier
+    /// build saw LEDs stick, most likely its own re-sending; the device holds no override.)
     struct RingLook: Hashable {
         var ring: E16Ring
         /// Whether the ring's color is sent as it is, outside the driver's `brightness`: the
         /// Shift page's dim and maximum levels.
         var exact = false
+        /// LEDs drawn over the ring with LED messages after it (a mute's rotating marks), by
+        /// index (0 is the first LED left of six o'clock, clockwise; docs/OXI-E16.md, test 5).
+        var marks: [Int] = []
+        /// The marks' color, as red, green, blue.
+        var markColor: [UInt8] = []
     }
 
     /// A driver for one device; `name` starts the hub surfaces' names.
@@ -276,9 +289,11 @@ public struct E16Driver: Sendable {
         }
         let lit = Int((now / Self.blinkPeriod).rounded(.down)) % 2 == 0
         let high = now.truncatingRemainder(dividingBy: Self.heartbeatPeriod) < Self.heartbeatOn
-        if lit != blinkLit || high != heartbeatHigh {
+        let turn = Int((now / Self.rotationStep).rounded(.down)) % Self.stripCount
+        if lit != blinkLit || high != heartbeatHigh || turn != rotation {
             blinkLit = lit
             heartbeatHigh = high
+            rotation = turn
             step.midi += drawRings(hub: hub)  // only the rings that change are sent
         }
         return step
@@ -646,13 +661,23 @@ public struct E16Driver: Sendable {
     /// Every ring, sent only where it changed, in one RING message.
     private mutating func drawRings(hub: SurfaceHub) -> [UInt8] {
         var rings: [(encoder: Int, ring: E16Ring)] = []
+        var leds: [(encoder: Int, led: Int, red: UInt8, green: UInt8, blue: UInt8)] = []
         for index in 0..<Self.stripCount {
             let look = look(index, hub: hub)
             guard sentRings[index] != look else { continue }
             sentRings[index] = look
             rings.append((index, look.exact ? look.ring : dimmed(look.ring)))
+            leds += Self.leds(for: look, encoder: index, brightness: brightness)
         }
-        return E16Outgoing.rings(rings)
+        // The RING message first: a LED message holds until the next RING for its ring (test 5).
+        return E16Outgoing.rings(rings) + E16Outgoing.leds(leds)
+    }
+
+    /// A look's marks as LED messages' chunks, dimmed like the ring.
+    private static func leds(for look: RingLook, encoder: Int, brightness: Double) -> [(encoder: Int, led: Int, red: UInt8, green: UInt8, blue: UInt8)] {
+        guard !look.marks.isEmpty, look.markColor.count == 3 else { return [] }
+        let rgb = scaled((look.markColor[0], look.markColor[1], look.markColor[2]), brightness: brightness)
+        return look.marks.map { (encoder: encoder, led: $0, red: rgb.0, green: rgb.1, blue: rgb.2) }
     }
 
     /// The dimmest a color's largest part goes: a lit ring stays visibly lit (the LEDs are bright
@@ -683,21 +708,22 @@ public struct E16Driver: Sendable {
         guard sentRings[index] != look else { return [] }
         sentRings[index] = look
         return E16Outgoing.rings([(encoder: index, ring: look.exact ? look.ring : dimmed(look.ring))])
+            + E16Outgoing.leds(Self.leds(for: look, encoder: index, brightness: brightness))
     }
 
-    /// A strip's ring, by the rules from the UI review (2026-11-04), drawn with RING messages
-    /// alone:
+    /// A strip's ring, by the rules from the UI review (2026-11-04), with RING messages and, for
+    /// a mute's marks, LED messages after them (test 5):
     /// - dark means no channel: a strip with a channel always lights at least one LED (`floor`,
     ///   as OXI's own "Color Indicator" setting does);
     /// - a complete ring always means a switch is on: a level never fills the last LED (`cap`);
     /// - color is the second cue, shape and motion the first: orange for mute, pink for PFL,
     ///   the colors the other surfaces use;
-    /// - one meaning per motion: steady is a value or a state; a symmetric blink (full orange
-    ///   ring ↔ half ring, `blinkPeriod` each) is a mute that is set but not in effect while
-    ///   TotalMix FX's Mute Master is off; the heartbeat (`heartbeatOn` of each
-    ///   `heartbeatPeriod` a complete pink ring, then a dip to what is underneath: the level,
-    ///   or the mute's ring) is PFL; a one-shot pink arc growing (or, for PFL off, shrinking)
-    ///   is the push held for PFL.
+    /// - one meaning per motion: steady is a value or a state; four marks a quarter ring apart
+    ///   rotating over the level (`rotationStep` a step) is a mute in effect, and the same marks
+    ///   blinking in place (`blinkPeriod`) a mute that is set but not in effect while TotalMix
+    ///   FX's Mute Master is off; the heartbeat (`heartbeatOn` of each `heartbeatPeriod` a
+    ///   complete pink ring, then a dip to what is underneath: the level, with its marks) is
+    ///   PFL; a one-shot pink arc growing (or, for PFL off, shrinking) is the push held for PFL.
     func look(_ index: Int, hub: SurfaceHub) -> RingLook {
         if shiftHeld { return buttonRing(index, hub: hub) }
         guard let info = infos[index], let value = knobValues[index] else { return RingLook(ring: .off) }
@@ -714,15 +740,20 @@ public struct E16Driver: Sendable {
         let level: E16Ring = isPan
             ? E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: value, bipolar: true)
             : E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: min(max(value, Self.floor), Self.cap))
-        var underneath = level
-        if muteOn[index] {
-            let amount = hub.mirror.muteMaster == false && !blinkLit ? 0.5 : 1
-            underneath = E16Ring(red: Self.muteRGB.0, green: Self.muteRGB.1, blue: Self.muteRGB.2, amount: amount)
-        }
         if pflOn[index], heartbeatHigh {
             return RingLook(ring: E16Ring(red: Self.pflRGB.0, green: Self.pflRGB.1, blue: Self.pflRGB.2, amount: 1))
         }
-        return RingLook(ring: underneath)
+        guard muteOn[index] else { return RingLook(ring: level) }
+        // Muted: the level stays, with four marks over it. They rotate while the mute is in
+        // effect and blink in place while TotalMix FX's Mute Master is off (a mute that is set
+        // but not silencing). Orange, or white over an orange or red fill, where orange would
+        // vanish (Adam, 2026-11-05).
+        let warm = (rgb == Self.totalMixRGB[3]!) || (rgb == Self.totalMixRGB[4]!)
+        let mark = warm ? Self.markOnWarmRGB : Self.muteRGB
+        if hub.mirror.muteMaster == false, !blinkLit { return RingLook(ring: level) }
+        let start = hub.mirror.muteMaster == false ? 0 : rotation
+        let marks = (0..<Self.markCount).map { (start + $0 * Self.stripCount / Self.markCount) % Self.stripCount }
+        return RingLook(ring: level, marks: marks, markColor: [mark.0, mark.1, mark.2])
     }
 
     /// The least a strip with a channel lights, as a fraction of the ring: one LED.
@@ -776,6 +807,8 @@ public struct E16Driver: Sendable {
                                      send: (UInt8, UInt8, UInt8), page: (UInt8, UInt8, UInt8))
         = ((127, 127, 127), (127, 0, 100), (0, 60, 0), (0, 0, 127))
 
+    /// The mute marks' color over an orange or red channel, where orange would not show.
+    public static let markOnWarmRGB: (UInt8, UInt8, UInt8) = (127, 127, 127)
     /// Orange, for a mute, as on the other surfaces.
     public static let muteRGB: (UInt8, UInt8, UInt8) = (127, 25, 0)
     /// Pink, for a PFL and for the countdown: the hue TotalMix FX's colors leave free; the
