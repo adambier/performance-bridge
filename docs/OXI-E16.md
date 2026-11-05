@@ -147,7 +147,7 @@ always sources.
 - **Colors.** TotalMix FX's channel colors are mapped so they stay apart on these LEDs: gray is
   shown as cyan (0, 110, 127), the hue TotalMix FX leaves free, since a dim gray read as a dim
   white or a level; orange (127, 16, 0), red (127, 0, 0), blue (0, 0, 127), green (0, 105, 0),
-  yellow (127, 85, 0), purple (70, 0, 127). Mute uses this orange, and PFL is pink (127, 20, 110), the hue TotalMix FX leaves free. The
+  yellow (127, 85, 0), purple (70, 0, 127). Mute uses this orange, and PFL is pink (127, 30, 60), the hue TotalMix FX leaves free: with more blue it blended with purple at the top of the range. The
   brightness setting (6%–80%, shown as 1–100; default 55%) scales all of them in proportion, so
   a color's hue is the same at every setting; a color's largest part never goes below 4, so a lit
   ring stays lit. (A floor added to each part was tried first and pushed orange toward yellow at
@@ -256,7 +256,7 @@ whose two app runs were of the previous build (a `git pull` had been refused).
   and PFL as a fourth; the yellow was moved toward orange, the orange toward red, the green a
   little darker, and PFL from the first lime (too green) to a paler yellow-green. Then, with
   `sbdev e16 colors` at the lowest setting, that yellow-green was too close to both green and
-  yellow; pink (127, 20, 110) was chosen from pinks, salmons, and turquoises (turquoise sat
+  yellow; pink was chosen from pinks, salmons, and turquoises (turquoise sat
   between grey-as-cyan and green).
 
 ### Test 4 (2026-11-04): sends

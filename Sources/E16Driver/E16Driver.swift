@@ -781,7 +781,7 @@ public struct E16Driver: Sendable {
     /// Pink, for a PFL and for the countdown: the hue TotalMix FX's colors leave free; the
     /// yellows and yellow-greens tried first were too close to yellow or green at the lowest
     /// brightness (Adam, 2026-11-04, with `sbdev e16 colors`).
-    public static let pflRGB: (UInt8, UInt8, UInt8) = (127, 20, 110)
+    public static let pflRGB: (UInt8, UInt8, UInt8) = (127, 30, 60)
 
     /// An RGB (0–127 per part) for each of TotalMix FX's eight colors (1 white, 2 grey, 3 orange,
     /// 4 red, 5 blue, 6 green, 7 yellow, 8 pink; docs/TOTALMIX-OSC.md, test 7), as the Launch
