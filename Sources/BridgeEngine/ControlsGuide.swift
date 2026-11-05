@@ -171,7 +171,7 @@ public struct ControlsGuide: Equatable, Sendable {
             "While Shift is held, the screen names each button and the rings show them: dim where a button is available, brighter for the one in use, and full while pressed; the other encoders go dark.",
             "The top line of the screen shows the mode (LEVEL, PAN, or the send's output, e.g., \"> PHONES 1\"). At the right, it shows \"PFL\" while any channel's PFL is on, and the page (e.g., \"2/3\") when there is more than one page.",
             "A ring that is dark has no channel. A ring filled all the way around means the channel's mute or PFL is on; a level never fills the last light.",
-            "The rings' brightness can be set in Performance Bridge's **Settings… → Connections**; full brightness is too much for a dark room.",
+            "The rings' brightness can be set in Performance Bridge's **Settings… → Connections**, from 15% to 100%.",
             "Levels and pans are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so TotalMix FX's window shows the levels and pans set here only while Main Out's output is selected in its bottom row.",
             "The E16 needs firmware 1.3.0 or later (Remote Mode doesn't work before 1.3.0). When Performance Bridge quits, it gives the E16 back to its own firmware; if the E16 is ever left blank, switch it off and on.",
         ])

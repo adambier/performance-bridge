@@ -128,8 +128,8 @@ Launch Control's DAW ports ("LCXL3 1 DAW In" and "Out" on a Launch Control XL 3,
 on a Launch Control 3, the number being the device ID). With more than one Launch Control of the same model
 connected, it uses the one with the lowest device ID.
 
-With the E16 chosen, the Connections tab also shows a **Brightness** slider for its rings below Apply. The
-slider takes effect at once, without Apply; full brightness is too much for a dark room.
+With the E16 chosen, the Connections tab also shows a **Brightness** slider for its rings below Apply, from
+15% to 100%. The slider takes effect at once, without Apply.
 
 With a Launch Control chosen, the Connections tab also shows its send rows below Apply. Their outputs can
 be chosen there at any time while TotalMix FX is open, with the Launch Control connected or not, and a
@@ -273,8 +273,7 @@ from TotalMix FX, filled to its level.
   one page.
 - A ring that is dark has no channel. A ring filled all the way around means the channel's mute or PFL is
   on; a level never fills the last light.
-- The rings' brightness can be set in Performance Bridge's **Settings… → Connections**; full brightness is
-  too much for a dark room.
+- The rings' brightness can be set in Performance Bridge's **Settings… → Connections**, from 15% to 100%.
 - Levels and pans are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so
   TotalMix FX's window shows the levels and pans set here only while Main Out's output is selected in its
   bottom row.

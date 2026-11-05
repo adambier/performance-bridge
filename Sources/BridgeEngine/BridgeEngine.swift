@@ -105,7 +105,7 @@ public struct BridgeSettings: Equatable, Sendable {
     /// The name of the E16's first USB MIDI port.
     public var e16PortName = E16Driver.defaultPortName
     /// How bright the E16's rings are, 0…1 (`E16Driver.brightness`); a must-have setting, since
-    /// full brightness is unusable in a dark room (Adam, 2026-11-04).
+    /// how bright is right depends on the room and is the user's call (Adam, 2026-11-04).
     public var e16Brightness = E16Driver.defaultBrightness
     /// How often the engine tries again to open TotalMix FX's port or the Roto-Control's MIDI ports
     /// while either is not open, in seconds.

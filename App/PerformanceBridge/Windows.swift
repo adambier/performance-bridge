@@ -356,7 +356,7 @@ struct SettingsView: View {
 }
 
 /// The E16's ring brightness, at the bottom of the Connections tab while the E16 is chosen: a
-/// must-have, since full brightness is unusable in a dark room (Adam, 2026-11-04). It takes effect
+/// must-have (Adam, 2026-11-04; how bright is right is the user's call). It takes effect
 /// at once on a connected E16 and is kept otherwise, like the Launch Control's send rows.
 struct E16BrightnessView: View {
     @ObservedObject var model: BridgeModel
@@ -382,7 +382,7 @@ struct E16BrightnessView: View {
                         .frame(width: 40, alignment: .trailing)
                 }
             }
-            Text("Sets how bright the E16’s rings are. Changes take effect at once, without Apply. Full brightness is too much for a dark room.")
+            Text("Sets how bright the E16’s rings are, from 15% to 100%. Changes take effect at once, without Apply.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
