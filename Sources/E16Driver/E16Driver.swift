@@ -41,7 +41,7 @@ public struct E16Step: Equatable, Sendable {
 ///   12), the previous and next page of sixteen strips (15 and 16); the screen names them and
 ///   the rings show the mode in use and which arrows go somewhere;
 /// - the ring shows the strip's color, filled to its level (bipolar for a pan), and the switch
-///   states by shape and motion, orange for mute and yellow for PFL (`look`, and the rules in
+///   states by shape and motion, orange for mute and pink for PFL (`look`, and the rules in
 ///   its comment); the screen's title shows the function and the page, "PFL" while any PFL is
 ///   on, and for a moment the value of a turned encoder or the result of a push.
 ///
@@ -256,7 +256,7 @@ public struct E16Driver: Sendable {
                 pfl(held.encoder, hub: &hub, now: now, into: &step)
             } else if now - held.since >= Self.tapTime {
                 // The countdown, after the tap window: the title says where the hold leads, and
-                // a yellow arc sweeps the ring (growing for PFL on, shrinking for off; Adam and
+                // a pink arc sweeps the ring (growing for PFL on, shrinking for off; Adam and
                 // the UI review, 2026-11-04).
                 let stepIndex = Int((now - held.since - Self.tapTime) / Self.countdownStep + 1e-6)
                 if stepIndex != countdownShown {
@@ -690,13 +690,13 @@ public struct E16Driver: Sendable {
     /// - dark means no channel: a strip with a channel always lights at least one LED (`floor`,
     ///   as OXI's own "Color Indicator" setting does);
     /// - a complete ring always means a switch is on: a level never fills the last LED (`cap`);
-    /// - color is the second cue, shape and motion the first: orange for mute, yellow for PFL,
+    /// - color is the second cue, shape and motion the first: orange for mute, pink for PFL,
     ///   the colors the other surfaces use;
     /// - one meaning per motion: steady is a value or a state; a symmetric blink (full orange
     ///   ring ↔ half ring, `blinkPeriod` each) is a mute that is set but not in effect while
     ///   TotalMix FX's Mute Master is off; the heartbeat (`heartbeatOn` of each
     ///   `heartbeatPeriod` a complete yellow ring, then a dip to what is underneath: the level,
-    ///   or the mute's ring) is PFL; a one-shot yellow arc growing (or, for PFL off, shrinking)
+    ///   or the mute's ring) is PFL; a one-shot pink arc growing (or, for PFL off, shrinking)
     ///   is the push held for PFL.
     func look(_ index: Int, hub: SurfaceHub) -> RingLook {
         if shiftHeld { return buttonRing(index, hub: hub) }
@@ -778,9 +778,10 @@ public struct E16Driver: Sendable {
 
     /// Orange, for a mute, as on the other surfaces.
     public static let muteRGB: (UInt8, UInt8, UInt8) = (127, 25, 0)
-    /// A pale yellow-green, for a PFL and for the countdown, apart from TotalMix FX's
-    /// channel yellow, which is nearer orange (Adam, 2026-11-04).
-    public static let pflRGB: (UInt8, UInt8, UInt8) = (110, 127, 18)
+    /// Pink, for a PFL and for the countdown: the hue TotalMix FX's colors leave free; the
+    /// yellows and yellow-greens tried first were too close to yellow or green at the lowest
+    /// brightness (Adam, 2026-11-04, with `sbdev e16 colors`).
+    public static let pflRGB: (UInt8, UInt8, UInt8) = (127, 20, 110)
 
     /// An RGB (0–127 per part) for each of TotalMix FX's eight colors (1 white, 2 grey, 3 orange,
     /// 4 red, 5 blue, 6 green, 7 yellow, 8 pink; docs/TOTALMIX-OSC.md, test 7), as the Launch
@@ -791,7 +792,7 @@ public struct E16Driver: Sendable {
         3: (127, 25, 0),   // orange: at 10% (13, 3, 0), three steps of green over red's none (Adam, 2026-11-04)
         4: (127, 0, 0),
         5: (0, 0, 127),
-        6: (0, 105, 0),    // green, slightly darker, further from PFL's yellow-green (Adam, 2026-11-04)
+        6: (0, 105, 0),    // green, slightly darker (Adam, 2026-11-04)
         7: (127, 85, 0),   // yellow: at 6% (8, 5, 0), apart from orange's (8, 2, 0); PFL is greener now (Adam, 2026-11-04)
         8: (70, 0, 127),   // purple: (16, 0, 127) was too close to blue on the device, (90, 0, 127) read as magenta (Adam, 2026-11-04)
     ]

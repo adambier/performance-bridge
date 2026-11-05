@@ -164,7 +164,7 @@ public struct ControlsGuide: Equatable, Sendable {
             Table(controlHeading: "Control (each encoder)", actionHeading: "What it does for that encoder's channel", rows: [
                 Row("Turn", "Level in Main Out, pan in Main Out, or a send, by the mode (**Shift**, below). The screen shows the value while it turns; turning faster moves further."),
                 Row("Press and release", "Mute on or off. A muted channel's ring is orange, and flashes while TotalMix FX's Mute Master is off. The screen says \"MUTE ON\" or \"MUTE OFF\", or \"MUTE SET\" or \"MUTE CLR\" while Mute Master is off, when a mute does nothing in the audio."),
-                Row("Hold for one second", "PFL on or off. After a quarter second, a yellow-green arc counts down around the ring, and when it closes PFL switches. While PFL is on, the ring pulses yellow-green. The screen says \"PFL ON\" or \"PFL OFF\" while the encoder is held."),
+                Row("Hold for one second", "PFL on or off. After a quarter second, a pink arc counts down around the ring, and when it closes PFL switches. While PFL is on, the ring pulses pink. The screen says \"PFL ON\" or \"PFL OFF\" while the encoder is held."),
             ]),
             Table(controlHeading: "Hold Shift and press", actionHeading: "What it does", rows: [
                 Row("**1** LEVEL / **2** PAN / **3** SEND", "What a turn does: level (white), pan (magenta), or a send (green) to the last output used. The one in use lights brighter."),

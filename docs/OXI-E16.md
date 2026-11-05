@@ -143,11 +143,11 @@ always sources.
   (bipolar for a pan); dark means no strip (a strip always lights at least one LED); a complete
   ring means the strip's mute or PFL is on (a level never fills the last LED); mute is a steady
   orange ring, blinking between full and half while TotalMix FX's Mute Master is off; PFL is a
-  heartbeat (0.8 s of yellow-green, a 0.2 s dip to what is underneath).
+  heartbeat (0.8 s of pink, a 0.2 s dip to what is underneath).
 - **Colors.** TotalMix FX's channel colors are mapped so they stay apart on these LEDs: gray is
   shown as cyan (0, 110, 127), the hue TotalMix FX leaves free, since a dim gray read as a dim
   white or a level; orange (127, 16, 0), red (127, 0, 0), blue (0, 0, 127), green (0, 105, 0),
-  yellow (127, 85, 0), purple (70, 0, 127). Mute uses this orange, and PFL is (110, 127, 18). The
+  yellow (127, 85, 0), purple (70, 0, 127). Mute uses this orange, and PFL is pink (127, 20, 110), the hue TotalMix FX leaves free. The
   brightness setting (6%–80%, shown as 1–100; default 55%) scales all of them in proportion, so
   a color's hue is the same at every setting; a color's largest part never goes below 4, so a lit
   ring stays lit. (A floor added to each part was tried first and pushed orange toward yellow at
@@ -254,7 +254,10 @@ whose two app runs were of the previous build (a `git pull` had been refused).
   the usable range at 10%–80% with the floor, then 6%–80% once the dimming kept proportions (`sbdev e16 colors`, with orange and red distinct at 6%), shown as 1–100; a pressed Shift button stays at full.
 - Colors as finally set (section 5): TotalMix FX's green, yellow, and orange read as three colors
   and PFL as a fourth; the yellow was moved toward orange, the orange toward red, the green a
-  little darker, and PFL from the first lime (too green) to a paler yellow-green.
+  little darker, and PFL from the first lime (too green) to a paler yellow-green. Then, with
+  `sbdev e16 colors` at the lowest setting, that yellow-green was too close to both green and
+  yellow; pink (127, 20, 110) was chosen from pinks, salmons, and turquoises (turquoise sat
+  between grey-as-cyan and green).
 
 ### Test 4 (2026-11-04): sends
 

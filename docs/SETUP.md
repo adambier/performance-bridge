@@ -257,7 +257,7 @@ from TotalMix FX, filled to its level.
 |---|---|
 | Turn | Level in Main Out, pan in Main Out, or a send, by the mode (**Shift**, below). The screen shows the value while it turns; turning faster moves further. |
 | Press and release | Mute on or off. A muted channel's ring is orange, and flashes while TotalMix FX's Mute Master is off. The screen says "MUTE ON" or "MUTE OFF", or "MUTE SET" or "MUTE CLR" while Mute Master is off, when a mute does nothing in the audio. |
-| Hold for one second | PFL on or off. After a quarter second, a yellow-green arc counts down around the ring, and when it closes PFL switches. While PFL is on, the ring pulses yellow-green. The screen says "PFL ON" or "PFL OFF" while the encoder is held. |
+| Hold for one second | PFL on or off. After a quarter second, a pink arc counts down around the ring, and when it closes PFL switches. While PFL is on, the ring pulses pink. The screen says "PFL ON" or "PFL OFF" while the encoder is held. |
 
 | Hold Shift and press | What it does |
 |---|---|
