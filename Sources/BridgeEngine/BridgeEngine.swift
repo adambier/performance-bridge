@@ -305,7 +305,7 @@ public final class BridgeEngine: @unchecked Sendable {
         }
         self.sendRows = rows
         self.levelBrightness = settings.launchControlLevelBrightness
-        self.e16Brightness = settings.e16Brightness
+        self.e16Brightness = min(max(settings.e16Brightness, Self.e16MinimumBrightness), 1)
     }
 
     private var now: Double { Date().timeIntervalSince(startDate) }
@@ -722,11 +722,15 @@ public final class BridgeEngine: @unchecked Sendable {
         publishStatusIfChanged()
     }
 
-    /// Sets the E16's ring brightness (0…1) from the app. Takes effect at once on a connected
-    /// device, and is kept for the next one otherwise.
+    /// The lowest brightness the engine accepts: below about 15% the rings' orange and yellow
+    /// can't be told apart on the device (Adam, 2026-11-04).
+    public static let e16MinimumBrightness = 0.15
+
+    /// Sets the E16's ring brightness (`e16MinimumBrightness`…1) from the app. Takes effect at
+    /// once on a connected device, and is kept for the next one otherwise.
     public func setE16Brightness(_ value: Double) {
         lock.lock()
-        e16Brightness = min(max(value, 0), 1)
+        e16Brightness = min(max(value, Self.e16MinimumBrightness), 1)
         if var e16 = e16Driver {
             let bytes = e16.setBrightness(e16Brightness, hub: hub)
             e16Driver = e16

@@ -90,6 +90,8 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertEqual(engine.status.e16Brightness, 0.2)
         engine.setE16Brightness(1.5)
         XCTAssertEqual(engine.status.e16Brightness, 1, "clamped")
+        engine.setE16Brightness(0.02)
+        XCTAssertEqual(engine.status.e16Brightness, BridgeEngine.e16MinimumBrightness, "never below 15%: orange and yellow merge there")
         var saved = BridgeSettings()
         saved.e16Enabled = true
         saved.e16Brightness = 0.3

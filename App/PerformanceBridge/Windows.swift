@@ -361,6 +361,10 @@ struct SettingsView: View {
 struct E16BrightnessView: View {
     @ObservedObject var model: BridgeModel
 
+    /// The slider's lowest setting: below about 15% the rings' orange and yellow can't be told
+    /// apart on the device (Adam, 2026-11-04).
+    static let minimum = BridgeEngine.e16MinimumBrightness
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Rings")
@@ -371,7 +375,7 @@ struct E16BrightnessView: View {
                         .frame(width: 110, alignment: .trailing)
                     Slider(value: Binding(
                         get: { model.status.e16Brightness },
-                        set: { model.setE16Brightness($0) }), in: 0.05...1)
+                        set: { model.setE16Brightness($0) }), in: E16BrightnessView.minimum...1)
                         .frame(width: 200)
                     Text("\(Int((model.status.e16Brightness * 100).rounded()))%")
                         .monospacedDigit()
