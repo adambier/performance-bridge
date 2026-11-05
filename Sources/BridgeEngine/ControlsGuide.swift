@@ -48,7 +48,6 @@ public struct ControlsGuide: Equatable, Sendable {
 
     /// What every hardware controller has in common: paragraphs shown before each guide.
     public static let common: [String] = [
-        "**The controls are grouped by channel.** On the Roto-Control and the Launch Controls, each column of controls is one channel; on the E16, each encoder is one channel. A control acts only on its own channel.",
         "Levels and pans go into Main Out's submix: the output TotalMix FX's control room assigns to Main Out, whichever it is. Set the outputs themselves (e.g., Main Out's volume and Speaker B) in TotalMix FX or with an ARC USB; the hardware controllers don't change them.",
         "**Sends** set the headphone mixes and the other submixes. A send control sets how much of its channel goes to one other output, e.g., Phones 1. A row of send controls is that output's whole submix, one channel per column.",
         "The outputs a send row can feed are the ones in **Settings… → Channel Layout → Outputs**, in that order. Main Out and Main Out B (they carry the main mix) aren't listed there, nor is an output that has CUE on in TotalMix FX's Control Room.",
@@ -68,7 +67,9 @@ public struct ControlsGuide: Equatable, Sendable {
     static let launchControlXL3 = ControlsGuide(
         title: "Launch Control XL 3",
         image: "controller-launch-control-xl3",
-        introduction: [],
+        introduction: [
+            "**Each column of controls is one channel**, and every control in a column acts on that channel.",
+        ],
         tables: [
             Table(controlHeading: "Control (in each column)", actionHeading: "What it does for that column's channel", rows: [
                 Row("Fader", "Level in Main Out. The ticks read +6, +3, 0, −6, −10, −20, −40, −60, and −oo, as on TotalMix FX's faders. If a fader isn't where TotalMix FX has the level, it takes effect once it reaches it; its display shows the level meanwhile."),
@@ -102,7 +103,9 @@ public struct ControlsGuide: Equatable, Sendable {
     static let launchControl3 = ControlsGuide(
         title: "Launch Control 3",
         image: "controller-launch-control-3",
-        introduction: [],
+        introduction: [
+            "**Each column of controls is one channel**, and every control in a column acts on that channel.",
+        ],
         tables: [
             Table(controlHeading: "Control (in each column)", actionHeading: "What it does for that column's channel", rows: [
                 Row("Bottom encoder", "Level in Main Out."),
@@ -128,7 +131,9 @@ public struct ControlsGuide: Equatable, Sendable {
     static let rotoControl = ControlsGuide(
         title: "Roto-Control",
         image: "controller-roto-control",
-        introduction: [],
+        introduction: [
+            "**Each column of controls is one channel**, and every control in a column acts on that channel.",
+        ],
         tables: [
             Table(controlHeading: "Control (in each column)", actionHeading: "What it does for that column's channel", rows: [
                 Row("Knob", "Level in Main Out, pan in Main Out, or a send, by the knob mode (hold **SEL**, below). A level knob's faint indent is 0 dB; a send knob has no indent, but 0 dB is at the same position. Touching a knob usually selects its channel (for **FUNC**, below; the Roto-Control misses some touches) and holds it: TotalMix FX doesn't move a knob while it is touched or turning."),

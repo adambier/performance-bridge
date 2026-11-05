@@ -202,9 +202,6 @@ Choose **Settings…** from the menu and open the **Channel Layout** tab.
 
 The app has the same, for every hardware controller: choose **Controls Guide…** from Performance Bridge's menu.
 
-**The controls are grouped by channel.** On the Roto-Control and the Launch Controls, each column of controls
-is one channel; on the E16, each encoder is one channel. A control acts only on its own channel.
-
 Levels and pans go into Main Out's submix: the output TotalMix FX's control room assigns to Main Out,
 whichever it is. Set the outputs themselves (e.g., Main Out's volume and Speaker B) in TotalMix FX or with an
 ARC USB; the hardware controllers don't change them.
@@ -224,6 +221,8 @@ before a performance.
 ### Roto-Control
 
 <img src="../App/PerformanceBridge/Resources/controller-roto-control.png" width="556" alt="Melbourne Instruments Roto-Control, seen from above: eight knobs, each with a screen and a switch below it, and the MODE, LEARN, FUNC, SEL, and arrow buttons on the left">
+
+**Each column of controls is one channel**, and every control in a column acts on that channel.
 
 | Control (in each column) | What it does for that column's channel |
 |---|---|
@@ -285,6 +284,8 @@ from TotalMix FX, filled to its level.
 
 <img src="../App/PerformanceBridge/Resources/controller-launch-control-xl3.png" width="165" alt="Novation Launch Control XL 3, seen from above: three rows of eight encoders, eight faders, and two rows of eight buttons, with Page, Track, Shift, and Mode on the left">
 
+**Each column of controls is one channel**, and every control in a column acts on that channel.
+
 | Control (in each column) | What it does for that column's channel |
 |---|---|
 | Fader | Level in Main Out. The ticks read +6, +3, 0, −6, −10, −20, −40, −60, and −oo, as on TotalMix FX's faders. If a fader isn't where TotalMix FX has the level, it takes effect once it reaches it; its display shows the level meanwhile. |
@@ -328,6 +329,8 @@ from TotalMix FX, filled to its level.
 ### Launch Control 3
 
 <img src="../App/PerformanceBridge/Resources/controller-launch-control-3.png" width="328" alt="Novation Launch Control 3, seen from above: two rows of eight encoders and one row of eight buttons, with Page, Track, Shift, Mode, and Function on the left">
+
+**Each column of controls is one channel**, and every control in a column acts on that channel.
 
 | Control (in each column) | What it does for that column's channel |
 |---|---|
