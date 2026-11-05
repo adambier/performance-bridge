@@ -272,7 +272,7 @@ from TotalMix FX, filled to its level.
   one page.
 - A ring that is dark has no channel. A ring filled all the way around means the channel's mute or PFL is
   on; a level never fills the last light.
-- The rings' brightness can be set in Performance Bridge's **Settings… → Connections**, from 15% to 100%.
+- The rings' brightness can be set in Performance Bridge's **Settings… → Connections**, from 1 to 100.
 - Levels and pans are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so
   TotalMix FX's window shows the levels and pans set here only while Main Out's output is selected in its
   bottom row.
