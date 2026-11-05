@@ -34,6 +34,22 @@ final class E16RemoteTests: XCTestCase {
         XCTAssertEqual(E16Ring(red: 0, green: 0, blue: 0, amount: .nan).amount14, 0)
     }
 
+    func testLEDsGoSixteenToAMessage() {
+        let all = (0..<128).map { (encoder: $0 / 8, led: $0 % 8 * 2, red: UInt8(127), green: UInt8(25), blue: UInt8(0)) }
+        let bytes = E16Outgoing.leds(all)
+        let messages = bytes.split(separator: 0xF7, omittingEmptySubsequences: true).map(Array.init)
+        XCTAssertEqual(messages.count, 128 / E16Outgoing.ledsPerMessage, "eight messages")
+        var seen: [[UInt8]] = []
+        for m in messages {
+            XCTAssertEqual(Array(m.prefix(8)), [0xF0, 0x00, 0x21, 0x5B, 0x02, 0x01, 0x06, 0x01])
+            let raw = E16Outgoing.unpack(Array(m.dropFirst(8)))
+            XCTAssertLessThanOrEqual(raw.count, 5 * E16Outgoing.ledsPerMessage)
+            seen += stride(from: 0, to: raw.count, by: 5).map { Array(raw[$0..<$0 + 5]) }
+        }
+        XCTAssertEqual(seen.map { [$0[0], $0[1]] }, all.map { [UInt8($0.encoder), UInt8($0.led)] }, "every LED, in order")
+        XCTAssertEqual(E16Outgoing.leds([(encoder: 16, led: 0, red: 1, green: 1, blue: 1)]), [], "out of range sends nothing")
+    }
+
     func testLabelsAreEightyBytesCutAndPadded() {
         let bytes = E16Outgoing.labels(title: "A title that is far too long", labels: ["AN 1", "Longer", "é"])
         XCTAssertEqual(bytes.count, 8 + 80 + 12 + 1)  // header+ID, 80 raw bytes become 92 packed, F7

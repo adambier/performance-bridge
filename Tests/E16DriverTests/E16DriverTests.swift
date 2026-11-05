@@ -159,10 +159,28 @@ final class E16DriverTests: XCTestCase {
         let unity = driver.take(hub.handle(.mix(bus: .input, channel: 2, output: 0, parameter: "faderlin", value: .number(FaderCurve.unityPosition)), now: 2), hub: &hub, now: 2)
         XCTAssertEqual(unity.midi.rings[1]?.amount, 16383, "full at 0 dB")
         let top = driver.take(hub.handle(.mix(bus: .input, channel: 2, output: 0, parameter: "faderlin", value: .number(1)), now: 2.5), hub: &hub, now: 2.5)
-        XCTAssertEqual(top.midi.rings[1]?.amount ?? 16383, 16383, "still full above 0 dB (nothing new to send)")
+        XCTAssertNil(top.midi.rings[1], "still full above 0 dB: nothing new to send")
         let bottom = driver.take(hub.handle(.mix(bus: .input, channel: 2, output: 0, parameter: "faderlin", value: .number(0)), now: 3), hub: &hub, now: 3)
         XCTAssertEqual(bottom.midi.rings[1]?.amount, Int((1.0 / 16 * 16383).rounded()), "one LED at -oo")
         XCTAssertEqual(driver.tick(hub: &hub, now: 5).midi, [], "nothing to send while quiet")
+    }
+
+    func testSetOnlyMuteWithPFL() {
+        // While Mute Master is off, a set mute's marks turn with PFL's and blink; the level
+        // does not show (Tier 1 review, 2026-11-05).
+        var (driver, hub, _) = connected()
+        _ = driver.take(hub.handle(.other(path: "globalmute", value: .number(0)), now: 0.05), hub: &hub, now: 0.05)
+        _ = driver.receive([0x90, 1, 0x7F, 0x80, 1, 0x00], hub: &hub, now: 0.1)  // mute set, not in effect
+        _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 1)
+        _ = driver.tick(hub: &hub, now: 2.05)  // PFL on
+        _ = driver.receive([0x80, 1, 0x00], hub: &hub, now: 2.1)
+        let lit = driver.tick(hub: &hub, now: 3.05).midi
+        XCTAssertEqual(lit.rings[1]?.amount, 0)
+        XCTAssertEqual(lit.leds[1]?.count, 8)
+        let unlit = driver.tick(hub: &hub, now: 3.55).midi
+        XCTAssertEqual(unlit.rings[1]?.amount, 0, "not the level")
+        XCTAssertEqual(unlit.leds[1]?.count, 4)
+        XCTAssertEqual(unlit.leds[1]?.filter { $0.b != 0 }.count, 4, "the pink marks alone")
     }
 
     func testStopGivesTheDeviceBack() {
@@ -237,6 +255,7 @@ final class E16DriverTests: XCTestCase {
         let a = driver.tick(hub: &hub, now: 6.85).midi.leds[2]?.map(\.led)
         let b = driver.tick(hub: &hub, now: 7.15).midi.leds[2]?.map(\.led)
         XCTAssertNotNil(a)
+        XCTAssertNotNil(b)
         XCTAssertNotEqual(a, b, "the pink marks turn")
         // Holding again counts down the other way and turns PFL off.
         _ = driver.receive([0x90, 2, 0x7F], hub: &hub, now: 8)
@@ -457,6 +476,7 @@ final class E16DriverTests: XCTestCase {
         XCTAssertNil(off.midi.leds[1], "no marks in this half of the blink")
         let back = driver.tick(hub: &hub, now: 1.1)
         XCTAssertEqual(back.midi.leds[1]?.map(\.led), [0, 4, 8, 12], "the marks again, in place")
+        XCTAssertNil(driver.tick(hub: &hub, now: 1.3).midi.rings[1], "still: a rotation step sends nothing")
         _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 2)
         let clear = driver.receive([0x80, 1, 0x00], hub: &hub, now: 2.1)
         XCTAssertEqual(clear.midi.lastTitle, "Vox MUTE CLR")

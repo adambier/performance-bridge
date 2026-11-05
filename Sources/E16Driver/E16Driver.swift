@@ -158,21 +158,21 @@ public struct E16Driver: Sendable {
     public static let titleWidth = 15
     /// How long the title shows a turned encoder's value or a press's result, in seconds.
     public static let overlayTime: Double = 1
-    /// How long each half of a flashing mute lasts, in seconds (a mute set while TotalMix FX's Mute
+    /// How long the marks and the level each show for a set-only mute, in seconds (a mute set while TotalMix FX's Mute
     /// Master is off, as on the other surfaces).
     public static let blinkPeriod: Double = 0.5
-    /// A mute's marks: four orange LEDs a quarter ring apart on a dark ring, moved one LED every
+    /// A switch's marks (mute orange, PFL pink): four LEDs a quarter ring apart on a dark ring, moved one LED every
     /// `rotationStep` seconds (Adam's choice, 2026-11-05, OXI's own rotating idiom; a steady
     /// full ring had been one LED from a full-level orange channel).
     public static let rotationStep: Double = 0.15
-    /// How many marks a mute shows.
+    /// How many marks a switch shows.
     public static let markCount = 4
 
     private var connected = false
     private var lastEnter: Double?
     private var shiftHeld = false
     private var blinkLit = true
-    /// The position of the mutes' marks, 0–15, advanced every `rotationStep`.
+    /// The position of the switches' marks, 0–15, advanced every `rotationStep`.
     private var rotation = 0
     private var overlay: (text: String, until: Double)?
     /// The encoder held down, if any, since when, and whether the hold has already toggled PFL.
@@ -258,7 +258,7 @@ public struct E16Driver: Sendable {
     }
 
     /// What is due as time passes: ENTER asked again while the device hasn't answered, a push
-    /// held long enough for PFL (with its countdown), an overlay ending, and flashing mutes.
+    /// held long enough for PFL (with its countdown), an overlay ending, and the marks' rotation and alternation.
     public mutating func tick(hub: inout SurfaceHub, now: Double) -> E16Step {
         var step = E16Step()
         if !connected, let lastEnter, now - lastEnter >= Self.enterInterval {
@@ -744,18 +744,18 @@ public struct E16Driver: Sendable {
     }
 
     /// A strip's ring, by the rules from the UI review (2026-11-04), with RING messages and, for
-    /// a mute's marks, LED messages after them (test 5):
+    /// a switch's marks, LED messages after them (test 5):
     /// - dark means no channel: a strip with a channel always lights at least one LED (`floor`,
     ///   as OXI's own "Color Indicator" setting does);
     /// - a level fills the ring at 0 dB and above (`levelAmount`; Adam, 2026-11-05), since a
     ///   switch that is on is no longer a full ring;
-    /// - color is the second cue, shape and motion the first: orange for mute, pink for PFL,
-    ///   the colors the other surfaces use;
+    /// - color is the second cue, shape and motion the first: orange for mute, as on the
+    ///   other surfaces, and pink for PFL (`pflRGB`);
     /// - one meaning per motion: steady is a value; four marks a quarter ring apart rotating on
     ///   a dark ring (`rotationStep` a step) is a switch that is on, orange for mute and pink
     ///   for PFL (both: interleaved); a mute that is set but not in effect while TotalMix FX's
     ///   Mute Master is off shows its marks still, alternating with the level every
-    ///   `blinkPeriod`; a one-shot pink arc growing (or, for PFL off, shrinking) is the push
+    ///   `blinkPeriod`, or, with PFL on, turning with PFL's and blinking; a one-shot pink arc growing (or, for PFL off, shrinking) is the push
     ///   held for PFL.
     func look(_ index: Int, hub: SurfaceHub) -> RingLook {
         if shiftHeld { return buttonRing(index, hub: hub) }
@@ -785,7 +785,8 @@ public struct E16Driver: Sendable {
         // for mute, pink for PFL, interleaved two LEDs apart when both are on (Adam,
         // 2026-11-05: mute and PFL alike, by color). A mute that is set while TotalMix FX's
         // Mute Master is off (not silencing) shows its marks still, alternating with the level
-        // every `blinkPeriod`.
+        // every `blinkPeriod`; with PFL on, they turn with PFL's and blink, and the level
+        // does not show.
         let muteInEffect = muteOn[index] && hub.mirror.muteMaster != false
         let muteSetOnly = muteOn[index] && hub.mirror.muteMaster == false
         let turning = pflOn[index] || muteInEffect

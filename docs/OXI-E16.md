@@ -111,7 +111,7 @@ What the device sends, all on MIDI channel 1:[^sheet] [^test-1]
   afterwards, with nothing left behind.[^test-5] (Test 2 had read the message as a persistent
   override that also inverted the encoder's label: test 5 shows it is not. The likely cause was
   the driver of that build re-sending its own LED messages every tick, not the device; the label
-  inversion is unexplained.) The driver uses it from 1.1.1 for a mute's rotating marks.
+  inversion is unexplained.) The driver uses it from 1.1.1 for the rotating marks of a mute and a PFL, at most sixteen LEDs to a message (the most test 5 sent in one).
 - **OLED LABELS** draws the title on the top line and the labels in the 4×4 layout of the
   encoders. The firmware centers the title and shows only 15 of its 16 characters; padding a
   title with spaces moves it off center, padding with nulls doesn't.[^test-2]
@@ -162,7 +162,8 @@ always sources.
   RING message[^test-5] [^test-7]), orange for a mute and pink for a PFL, interleaved two LEDs
   apart when both are on (Adam, 2026-11-05: mute and PFL alike, by color); a mute that is set
   while TotalMix FX's Mute Master is off shows its marks still, alternating every 0.5 s with the
-  level. (1.1.0 showed mute as a steady full orange ring, one LED from a full-level orange
+  level, or, with PFL also on, turning with PFL's and blinking every 0.5 s (the level does not
+  show). (1.1.0 showed mute as a steady full orange ring, one LED from a full-level orange
   channel, and PFL as a pink heartbeat: Adam, 2026-11-04.)
 - **Colors.** TotalMix FX's channel colors are mapped so they stay apart on these LEDs: gray is
   shown as cyan (0, 110, 127), the hue TotalMix FX leaves free, since a dim gray read as a dim
