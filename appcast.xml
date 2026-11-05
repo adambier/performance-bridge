@@ -3,6 +3,19 @@
     <channel>
         <title>Performance Bridge</title>
         <item>
+            <title>1.1.1</title>
+            <pubDate>Thu, 05 Nov 2026 13:19:48 -0800</pubDate>
+            <sparkle:version>481</sparkle:version>
+            <sparkle:shortVersionString>1.1.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[**OXI E16:** a channel that is muted or in PFL now shows four lights turning on an otherwise dark ring, orange for mute and pink for PFL (eight, alternating, when both are on), so a switch can't be mistaken for a level. While TotalMix FX's Mute Master is off, a muted channel's orange lights stand still and alternate with its level. A level or send now fills its ring at 0 dB and above. Push and turn an encoder to pan in LEVEL and SEND modes, or to set the level in PAN mode; start turning within a second of pushing, and the push neither mutes nor switches PFL. Pans now show red as soon as they move off center.
+
+
+**Internal:** the E16's per-LED message (test 5), push and turn (test 6), and 1.1.1 on the device (test 7) in `docs/OXI-E16.md`; `sbdev e16 led`, `sbdev e16 shapes`, and `sbdev e16 colors`.
+]]></description>
+            <enclosure url="https://github.com/adambier/performance-bridge/releases/download/v1.1.1/Performance-Bridge-1.1.1.zip" length="6371753" type="application/octet-stream" sparkle:edSignature="Q58kDv9iUA+bf1OXLKu5rCjA7Cw//EHHr1CSLapexXNijaHi6ryhDPfcCZKRbAbrnb/4VtBqR6tBP9ybB2hDDQ=="/>
+        </item>
+        <item>
             <title>1.1.0</title>
             <pubDate>Wed, 04 Nov 2026 20:39:16 -0800</pubDate>
             <sparkle:version>459</sparkle:version>
