@@ -760,9 +760,9 @@ public struct E16Driver: Sendable {
 
     /// Orange, for a mute, as on the other surfaces.
     public static let muteRGB: (UInt8, UInt8, UInt8) = (127, 25, 0)
-    /// Yellow, for a PFL and for the countdown: a lime-leaning yellow, apart from TotalMix FX's
+    /// Lime, for a PFL and for the countdown: well apart from TotalMix FX's
     /// channel yellow, which is nearer orange (Adam, 2026-11-04).
-    public static let pflRGB: (UInt8, UInt8, UInt8) = (100, 127, 0)
+    public static let pflRGB: (UInt8, UInt8, UInt8) = (50, 127, 0)
 
     /// An RGB (0–127 per part) for each of TotalMix FX's eight colors (1 white, 2 grey, 3 orange,
     /// 4 red, 5 blue, 6 green, 7 yellow, 8 pink; docs/TOTALMIX-OSC.md, test 7), as the Launch
