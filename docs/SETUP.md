@@ -111,8 +111,8 @@ run).
 
 ## Step 3: Connect the hardware controller
 
-Performance Bridge uses one hardware controller at a time: a Roto-Control, a Launch Control XL 3, or a
-Launch Control 3.
+Performance Bridge uses one hardware controller at a time: a Roto-Control, an OXI E16, a Launch Control
+XL 3, or a Launch Control 3. The E16 needs firmware 1.3.0 or later.
 
 1. Connect the hardware controller to the Mac by USB. It can be connected before or after the app starts.
 2. In Performance Bridge, open **Settings… → Connections** and choose it from the **Controller** menu
@@ -123,10 +123,13 @@ Launch Control 3.
    and ports) and the hardware controller; the send rows below them don't need Apply.
 
 The app finds the controller by the names of its MIDI ports, which are fixed for each model, so there is
-no port to choose: the Roto-Control's port "Roto-Control" and a Launch Control's DAW ports ("LCXL3 1 DAW
-In" and "Out" on a Launch Control XL 3, "LC3 1 DAW In" and "Out" on a Launch Control 3, the number being
-the device ID). With more than one Launch Control of the same model connected, it uses the one with the
-lowest device ID.
+no port to choose: the Roto-Control's port "Roto-Control", the E16's first port ("OXI E16 Port 1"), and a
+Launch Control's DAW ports ("LCXL3 1 DAW In" and "Out" on a Launch Control XL 3, "LC3 1 DAW In" and "Out"
+on a Launch Control 3, the number being the device ID). With more than one Launch Control of the same model
+connected, it uses the one with the lowest device ID.
+
+With the E16 chosen, the Connections tab also shows a **Brightness** slider for its rings below Apply, from
+1 to 100. The slider takes effect at once, without Apply.
 
 With a Launch Control chosen, the Connections tab also shows its send rows below Apply. Their outputs can
 be chosen there at any time while TotalMix FX is open, with the Launch Control connected or not, and a
@@ -199,9 +202,6 @@ Choose **Settings…** from the menu and open the **Channel Layout** tab.
 
 The app has the same, for every hardware controller: choose **Controls Guide…** from Performance Bridge's menu.
 
-Every hardware controller works the same way: **each column of controls is one channel** and every control in
-a column acts on that channel.
-
 Levels and pans go into Main Out's submix: the output TotalMix FX's control room assigns to Main Out,
 whichever it is. Set the outputs themselves (e.g., Main Out's volume and Speaker B) in TotalMix FX or with an
 ARC USB; the hardware controllers don't change them.
@@ -218,9 +218,11 @@ FX's Control Room.
 **Cue/PFL to**). That output is Main by default, which replaces the main mix, so choose a headphone output
 before a performance.
 
-### Roto-Control
+### Melbourne Instruments Roto-Control
 
 <img src="../App/PerformanceBridge/Resources/controller-roto-control.png" width="556" alt="Melbourne Instruments Roto-Control, seen from above: eight knobs, each with a screen and a switch below it, and the MODE, LEARN, FUNC, SEL, and arrow buttons on the left">
+
+**Each column of controls is one channel**, and every control in a column acts on that channel.
 
 | Control (in each column) | What it does for that column's channel |
 |---|---|
@@ -243,9 +245,46 @@ before a performance.
   small screen above MODE shows both (e.g., "MIX-TRACKS" and "KNOBS-VOL").
 - Details and the test records are in [`docs/ROTO-CONTROL.md`](ROTO-CONTROL.md).
 
-### Launch Control XL 3
+### OXI Instruments E16
+
+<img src="../App/PerformanceBridge/Resources/controller-oxi-e16.png" width="252" alt="OXI Instruments E16, seen from above: sixteen encoders with light rings in four rows of four, and a screen above them">
+
+The E16 shows sixteen channels at once, one encoder each: the four rows of four are the channels in order,
+left to right and top to bottom. The screen names them, and each encoder's ring shows its channel's color
+from TotalMix FX, filled to its level.
+
+| Control (each encoder) | What it does for that encoder's channel |
+|---|---|
+| Turn | Level in Main Out, pan in Main Out, or a send, by the mode (**Shift**, below). The screen shows the value while it turns; turning faster moves further. |
+| Press and release | Mute on or off. A muted channel's ring is orange, and flashes while TotalMix FX's Mute Master is off. The screen says "MUTE ON" or "MUTE OFF", or "MUTE SET" or "MUTE CLR" while Mute Master is off, when a mute does nothing in the audio. |
+| Hold for one second | PFL on or off. After a quarter second, a pink arc counts down around the ring, and when it closes PFL switches. While PFL is on, the ring pulses pink. The screen says "PFL ON" or "PFL OFF" while the encoder is held. |
+
+| Hold Shift and press | What it does |
+|---|---|
+| **1** LEVEL / **2** PAN / **3** SEND | What a turn does: level (white), pan (magenta), or a send (green) to the last output used. The one in use lights brighter. |
+| **11** <SEND / **12** SEND> | The previous or next output in the Outputs list (Performance Bridge's **Settings… → Channel Layout**) for the sends. In LEVEL or PAN mode either arrow enters SEND mode at the last output used; in SEND mode an arrow is dark at the end of the list. |
+| **15** <PAGE / **16** PAGE> | The previous or next sixteen channels (blue). <PAGE is dark on the first page and PAGE> on the last. |
+
+- While Shift is held, the screen names each button and the rings show them: dim where a button is
+  available, brighter for the one in use, and full while pressed; the other encoders go dark.
+- The top line of the screen shows the mode (LEVEL, PAN, or the send's output, e.g., "> PHONES 1"). At the
+  right, it shows "PFL" while any channel's PFL is on, and the page (e.g., "2/3") when there is more than
+  one page.
+- A ring that is dark has no channel. A ring filled all the way around means the channel's mute or PFL is
+  on; a level never fills the last light.
+- The rings' brightness can be set in Performance Bridge's **Settings… → Connections**, from 1 to 100.
+- Levels and pans are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so
+  TotalMix FX's window shows the levels and pans set here only while Main Out's output is selected in its
+  bottom row.
+- The E16 needs firmware 1.3.0 or later (Remote Mode doesn't work before 1.3.0). When Performance Bridge
+  quits, it gives the E16 back to its own firmware; if the E16 is ever left blank, switch it off and on.
+- Details and the test records are in [`docs/OXI-E16.md`](OXI-E16.md).
+
+### Novation Launch Control XL 3
 
 <img src="../App/PerformanceBridge/Resources/controller-launch-control-xl3.png" width="165" alt="Novation Launch Control XL 3, seen from above: three rows of eight encoders, eight faders, and two rows of eight buttons, with Page, Track, Shift, and Mode on the left">
+
+**Each column of controls is one channel**, and every control in a column acts on that channel.
 
 | Control (in each column) | What it does for that column's channel |
 |---|---|
@@ -287,9 +326,11 @@ before a performance.
   TotalMix FX's window shows the levels and pans set here only while Main Out's output is selected in its
   bottom row.
 
-### Launch Control 3
+### Novation Launch Control 3
 
 <img src="../App/PerformanceBridge/Resources/controller-launch-control-3.png" width="328" alt="Novation Launch Control 3, seen from above: two rows of eight encoders and one row of eight buttons, with Page, Track, Shift, Mode, and Function on the left">
+
+**Each column of controls is one channel**, and every control in a column acts on that channel.
 
 | Control (in each column) | What it does for that column's channel |
 |---|---|
@@ -322,7 +363,7 @@ before a performance.
 - The Launch Control 3 has not been tried on a device yet; everything above is from Novation's documents and from the
   XL 3. See [`docs/LAUNCH-CONTROL-3.md`](LAUNCH-CONTROL-3.md).
 
-The photos of the hardware controllers in this step are Novation's and Melbourne Instruments'.
+The photos of the hardware controllers in this step are Melbourne Instruments', OXI Instruments', and Novation's.
 
 ## If something does not work
 

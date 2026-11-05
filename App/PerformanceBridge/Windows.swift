@@ -229,6 +229,10 @@ struct SettingsView: View {
                 LaunchControlSendRowsView(model: model, chosen: chosen)
                     .padding(.top, 6)
             }
+            if edited.controller == .e16 {
+                E16BrightnessView(model: model)
+                    .padding(.top, 6)
+            }
         }
         .padding(20)
         .fixedSize(horizontal: false, vertical: true)
@@ -303,6 +307,9 @@ struct SettingsView: View {
         if edited.controller == .roto {
             return "Connect the Roto-Control by USB. Performance Bridge finds it by the name of its MIDI port."
         }
+        if edited.controller == .e16 {
+            return "Connect the E16 by USB. Performance Bridge finds its first MIDI port (“OXI E16 Port 1”) by name and puts the E16 in Remote Mode, which needs firmware 1.3.0 or later."
+        }
         let model = edited.controller.launchControl ?? .xl3
         return "Connect the \(model.name) by USB. Performance Bridge finds its DAW port (“\(model.portPrefix) 1 DAW”) by name; with more than one connected, it uses the one with the lowest device ID."
     }
@@ -344,6 +351,57 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
+        }
+    }
+}
+
+/// The E16's ring brightness, at the bottom of the Connections tab while the E16 is chosen: a
+/// must-have (Adam, 2026-11-04; how bright is right is the user's call). It takes effect
+/// at once on a connected E16 and is kept otherwise, like the Launch Control's send rows.
+struct E16BrightnessView: View {
+    @ObservedObject var model: BridgeModel
+
+    /// The slider reads 1–100 for the engine's usable range (`BridgeEngine.e16MinimumBrightness`
+    /// to `e16MaximumBrightness`, 3%–80% of the LEDs' full output; Adam, 2026-11-04).
+    static let shownRange = 1.0...100.0
+
+    /// The slider's reading for an engine brightness.
+    static func shown(_ brightness: Double) -> Double {
+        let low = BridgeEngine.e16MinimumBrightness, high = BridgeEngine.e16MaximumBrightness
+        guard brightness.isFinite else { return shownRange.lowerBound }
+        let fraction = (brightness - low) / (high - low)
+        return min(max(shownRange.lowerBound + fraction * (shownRange.upperBound - shownRange.lowerBound), shownRange.lowerBound), shownRange.upperBound)
+    }
+
+    /// The engine brightness for a slider reading.
+    static func brightness(shown: Double) -> Double {
+        let low = BridgeEngine.e16MinimumBrightness, high = BridgeEngine.e16MaximumBrightness
+        guard shown.isFinite else { return low }
+        let fraction = (shown - shownRange.lowerBound) / (shownRange.upperBound - shownRange.lowerBound)
+        return min(max(low + fraction * (high - low), low), high)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("E16 Rings")
+                .font(.headline)
+            Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 10, verticalSpacing: 8) {
+                GridRow {
+                    Text("Brightness")
+                        .frame(width: 110, alignment: .trailing)
+                    Slider(value: Binding(
+                        get: { Self.shown(model.status.e16Brightness) },
+                        set: { model.setE16Brightness(Self.brightness(shown: $0)) }), in: Self.shownRange)
+                        .frame(width: 200)
+                    Text("\(Int(Self.shown(model.status.e16Brightness).rounded()))")
+                        .monospacedDigit()
+                        .frame(width: 40, alignment: .trailing)
+                }
+            }
+            Text("Sets how bright full-brightness E16 encoder rings are.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }

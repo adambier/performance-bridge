@@ -34,7 +34,7 @@ public struct ControlsGuide: Equatable, Sendable {
         public var rows: [Row]
     }
 
-    /// The controller's name, as the guide's title.
+    /// The controller's name, with its maker's, as the guide's title (Adam, 2026-11-04).
     public var title: String
     /// The resource name of the controller's photo (`controller-*.png` in the app's resources, the
     /// maker's top view, trimmed), shown under the title; docs/SETUP.md shows the same file.
@@ -48,7 +48,6 @@ public struct ControlsGuide: Equatable, Sendable {
 
     /// What every hardware controller has in common: paragraphs shown before each guide.
     public static let common: [String] = [
-        "Every hardware controller works the same way: **each column of controls is one channel** and every control in a column acts on that channel.",
         "Levels and pans go into Main Out's submix: the output TotalMix FX's control room assigns to Main Out, whichever it is. Set the outputs themselves (e.g., Main Out's volume and Speaker B) in TotalMix FX or with an ARC USB; the hardware controllers don't change them.",
         "**Sends** set the headphone mixes and the other submixes. A send control sets how much of its channel goes to one other output, e.g., Phones 1. A row of send controls is that output's whole submix, one channel per column.",
         "The outputs a send row can feed are the ones in **Settings… → Channel Layout → Outputs**, in that order. Main Out and Main Out B (they carry the main mix) aren't listed there, nor is an output that has CUE on in TotalMix FX's Control Room.",
@@ -61,13 +60,16 @@ public struct ControlsGuide: Equatable, Sendable {
         case .launchControl(.xl3): return launchControlXL3
         case .launchControl(.lc3): return launchControl3
         case .roto: return rotoControl
+        case .e16: return e16
         }
     }
 
     static let launchControlXL3 = ControlsGuide(
-        title: "Launch Control XL 3",
+        title: "Novation Launch Control XL 3",
         image: "controller-launch-control-xl3",
-        introduction: [],
+        introduction: [
+            "**Each column of controls is one channel**, and every control in a column acts on that channel.",
+        ],
         tables: [
             Table(controlHeading: "Control (in each column)", actionHeading: "What it does for that column's channel", rows: [
                 Row("Fader", "Level in Main Out. The ticks read +6, +3, 0, −6, −10, −20, −40, −60, and −oo, as on TotalMix FX's faders. If a fader isn't where TotalMix FX has the level, it takes effect once it reaches it; its display shows the level meanwhile."),
@@ -99,9 +101,11 @@ public struct ControlsGuide: Equatable, Sendable {
         ])
 
     static let launchControl3 = ControlsGuide(
-        title: "Launch Control 3",
+        title: "Novation Launch Control 3",
         image: "controller-launch-control-3",
-        introduction: [],
+        introduction: [
+            "**Each column of controls is one channel**, and every control in a column acts on that channel.",
+        ],
         tables: [
             Table(controlHeading: "Control (in each column)", actionHeading: "What it does for that column's channel", rows: [
                 Row("Bottom encoder", "Level in Main Out."),
@@ -125,9 +129,11 @@ public struct ControlsGuide: Equatable, Sendable {
         ])
 
     static let rotoControl = ControlsGuide(
-        title: "Roto-Control",
+        title: "Melbourne Instruments Roto-Control",
         image: "controller-roto-control",
-        introduction: [],
+        introduction: [
+            "**Each column of controls is one channel**, and every control in a column acts on that channel.",
+        ],
         tables: [
             Table(controlHeading: "Control (in each column)", actionHeading: "What it does for that column's channel", rows: [
                 Row("Knob", "Level in Main Out, pan in Main Out, or a send, by the knob mode (hold **SEL**, below). A level knob's faint indent is 0 dB; a send knob has no indent, but 0 dB is at the same position. Touching a knob usually selects its channel (for **FUNC**, below; the Roto-Control misses some touches) and holds it: TotalMix FX doesn't move a knob while it is touched or turning."),
@@ -146,5 +152,32 @@ public struct ControlsGuide: Equatable, Sendable {
         notes: [
             "A mute that is on flashes while TotalMix FX's Mute Master is off.",
             "The knob and switch modes, and the track set, are the Roto-Control's own and are kept between sessions; Performance Bridge follows them and can't set them, so a session can start with the knobs on a send. The small screen above MODE shows both (e.g., \"MIX-TRACKS\" and \"KNOBS-VOL\").",
+        ])
+
+    static let e16 = ControlsGuide(
+        title: "OXI Instruments E16",
+        image: "controller-oxi-e16",
+        introduction: [
+            "The E16 shows sixteen channels at once, one encoder each: the four rows of four are the channels in order, left to right and top to bottom. The screen names them, and each encoder's ring shows its channel's color from TotalMix FX, filled to its level.",
+        ],
+        tables: [
+            Table(controlHeading: "Control (each encoder)", actionHeading: "What it does for that encoder's channel", rows: [
+                Row("Turn", "Level in Main Out, pan in Main Out, or a send, by the mode (**Shift**, below). The screen shows the value while it turns; turning faster moves further."),
+                Row("Press and release", "Mute on or off. A muted channel's ring is orange, and flashes while TotalMix FX's Mute Master is off. The screen says \"MUTE ON\" or \"MUTE OFF\", or \"MUTE SET\" or \"MUTE CLR\" while Mute Master is off, when a mute does nothing in the audio."),
+                Row("Hold for one second", "PFL on or off. After a quarter second, a pink arc counts down around the ring, and when it closes PFL switches. While PFL is on, the ring pulses pink. The screen says \"PFL ON\" or \"PFL OFF\" while the encoder is held."),
+            ]),
+            Table(controlHeading: "Hold Shift and press", actionHeading: "What it does", rows: [
+                Row("**1** LEVEL / **2** PAN / **3** SEND", "What a turn does: level (white), pan (magenta), or a send (green) to the last output used. The one in use lights brighter."),
+                Row("**11** <SEND / **12** SEND>", "The previous or next output in the Outputs list (Performance Bridge's **Settings… → Channel Layout**) for the sends. In LEVEL or PAN mode either arrow enters SEND mode at the last output used; in SEND mode an arrow is dark at the end of the list."),
+                Row("**15** <PAGE / **16** PAGE>", "The previous or next sixteen channels (blue). <PAGE is dark on the first page and PAGE> on the last."),
+            ]),
+        ],
+        notes: [
+            "While Shift is held, the screen names each button and the rings show them: dim where a button is available, brighter for the one in use, and full while pressed; the other encoders go dark.",
+            "The top line of the screen shows the mode (LEVEL, PAN, or the send's output, e.g., \"> PHONES 1\"). At the right, it shows \"PFL\" while any channel's PFL is on, and the page (e.g., \"2/3\") when there is more than one page.",
+            "A ring that is dark has no channel. A ring filled all the way around means the channel's mute or PFL is on; a level never fills the last light.",
+            "The rings' brightness can be set in Performance Bridge's **Settings… → Connections**, from 1 to 100.",
+            "Levels and pans are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so TotalMix FX's window shows the levels and pans set here only while Main Out's output is selected in its bottom row.",
+            "The E16 needs firmware 1.3.0 or later (Remote Mode doesn't work before 1.3.0). When Performance Bridge quits, it gives the E16 back to its own firmware; if the E16 is ever left blank, switch it off and on.",
         ])
 }

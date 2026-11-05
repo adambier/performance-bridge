@@ -22,6 +22,8 @@ import Foundation
 ///   DAW's Roto-Control integration, has it.)
 /// - The Launch Control found but not in DAW mode after `rotoDelay` seconds, when it has never
 ///   connected with these settings: the window opens.
+/// - The OXI E16 found but not in Remote Mode after `rotoDelay` seconds, when it has never
+///   connected: the window opens.
 /// - TotalMix FX older than 2.1 (no Global OSC): the window opens at once, whatever worked before.
 /// - A Roto-Control that isn't plugged in never opens the window.
 ///
@@ -39,6 +41,8 @@ public struct SetupWatch: Sendable {
         case rotoHandshake
         /// The Launch Control is plugged in but has not entered DAW mode.
         case launchControlNotConnecting
+        /// The OXI E16 is plugged in but has not entered Remote Mode.
+        case e16NotConnecting
         /// TotalMix FX is older than 2.1, which has no Global OSC.
         case totalMixTooOld
 
@@ -49,6 +53,7 @@ public struct SetupWatch: Sendable {
             case .totalMixNotAnswering: return "totalmix"
             case .rotoHandshake: return "roto"
             case .launchControlNotConnecting: return "launchcontrol"
+            case .e16NotConnecting: return "e16"
             case .totalMixTooOld: return "version"
             }
         }
@@ -68,19 +73,24 @@ public struct SetupWatch: Sendable {
     public private(set) var rotoWorked: Bool
     /// Whether the Launch Control has ever connected with the current settings.
     public private(set) var launchControlWorked: Bool
+    /// Whether the OXI E16 has ever connected.
+    public private(set) var e16Worked: Bool
 
     private var listenedThisLaunch = false
     private var silentSince: Double?
     private var rotoPendingSince: Double?
     /// Since when the Launch Control has been plugged in but not in DAW mode.
     private var launchControlPendingSince: Double?
+    /// Since when the E16 has been plugged in but not in Remote Mode.
+    private var e16PendingSince: Double?
     private var opened = false
 
     /// A watch for a new launch, or for new settings, with what has worked before.
-    public init(totalMixWorked: Bool, rotoWorked: Bool, launchControlWorked: Bool = false) {
+    public init(totalMixWorked: Bool, rotoWorked: Bool, launchControlWorked: Bool = false, e16Worked: Bool = false) {
         self.totalMixWorked = totalMixWorked
         self.rotoWorked = rotoWorked
         self.launchControlWorked = launchControlWorked
+        self.e16Worked = e16Worked
     }
 
     /// Takes the latest status and returns a reason when the setup window should open now; at most
@@ -92,6 +102,7 @@ public struct SetupWatch: Sendable {
         if status.totalMixAnswering { totalMixWorked = true }
         if status.rotoConnected { rotoWorked = true }
         if status.launchControlConnected { launchControlWorked = true }
+        if status.e16Connected { e16Worked = true }
         if status.listening, totalMixRunning, !status.totalMixAnswering {
             silentSince = silentSince ?? now
         } else {
@@ -107,6 +118,11 @@ public struct SetupWatch: Sendable {
         } else {
             launchControlPendingSince = nil
         }
+        if status.e16Found, !status.e16Connected {
+            e16PendingSince = e16PendingSince ?? now
+        } else {
+            e16PendingSince = nil
+        }
 
         guard !opened else { return nil }
         var reason: Reason?
@@ -121,6 +137,8 @@ public struct SetupWatch: Sendable {
         } else if let since = launchControlPendingSince, !launchControlWorked, now - since >= Self.rotoDelay {
             // The same wait as the Roto-Control's handshake.
             reason = .launchControlNotConnecting
+        } else if let since = e16PendingSince, !e16Worked, now - since >= Self.rotoDelay {
+            reason = .e16NotConnecting
         }
         if reason != nil { opened = true }
         return reason
@@ -136,6 +154,7 @@ public struct SetupWatch: Sendable {
         if let since = silentSince, now - since >= Self.attentionDelay { return true }
         if let since = rotoPendingSince, now - since >= Self.attentionDelay { return true }
         if let since = launchControlPendingSince, now - since >= Self.attentionDelay { return true }
+        if let since = e16PendingSince, now - since >= Self.attentionDelay { return true }
         return false
     }
 }

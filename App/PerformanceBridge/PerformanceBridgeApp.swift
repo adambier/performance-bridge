@@ -160,10 +160,13 @@ enum Brand {
     }()
 }
 
-/// The hardware controller the app uses: one at a time (Adam, 2026-11-01).
+/// The hardware controller the app uses: one at a time (Adam, 2026-11-01), in the order the menus
+/// list them (Adam, 2026-11-04).
 enum ControllerChoice: String, CaseIterable, Identifiable {
     /// Melbourne Instruments' Roto-Control.
     case roto
+    /// OXI Instruments' E16.
+    case e16
     /// Novation's Launch Control XL 3.
     case launchControlXL3
     /// Novation's Launch Control 3.
@@ -175,15 +178,16 @@ enum ControllerChoice: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .roto: return "Roto-Control"
+        case .e16: return "OXI E16"
         case .launchControlXL3: return LaunchControlModel.xl3.name
         case .launchControl3: return LaunchControlModel.lc3.name
         }
     }
 
-    /// The Launch Control model, or `nil` for the Roto-Control.
+    /// The Launch Control model, or `nil` for the others.
     var launchControl: LaunchControlModel? {
         switch self {
-        case .roto: return nil
+        case .roto, .e16: return nil
         case .launchControlXL3: return .xl3
         case .launchControl3: return .lc3
         }
@@ -191,13 +195,19 @@ enum ControllerChoice: String, CaseIterable, Identifiable {
 
     /// The same hardware controller, as `DetectedController` names it.
     var detected: DetectedController {
-        launchControl.map { .launchControl($0) } ?? .roto
+        switch self {
+        case .roto: return .roto
+        case .e16: return .e16
+        case .launchControlXL3: return .launchControl(.xl3)
+        case .launchControl3: return .launchControl(.lc3)
+        }
     }
 
     /// The choice for a hardware controller found plugged in.
     init(_ detected: DetectedController) {
         switch detected {
         case .roto: self = .roto
+        case .e16: self = .e16
         case .launchControl(.xl3): self = .launchControlXL3
         case .launchControl(.lc3): self = .launchControl3
         }
@@ -252,11 +262,12 @@ final class BridgeModel: ObservableObject {
     @Published var status = BridgeStatus()
     /// Whether the menu-bar icon shows its warning mark.
     @Published private(set) var needsAttention = false
-    /// Whether TotalMix FX and the Roto-Control (and a Launch Control, if one is set) are all
-    /// connected (the menu-bar icon is dimmed otherwise).
+    /// Whether TotalMix FX and the hardware controller in use are all connected (the menu-bar icon
+    /// is dimmed otherwise).
     var allConnected: Bool {
         status.totalMixAnswering && (!status.rotoEnabled || status.rotoConnected)
             && (status.launchControlName == nil || status.launchControlConnected)
+            && (!status.e16Enabled || status.e16Connected)
     }
     /// Whether TotalMix FX is among the running apps, and its version from its app bundle, for the
     /// setup window.
@@ -283,6 +294,16 @@ final class BridgeModel: ObservableObject {
     func setLevelBrightness(_ on: Bool) {
         UserDefaults.standard.set(on, forKey: Self.levelBrightnessKey)
         engine.setLaunchControlLevelBrightness(on)
+    }
+
+    /// The E16's ring brightness, 0…1 (a must-have setting: full brightness is unusable in a dark
+    /// room; Adam, 2026-11-04).
+    nonisolated private static let e16BrightnessKey = "e16Brightness"
+
+    /// Sets the E16's ring brightness: at once, and saved.
+    func setE16Brightness(_ value: Double) {
+        UserDefaults.standard.set(value, forKey: Self.e16BrightnessKey)
+        engine.setE16Brightness(value)
     }
 
     /// The key for one layout's send rows: the XL 3 has two and the Launch Control 3 one (its top
@@ -356,7 +377,7 @@ final class BridgeModel: ObservableObject {
     /// way leaves a DAW's session with it (see AGENTS.md, section 3).
     private func chooseControllerIfNeeded() {
         guard !launchControlFromCommandLine, !controllerSettled else { return }
-        if status.rotoConnected || status.launchControlConnected {
+        if status.rotoConnected || status.launchControlConnected || status.e16Connected {
             controllerSettled = true
             return
         }
@@ -381,12 +402,14 @@ final class BridgeModel: ObservableObject {
         let setting = engine.settings.launchControl
         return "launchControlWorked \(setting?.name ?? "")"
     }
+    private var e16WorkedKey: String { "e16Worked \(engine.settings.e16PortName)" }
 
     /// A new watch for the engine's settings, with what has worked with them before.
     private func makeWatch() -> SetupWatch {
         SetupWatch(totalMixWorked: UserDefaults.standard.bool(forKey: totalMixWorkedKey),
                    rotoWorked: UserDefaults.standard.bool(forKey: rotoWorkedKey),
-                   launchControlWorked: UserDefaults.standard.bool(forKey: launchControlWorkedKey))
+                   launchControlWorked: UserDefaults.standard.bool(forKey: launchControlWorkedKey),
+                   e16Worked: UserDefaults.standard.bool(forKey: e16WorkedKey))
     }
 
     /// Once a second: opens the setup window when SetupWatch says to, remembers what has worked,
@@ -405,6 +428,7 @@ final class BridgeModel: ObservableObject {
         if watch.launchControlWorked, engine.settings.launchControl != nil {
             UserDefaults.standard.set(true, forKey: launchControlWorkedKey)
         }
+        if watch.e16Worked, engine.settings.e16Enabled { UserDefaults.standard.set(true, forKey: e16WorkedKey) }
         chooseControllerIfNeeded()
         let attention = watch.needsAttention(status: status, now: now)
         if attention != needsAttention { needsAttention = attention }
@@ -414,6 +438,7 @@ final class BridgeModel: ObservableObject {
             case .totalMixNotAnswering: print("Opening setup: TotalMix FX is running but hasn't answered")
             case .rotoHandshake: print("Opening setup: the Roto-Control hasn't finished connecting")
             case .launchControlNotConnecting: print("Opening setup: the Launch Control hasn't entered DAW mode")
+            case .e16NotConnecting: print("Opening setup: the OXI E16 hasn't entered Remote Mode")
             case .totalMixTooOld: print("Opening setup: TotalMix FX \(version ?? "") is older than 2.1")
             }
             fflush(stdout)
@@ -464,7 +489,11 @@ final class BridgeModel: ObservableObject {
         // command line.
         settings.launchControl = LaunchControlSetting(arguments: CommandLine.arguments)
             ?? saved.controller.launchControl.map { LaunchControlSetting(layout: $0) }
-        settings.rotoEnabled = settings.launchControl == nil
+        settings.e16Enabled = settings.launchControl == nil && saved.controller == .e16
+        settings.rotoEnabled = settings.launchControl == nil && !settings.e16Enabled
+        if let brightness = UserDefaults.standard.object(forKey: e16BrightnessKey) as? Double {
+            settings.e16Brightness = min(max(brightness, 0), 1)
+        }
         // Both layouts' send rows, so either can be set in Settings with no device connected.
         for layout in LaunchControlModel.allCases {
             if let saved = UserDefaults.standard.array(forKey: sendsKey(layout)) as? [Int] {
@@ -553,6 +582,13 @@ struct MenuContent: View {
         return "Not Found"
     }
 
+    private var e16State: String {
+        let status = model.status
+        if status.e16Connected { return "Connected" }
+        if status.e16Found { return "Connecting" }
+        return "Not Found"
+    }
+
     var body: some View {
         // Status only, always dimmed (Adam, 2026-10-31), as macOS's own menu bar menus show status
         // lines. The full reasons go to the log; the Setup Guide says what to do.
@@ -562,6 +598,9 @@ struct MenuContent: View {
         }
         if let name = model.status.launchControlName {
             Text(name + ": " + launchControlState)
+        }
+        if model.status.e16Enabled {
+            Text("OXI E16: " + e16State)
         }
         // Only while it's off: mutes then do nothing in the audio (Adam, 2026-11-02). A TotalMix FX
         // state that can change between sessions, so a status line, not a fault mark.

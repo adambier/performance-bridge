@@ -26,6 +26,12 @@ import LaunchControl
 #if canImport(LaunchControlDriver)
 import LaunchControlDriver
 #endif
+#if canImport(OXIE16)
+import OXIE16
+#endif
+#if canImport(E16Driver)
+import E16Driver
+#endif
 
 /// A Launch Control for the engine to use: which layout runs on which model, and its MIDI port.
 public struct LaunchControlSetting: Equatable, Sendable {
@@ -92,8 +98,15 @@ public struct BridgeSettings: Equatable, Sendable {
     /// (`LaunchControlDriver.levelBrightness`); off by default (Adam, 2026-11-02).
     public var launchControlLevelBrightness = false
     /// Whether to connect the Roto-Control. The app uses one hardware controller at a time (Adam,
-    /// 2026-11-01), so it turns this off when a Launch Control is chosen.
+    /// 2026-11-01), so it turns this off when a Launch Control or the E16 is chosen.
     public var rotoEnabled = true
+    /// Whether to connect an OXI E16 (in its Remote Mode).
+    public var e16Enabled = false
+    /// The name of the E16's first USB MIDI port.
+    public var e16PortName = E16Driver.defaultPortName
+    /// How bright the E16's rings are (`E16Driver.brightness`, kept within the range below); a must-have setting, since
+    /// how bright is right depends on the room and is the user's call (Adam, 2026-11-04).
+    public var e16Brightness = E16Driver.defaultBrightness
     /// How often the engine tries again to open TotalMix FX's port or the Roto-Control's MIDI ports
     /// while either is not open, in seconds.
     public var retryInterval: Double = 3
@@ -169,6 +182,14 @@ public struct BridgeStatus: Equatable, Sendable {
     public var launchControlSends: [LaunchControlModel: [Int?]] = [:]
     /// Whether a Launch Control's level and send encoders show their level by brightness.
     public var launchControlLevelBrightness = false
+    /// Whether the engine uses an OXI E16 (`BridgeSettings.e16Enabled`).
+    public var e16Enabled = false
+    /// Whether the E16's MIDI port is open (it is plugged in).
+    public var e16Found = false
+    /// Whether the E16 has answered (entered Remote Mode).
+    public var e16Connected = false
+    /// How bright the E16’s rings are (`BridgeEngine.e16MinimumBrightness`…`e16MaximumBrightness`).
+    public var e16Brightness = E16Driver.defaultBrightness
     /// The outputs the send controls step through, in order (`SurfaceHub.sendTargets`), with their
     /// names as the strips show them, for choosing a send row's output.
     public var sendTargets: [HomeChoice] = []
@@ -200,9 +221,9 @@ public struct BridgeStatus: Equatable, Sendable {
     public init() {}
 }
 
-/// TotalMix FX and a Roto-Control connected through `SurfaceHub` and `RotoDriver`: the sockets, the
-/// MIDI ports, and a clock. This is what the app runs; `sbdev bridge` does the same with test
-/// commands of its own.
+/// TotalMix FX and a Roto-Control (or a Launch Control, or an OXI E16) connected through
+/// `SurfaceHub` and the controller's driver: the sockets, the MIDI ports, and a clock. This is
+/// what the app runs; `sbdev bridge` does the same with test commands of its own.
 ///
 /// TotalMix FX and the Roto-Control connect independently: while either can't be opened, the engine
 /// tries again every `BridgeSettings.retryInterval` seconds, and it notices a Roto-Control that is
@@ -263,6 +284,14 @@ public final class BridgeEngine: @unchecked Sendable {
     private var sendRows: [LaunchControlModel: LaunchControlSendRows]
     /// Whether a Launch Control shows levels by brightness, kept like `sendRows`.
     private var levelBrightness: Bool
+    private var e16Driver: E16Driver?
+    private var e16MIDI: MIDIConnection?
+    private var e16Error: String?
+    private var lastE16Try: Double?
+    private var lastE16Check: Double?
+    private var openingE16 = false
+    /// The E16's ring brightness, kept across a reconnection and while no device is connected.
+    private var e16Brightness: Double
 
     /// How often the engine checks that the Roto-Control's ports are still there, in seconds.
     static let unplugCheckInterval: Double = 1
@@ -276,6 +305,7 @@ public final class BridgeEngine: @unchecked Sendable {
         }
         self.sendRows = rows
         self.levelBrightness = settings.launchControlLevelBrightness
+        self.e16Brightness = Self.clampedBrightness(settings.e16Brightness)
     }
 
     private var now: Double { Date().timeIntervalSince(startDate) }
@@ -299,6 +329,7 @@ public final class BridgeEngine: @unchecked Sendable {
         openSocketIfDue(force: true)
         openMIDIIfDue(force: true)
         openLaunchControlIfDue(force: true)
+        openE16IfDue(force: true)
         let thread = Thread { [weak self] in
             while let engine = self, engine.isRunning {
                 engine.tick()
@@ -330,11 +361,22 @@ public final class BridgeEngine: @unchecked Sendable {
             lcDriver = nil
         }
         lcMIDI = nil
+        let closingE16 = e16MIDI
+        if var e16 = e16Driver {
+            // EXIT REMOTE MODE: without it the device stays blank (docs/OXI-E16.md).
+            try? e16MIDI?.send(e16.stop(hub: &hub))
+            e16Driver = nil
+        }
+        e16MIDI = nil
         ticker = nil
         lock.unlock()
         closingSocket?.stop()
         closing?.close()
         closingLC?.close()
+        if let closingE16 {
+            Thread.sleep(forTimeInterval: 0.05)  // let EXIT leave before the port closes
+            closingE16.close()
+        }
         publishStatus()
     }
 
@@ -491,6 +533,71 @@ public final class BridgeEngine: @unchecked Sendable {
         connection.close()
     }
 
+    /// Opens the E16's MIDI port, if the E16 is enabled and the port isn't open and a try is due,
+    /// and starts the driver, which asks the device for Remote Mode.
+    private func openE16IfDue(force: Bool = false) {
+        lock.lock()
+        guard running, settings.e16Enabled, e16MIDI == nil, !openingE16 else { lock.unlock(); return }
+        if !force, let last = lastE16Try, now - last < settings.retryInterval { lock.unlock(); return }
+        lastE16Try = now
+        openingE16 = true
+        lock.unlock()
+
+        let name = settings.e16PortName
+        let result = Result {
+            try MIDIConnection(clientName: "Performance Bridge", sourceName: name, destinationName: name) { [weak self] bytes in
+                self?.fromE16(bytes)
+            }
+        }
+
+        lock.lock()
+        openingE16 = false
+        var unused: MIDIConnection?
+        switch result {
+        case .success(let connection) where running:
+            e16MIDI = connection
+            var e16 = E16Driver(name: "e16")
+            e16.brightness = e16Brightness
+            let started = e16.start(hub: &hub, now: now)
+            sendToE16(started.midi)
+            e16Driver = e16
+            dispatch(started.core)
+            pendingLogs.append("Found the OXI E16 (\(connection.source.name)); asking for Remote Mode")
+            e16Error = nil
+        case .success(let connection):
+            unused = connection
+        case .failure(let error):
+            let message = "OXI E16 not found (\(error))"
+            if message != e16Error { pendingLogs.append(message + "; trying again every \(Self.seconds(settings.retryInterval))") }
+            e16Error = message
+        }
+        lock.unlock()
+        unused?.close()
+    }
+
+    /// Closes the E16's port if it has been unplugged, so that `openE16IfDue` opens it again when
+    /// it comes back.
+    private func checkE16IfDue() {
+        lock.lock()
+        guard let connection = e16MIDI else { lock.unlock(); return }
+        if let last = lastE16Check, now - last < Self.unplugCheckInterval { lock.unlock(); return }
+        lastE16Check = now
+        lock.unlock()
+        guard !connection.isAvailable else { return }
+        lock.lock()
+        guard e16MIDI === connection else { lock.unlock(); return }
+        e16MIDI = nil
+        if var e16 = e16Driver {
+            _ = e16.stop(hub: &hub)
+            e16Driver = nil
+        }
+        lastE16Try = now
+        e16Error = "OXI E16 unplugged"
+        pendingLogs.append("The OXI E16's port is gone (unplugged?); trying again every \(Self.seconds(settings.retryInterval))")
+        lock.unlock()
+        connection.close()
+    }
+
     private static func seconds(_ interval: Double) -> String {
         interval == interval.rounded() ? "\(Int(interval)) s" : "\(interval) s"
     }
@@ -615,6 +722,36 @@ public final class BridgeEngine: @unchecked Sendable {
         publishStatusIfChanged()
     }
 
+    /// The lowest brightness the engine accepts, and the highest: the usable range on the
+    /// device, found by Adam with a 0–100% slider and `sbdev e16 colors` (2026-11-04): 3% is the
+    /// driver's floor (`E16Driver.dimFloor`, a color's largest part at 4), where every color was
+    /// still distinct with proportional dimming. The app's slider
+    /// shows this range as 1–100; a pressed Shift button is always at the LEDs' full 127.
+    public static let e16MinimumBrightness = 0.03
+    /// See `e16MinimumBrightness`.
+    public static let e16MaximumBrightness = 0.80
+
+    /// A brightness within the range; a non-finite value (a corrupted saved setting) becomes
+    /// the default, since `min(max(NaN, …))` lets NaN through (review of 2026-11-04).
+    static func clampedBrightness(_ value: Double) -> Double {
+        guard value.isFinite else { return E16Driver.defaultBrightness }
+        return min(max(value, e16MinimumBrightness), e16MaximumBrightness)
+    }
+
+    /// Sets the E16's ring brightness (`e16MinimumBrightness`…`e16MaximumBrightness`) from the app. Takes effect at
+    /// once on a connected device, and is kept for the next one otherwise.
+    public func setE16Brightness(_ value: Double) {
+        lock.lock()
+        e16Brightness = Self.clampedBrightness(value)
+        if var e16 = e16Driver {
+            let bytes = e16.setBrightness(e16Brightness, hub: hub)
+            e16Driver = e16
+            sendToE16(bytes)
+        }
+        lock.unlock()
+        publishStatusIfChanged()
+    }
+
     /// The layout's new choices, if they changed since `before`: for the layout the driver runs,
     /// the driver's, copied into `sendRows`. Called with the lock held.
     private func takeSendRowChange(_ layout: LaunchControlModel, before: LaunchControlSendRows?) -> [Int?]? {
@@ -677,12 +814,26 @@ public final class BridgeEngine: @unchecked Sendable {
         publishStatusIfChanged()
     }
 
+    private func fromE16(_ bytes: [UInt8]) {
+        lock.lock()
+        if var e16 = e16Driver {
+            let step = e16.receive(bytes, hub: &hub, now: now)
+            e16Driver = e16
+            sendToE16(step.midi)
+            dispatch(step.core)
+        }
+        lock.unlock()
+        publishStatusIfChanged()
+    }
+
     private func tick() {
         openSocketIfDue()
         checkMIDIIfDue()
         openMIDIIfDue()
         checkLaunchControlIfDue()
         openLaunchControlIfDue()
+        checkE16IfDue()
+        openE16IfDue()
         lock.lock()
         // TotalMix FX has gone quiet (quit, restarted, or OSC turned off): refresh the channels, asking
         // until it answers, so the mirror is whole and current again when it comes back.
@@ -695,6 +846,12 @@ public final class BridgeEngine: @unchecked Sendable {
             let step = lc.tick(hub: &hub, now: now)
             lcDriver = lc
             sendToLaunchControl(step.midi)
+            dispatch(step.core)
+        }
+        if var e16 = e16Driver {
+            let step = e16.tick(hub: &hub, now: now)
+            e16Driver = e16
+            sendToE16(step.midi)
             dispatch(step.core)
         }
         lock.unlock()
@@ -710,6 +867,12 @@ public final class BridgeEngine: @unchecked Sendable {
             let step = lc.take(output, hub: &hub, now: now)
             lcDriver = lc
             sendToLaunchControl(step.midi)
+            output = step.core
+        }
+        if var e16 = e16Driver {
+            let step = e16.take(output, hub: &hub, now: now)
+            e16Driver = e16
+            sendToE16(step.midi)
             output = step.core
         }
         for message in output.messages {
@@ -730,6 +893,11 @@ public final class BridgeEngine: @unchecked Sendable {
         try? lcMIDI?.send(bytes)
     }
 
+    private func sendToE16(_ bytes: [UInt8]) {
+        guard !bytes.isEmpty else { return }
+        try? e16MIDI?.send(bytes)
+    }
+
     // MARK: Status
 
     private func makeStatus() -> BridgeStatus {
@@ -748,6 +916,10 @@ public final class BridgeEngine: @unchecked Sendable {
             status.launchControlSends[layout] = rows.outputs(targets: hub.sendTargets)
         }
         status.launchControlLevelBrightness = levelBrightness
+        status.e16Enabled = settings.e16Enabled
+        status.e16Found = e16MIDI != nil
+        status.e16Connected = e16Driver?.isConnected ?? false
+        status.e16Brightness = e16Brightness
         status.sendTargets = hub.sendTargets.map { output in
             let ref = ChannelRef(.output, output)
             let name = hub.layout.label(for: ref) ?? hub.mirror.channels[ref]?.name ?? "Output \(output + 1)"
@@ -762,7 +934,7 @@ public final class BridgeEngine: @unchecked Sendable {
         status.playbacksOnNewPage = hub.layout.playbacksOnNewPage
         status.monitoringOutputs = Self.monitoringChoices(hub.mirror)
         status.otherOutputs = Self.otherChoices(hub.mirror, layout: hub.layout)
-        let errors = [socketError, midiError, lcError].compactMap { $0 }
+        let errors = [socketError, midiError, lcError, e16Error].compactMap { $0 }
         status.error = errors.isEmpty ? nil : errors.joined(separator: "\n")
         return status
     }
@@ -818,6 +990,9 @@ public final class BridgeEngine: @unchecked Sendable {
         }
         if status.launchControlConnected != previous.launchControlConnected, let name = status.launchControlName {
             log(status.launchControlConnected ? "\(name) connected (DAW mode)" : "\(name) disconnected")
+        }
+        if status.e16Connected != previous.e16Connected {
+            log(status.e16Connected ? "OXI E16 connected (Remote Mode)" : "OXI E16 disconnected")
         }
         onStatus?(status)
     }

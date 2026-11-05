@@ -80,6 +80,29 @@ final class BridgeEngineTests: XCTestCase {
         #endif
     }
 
+    /// The E16's brightness: 55% unless saved otherwise, held with no device, clamped, and a
+    /// must-have setting (Adam, 2026-11-04).
+    func testE16BrightnessIsHeldWithoutADevice() {
+        let engine = BridgeEngine(settings: BridgeSettings())
+        XCTAssertFalse(engine.status.e16Enabled, "off unless chosen")
+        XCTAssertEqual(engine.status.e16Brightness, 0.55)
+        engine.setE16Brightness(0.2)
+        XCTAssertEqual(engine.status.e16Brightness, 0.2)
+        engine.setE16Brightness(1.5)
+        XCTAssertEqual(engine.status.e16Brightness, BridgeEngine.e16MaximumBrightness, "never above 80%")
+        engine.setE16Brightness(.nan)
+        XCTAssertEqual(engine.status.e16Brightness, 0.55, "NaN becomes the default")
+        engine.setE16Brightness(-1)
+        XCTAssertEqual(engine.status.e16Brightness, BridgeEngine.e16MinimumBrightness, "never below 3%: Adam's usable range, 2026-11-04")
+        var saved = BridgeSettings()
+        saved.e16Enabled = true
+        saved.e16Brightness = 0.3
+        let fromSaved = BridgeEngine(settings: saved)
+        XCTAssertTrue(fromSaved.status.e16Enabled)
+        XCTAssertEqual(fromSaved.status.e16Brightness, 0.3, "a saved setting is taken up")
+        XCTAssertFalse(fromSaved.status.e16Found)
+    }
+
     func testMonitoringChoicesInOutputOrderWithNamesAndRoles() {
         var mirror = MixerMirror()
         let events: [TotalMixEvent] = [
@@ -491,6 +514,12 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertNil(D.switchTarget(chosen: .launchControl(.xl3), found: [.roto, .launchControl(.lc3)]),
                      "several: the user chooses")
         XCTAssertNil(D.switchTarget(chosen: .roto, found: [.roto, .launchControl(.lc3)]), "the chosen one is there")
+        // The E16, by its first port, listed after the Roto-Control and before the Launch Controls
+        // (Adam, 2026-11-04).
+        let withE16 = [MIDIEndpointInfo(name: "LCXL3 1 DAW In", uniqueID: 1), MIDIEndpointInfo(name: "OXI E16 Port 1", uniqueID: 2),
+                       MIDIEndpointInfo(name: "OXI E16 Port 2", uniqueID: 3), MIDIEndpointInfo(name: "Roto-Control", uniqueID: 4)]
+        XCTAssertEqual(D.found(among: withE16, rotoPortName: "Roto"), [.roto, .e16, .launchControl(.xl3)])
+        XCTAssertEqual(D.switchTarget(chosen: .roto, found: [.e16]), .e16)
     }
 
     func testTheControlsGuideMatchesSetupMD() throws {
@@ -510,7 +539,7 @@ final class BridgeEngineTests: XCTestCase {
         func flatten(_ text: String) -> String { text.split(whereSeparator: \.isWhitespace).joined(separator: " ") }
         let common = flatten(String(step6[..<(step6.range(of: "### ")?.lowerBound ?? step6.endIndex)]))
         for paragraph in ControlsGuide.common { XCTAssertTrue(common.contains(flatten(paragraph)), paragraph) }
-        var guides: [DetectedController] = [.roto, .launchControl(.xl3), .launchControl(.lc3)]
+        var guides: [DetectedController] = [.roto, .e16, .launchControl(.xl3), .launchControl(.lc3)]
         while let controller = guides.popLast() {
             let guide = ControlsGuide.guide(for: controller)
             let setup = section(step6, from: "### \(guide.title)\n", to: "\n### ")
