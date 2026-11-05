@@ -31,7 +31,7 @@ public struct E16Step: Equatable, Sendable {
 /// device's first USB port with `receive(_:hub:now:)`, the hub's output with `take(_:hub:now:)`,
 /// and the time with `tick(hub:now:)`, and sends on what comes back.
 ///
-/// **Layout** (decided with Adam, 2026-11-04; docs/OXI-E16.md, section 6). Sixteen strips, one
+/// **Layout** (decided with Adam, 2026-11-04; docs/OXI-E16.md, section 4). Sixteen strips, one
 /// encoder each, always the sources:
 /// - turn: the strip's level in the home submix, or its pan or its send to one output, as the
 ///   surface's function is set (`function`);
@@ -65,12 +65,10 @@ public struct E16Driver: Sendable {
     /// The send output (an index into `SurfaceHub.sendTargets`) SEND goes back to.
     private var lastSend = 0
     /// Whether the screen is drawn by the driver (the FRAMEBUFFER message, with this project's
-    /// small font: a title and eight characters a label) rather than by the firmware's own label
+    /// small font: a title and labels fitted to `labelMaxWidth`) rather than by the firmware's own label
     /// layout (a title and four characters a label). Adam, 2026-11-04: four characters can't
     /// name a stereo pair.
     public var drawsScreen = true
-    /// How many characters a label has on the host-drawn screen.
-    public static let longLabelLength = 6
     /// The widest a label may be on the host-drawn screen, in pixels: a 32-pixel cell with at
     /// least 6 pixels between neighbors (Adam, 2026-11-04: 3 was too close).
     public static let labelMaxWidth = 26
@@ -133,7 +131,8 @@ public struct E16Driver: Sendable {
             }
         }
 
-        /// The label on the host-drawn screen, up to eight characters.
+        /// The label on the host-drawn screen: the arrows are 28 px, 2 px over `labelMaxWidth`
+        /// (a 4 px gap to the next cell, accepted on the device; Adam, 2026-11-04).
         public var longLabel: String {
             switch self {
             case .level: return "LEVEL"
@@ -188,6 +187,9 @@ public struct E16Driver: Sendable {
     private var muteOn: [Bool] = Array(repeating: false, count: E16Driver.stripCount)
     private var pflOn: [Bool] = Array(repeating: false, count: E16Driver.stripCount)
     private var sentLabels: [UInt8]?
+    /// What the last screen showed (its title parts and labels), so the framebuffer is drawn and
+    /// packed only when something on it changed, not on every tick (review of 2026-11-04).
+    private var shownScreen: (title: String, tail: String, labels: [String])?
     private var sentRings: [RingLook?] = Array(repeating: nil, count: E16Driver.stripCount)
 
     /// How one encoder's ring is drawn: a RING message alone. The single-LED message is never
@@ -300,13 +302,11 @@ public struct E16Driver: Sendable {
             connect(hub: &hub, now: now, into: &step)
             return
         }
-        // A turn or a press shows the device is in Remote Mode even if the ACK was missed.
-        if !connected {
-            switch event {
-            case .turned, .pushed, .shift: connect(hub: &hub, now: now, into: &step)
-            default: return
-            }
-        }
+        // Only the ACK shows the device is in Remote Mode: a turn or a push looks the same from
+        // a device in its own scene (CC 1–16 and notes on channel 1), and taking one as proof
+        // would stop the ENTER retries and move faders by the scene's values (review of
+        // 2026-11-04). ENTER is asked again every `enterInterval` until the ACK comes.
+        if !connected { return }
         switch event {
         case .turned(let encoder, let delta):
             guard (0..<Self.stripCount).contains(encoder), !shiftHeld else { return }
@@ -354,6 +354,7 @@ public struct E16Driver: Sendable {
         pressedButton = nil
         blinkLit = true
         sentLabels = nil
+        shownScreen = nil
         sentRings = Array(repeating: nil, count: Self.stripCount)
         var output = CoreOutput()
         for layer in Layer.allCases { output.append(hub.resend(id(layer), now: now)) }
@@ -573,6 +574,8 @@ public struct E16Driver: Sendable {
             return drawsScreen ? Self.fit(name, width: Self.labelMaxWidth) : Self.fit(name, E16Outgoing.labelLength)
         }
         let parts = titleParts(hub: hub)
+        if let shown = shownScreen, shown.title == parts.0, shown.tail == parts.1, shown.labels == labels { return [] }
+        shownScreen = (parts.0, parts.1, labels)
         let bytes = drawsScreen ? E16Outgoing.framebuffer(Self.screen(title: parts.0, tail: parts.1, labels: labels))
             : E16Outgoing.labels(title: title(hub: hub), labels: labels)
         guard bytes != sentLabels else { return [] }
@@ -743,12 +746,15 @@ public struct E16Driver: Sendable {
         case .output: rgb = Self.buttonColors.send
         case .page: rgb = Self.buttonColors.page
         }
+        guard inUse || isAvailable(button, hub: hub) else { return RingLook(ring: .off) }  // dark stays dark, pressed or not
+        let top = Double(max(rgb.0, rgb.1, rgb.2))
         if pressedButton == index {
-            return RingLook(ring: E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: 1), exact: true)
+            // The color with its largest part at 127, whatever the brightness: the deep green's
+            // 60 would not show a press at full brightness (review of 2026-11-04).
+            func full(_ v: UInt8) -> UInt8 { v == 0 ? 0 : UInt8(min((Double(v) / top * 127).rounded(), 127)) }
+            return RingLook(ring: E16Ring(red: full(rgb.0), green: full(rgb.1), blue: full(rgb.2), amount: 1), exact: true)
         }
         if inUse { return RingLook(ring: E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: 1)) }
-        guard isAvailable(button, hub: hub) else { return RingLook(ring: .off) }
-        let top = Double(max(rgb.0, rgb.1, rgb.2))
         func part(_ v: UInt8) -> UInt8 { v == 0 ? 0 : UInt8(max((Double(v) / top * Self.availableLevel).rounded(), 1)) }
         return RingLook(ring: E16Ring(red: part(rgb.0), green: part(rgb.1), blue: part(rgb.2), amount: 1), exact: true)
     }
@@ -805,7 +811,12 @@ public struct E16Driver: Sendable {
     /// The same, for the host-drawn screen: the first form of `text` no wider than `width`
     /// pixels in the screen's font.
     public static func fit(_ text: String, width: Int) -> String {
-        candidates(text).first { E16Screen.width(of: $0) <= width } ?? ""
+        if let fit = candidates(text).first(where: { E16Screen.width(of: $0) <= width }) { return fit }
+        // Nothing fits (three-digit pairs): cut the shortest form from the end rather than show
+        // nothing for a strip that has a channel (review of 2026-11-04).
+        var last = candidates(text).last ?? ""
+        while !last.isEmpty, E16Screen.width(of: last) > width { last.removeLast() }
+        return last
     }
 
     /// The forms of a channel name from longest to shortest: as it is; without hyphens

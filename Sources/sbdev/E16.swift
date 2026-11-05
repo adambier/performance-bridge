@@ -1,4 +1,4 @@
-// sbdev e16: probes the OXI E16's Remote Mode (firmware 1.0 and later) on its factory firmware,
+// sbdev e16: probes the OXI E16's Remote Mode (firmware 1.3.0 and later) on its factory firmware,
 // through the OXIE16 library. Tested on firmware 1.3.0 (Adam, 2026-11-04; docs/OXI-E16.md).
 
 import Foundation
@@ -44,6 +44,7 @@ final class E16Session {
     private var parser = E16Parser()
     private var handlers: [([E16Event]) -> Void] = []
     private var acked = false
+    private var ackedAt: Date?
     let start = Date()
 
     init(port: Int, verbose: Bool) throws {
@@ -51,7 +52,7 @@ final class E16Session {
         connection = try MIDIConnection(clientName: "sbdev e16", sourceName: name, destinationName: name) { [self] bytes in
             lock.lock()
             let events = parser.feed(bytes)
-            if events.contains(.remoteEntered) { acked = true }
+            if events.contains(.remoteEntered) { acked = true; ackedAt = Date() }
             let hs = handlers
             lock.unlock()
             if verbose {
@@ -71,18 +72,22 @@ final class E16Session {
         do { try connection.send(bytes) } catch { fail("send failed: \(error)") }
     }
 
-    /// Sends ENTER every 250 ms until the ACK arrives or `timeout` passes.
+    /// Sends ENTER every 250 ms until the ACK arrives or `timeout` passes, and reports the time
+    /// from the last ENTER to the ACK as the receive callback saw it. (An earlier version
+    /// reported the time since the tool started, polled every 20 ms: the "42 ms" in the first
+    /// probe; review of 2026-11-04.)
     func enter(timeout: TimeInterval = 3) -> Bool {
-        lock.lock(); acked = false; lock.unlock()
+        lock.lock(); acked = false; ackedAt = nil; lock.unlock()
         let until = Date().addingTimeInterval(timeout)
         var sent = 0
         while Date() < until {
+            let sentAt = Date()
             send(E16Outgoing.enterRemoteMode); sent += 1
             let step = Date().addingTimeInterval(0.25)
             while Date() < step {
-                Thread.sleep(forTimeInterval: 0.02)
-                lock.lock(); let ok = acked; lock.unlock()
-                if ok { print("ACK after \(sent) ENTER message(s), \(String(format: "%.0f", Date().timeIntervalSince(start) * 1000)) ms"); return true }
+                Thread.sleep(forTimeInterval: 0.005)
+                lock.lock(); let at = ackedAt; lock.unlock()
+                if let at { print("ACK after \(sent) ENTER message(s), \(String(format: "%.1f", at.timeIntervalSince(sentAt) * 1000)) ms after the last"); return true }
             }
         }
         print("No ACK after \(sent) ENTER messages in \(Int(timeout)) s.")

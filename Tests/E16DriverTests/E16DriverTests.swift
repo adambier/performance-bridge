@@ -271,11 +271,17 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(pan.midi.rings[1]?.r, 127, "now PAN is in use")
         XCTAssertEqual(pan.midi.rings[0]?.g, 2, "and LEVEL available")
         XCTAssertEqual(pan.core.messages, [], "no mute from a button")
-        // A button held down is full bright, whatever it does.
+        // A button that goes nowhere stays dark, pressed or not (review of 2026-11-04); one
+        // that goes somewhere is its color at full while held, whatever the brightness.
         let down = driver.receive([0x90, 15, 0x7F], hub: &hub, now: 1.25)
-        XCTAssertEqual(down.midi.rings[15]?.b, 127, "NEXT page, pressed: its blue at 127, though it goes nowhere")
-        XCTAssertEqual(down.midi.rings[15]?.amount, 16383)
-        XCTAssertEqual(driver.receive([0x80, 15, 0x00], hub: &hub, now: 1.26).midi.rings[15]?.amount, 0, "dark again")
+        XCTAssertNil(down.midi.rings[15], "NEXT page, pressed: still dark, it goes nowhere")
+        _ = driver.receive([0x80, 15, 0x00], hub: &hub, now: 1.26)
+        let sendDown = driver.receive([0x90, 2, 0x7F], hub: &hub, now: 1.27)
+        XCTAssertEqual(sendDown.midi.rings[2]?.g, 127, "SEND pressed: the deep green (0,60,0) brought to 127")
+        XCTAssertEqual(sendDown.midi.rings[2]?.amount, 16383)
+        _ = driver.receive([0x80, 2, 0x00], hub: &hub, now: 1.28)
+        _ = driver.receive([0x90, 0, 0x7F, 0x80, 0, 0x00], hub: &hub, now: 1.29)  // back to LEVEL
+        _ = driver.receive([0x90, 1, 0x7F, 0x80, 1, 0x00], hub: &hub, now: 1.295)  // and PAN, as before
         // Next output: the only send, Phones; the arrow enters SEND mode.
         let out = driver.receive([0x90, 11, 0x7F, 0x80, 11, 0x00], hub: &hub, now: 1.3)
         XCTAssertEqual(driver.function, .send(0))
@@ -334,7 +340,7 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(next.midi.rings[15]?.amount, 0, "no next page")
         let past = driver.receive([0x90, 15, 0x7F, 0x80, 15, 0x00], hub: &hub, now: 1.6)
         XCTAssertNil(past.midi.lastTitle, "nothing past the end")
-        XCTAssertEqual(past.midi.rings[15]?.amount, 0, "lit while down, dark again")
+        XCTAssertNil(past.midi.rings[15], "dark while down too")
         let release = driver.receive([0x90, 16, 0x00], hub: &hub, now: 2)
         XCTAssertEqual(release.midi.lastLabels?.prefix(4), ["In18","In19","In20","P1/2"],"In 18, In 19, In 20, PB 1/2")
         _ = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 3)
@@ -430,6 +436,33 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(orange?.g, 5)
     }
 
+    /// Only the ACK connects: a turn or a push from a device still in its own scene must not
+    /// (review of 2026-11-04), and ENTER is asked again meanwhile.
+    func testOnlyTheACKConnects() {
+        var hub = loadedHub()
+        var driver = E16Driver(name: "e16")
+        _ = driver.start(hub: &hub, now: 0)
+        let turn = driver.receive([0xB0, 1, 0x05, 0x90, 0, 0x7F, 0x80, 0, 0x00], hub: &hub, now: 0.5)
+        XCTAssertFalse(driver.isConnected)
+        XCTAssertEqual(turn.core.messages, [], "nothing sent to TotalMix FX from a device not in Remote Mode")
+        XCTAssertEqual(turn.midi, [])
+        XCTAssertEqual(driver.tick(hub: &hub, now: 1.1).midi, E16Outgoing.enterRemoteMode, "ENTER asked again")
+        _ = driver.receive(ack, hub: &hub, now: 1.2)
+        XCTAssertTrue(driver.isConnected)
+    }
+
+    /// The screen is drawn and packed only when something on it changed: a tick with nothing
+    /// new sends nothing (review of 2026-11-04: every tick rendered a framebuffer).
+    func testTheScreenIsNotRedrawnWhenNothingChanged() {
+        var hub = loadedHub()
+        var driver = E16Driver(name: "e16")
+        _ = driver.start(hub: &hub, now: 0)
+        let first = driver.receive(ack, hub: &hub, now: 0)
+        XCTAssertTrue(first.midi.count > 1024, "the first screen")
+        XCTAssertEqual(driver.take(CoreOutput(), hub: &hub, now: 0.01).midi, [])
+        XCTAssertEqual(driver.tick(hub: &hub, now: 0.02).midi, [])
+    }
+
     func testLabelsKeepTheFirstNumber() {
         XCTAssertEqual(E16Driver.fit("PB 11/12", 4), "11/1", "a pair never loses its second number; four characters can't hold this one")
         XCTAssertEqual(E16Driver.fit("PB 1/2", 4), "P1/2")
@@ -459,6 +492,7 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(E16Driver.fit("Mic 1/2", width: w), "Mc1/2")
         XCTAssertEqual(E16Driver.fit("Tonverk", width: w), "Tonv")
         XCTAssertEqual(E16Driver.fit("ADI-2", width: w), "ADI-2", "fits as it is")
+        XCTAssertEqual(E16Driver.fit("AES 100/101", width: w), "100/10", "a three-digit pair: cut rather than blank (review of 2026-11-04)")
         XCTAssertLessThanOrEqual(E16Screen.width(of: "P11/12"), w)
     }
 

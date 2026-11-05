@@ -22,9 +22,10 @@ let e16BridgeUsage = """
           submix's output number, counting from 1 (default: TotalMix FX's Main Out).
           Stop sbdev monitor, the other bridges, and the app first: they need the same ports.
 
-      On the device: turn is the channel's level; push is mute; Shift + push is PFL; Shift + turn
-      steps what the encoders do (level, pan, each send); holding Shift for a second goes to the
-      next page of sixteen channels. Control-C or `quit` gives the device back.
+      On the device: turn is level, pan, or a send, by the mode; push and release is mute; a hold of
+      one second is PFL; with Shift held the encoders are buttons: 1 LEVEL, 2 PAN, 3 SEND, 11 and 12
+      the previous and next send output, 15 and 16 the previous and next page. Control-C or `quit`
+      gives the device back.
     """
 
 let e16BridgeCommandHelp = """

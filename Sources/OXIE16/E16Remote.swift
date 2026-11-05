@@ -3,7 +3,7 @@
 //
 // Sources: OXI's "E16 REMOTE CONTROL" sheet (the E16 tab of the Google Sheet linked from the
 // firmware 1.2.0 release notes; docs/OXI-E16.md, section 2), and this project's own tests on
-// firmware 1.3.0 (docs/OXI-E16.md, section 7).
+// firmware 1.3.0 (docs/OXI-E16.md, section 6).
 
 import Foundation
 
@@ -170,6 +170,9 @@ public struct E16Parser: Sendable {
                 if byte == 0xF7 {
                     sysEx = nil
                     events.append(Self.decodeSysEx(body))
+                } else if byte >= 0xF8 {
+                    // A real-time byte may arrive inside SysEx (MIDI 1.0); it is not part of it.
+                    continue
                 } else if byte & 0x80 != 0 {
                     // A status byte inside SysEx: the message was cut short. Start over.
                     sysEx = nil

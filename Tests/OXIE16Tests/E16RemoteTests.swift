@@ -64,6 +64,8 @@ final class E16RemoteTests: XCTestCase {
         XCTAssertEqual(parser.feed([0x53, 0xF7, 0xB0, 1, 0x02]), [.remoteEntered, .turned(encoder: 0, delta: 2)])
         XCTAssertEqual(parser.feed([2, 0x7E]), [.turned(encoder: 1, delta: -2)], "running status")
         XCTAssertEqual(parser.feed([0xF8, 0xB0, 3, 0x01]), [.turned(encoder: 2, delta: 1)], "real-time bytes are skipped")
+        XCTAssertEqual(parser.feed([0xF0, 0x00, 0x21, 0xF8, 0x5B, 0x02, 0x01, 0x06, 0xFE, 0x53, 0xF7]), [.remoteEntered],
+                       "and inside SysEx too (MIDI 1.0 allows them there; review of 2026-11-04)")
         XCTAssertEqual(parser.feed([0xF0, 0x00, 0x21, 0x5B, 0x02, 0x01, 0x53, 0x00, 0x05, 0xF7]),
                        [.sysEx([0x00, 0x21, 0x5B, 0x02, 0x01, 0x53, 0x00, 0x05])])
         XCTAssertEqual(parser.feed([0xB0, 0, 0x01]), [.other([0xB0, 0, 0x01])], "CC 0 is not an encoder")
