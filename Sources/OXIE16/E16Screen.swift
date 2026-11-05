@@ -42,21 +42,23 @@ public struct E16Screen: Hashable, Sendable {
         var cursor = x
         for scalar in text.uppercased().unicodeScalars {
             let glyph = E16Font.glyph(scalar)
-            for (row, bits) in glyph.enumerated() {
-                for column in 0..<E16Font.glyphWidth where bits & (0b1000 >> column) != 0 {
+            for (row, bits) in glyph.rows.enumerated() {
+                for column in 0..<glyph.width where bits & (0b10000 >> column) != 0 {
                     for dy in 0..<scale {
                         for dx in 0..<scale { set(cursor + column * scale + dx, y + row * scale + dy) }
                     }
                 }
             }
-            cursor += E16Font.advance * scale
+            cursor += (glyph.width + E16Font.gap) * scale
         }
         return cursor - x
     }
 
-    /// The width `text` takes at `scale`, in pixels.
+    /// The width `text` takes at `scale`, in pixels, without the gap after its last character.
     public static func width(of text: String, scale: Int = 1) -> Int {
-        text.unicodeScalars.count * E16Font.advance * scale
+        let scalars = text.uppercased().unicodeScalars
+        guard !scalars.isEmpty else { return 0 }
+        return (scalars.reduce(0) { $0 + E16Font.glyph($1).width + E16Font.gap } - E16Font.gap) * scale
     }
 
     /// The framebuffer as the OLED FRAMEBUFFER message wants it: 8 pages of 128 bytes, each byte
@@ -79,81 +81,86 @@ public struct E16Screen: Hashable, Sendable {
     }
 }
 
-/// A 4×6 pixel font: capitals, digits, and the punctuation channel names use. Each glyph is six
-/// rows of four bits, the leftmost pixel in bit 3. (A 3×5 font was tried first and was too small
-/// to read on the device; Adam, 2026-11-04.)
+/// One character of the font: up to five pixels wide, seven tall; each row's leftmost pixel is
+/// bit 4, and a narrow glyph ("1", "/", "I") uses only its first `width` columns.
+public struct E16Glyph: Sendable {
+    public let width: Int
+    public let rows: [UInt8]
+}
+
+/// A 5×7 pixel font, proportionally spaced: capitals, digits, and the punctuation channel names
+/// use, one pixel between characters. (3×5 and 4×6 fonts were tried first and were too small to
+/// read on the device; Adam, 2026-11-04.)
 public enum E16Font {
-    /// A glyph's width in pixels.
-    public static let glyphWidth = 4
     /// A glyph's height in pixels.
-    public static let glyphHeight = 6
-    /// The distance from one character's left edge to the next, in pixels (one pixel of space).
-    public static let advance = 5
+    public static let glyphHeight = 7
+    /// The space between characters, in pixels.
+    public static let gap = 1
 
     /// The glyph for a scalar, or a box for one the font lacks.
-    public static func glyph(_ scalar: Unicode.Scalar) -> [UInt8] {
+    public static func glyph(_ scalar: Unicode.Scalar) -> E16Glyph {
         glyphs[scalar] ?? box
     }
 
-    static let box: [UInt8] = [0b1111, 0b1001, 0b1001, 0b1001, 0b1001, 0b1111]
+    static let box = E16Glyph(width: 5, rows: [0b11111, 0b10001, 0b10001, 0b10001, 0b10001, 0b10001, 0b11111])
 
-    static let glyphs: [Unicode.Scalar: [UInt8]] = [
-        " ": [0b0000, 0b0000, 0b0000, 0b0000, 0b0000, 0b0000],
-        "A": [0b0110, 0b1001, 0b1001, 0b1111, 0b1001, 0b1001],
-        "B": [0b1110, 0b1001, 0b1110, 0b1001, 0b1001, 0b1110],
-        "C": [0b0111, 0b1000, 0b1000, 0b1000, 0b1000, 0b0111],
-        "D": [0b1110, 0b1001, 0b1001, 0b1001, 0b1001, 0b1110],
-        "E": [0b1111, 0b1000, 0b1110, 0b1000, 0b1000, 0b1111],
-        "F": [0b1111, 0b1000, 0b1110, 0b1000, 0b1000, 0b1000],
-        "G": [0b0111, 0b1000, 0b1000, 0b1011, 0b1001, 0b0111],
-        "H": [0b1001, 0b1001, 0b1111, 0b1001, 0b1001, 0b1001],
-        "I": [0b1110, 0b0100, 0b0100, 0b0100, 0b0100, 0b1110],
-        "J": [0b0001, 0b0001, 0b0001, 0b0001, 0b1001, 0b0110],
-        "K": [0b1001, 0b1010, 0b1100, 0b1100, 0b1010, 0b1001],
-        "L": [0b1000, 0b1000, 0b1000, 0b1000, 0b1000, 0b1111],
-        "M": [0b1001, 0b1111, 0b1111, 0b1001, 0b1001, 0b1001],
-        "N": [0b1001, 0b1101, 0b1111, 0b1011, 0b1001, 0b1001],
-        "O": [0b0110, 0b1001, 0b1001, 0b1001, 0b1001, 0b0110],
-        "P": [0b1110, 0b1001, 0b1001, 0b1110, 0b1000, 0b1000],
-        "Q": [0b0110, 0b1001, 0b1001, 0b1001, 0b1010, 0b0101],
-        "R": [0b1110, 0b1001, 0b1001, 0b1110, 0b1010, 0b1001],
-        "S": [0b0111, 0b1000, 0b0110, 0b0001, 0b0001, 0b1110],
-        "T": [0b1110, 0b0100, 0b0100, 0b0100, 0b0100, 0b0100],
-        "U": [0b1001, 0b1001, 0b1001, 0b1001, 0b1001, 0b0110],
-        "V": [0b1001, 0b1001, 0b1001, 0b1001, 0b0110, 0b0110],
-        "W": [0b1001, 0b1001, 0b1001, 0b1111, 0b1111, 0b1001],
-        "X": [0b1001, 0b1001, 0b0110, 0b0110, 0b1001, 0b1001],
-        "Y": [0b1010, 0b1010, 0b1010, 0b0100, 0b0100, 0b0100],
-        "Z": [0b1111, 0b0001, 0b0010, 0b0100, 0b1000, 0b1111],
-        "0": [0b0110, 0b1001, 0b1011, 0b1101, 0b1001, 0b0110],
-        "1": [0b0100, 0b1100, 0b0100, 0b0100, 0b0100, 0b1110],
-        "2": [0b0110, 0b1001, 0b0001, 0b0010, 0b0100, 0b1111],
-        "3": [0b1110, 0b0001, 0b0110, 0b0001, 0b0001, 0b1110],
-        "4": [0b1001, 0b1001, 0b1001, 0b1111, 0b0001, 0b0001],
-        "5": [0b1111, 0b1000, 0b1110, 0b0001, 0b0001, 0b1110],
-        "6": [0b0110, 0b1000, 0b1110, 0b1001, 0b1001, 0b0110],
-        "7": [0b1111, 0b0001, 0b0010, 0b0100, 0b0100, 0b0100],
-        "8": [0b0110, 0b1001, 0b0110, 0b1001, 0b1001, 0b0110],
-        "9": [0b0110, 0b1001, 0b1001, 0b0111, 0b0001, 0b0110],
-        "/": [0b0001, 0b0001, 0b0010, 0b0100, 0b1000, 0b1000],
-        "-": [0b0000, 0b0000, 0b1111, 0b0000, 0b0000, 0b0000],
-        "+": [0b0000, 0b0100, 0b1110, 0b0100, 0b0000, 0b0000],
-        ".": [0b0000, 0b0000, 0b0000, 0b0000, 0b0000, 0b0100],
-        ",": [0b0000, 0b0000, 0b0000, 0b0000, 0b0100, 0b1000],
-        ":": [0b0000, 0b0100, 0b0000, 0b0000, 0b0100, 0b0000],
-        "'": [0b0100, 0b0100, 0b0000, 0b0000, 0b0000, 0b0000],
-        "!": [0b0100, 0b0100, 0b0100, 0b0100, 0b0000, 0b0100],
-        "?": [0b0110, 0b1001, 0b0010, 0b0100, 0b0000, 0b0100],
-        "(": [0b0010, 0b0100, 0b0100, 0b0100, 0b0100, 0b0010],
-        ")": [0b0100, 0b0010, 0b0010, 0b0010, 0b0010, 0b0100],
-        "<": [0b0001, 0b0010, 0b0100, 0b0100, 0b0010, 0b0001],
-        ">": [0b1000, 0b0100, 0b0010, 0b0010, 0b0100, 0b1000],
-        "=": [0b0000, 0b1111, 0b0000, 0b1111, 0b0000, 0b0000],
-        "&": [0b0100, 0b1010, 0b0100, 0b1011, 0b1010, 0b0101],
-        "#": [0b0101, 0b1111, 0b0101, 0b0101, 0b1111, 0b0101],
-        "*": [0b0000, 0b1010, 0b0100, 0b1010, 0b0000, 0b0000],
-        "_": [0b0000, 0b0000, 0b0000, 0b0000, 0b0000, 0b1111],
-        "%": [0b1001, 0b0001, 0b0010, 0b0100, 0b1000, 0b1001],
+    static let glyphs: [Unicode.Scalar: E16Glyph] = [
+        " ": E16Glyph(width: 3, rows: [0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000]),
+        "A": E16Glyph(width: 5, rows: [0b01110, 0b10001, 0b10001, 0b11111, 0b10001, 0b10001, 0b10001]),
+        "B": E16Glyph(width: 5, rows: [0b11110, 0b10001, 0b10001, 0b11110, 0b10001, 0b10001, 0b11110]),
+        "C": E16Glyph(width: 5, rows: [0b01110, 0b10001, 0b10000, 0b10000, 0b10000, 0b10001, 0b01110]),
+        "D": E16Glyph(width: 5, rows: [0b11110, 0b10001, 0b10001, 0b10001, 0b10001, 0b10001, 0b11110]),
+        "E": E16Glyph(width: 5, rows: [0b11111, 0b10000, 0b10000, 0b11110, 0b10000, 0b10000, 0b11111]),
+        "F": E16Glyph(width: 5, rows: [0b11111, 0b10000, 0b10000, 0b11110, 0b10000, 0b10000, 0b10000]),
+        "G": E16Glyph(width: 5, rows: [0b01110, 0b10001, 0b10000, 0b10111, 0b10001, 0b10001, 0b01111]),
+        "H": E16Glyph(width: 5, rows: [0b10001, 0b10001, 0b10001, 0b11111, 0b10001, 0b10001, 0b10001]),
+        "I": E16Glyph(width: 3, rows: [0b11100, 0b01000, 0b01000, 0b01000, 0b01000, 0b01000, 0b11100]),
+        "J": E16Glyph(width: 5, rows: [0b00111, 0b00010, 0b00010, 0b00010, 0b00010, 0b10010, 0b01100]),
+        "K": E16Glyph(width: 5, rows: [0b10001, 0b10010, 0b10100, 0b11000, 0b10100, 0b10010, 0b10001]),
+        "L": E16Glyph(width: 5, rows: [0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b11111]),
+        "M": E16Glyph(width: 5, rows: [0b10001, 0b11011, 0b10101, 0b10101, 0b10001, 0b10001, 0b10001]),
+        "N": E16Glyph(width: 5, rows: [0b10001, 0b11001, 0b10101, 0b10011, 0b10001, 0b10001, 0b10001]),
+        "O": E16Glyph(width: 5, rows: [0b01110, 0b10001, 0b10001, 0b10001, 0b10001, 0b10001, 0b01110]),
+        "P": E16Glyph(width: 5, rows: [0b11110, 0b10001, 0b10001, 0b11110, 0b10000, 0b10000, 0b10000]),
+        "Q": E16Glyph(width: 5, rows: [0b01110, 0b10001, 0b10001, 0b10001, 0b10101, 0b10010, 0b01101]),
+        "R": E16Glyph(width: 5, rows: [0b11110, 0b10001, 0b10001, 0b11110, 0b10100, 0b10010, 0b10001]),
+        "S": E16Glyph(width: 5, rows: [0b01111, 0b10000, 0b10000, 0b01110, 0b00001, 0b00001, 0b11110]),
+        "T": E16Glyph(width: 5, rows: [0b11111, 0b00100, 0b00100, 0b00100, 0b00100, 0b00100, 0b00100]),
+        "U": E16Glyph(width: 5, rows: [0b10001, 0b10001, 0b10001, 0b10001, 0b10001, 0b10001, 0b01110]),
+        "V": E16Glyph(width: 5, rows: [0b10001, 0b10001, 0b10001, 0b10001, 0b01010, 0b01010, 0b00100]),
+        "W": E16Glyph(width: 5, rows: [0b10001, 0b10001, 0b10001, 0b10101, 0b10101, 0b11011, 0b10001]),
+        "X": E16Glyph(width: 5, rows: [0b10001, 0b10001, 0b01010, 0b00100, 0b01010, 0b10001, 0b10001]),
+        "Y": E16Glyph(width: 5, rows: [0b10001, 0b10001, 0b01010, 0b00100, 0b00100, 0b00100, 0b00100]),
+        "Z": E16Glyph(width: 5, rows: [0b11111, 0b00001, 0b00010, 0b00100, 0b01000, 0b10000, 0b11111]),
+        "0": E16Glyph(width: 5, rows: [0b01110, 0b10001, 0b10011, 0b10101, 0b11001, 0b10001, 0b01110]),
+        "1": E16Glyph(width: 3, rows: [0b01000, 0b11000, 0b01000, 0b01000, 0b01000, 0b01000, 0b11100]),
+        "2": E16Glyph(width: 5, rows: [0b01110, 0b10001, 0b00001, 0b00010, 0b00100, 0b01000, 0b11111]),
+        "3": E16Glyph(width: 5, rows: [0b11111, 0b00010, 0b00100, 0b00010, 0b00001, 0b10001, 0b01110]),
+        "4": E16Glyph(width: 5, rows: [0b00010, 0b00110, 0b01010, 0b10010, 0b11111, 0b00010, 0b00010]),
+        "5": E16Glyph(width: 5, rows: [0b11111, 0b10000, 0b11110, 0b00001, 0b00001, 0b10001, 0b01110]),
+        "6": E16Glyph(width: 5, rows: [0b00110, 0b01000, 0b10000, 0b11110, 0b10001, 0b10001, 0b01110]),
+        "7": E16Glyph(width: 5, rows: [0b11111, 0b00001, 0b00010, 0b00100, 0b01000, 0b01000, 0b01000]),
+        "8": E16Glyph(width: 5, rows: [0b01110, 0b10001, 0b10001, 0b01110, 0b10001, 0b10001, 0b01110]),
+        "9": E16Glyph(width: 5, rows: [0b01110, 0b10001, 0b10001, 0b01111, 0b00001, 0b00010, 0b01100]),
+        "/": E16Glyph(width: 2, rows: [0b01000, 0b01000, 0b01000, 0b10000, 0b10000, 0b10000, 0b00000]),
+        "-": E16Glyph(width: 3, rows: [0b00000, 0b00000, 0b00000, 0b11100, 0b00000, 0b00000, 0b00000]),
+        "+": E16Glyph(width: 5, rows: [0b00000, 0b00100, 0b00100, 0b11111, 0b00100, 0b00100, 0b00000]),
+        ".": E16Glyph(width: 1, rows: [0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b10000]),
+        ",": E16Glyph(width: 2, rows: [0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b01000, 0b10000]),
+        ":": E16Glyph(width: 1, rows: [0b00000, 0b10000, 0b00000, 0b00000, 0b00000, 0b10000, 0b00000]),
+        "'": E16Glyph(width: 1, rows: [0b10000, 0b10000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000]),
+        "!": E16Glyph(width: 1, rows: [0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b00000, 0b10000]),
+        "?": E16Glyph(width: 5, rows: [0b01110, 0b10001, 0b00001, 0b00010, 0b00100, 0b00000, 0b00100]),
+        "(": E16Glyph(width: 2, rows: [0b01000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b01000]),
+        ")": E16Glyph(width: 2, rows: [0b10000, 0b01000, 0b01000, 0b01000, 0b01000, 0b01000, 0b10000]),
+        "<": E16Glyph(width: 4, rows: [0b00010, 0b00100, 0b01000, 0b10000, 0b01000, 0b00100, 0b00010]),
+        ">": E16Glyph(width: 4, rows: [0b10000, 0b01000, 0b00100, 0b00010, 0b00100, 0b01000, 0b10000]),
+        "=": E16Glyph(width: 5, rows: [0b00000, 0b00000, 0b11111, 0b00000, 0b11111, 0b00000, 0b00000]),
+        "&": E16Glyph(width: 5, rows: [0b01100, 0b10010, 0b10100, 0b01000, 0b10101, 0b10010, 0b01101]),
+        "#": E16Glyph(width: 5, rows: [0b01010, 0b01010, 0b11111, 0b01010, 0b11111, 0b01010, 0b01010]),
+        "*": E16Glyph(width: 5, rows: [0b00000, 0b10101, 0b01110, 0b11111, 0b01110, 0b10101, 0b00000]),
+        "_": E16Glyph(width: 5, rows: [0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111]),
+        "%": E16Glyph(width: 5, rows: [0b11001, 0b11010, 0b00010, 0b00100, 0b01000, 0b10110, 0b10011]),
     ]
 }
 

@@ -71,6 +71,9 @@ public struct E16Driver: Sendable {
     public var drawsScreen = true
     /// How many characters a label has on the host-drawn screen.
     public static let longLabelLength = 6
+    /// The widest a label may be on the host-drawn screen, in pixels: a 32-pixel cell with at
+    /// least 6 pixels between neighbors (Adam, 2026-11-04: 3 was too close).
+    public static let labelMaxWidth = 26
     /// How bright the rings are, 0…1, applied to every color sent: full was too bright for a
     /// dark room, and 70% still a little (Adam, 2026-11-04). A lit part never goes below 1.
     public var brightness: Double = 0.55
@@ -547,14 +550,14 @@ public struct E16Driver: Sendable {
     /// driver (`drawsScreen`) or by the firmware's label layout.
     private mutating func drawLabels(hub: SurfaceHub) -> [UInt8] {
         guard connected else { return [] }
-        let length = drawsScreen ? Self.longLabelLength : E16Outgoing.labelLength
         let labels: [String] = (0..<Self.stripCount).map { index in
             if shiftHeld {
                 // An arrow that goes nowhere shows no label either (Adam, 2026-11-04).
                 guard let button = ShiftButton.layout[index], button.isMode || isAvailable(button, hub: hub) else { return "" }
                 return drawsScreen ? button.longLabel : button.label
             }
-            return Self.fit(infos[index]?.name ?? "", length)
+            let name = infos[index]?.name ?? ""
+            return drawsScreen ? Self.fit(name, width: Self.labelMaxWidth) : Self.fit(name, E16Outgoing.labelLength)
         }
         let bytes = drawsScreen ? E16Outgoing.framebuffer(Self.screen(title: title(hub: hub), labels: labels))
             : E16Outgoing.labels(title: title(hub: hub), labels: labels)
@@ -563,18 +566,17 @@ public struct E16Driver: Sendable {
         return bytes
     }
 
-    /// The host-drawn screen: the title centered in the font (which is 6 pixels tall; the 15
-    /// characters of the title at a 5-pixel pitch are 74 pixels wide), a rule under it, and the
-    /// sixteen labels in four rows of four, each centered in its 32-pixel cell (six characters
-    /// at most: 29 pixels).
+    /// The host-drawn screen: the title centered in the 7-pixel font, a rule under it, and the
+    /// sixteen labels in four rows of four, each centered in its 32-pixel cell and no wider
+    /// than `labelMaxWidth`.
     public static func screen(title: String, labels: [String]) -> E16Screen {
         var screen = E16Screen()
-        let titleWidth = E16Screen.width(of: title) - 1
+        let titleWidth = E16Screen.width(of: title)
         screen.draw(title, x: max((E16Screen.width - titleWidth) / 2, 0), y: 1)
-        screen.line(y: 9, from: 0, to: E16Screen.width - 1)
+        screen.line(y: 10, from: 0, to: E16Screen.width - 1)
         for (index, label) in labels.prefix(stripCount).enumerated() {
             let cell = E16Screen.width / 4
-            let width = E16Screen.width(of: label) - 1
+            let width = E16Screen.width(of: label)
             let x = (index % 4) * cell + max((cell - width) / 2, 0)
             let y = 14 + (index / 4) * 13
             screen.draw(label, x: x, y: y)
@@ -760,31 +762,40 @@ public struct E16Driver: Sendable {
     /// the vowels, then letters from the end ("AD11", "Mic1", "Anl1"); anything else is cut
     /// ("Tonv"). Hyphens go first ("ADI2").
     public static func fit(_ text: String, _ length: Int) -> String {
-        if text.count <= length { return text }
-        let text = text.replacingOccurrences(of: "-", with: "")  // "ADI-2" to "ADI2"
-        if text.count <= length { return text }
+        candidates(text).first { $0.count <= length } ?? ""
+    }
+
+    /// The same, for the host-drawn screen: the first form of `text` no wider than `width`
+    /// pixels in the screen's font.
+    public static func fit(_ text: String, width: Int) -> String {
+        candidates(text).first { E16Screen.width(of: $0) <= width } ?? ""
+    }
+
+    /// The forms of a channel name from longest to shortest: as it is; without hyphens
+    /// ("ADI2"); for a numbered name, the whole pair without its space ("ADAT3/4"), with the
+    /// word's vowels gone ("ADT3/4"), a playback's "PB" as "P" ("P11/12"), then the first
+    /// number alone after the word ("ADAT 3", "ADAT3", "ADT 3", "ADT3", "AD3", "A3", "3"); for
+    /// anything else, the name cut from the end.
+    static func candidates(_ text: String) -> [String] {
+        var out = [text]
+        let text = text.replacingOccurrences(of: "-", with: "")
+        out.append(text)
         let parts = text.split(separator: " ", omittingEmptySubsequences: true).map(String.init)
         if parts.count >= 2, let last = parts.last, let number = last.split(separator: "/").first, Int(number) != nil {
-            var word = parts.dropLast().joined(separator: " ")
+            let word = parts.dropLast().joined(separator: " ")
             let vowels: Set<Character> = ["a", "e", "i", "o", "u", "A", "E", "I", "O", "U"]
             var tight = ""
             for (i, c) in word.enumerated() where i == 0 || !vowels.contains(c) { tight.append(c) }
             if last.contains("/") {
-                // The whole pair, so it reads as a pair and not as skipped channels (Adam,
-                // 2026-11-04): without its space ("ADAT3/4"), then with the word's vowels gone
-                // ("ADT3/4"), then a playback's "PB" as "P" ("P11/12", "P1/2").
-                if word.count + last.count <= length { return word + last }
-                if tight.count + last.count <= length { return tight + last }
-                if word == "PB", 1 + last.count <= length { return "P" + last }
+                out += [word + last, tight + last]
+                if word == "PB" { out.append("P" + last) }
             }
             let digits = String(number)
-            let room = length - digits.count
-            if word.count + 1 + digits.count <= length { return word + " " + digits }
-            if word.count + digits.count <= length { return word + digits }  // all the letters, no space
-            word = tight
-            if word.count + 1 + digits.count <= length { return word + " " + digits }
-            return String(word.prefix(max(room, 0))) + digits
+            out += [word + " " + digits, word + digits, tight + " " + digits]
+            for k in stride(from: tight.count, through: 0, by: -1) { out.append(String(tight.prefix(k)) + digits) }
+        } else {
+            for k in stride(from: text.count - 1, through: 1, by: -1) { out.append(String(text.prefix(k))) }
         }
-        return String(text.prefix(length))
+        return out
     }
 }

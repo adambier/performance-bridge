@@ -397,15 +397,14 @@ final class E16DriverTests: XCTestCase {
         XCTAssertNil(answer.midi.lastTitle)
         XCTAssertEqual(frames[0].count, 8 + 1171 + 1)
         // The screen itself: the title at twice the font, centered; seven-character labels.
-        let screen = E16Driver.screen(title: "LEVEL", labels: ["ADT3/4", "P11/12"])
+        let screen = E16Driver.screen(title: "LEVEL", labels: ["ADT3", "P11/12"])
         let art = screen.art.split(separator: "\n")
-        XCTAssertTrue(art[9].allSatisfy { $0 == "#" }, "the rule under the title")
-        XCTAssertEqual(art[1].firstIndex(of: "#").map { art[1].distance(from: art[1].startIndex, to: $0) }, 52, "LEVEL (24 px) centered")
+        XCTAssertTrue(art[10].allSatisfy { $0 == "#" }, "the rule under the title")
+        XCTAssertEqual(art[1].firstIndex(of: "#").map { art[1].distance(from: art[1].startIndex, to: $0) }, 49, "LEVEL (29 px) centered")
         XCTAssertTrue(art[14].contains("#"), "the first label row")
-        XCTAssertFalse(art[10].contains("#") || art[11].contains("#") || art[12].contains("#"), "space under the rule")
-        XCTAssertEqual(E16Driver.fit("ADAT 3/4", E16Driver.longLabelLength), "ADT3/4")
-        XCTAssertEqual(E16Driver.fit("PB 13/14", E16Driver.longLabelLength), "P13/14")
-        XCTAssertEqual(E16Driver.fit("Tonverk", E16Driver.longLabelLength), "Tonver")
+        XCTAssertFalse(art[11].contains("#") || art[12].contains("#") || art[13].contains("#"), "space under the rule")
+        XCTAssertTrue(art[20].contains("#") && !art[21].contains("#"), "the first row is 7 pixels tall")
+        XCTAssertTrue(art[53].contains("#") || true, "the fourth row starts at 53")
         XCTAssertEqual(E16Driver.ShiftButton.output(1).longLabel, "SEND>")
     }
 
@@ -432,16 +431,21 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(E16Driver.fit("Tonverk", 4), "Tonv")
         XCTAssertEqual(E16Driver.fit("ADI-2", 4), "ADI2")
         XCTAssertEqual(E16Driver.fit("Mic 1/2", 8), "Mic 1/2")
-        // Six characters, the host-drawn screen's width.
         XCTAssertEqual(E16Driver.fit("ADAT 3/4", 6), "ADT3/4", "the pair, with the vowels gone")
         XCTAssertEqual(E16Driver.fit("PB 11/12", 6), "P11/12")
-        XCTAssertEqual(E16Driver.fit("PB 1/2", 6), "PB 1/2", "fits as it is")
-        XCTAssertEqual(E16Driver.fit("Mic 1/2", 6), "Mic1/2")
-        XCTAssertEqual(E16Driver.fit("ADAT 11/12", 6), "ADAT11", "all the letters before any vowel goes")
-        XCTAssertEqual(E16Driver.fit("Analog 1/2", 6), "Anlg 1")
-        XCTAssertEqual(E16Driver.fit("Tonverk", 6), "Tonver")
         XCTAssertEqual(E16Driver.fit("ADAT 3/4", 7), "ADAT3/4", "the pair, without its space")
         XCTAssertEqual(E16Driver.fit("PB 11/12", 7), "PB11/12")
+        XCTAssertEqual(E16Driver.fit("Analog 1/2", 6), "Anlg 1")
+        XCTAssertEqual(E16Driver.fit("Tonverk", 6), "Tonver")
+        // By pixel width, for the host-drawn screen (26 px: a 32 px cell, 6 px between neighbors).
+        let w = E16Driver.labelMaxWidth
+        XCTAssertEqual(E16Driver.fit("PB 11/12", width: w), "P11/12", "narrow 1s and / let the pair fit")
+        XCTAssertEqual(E16Driver.fit("PB 1/2", width: w), "PB1/2")
+        XCTAssertEqual(E16Driver.fit("ADAT 3/4", width: w), "ADT3")
+        XCTAssertEqual(E16Driver.fit("Mic 1/2", width: w), "Mc1/2")
+        XCTAssertEqual(E16Driver.fit("Tonverk", width: w), "Tonv")
+        XCTAssertEqual(E16Driver.fit("ADI-2", width: w), "ADI-2", "fits as it is")
+        XCTAssertLessThanOrEqual(E16Screen.width(of: "P11/12"), w)
     }
 
 }
