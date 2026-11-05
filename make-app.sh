@@ -161,6 +161,8 @@ SOURCES=(
     Sources/RotoDriver/*.swift
     Sources/LaunchControl/*.swift
     Sources/LaunchControlDriver/*.swift
+    Sources/OXIE16/*.swift
+    Sources/E16Driver/*.swift
     Sources/BridgeEngine/*.swift
     App/PerformanceBridge/*.swift
 )

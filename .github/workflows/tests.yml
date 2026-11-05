@@ -50,6 +50,7 @@ jobs:
             Sources/OSCCodec/*.swift Sources/TotalMixOSC/*.swift Sources/RotoControl/*.swift \
             Sources/MIDITransport/*.swift Sources/UDPTransport/*.swift Sources/SurfaceCore/*.swift \
             Sources/RotoDriver/*.swift Sources/LaunchControl/*.swift Sources/LaunchControlDriver/*.swift \
+            Sources/OXIE16/*.swift Sources/E16Driver/*.swift \
             Sources/BridgeEngine/*.swift App/PerformanceBridge/*.swift
 
   windows:
