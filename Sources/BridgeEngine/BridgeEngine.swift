@@ -724,7 +724,7 @@ public final class BridgeEngine: @unchecked Sendable {
 
     /// The lowest brightness the engine accepts: below about 15% the rings' orange and yellow
     /// can't be told apart on the device (Adam, 2026-11-04).
-    public static let e16MinimumBrightness = 0.15
+    public static let e16MinimumBrightness = 0.0  // 0 for Adam's test of the usable range (2026-11-04); was 0.15
 
     /// Sets the E16's ring brightness (`e16MinimumBrightness`…1) from the app. Takes effect at
     /// once on a connected device, and is kept for the next one otherwise.
