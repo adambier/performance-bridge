@@ -402,7 +402,7 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(frames.count, 1, "one FRAMEBUFFER, no LABELS")
         XCTAssertNil(answer.midi.lastTitle)
         XCTAssertEqual(frames[0].count, 8 + 1171 + 1)
-        // The screen itself: the title at twice the font, centered; seven-character labels.
+        // The screen itself: the title at the left, its tail at the right, labels fitted by width.
         let screen = E16Driver.screen(title: "LEVEL", tail: "PFL 2/3", labels: ["ADT3", "P11/12", "", "", "", "", "", "", "", "", "", "", "A", "B", "C", "D"])
         let art = screen.art.split(separator: "\n")
         XCTAssertTrue(art[10].allSatisfy { $0 == "#" }, "the rule under the title")

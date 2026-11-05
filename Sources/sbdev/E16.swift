@@ -43,7 +43,6 @@ final class E16Session {
     private let lock = NSLock()
     private var parser = E16Parser()
     private var handlers: [([E16Event]) -> Void] = []
-    private var acked = false
     private var ackedAt: Date?
     let start = Date()
 
@@ -52,7 +51,7 @@ final class E16Session {
         connection = try MIDIConnection(clientName: "sbdev e16", sourceName: name, destinationName: name) { [self] bytes in
             lock.lock()
             let events = parser.feed(bytes)
-            if events.contains(.remoteEntered) { acked = true; ackedAt = Date() }
+            if events.contains(.remoteEntered) { ackedAt = Date() }
             let hs = handlers
             lock.unlock()
             if verbose {
@@ -77,7 +76,7 @@ final class E16Session {
     /// reported the time since the tool started, polled every 20 ms: the "42 ms" in the first
     /// probe; review of 2026-11-04.)
     func enter(timeout: TimeInterval = 3) -> Bool {
-        lock.lock(); acked = false; ackedAt = nil; lock.unlock()
+        lock.lock(); ackedAt = nil; lock.unlock()
         let until = Date().addingTimeInterval(timeout)
         var sent = 0
         while Date() < until {

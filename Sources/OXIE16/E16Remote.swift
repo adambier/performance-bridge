@@ -2,8 +2,8 @@
 // rings, and the MIDI the device sends back while the host has it. Foundation only.
 //
 // Sources: OXI's "E16 REMOTE CONTROL" sheet (the E16 tab of the Google Sheet linked from the
-// firmware 1.2.0 release notes; docs/OXI-E16.md, section 2), and this project's own tests on
-// firmware 1.3.0 (docs/OXI-E16.md, section 6).
+// firmware 1.2.0 release notes; docs/OXI-E16.md, section 3), and this project's own tests on
+// firmware 1.3.0 (docs/OXI-E16.md, section 7).
 
 import Foundation
 

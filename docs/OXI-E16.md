@@ -154,8 +154,9 @@ always sources.
   after 3×5 and 4×6 fonts were too small to read. The title (the mode, or an overlay) is at the
   left and "PFL" and the page at the right; a rule runs under them; the sixteen labels sit in four
   rows 14 pixels apart, each at the left of its 32-pixel cell and no wider than 26 pixels (the
-  Shift page's arrow labels are 28 pixels, accepted on the device). A stereo pair always shows
-  both numbers, losing its word first ("ADAT3/4", "ADT3/4", "AD3/4", "3/4"; "P15/16", "15/16").
+  Shift page's arrow labels are 28 pixels, accepted on the device). A stereo pair keeps both
+  numbers, losing its word first ("ADAT3/4", "ADT3/4", "AD3/4", "3/4"; "P15/16", "15/16"); only a
+  pair of three-digit numbers, which no form fits, is cut from the end ("100/10").
   The firmware's own LABELS layout, with four-character labels (e.g., "P1/2"), is kept as a
   fallback.
 
@@ -194,7 +195,7 @@ e16` on branch `e16-probe`.
 - **Ports.** Sources and destinations "OXI E16 Port 1", "OXI E16 Port 2", "OXI E16 Port 3".
 - **ENTER.** ACK after one message; the screen and all rings went dark. (The probe's own "42 ms"
   was measured from the tool's start with 20 ms polling, not from ENTER; `sbdev e16bridge` logs
-  the ACK 1–6 ms after ENTER, test 2, and the probe now reports from the ENTER it answers.)
+  the ACK 1–6 ms after ENTER, test 2, and the probe now reports from the last ENTER it sent.)
   **EXIT** brought them back at once, as did Control-C (which sends EXIT).
 - **LABELS.** A title ("TOTALMIX  MAIN") and sixteen labels drew in the device's 4×4 layout.
 - **LED RING.** Sixteen rings, each its own color, filled 1/17 to 16/17; the boundary LED dims in

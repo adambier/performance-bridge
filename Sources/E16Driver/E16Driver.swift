@@ -31,7 +31,7 @@ public struct E16Step: Equatable, Sendable {
 /// device's first USB port with `receive(_:hub:now:)`, the hub's output with `take(_:hub:now:)`,
 /// and the time with `tick(hub:now:)`, and sends on what comes back.
 ///
-/// **Layout** (decided with Adam, 2026-11-04; docs/OXI-E16.md, section 4). Sixteen strips, one
+/// **Layout** (decided with Adam, 2026-11-04; docs/OXI-E16.md, section 5). Sixteen strips, one
 /// encoder each, always the sources:
 /// - turn: the strip's level in the home submix, or its pan or its send to one output, as the
 ///   surface's function is set (`function`);
@@ -189,7 +189,7 @@ public struct E16Driver: Sendable {
     private var sentLabels: [UInt8]?
     /// What the last screen showed (its title parts and labels), so the framebuffer is drawn and
     /// packed only when something on it changed, not on every tick (review of 2026-11-04).
-    private var shownScreen: (title: String, tail: String, labels: [String])?
+    private var shownScreen: (title: String, tail: String, labels: [String], drawn: Bool)?
     private var sentRings: [RingLook?] = Array(repeating: nil, count: E16Driver.stripCount)
 
     /// How one encoder's ring is drawn: a RING message alone. The single-LED message is never
@@ -574,8 +574,8 @@ public struct E16Driver: Sendable {
             return drawsScreen ? Self.fit(name, width: Self.labelMaxWidth) : Self.fit(name, E16Outgoing.labelLength)
         }
         let parts = titleParts(hub: hub)
-        if let shown = shownScreen, shown.title == parts.0, shown.tail == parts.1, shown.labels == labels { return [] }
-        shownScreen = (parts.0, parts.1, labels)
+        if let shown = shownScreen, shown.title == parts.0, shown.tail == parts.1, shown.labels == labels, shown.drawn == drawsScreen { return [] }
+        shownScreen = (parts.0, parts.1, labels, drawsScreen)
         let bytes = drawsScreen ? E16Outgoing.framebuffer(Self.screen(title: parts.0, tail: parts.1, labels: labels))
             : E16Outgoing.labels(title: title(hub: hub), labels: labels)
         guard bytes != sentLabels else { return [] }
@@ -731,7 +731,7 @@ public struct E16Driver: Sendable {
     /// levels (Adam, 2026-11-04, after the brightness ramp): dark for a blank or an arrow that
     /// goes nowhere; `availableLevel` (a color scaled to a maximum part of 2 of 127, the lowest
     /// level that reads as lit) for a button that is available; the driver's `brightness` for
-    /// the mode in use; and the full 127 while a button is held down, a momentary answer to
+    /// the mode in use; and its color with its largest part at 127 while a button is held down, a momentary answer to
     /// the press.
     func buttonRing(_ index: Int, hub: SurfaceHub) -> RingLook {
         guard let button = ShiftButton.layout[index] else { return RingLook(ring: .off) }
