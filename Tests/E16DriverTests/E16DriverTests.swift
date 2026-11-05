@@ -265,6 +265,29 @@ final class E16DriverTests: XCTestCase {
         XCTAssertNil(unmute.midi.leds[0], "no marks")
     }
 
+    /// A turn while the encoder is pushed cancels the push: no mute on release, no PFL however
+    /// long it is held (test 6; Adam, 2026-11-05).
+    func testATurnWhilePushedCancelsThePush() {
+        var (driver, hub, _) = connected()
+        _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 1)  // push Vox
+        let turn = driver.receive([0xB0, 2, 0x02], hub: &hub, now: 1.1)
+        XCTAssertEqual(turn.core.messages.map(\.address), ["/mix/in/2/0/faderlin"], "the turn moves the level")
+        XCTAssertEqual(driver.tick(hub: &hub, now: 1.5).midi, [], "no countdown")
+        let late = driver.tick(hub: &hub, now: 2.2)
+        XCTAssertFalse(late.core.messages.contains { $0.address.hasSuffix("/pfl") }, "no PFL after a second")
+        let up = driver.receive([0x80, 1, 0x00], hub: &hub, now: 2.3)
+        XCTAssertEqual(up.core.messages, [], "no mute on release")
+        // A turn after the countdown has begun cancels it and clears the title.
+        _ = driver.receive([0x90, 2, 0x7F], hub: &hub, now: 3)  // push Gtr
+        _ = driver.tick(hub: &hub, now: 3.4)
+        XCTAssertEqual(driver.title(hub: hub), "Gtr -> PFL")
+        let cancel = driver.receive([0xB0, 3, 0x01], hub: &hub, now: 3.5)
+        XCTAssertTrue(driver.title(hub: hub).hasPrefix("Gtr -"), "the turn's value replaces the countdown's text")
+        XCTAssertFalse(driver.title(hub: hub).contains("PFL"))
+        XCTAssertNotNil(cancel.midi.lastTitle)
+        XCTAssertEqual(driver.receive([0x80, 2, 0x00], hub: &hub, now: 4.5).core.messages, [])
+    }
+
     func testMuteAndPFLTogether() {
         var (driver, hub, _) = connected()
         _ = driver.receive([0x90, 1, 0x7F, 0x80, 1, 0x00], hub: &hub, now: 1)  // mute Vox

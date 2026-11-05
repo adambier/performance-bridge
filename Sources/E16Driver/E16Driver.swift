@@ -325,6 +325,17 @@ public struct E16Driver: Sendable {
         switch event {
         case .turned(let encoder, let delta):
             guard (0..<Self.stripCount).contains(encoder), !shiftHeld else { return }
+            // A turn while the encoder is pushed cancels the push: no mute on release and no
+            // PFL countdown (a push-and-turn held over a second would otherwise set PFL; test
+            // 6, Adam, 2026-11-05). Push-and-turn is then just a turn until it is given a job.
+            if let held, held.encoder == encoder, !held.didPFL {
+                self.held = nil
+                if countdownShown >= 0 {
+                    countdownShown = -1
+                    overlay = nil
+                    step.midi += drawLabels(hub: hub)
+                }
+            }
             turn(encoder, by: delta, hub: &hub, now: now, into: &step)
         case .pushed(let encoder, true):
             guard (0..<Self.stripCount).contains(encoder) else { return }
