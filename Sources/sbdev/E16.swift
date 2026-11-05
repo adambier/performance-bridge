@@ -196,17 +196,29 @@ func e16(_ arguments: ArraySlice<String>) -> Never {
         ]
         for (i, t) in trials.prefix(4).enumerated() { colors.append(("T\(i + 1)", t)) }
         while colors.count < 16 { colors.append(("", (0, 0, 0))) }
-        let percent = Int((brightness * 100).rounded())
-        session.send(E16Outgoing.labels(title: "COLORS \(percent)%", labels: colors.map { $0.0 }))
-        session.send(E16Outgoing.rings(colors.enumerated().map { (i, c) in
-            let rgb = E16Driver.scaled(c.1, brightness: brightness)
-            return (encoder: i, ring: E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: c.0.isEmpty ? 0 : 1))
-        }))
-        for (i, c) in colors.enumerated() where !c.0.isEmpty {
-            let d = E16Driver.scaled(c.1, brightness: brightness)
-            print(String(format: "%2d %-4@  full (%3d,%3d,%3d)  sent (%3d,%3d,%3d)", i + 1, c.0 as NSString, Int(c.1.0), Int(c.1.1), Int(c.1.2), Int(d.0), Int(d.1), Int(d.2)))
+        func show(_ brightness: Double) {
+            let percent = Int((brightness * 100).rounded())
+            session.send(E16Outgoing.labels(title: "COLORS \(percent)%", labels: colors.map { $0.0 }))
+            session.send(E16Outgoing.rings(colors.enumerated().map { (i, c) in
+                let rgb = E16Driver.scaled(c.1, brightness: brightness)
+                return (encoder: i, ring: E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: c.0.isEmpty ? 0 : 1))
+            }))
+            for (i, c) in colors.enumerated() where !c.0.isEmpty {
+                let d = E16Driver.scaled(c.1, brightness: brightness)
+                print(String(format: "%2d %-4@  full (%3d,%3d,%3d)  sent (%3d,%3d,%3d)", i + 1, c.0 as NSString, Int(c.1.0), Int(c.1.1), Int(c.1.2), Int(d.0), Int(d.1), Int(d.2)))
+            }
+            print("Brightness \(percent)%. Type a percentage (e.g. 7) and press Return to change it; + or - steps by 1. Control-C leaves Remote Mode."); flushOutput()
         }
-        print("At brightness \(percent)%, as the driver dims. Control-C leaves Remote Mode."); flushOutput()
+        var current = brightness
+        show(current)
+        while let line = readLine() {
+            let text = line.trimmingCharacters(in: .whitespaces)
+            if text == "+" { current = min(current + 0.01, 1) }
+            else if text == "-" { current = max(current - 0.01, 0) }
+            else if let n = Double(text.replacingOccurrences(of: "%", with: "")) { current = min(max(n / 100, 0), 1) }
+            else { print("A percentage, + or -."); flushOutput(); continue }
+            show(current)
+        }
         while true { Thread.sleep(forTimeInterval: 60) }
 
     case "palette":
