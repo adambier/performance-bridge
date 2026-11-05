@@ -23,7 +23,8 @@ let e16Usage = """
                                       named on the screen, dimmed as the driver dims them at
                                       brightness B (0…1; default 0.10, the slider's 1): rows 1–2
                                       TotalMix FX's colors as the driver maps them, row 3 mute,
-                                      PFL, and the Shift buttons, row 4 up to four --rgb trials;
+                                      PFL, and the Shift buttons, then up to two --rgb trials (up
+                                      to six when the Shift buttons are left out for them);
                                       leaves Remote Mode on Control-C
       sbdev e16 ramp [--port N]       enters Remote Mode and shows white rings at 16 brightness
                                       values from 1 to 127, labeled; leaves Remote Mode on Control-C
@@ -194,7 +195,10 @@ func e16(_ arguments: ArraySlice<String>) -> Never {
             ("LVL", E16Driver.buttonColors.level), ("PAN", E16Driver.buttonColors.pan),
             ("SEND", E16Driver.buttonColors.send), ("PAGE", E16Driver.buttonColors.page),
         ]
-        for (i, t) in trials.prefix(4).enumerated() { colors.append(("T\(i + 1)", t)) }
+        // Two trials fit beside the fourteen; more push out the four Shift-button colors, which
+        // only show with Shift held.
+        if trials.count > 2 { colors.removeLast(4) }
+        for (i, t) in trials.prefix(6).enumerated() { colors.append(("T\(i + 1)", t)) }
         while colors.count < 16 { colors.append(("", (0, 0, 0))) }
         func show(_ brightness: Double) {
             let percent = Int((brightness * 100).rounded())
