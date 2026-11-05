@@ -400,7 +400,7 @@ final class E16DriverTests: XCTestCase {
         let screen = E16Driver.screen(title: "LEVEL", tail: "PFL 2/3", labels: ["ADT3", "P11/12", "", "", "", "", "", "", "", "", "", "", "A", "B", "C", "D"])
         let art = screen.art.split(separator: "\n")
         XCTAssertTrue(art[10].allSatisfy { $0 == "#" }, "the rule under the title")
-        XCTAssertTrue(art[6].hasPrefix("...#####"), "the title 3 px in, where the labels start (L's foot)")
+        XCTAssertTrue(art[6].hasPrefix("...###."), "the title 3 px in, where the labels start (L's foot)")
         XCTAssertTrue(art[0].hasSuffix("###...."), "the tail ends 3 px from the right edge (the 3, 4 wide, its top row 3 wide)")
         XCTAssertTrue(art[14].hasPrefix("....###."), "the first label (ADT3) at the same 3 px (A's top)")
         XCTAssertTrue(art[14].dropFirst(32).hasPrefix("...####"), "the second column's label 3 px into its cell (P's top)")

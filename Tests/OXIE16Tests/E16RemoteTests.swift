@@ -101,7 +101,7 @@ final class E16ScreenTests: XCTestCase {
         var big = E16Screen()
         big.draw("a", x: 0, y: 0, scale: 2)
         XCTAssertTrue(big.pixel(2, 0) && big.pixel(3, 1), "scaled 2×, lowercase drawn as A")
-        XCTAssertEqual(E16Screen.width(of: "LEVEL", scale: 2), 58)
+        XCTAssertEqual(E16Screen.width(of: "LEVEL", scale: 2), 48, "L is 3 wide, so LEVEL (24 px) clears PAN in the next cell")
         var box = E16Screen()
         box.draw("é", x: 0, y: 0)
         XCTAssertTrue(box.pixel(0, 0) && box.pixel(4, 6) && !box.pixel(1, 2), "an unknown character is a box")

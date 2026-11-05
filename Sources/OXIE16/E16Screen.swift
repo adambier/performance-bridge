@@ -82,7 +82,7 @@ public struct E16Screen: Hashable, Sendable {
 }
 
 /// One character of the font: up to five pixels wide, seven tall; each row's leftmost pixel is
-/// bit 4, and a narrow glyph ("1", "/", "I") uses only its first `width` columns.
+/// bit 4, and a narrow glyph ("1", "/", "I", "L") uses only its first `width` columns.
 public struct E16Glyph: Sendable {
     public let width: Int
     public let rows: [UInt8]
@@ -117,7 +117,7 @@ public enum E16Font {
         "I": E16Glyph(width: 3, rows: [0b11100, 0b01000, 0b01000, 0b01000, 0b01000, 0b01000, 0b11100]),
         "J": E16Glyph(width: 5, rows: [0b00111, 0b00010, 0b00010, 0b00010, 0b00010, 0b10010, 0b01100]),
         "K": E16Glyph(width: 5, rows: [0b10001, 0b10010, 0b10100, 0b11000, 0b10100, 0b10010, 0b10001]),
-        "L": E16Glyph(width: 5, rows: [0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b11111]),
+        "L": E16Glyph(width: 3, rows: [0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b11100]),
         "M": E16Glyph(width: 5, rows: [0b10001, 0b11011, 0b10101, 0b10101, 0b10001, 0b10001, 0b10001]),
         "N": E16Glyph(width: 5, rows: [0b10001, 0b11001, 0b10101, 0b10011, 0b10001, 0b10001, 0b10001]),
         "O": E16Glyph(width: 5, rows: [0b01110, 0b10001, 0b10001, 0b10001, 0b10001, 0b10001, 0b01110]),
