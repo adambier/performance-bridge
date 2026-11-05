@@ -102,6 +102,7 @@ private func connected() -> (driver: E16Driver, hub: SurfaceHub, midi: [UInt8]) 
     var hub = loadedHub()
     var driver = E16Driver(name: "e16")
     driver.brightness = 1  // the tests read exact values
+    driver.drawsScreen = false  // the tests read the firmware's label layout
     let start = driver.start(hub: &hub, now: 0)
     let answer = driver.receive(ack, hub: &hub, now: 0)
     return (driver, hub, start.midi + answer.midi)
@@ -112,6 +113,7 @@ final class E16DriverTests: XCTestCase {
         var hub = loadedHub()
         var driver = E16Driver(name: "e16")
         driver.brightness = 1
+        driver.drawsScreen = false
         let start = driver.start(hub: &hub, now: 0)
         XCTAssertEqual(start.midi, E16Outgoing.enterRemoteMode)
         XCTAssertFalse(driver.isConnected)
@@ -319,6 +321,7 @@ final class E16DriverTests: XCTestCase {
         }
         var driver = E16Driver(name: "e16")
         driver.brightness = 1
+        driver.drawsScreen = false
         _ = driver.start(hub: &hub, now: 0)
         let answer = driver.receive(ack, hub: &hub, now: 0)
         XCTAssertEqual(answer.midi.lastTitle, "LEVEL       1/2")
@@ -374,6 +377,7 @@ final class E16DriverTests: XCTestCase {
         var hub = loadedHub()
         var driver = E16Driver(name: "e16")
         driver.brightness = 0.5
+        driver.drawsScreen = false
         _ = driver.start(hub: &hub, now: 0)
         _ = driver.receive(ack, hub: &hub, now: 0)
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
@@ -381,6 +385,28 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(shift.midi.rings[1]?.r, 2, "available: 2, whatever the brightness")
         let down = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 1.1)
         XCTAssertEqual(down.midi.rings[1]?.r, 127, "pressed: 127, whatever the brightness")
+    }
+
+    func testTheHostDrawnScreen() {
+        var hub = loadedHub()
+        var driver = E16Driver(name: "e16")
+        _ = driver.start(hub: &hub, now: 0)
+        let answer = driver.receive(ack, hub: &hub, now: 0)
+        let frames = answer.midi.sysExMessages.filter { $0.starts(with: [0xF0, 0x00, 0x21, 0x5B, 0x02, 0x01, 0x06, 0x02]) }
+        XCTAssertEqual(frames.count, 1, "one FRAMEBUFFER, no LABELS")
+        XCTAssertNil(answer.midi.lastTitle)
+        XCTAssertEqual(frames[0].count, 8 + 1171 + 1)
+        // The screen itself: the title at twice the font, centered; seven-character labels.
+        let screen = E16Driver.screen(title: "LEVEL", labels: ["ADAT3/4", "PB11/12"])
+        let art = screen.art.split(separator: "\n")
+        XCTAssertTrue(art[11].allSatisfy { $0 == "#" }, "the rule under the title")
+        XCTAssertEqual(art[0].firstIndex(of: "#").map { art[0].distance(from: art[0].startIndex, to: $0) }, 45, "LEVEL (38 px at 2×) centered")
+        XCTAssertTrue(art[15].contains("#"), "the first label row")
+        XCTAssertFalse(art[12].contains("#") || art[13].contains("#") || art[14].contains("#"), "space under the rule")
+        XCTAssertEqual(E16Driver.fit("ADAT 3/4", E16Driver.longLabelLength), "ADAT3/4")
+        XCTAssertEqual(E16Driver.fit("PB 13/14", E16Driver.longLabelLength), "PB13/14")
+        XCTAssertEqual(E16Driver.fit("Tonverk", E16Driver.longLabelLength), "Tonverk")
+        XCTAssertEqual(E16Driver.ShiftButton.output(1).longLabel, "SEND>")
     }
 
     func testBrightnessScalesEveryColorSent() {
@@ -406,7 +432,9 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(E16Driver.fit("Tonverk", 4), "Tonv")
         XCTAssertEqual(E16Driver.fit("ADI-2", 4), "ADI2")
         XCTAssertEqual(E16Driver.fit("Mic 1/2", 8), "Mic 1/2")
-        XCTAssertEqual(E16Driver.fit("ADAT 3/4", 7), "ADAT 3")
+        XCTAssertEqual(E16Driver.fit("ADAT 3/4", 7), "ADAT3/4", "the pair, without its space")
+        XCTAssertEqual(E16Driver.fit("PB 11/12", 7), "PB11/12")
+        XCTAssertEqual(E16Driver.fit("ADAT 11/12", 7), "ADAT 11")
         XCTAssertEqual(E16Driver.fit("Analog 1/2", 7), "Analog1", "all the letters before any vowel goes")
     }
 

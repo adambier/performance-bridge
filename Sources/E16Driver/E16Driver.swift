@@ -64,6 +64,13 @@ public struct E16Driver: Sendable {
     public private(set) var function = KnobFunction.level
     /// The send output (an index into `SurfaceHub.sendTargets`) SEND goes back to.
     private var lastSend = 0
+    /// Whether the screen is drawn by the driver (the FRAMEBUFFER message, with this project's
+    /// small font: a title and eight characters a label) rather than by the firmware's own label
+    /// layout (a title and four characters a label). Adam, 2026-11-04: four characters can't
+    /// name a stereo pair.
+    public var drawsScreen = true
+    /// How many characters a label has on the host-drawn screen.
+    public static let longLabelLength = 7
     /// How bright the rings are, 0…1, applied to every color sent: full was too bright for a
     /// dark room, and 70% still a little (Adam, 2026-11-04). A lit part never goes below 1.
     public var brightness: Double = 0.55
@@ -116,6 +123,17 @@ public struct E16Driver: Sendable {
             case .send: return "SEND"
             case .output(let d): return d < 0 ? "<SND" : "SND>"
             case .page(let d): return d < 0 ? "<PG" : "PG>"
+            }
+        }
+
+        /// The label on the host-drawn screen, up to eight characters.
+        public var longLabel: String {
+            switch self {
+            case .level: return "LEVEL"
+            case .pan: return "PAN"
+            case .send: return "SEND"
+            case .output(let d): return d < 0 ? "<SEND" : "SEND>"
+            case .page(let d): return d < 0 ? "<PAGE" : "PAGE>"
             }
         }
 
@@ -525,21 +543,41 @@ public struct E16Driver: Sendable {
         step.midi += drawLabels(hub: hub)
     }
 
-    /// The screen: the title and the sixteen labels, sent only when they change.
+    /// The screen: the title and the sixteen labels, sent only when they change; drawn by the
+    /// driver (`drawsScreen`) or by the firmware's label layout.
     private mutating func drawLabels(hub: SurfaceHub) -> [UInt8] {
         guard connected else { return [] }
+        let length = drawsScreen ? Self.longLabelLength : E16Outgoing.labelLength
         let labels: [String] = (0..<Self.stripCount).map { index in
             if shiftHeld {
                 // An arrow that goes nowhere shows no label either (Adam, 2026-11-04).
                 guard let button = ShiftButton.layout[index], button.isMode || isAvailable(button, hub: hub) else { return "" }
-                return button.label
+                return drawsScreen ? button.longLabel : button.label
             }
-            return Self.fit(infos[index]?.name ?? "", 4)
+            return Self.fit(infos[index]?.name ?? "", length)
         }
-        let bytes = E16Outgoing.labels(title: title(hub: hub), labels: labels)
+        let bytes = drawsScreen ? E16Outgoing.framebuffer(Self.screen(title: title(hub: hub), labels: labels))
+            : E16Outgoing.labels(title: title(hub: hub), labels: labels)
         guard bytes != sentLabels else { return [] }
         sentLabels = bytes
         return bytes
+    }
+
+    /// The host-drawn screen: the title centered in the font at twice its size, a rule under
+    /// it, and the sixteen labels in four rows of four, each centered in its 32-pixel cell.
+    public static func screen(title: String, labels: [String]) -> E16Screen {
+        var screen = E16Screen()
+        let titleWidth = E16Screen.width(of: title, scale: 2) - 2
+        screen.draw(title, x: max((E16Screen.width - titleWidth) / 2, 0), y: 0, scale: 2)
+        screen.line(y: 11, from: 0, to: E16Screen.width - 1)
+        for (index, label) in labels.prefix(stripCount).enumerated() {
+            let cell = E16Screen.width / 4
+            let width = E16Screen.width(of: label) - 1
+            let x = (index % 4) * cell + max((cell - width) / 2, 0)
+            let y = 15 + (index / 4) * 13
+            screen.draw(label, x: x, y: y)
+        }
+        return screen
     }
 
     /// The title: an overlay while one shows; else the function ("LEVEL", "PAN", "> PHONES 1"),
@@ -714,10 +752,12 @@ public struct E16Driver: Sendable {
 
     /// `text` cut to `length` characters, keeping what tells strips apart (UI review,
     /// 2026-11-04): a name that fits is kept as is; one that ends in a number or a pair ("ADAT
-    /// 3/4", "PB 11/12") keeps its first number, loses "/n", and shortens its word: first the
-    /// space goes, then vowels after the word's first letter, then letters from the end ("ADT3",
-    /// "AD11", "PB 1", "PB11", "Mic1", "Anl1"); anything else is cut ("Tonv").
-    static func fit(_ text: String, _ length: Int) -> String {
+    /// 3/4", "PB 11/12") first loses its space ("ADAT3/4", "PB11/12"); failing that it keeps its
+    /// first number, loses "/n", and shortens its word: the space goes, then vowels after the
+    /// word's first letter, then letters from the end ("ADT3", "AD11", "PB11", "Mic1", "Anl1");
+    /// anything else is cut ("Tonv"). Hyphens go first ("ADI2"), and at four characters a
+    /// playback pair keeps its "/2" ("P1/2").
+    public static func fit(_ text: String, _ length: Int) -> String {
         if text.count <= length { return text }
         // A playback pair's default name keeps its "/2", so it reads as a pair, not a skipped
         // channel: "PB 1/2" to "P1/2" (Adam, 2026-11-04).
@@ -727,6 +767,8 @@ public struct E16Driver: Sendable {
         let parts = text.split(separator: " ", omittingEmptySubsequences: true).map(String.init)
         if parts.count >= 2, let last = parts.last, let number = last.split(separator: "/").first, Int(number) != nil {
             var word = parts.dropLast().joined(separator: " ")
+            // The whole pair without its space, when that fits ("PB11/12", "ADAT3/4").
+            if last.contains("/"), word.count + last.count <= length { return word + last }
             let digits = String(number)
             let room = length - digits.count
             if word.count + 1 + digits.count <= length { return word + " " + digits }

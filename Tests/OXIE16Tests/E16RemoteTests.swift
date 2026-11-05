@@ -69,3 +69,39 @@ final class E16RemoteTests: XCTestCase {
         XCTAssertEqual(parser.feed([0xB0, 0, 0x01]), [.other([0xB0, 0, 0x01])], "CC 0 is not an encoder")
     }
 }
+
+final class E16ScreenTests: XCTestCase {
+    func testTheFramebufferIsPagesOfColumnsTopBitFirst() {
+        var screen = E16Screen()
+        screen.set(0, 0)      // page 0, column 0, bit 0
+        screen.set(5, 9)      // page 1, column 5, bit 1
+        screen.set(127, 63)   // page 7, column 127, bit 7
+        let buffer = screen.framebuffer
+        XCTAssertEqual(buffer.count, 1024)
+        XCTAssertEqual(buffer[0], 0b0000_0001)
+        XCTAssertEqual(buffer[128 + 5], 0b0000_0010)
+        XCTAssertEqual(buffer[7 * 128 + 127], 0b1000_0000)
+        XCTAssertEqual(buffer.filter { $0 != 0 }.count, 3)
+        let message = E16Outgoing.framebuffer(screen)
+        XCTAssertEqual(Array(message.prefix(8)), [0xF0, 0x00, 0x21, 0x5B, 0x02, 0x01, 0x06, 0x02])
+        XCTAssertEqual(message.count, 8 + 1024 + 147 + 1, "1024 bytes packed 7 to 8")
+        XCTAssertEqual(E16Outgoing.unpack(Array(message[8..<(message.count - 1)])), buffer)
+    }
+
+    func testTheFontDrawsAndScales() {
+        var screen = E16Screen()
+        XCTAssertEqual(screen.draw("A1", x: 0, y: 0), 8, "two characters at a four-pixel advance")
+        let a = (0..<5).map { y in (0..<3).map { x in screen.pixel(x, y) ? "#" : "." }.joined() }
+        XCTAssertEqual(a, [".#.", "#.#", "###", "#.#", "#.#"])
+        XCTAssertFalse(screen.pixel(3, 0), "a pixel of space between characters")
+        XCTAssertTrue(screen.pixel(5, 0), "the 1")
+        var big = E16Screen()
+        big.draw("a", x: 0, y: 0, scale: 2)
+        XCTAssertTrue(big.pixel(2, 0) && big.pixel(3, 1), "scaled 2×, lowercase drawn as A")
+        XCTAssertEqual(E16Screen.width(of: "LEVEL", scale: 2), 40)
+        var box = E16Screen()
+        box.draw("é", x: 0, y: 0)
+        XCTAssertTrue(box.pixel(0, 0) && box.pixel(2, 4) && !box.pixel(1, 2), "an unknown character is a box")
+        XCTAssertEqual(screen.art.split(separator: "\n").count, 64)
+    }
+}
