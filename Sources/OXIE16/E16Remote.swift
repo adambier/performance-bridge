@@ -106,14 +106,23 @@ public enum E16Outgoing {
         return raw.isEmpty ? [] : message([0x06, 0x04], payload: raw)
     }
 
+    /// The most LEDs one LED message carries: sixteen, the most tested on the device (test 5 of
+    /// `docs/OXI-E16.md`); more go in further messages.
+    public static let ledsPerMessage = 16
+
     /// LED (`06 01`): single LEDs (0–15) of encoders (0–15), each as a 5-byte chunk (encoder, LED,
-    /// R, G, B). Out-of-range entries are left out.
+    /// R, G, B), at most `ledsPerMessage` to a message. Out-of-range entries are left out.
     public static func leds(_ leds: [(encoder: Int, led: Int, red: UInt8, green: UInt8, blue: UInt8)]) -> [UInt8] {
-        var raw: [UInt8] = []
-        for l in leds where (0..<encoderCount).contains(l.encoder) && (0..<16).contains(l.led) {
-            raw += [UInt8(l.encoder), UInt8(l.led), l.red & 0x7F, l.green & 0x7F, l.blue & 0x7F]
+        let valid = leds.filter { (0..<encoderCount).contains($0.encoder) && (0..<16).contains($0.led) }
+        var out: [UInt8] = []
+        for start in stride(from: 0, to: valid.count, by: ledsPerMessage) {
+            var raw: [UInt8] = []
+            for l in valid[start..<min(start + ledsPerMessage, valid.count)] {
+                raw += [UInt8(l.encoder), UInt8(l.led), l.red & 0x7F, l.green & 0x7F, l.blue & 0x7F]
+            }
+            out += message([0x06, 0x01], payload: raw)
         }
-        return raw.isEmpty ? [] : message([0x06, 0x01], payload: raw)
+        return out
     }
 
     /// OLED LABELS (`06 03`): a title of `titleLength` characters and `encoderCount` labels of

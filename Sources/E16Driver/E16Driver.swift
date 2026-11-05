@@ -35,13 +35,14 @@ public struct E16Step: Equatable, Sendable {
 /// encoder each, always the sources:
 /// - turn: the strip's level in the home submix, or its pan or its send to one output, as the
 ///   surface's function is set (`function`);
-/// - a short push (under `pflHold`): mute, on release; a push held `pflHold`: PFL;
+/// - a short push (under `pflHold`): mute, on release; a push held `pflHold`: PFL; a turn
+///   while pushed (push-and-turn): pan, or level in PAN mode, and no mute or PFL for that push;
 /// - with Shift held the encoders are buttons (`ShiftButton`, as OXI's own firmware does it):
 ///   the modes LEVEL, PAN, and SEND (encoders 1–3), the previous and next send output (11 and
 ///   12), the previous and next page of sixteen strips (15 and 16); the screen names them and
 ///   the rings show the mode in use and which arrows go somewhere;
 /// - the ring shows the strip's color, filled to its level (bipolar for a pan), and the switch
-///   states by shape and motion, orange for mute and pink for PFL (`look`, and the rules in
+///   states by shape and motion, orange marks rotating for mute and pink for PFL (`look`, and the rules in
 ///   its comment); the screen's title shows the function and the page, "PFL" while any PFL is
 ///   on, and for a moment the value of a turned encoder or the result of a push.
 ///
@@ -94,11 +95,6 @@ public struct E16Driver: Sendable {
     public static let tapTime: Double = 0.25
     /// How often the countdown is redrawn, in seconds.
     public static let countdownStep: Double = 0.1
-    /// The PFL heartbeat: the ring is a complete pink ring for `heartbeatOn` of each
-    /// `heartbeatPeriod`, then dips to what is underneath for the rest.
-    public static let heartbeatPeriod: Double = 1
-    /// How long the heartbeat's ring is complete, in seconds.
-    public static let heartbeatOn: Double = 0.8
 
     /// What an encoder does as a button while Shift is held: a mode button (LEVEL, PAN, SEND:
     /// one of them is in use) or a step button (an arrow: it goes somewhere, or nowhere).
@@ -162,16 +158,22 @@ public struct E16Driver: Sendable {
     public static let titleWidth = 15
     /// How long the title shows a turned encoder's value or a press's result, in seconds.
     public static let overlayTime: Double = 1
-    /// How long each half of a flashing mute lasts, in seconds (a mute set while TotalMix FX's Mute
+    /// How long the marks and the level each show for a set-only mute, in seconds (a mute set while TotalMix FX's Mute
     /// Master is off, as on the other surfaces).
     public static let blinkPeriod: Double = 0.5
+    /// A switch's marks (mute orange, PFL pink): four LEDs a quarter ring apart on a dark ring, moved one LED every
+    /// `rotationStep` seconds (Adam's choice, 2026-11-05, OXI's own rotating idiom; a steady
+    /// full ring had been one LED from a full-level orange channel).
+    public static let rotationStep: Double = 0.15
+    /// How many marks a switch shows.
+    public static let markCount = 4
 
     private var connected = false
     private var lastEnter: Double?
     private var shiftHeld = false
     private var blinkLit = true
-    /// Whether PFL rings are in the complete-ring phase of their heartbeat now.
-    private var heartbeatHigh = true
+    /// The position of the switches' marks, 0–15, advanced every `rotationStep`.
+    private var rotation = 0
     private var overlay: (text: String, until: Double)?
     /// The encoder held down, if any, since when, and whether the hold has already toggled PFL.
     /// Its overlay stays until it is released (Adam, 2026-11-04).
@@ -184,6 +186,11 @@ public struct E16Driver: Sendable {
     private var page = (first: 0, count: 0)
     private var infos: [StripInfo?] = Array(repeating: nil, count: E16Driver.stripCount)
     private var knobValues: [Double?] = Array(repeating: nil, count: E16Driver.stripCount)
+    /// The PFL layer's knob values: the alternate function's (`alternate`), for push-and-turn.
+    private var alternateValues: [Double?] = Array(repeating: nil, count: E16Driver.stripCount)
+    /// The encoder being pushed and turned, whose ring shows the alternate function until it is
+    /// released.
+    private var pushTurning: Int?
     private var muteOn: [Bool] = Array(repeating: false, count: E16Driver.stripCount)
     private var pflOn: [Bool] = Array(repeating: false, count: E16Driver.stripCount)
     private var sentLabels: [UInt8]?
@@ -192,14 +199,23 @@ public struct E16Driver: Sendable {
     private var shownScreen: (title: String, tail: String, labels: [String], drawn: Bool)?
     private var sentRings: [RingLook?] = Array(repeating: nil, count: E16Driver.stripCount)
 
-    /// How one encoder's ring is drawn: a RING message alone. The single-LED message is never
-    /// used: on the device it is a persistent override that outlives later fills and inverts the
-    /// encoder's label until a power cycle (seen 2026-11-04).
+    /// How one encoder's ring is drawn: a RING message, then LED messages for any marks. (A
+    /// LED message holds until the next RING for its ring: docs/OXI-E16.md, test 5. An earlier
+    /// build saw LEDs stick, most likely its own re-sending; the device holds no override.)
     struct RingLook: Hashable {
         var ring: E16Ring
         /// Whether the ring's color is sent as it is, outside the driver's `brightness`: the
         /// Shift page's dim and maximum levels.
         var exact = false
+        /// LEDs drawn over the ring with LED messages after it (mute's and PFL's rotating
+        /// marks), by index (0 is the first LED left of six o'clock, clockwise; docs/OXI-E16.md,
+        /// test 5), each with its color as red, green, blue.
+        var marks: [Mark] = []
+    }
+
+    struct Mark: Hashable {
+        var led: Int
+        var rgb: [UInt8]
     }
 
     /// A driver for one device; `name` starts the hub surfaces' names.
@@ -242,7 +258,7 @@ public struct E16Driver: Sendable {
     }
 
     /// What is due as time passes: ENTER asked again while the device hasn't answered, a push
-    /// held long enough for PFL (with its countdown), an overlay ending, and flashing mutes.
+    /// held long enough for PFL (with its countdown), an overlay ending, and the marks' rotation and alternation.
     public mutating func tick(hub: inout SurfaceHub, now: Double) -> E16Step {
         var step = E16Step()
         if !connected, let lastEnter, now - lastEnter >= Self.enterInterval {
@@ -275,10 +291,10 @@ public struct E16Driver: Sendable {
             step.midi += drawLabels(hub: hub)
         }
         let lit = Int((now / Self.blinkPeriod).rounded(.down)) % 2 == 0
-        let high = now.truncatingRemainder(dividingBy: Self.heartbeatPeriod) < Self.heartbeatOn
-        if lit != blinkLit || high != heartbeatHigh {
+        let turn = Int((now / Self.rotationStep).rounded(.down)) % Self.stripCount
+        if lit != blinkLit || turn != rotation {
             blinkLit = lit
-            heartbeatHigh = high
+            rotation = turn
             step.midi += drawRings(hub: hub)  // only the rings that change are sent
         }
         return step
@@ -310,7 +326,21 @@ public struct E16Driver: Sendable {
         switch event {
         case .turned(let encoder, let delta):
             guard (0..<Self.stripCount).contains(encoder), !shiftHeld else { return }
-            turn(encoder, by: delta, hub: &hub, now: now, into: &step)
+            // A turn while the encoder is pushed cancels the push: no mute on release and no
+            // PFL countdown (a push-and-turn held over a second would otherwise set PFL; test
+            // 6, Adam, 2026-11-05). Push-and-turn is then just a turn until it is given a job.
+            if let held, held.encoder == encoder, !held.didPFL {
+                self.held = nil
+                pushTurning = encoder
+                if countdownShown >= 0 {
+                    countdownShown = -1
+                    overlay = nil
+                    step.midi += drawLabels(hub: hub)
+                }
+            }
+            // Push-and-turn is the alternate function: pan, or level in PAN mode (Adam,
+            // 2026-11-05).
+            turn(encoder, by: delta, layer: pushTurning == encoder ? .pfl : .main, hub: &hub, now: now, into: &step)
         case .pushed(let encoder, true):
             guard (0..<Self.stripCount).contains(encoder) else { return }
             if shiftHeld {
@@ -320,11 +350,19 @@ public struct E16Driver: Sendable {
             } else {
                 held = (encoder, now, false)
                 countdownShown = -1
+                if let other = pushTurning, other != encoder {
+                    pushTurning = nil
+                    step.midi += drawRing(other, hub: hub)
+                }
             }
         case .pushed(let encoder, false):
             if pressedButton == encoder {
                 pressedButton = nil
                 step.midi += drawRing(encoder, hub: hub)
+            }
+            if pushTurning == encoder {
+                pushTurning = nil
+                step.midi += drawRing(encoder, hub: hub)  // back to the mode's own value
             }
             guard let held, held.encoder == encoder else { return }
             self.held = nil
@@ -352,6 +390,7 @@ public struct E16Driver: Sendable {
         overlay = nil
         held = nil
         pressedButton = nil
+        pushTurning = nil
         blinkLit = true
         sentLabels = nil
         shownScreen = nil
@@ -373,8 +412,8 @@ public struct E16Driver: Sendable {
     // MARK: - Controls
 
     /// An encoder turned without Shift: moves its strip's knob by `delta` units.
-    private mutating func turn(_ encoder: Int, by delta: Int, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
-        guard let strips = hub.strips(of: id(.main)), strips.indices.contains(encoder),
+    private mutating func turn(_ encoder: Int, by delta: Int, layer: Layer = .main, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
+        guard let strips = hub.strips(of: id(layer)), strips.indices.contains(encoder),
               let target = strips[encoder].knobTarget else { return }
         let stored = hub.mirror.value(of: target)
         let current: Double
@@ -387,14 +426,16 @@ public struct E16Driver: Sendable {
             stepSize = Self.levelStep
         }
         let position = min(max(current + Double(delta) * stepSize, 0), 1)
-        take(hub.controlMoved(id(.main), strip: encoder, to: position, now: now), hub: hub, into: &step)
+        take(hub.controlMoved(id(layer), strip: encoder, to: position, now: now), hub: hub, into: &step)
         // The hub doesn't send a surface its own move back: draw the ring from the mirror, and
         // show the value in the title.
         let moved = hub.mirror.value(of: target)
-        knobValues[encoder] = isPan ? moved.map { ($0 + 1) / 2 } : moved
+        let panning: Bool = { if case .pan = target { return true } else { return false } }()
+        let value = panning ? moved.map { ($0 + 1) / 2 } : moved
+        if layer == .main { knobValues[encoder] = value } else { alternateValues[encoder] = value }
         step.midi += drawRing(encoder, hub: hub)
         if let info = infos[encoder], let moved {
-            let text = isPan ? ValueText.pan(moved) : ValueText.level(position: moved)
+            let text = panning ? ValueText.pan(moved) : ValueText.level(position: moved)
             show(Self.fit(info.name, 8) + " " + text, now: now, into: &step, hub: hub)
         }
     }
@@ -484,7 +525,7 @@ public struct E16Driver: Sendable {
     func mode(for layer: Layer, first: Int) -> SurfaceMode {
         switch layer {
         case .main: return .strips(view: .sources, first: first, knob: function, switch: .mute)
-        case .pfl: return .strips(view: .sources, first: first, knob: .level, switch: .pfl)
+        case .pfl: return .strips(view: .sources, first: first, knob: alternate, switch: .pfl)
         }
     }
 
@@ -498,6 +539,10 @@ public struct E16Driver: Sendable {
     }
 
     private var isPan: Bool { if case .pan = function { return true } else { return false } }
+
+    /// What push-and-turn does: pan, or level in PAN mode (Adam, 2026-11-05). The PFL layer's
+    /// knob carries it, since that layer's knobs were otherwise unused.
+    var alternate: KnobFunction { isPan ? .level : .pan }
 
     // MARK: - To the device
 
@@ -534,8 +579,8 @@ public struct E16Driver: Sendable {
                     infos[index] = info
                     touched.insert(index)
                 case .knob(let index, let value):
-                    guard layer == .main, knobValues.indices.contains(index) else { continue }
-                    knobValues[index] = value
+                    guard knobValues.indices.contains(index) else { continue }
+                    if layer == .main { knobValues[index] = value } else { alternateValues[index] = value }
                     touched.insert(index)
                 case .valueText:
                     break  // the title shows the value of a turn from `turn(_:by:hub:now:into:)`
@@ -646,13 +691,25 @@ public struct E16Driver: Sendable {
     /// Every ring, sent only where it changed, in one RING message.
     private mutating func drawRings(hub: SurfaceHub) -> [UInt8] {
         var rings: [(encoder: Int, ring: E16Ring)] = []
+        var leds: [(encoder: Int, led: Int, red: UInt8, green: UInt8, blue: UInt8)] = []
         for index in 0..<Self.stripCount {
             let look = look(index, hub: hub)
             guard sentRings[index] != look else { continue }
             sentRings[index] = look
             rings.append((index, look.exact ? look.ring : dimmed(look.ring)))
+            leds += Self.leds(for: look, encoder: index, brightness: brightness)
         }
-        return E16Outgoing.rings(rings)
+        // The RING message first: a LED message holds until the next RING for its ring (test 5).
+        return E16Outgoing.rings(rings) + E16Outgoing.leds(leds)
+    }
+
+    /// A look's marks as LED messages' chunks, dimmed like the ring.
+    private static func leds(for look: RingLook, encoder: Int, brightness: Double) -> [(encoder: Int, led: Int, red: UInt8, green: UInt8, blue: UInt8)] {
+        look.marks.compactMap { mark in
+            guard mark.rgb.count == 3 else { return nil }
+            let rgb = scaled((mark.rgb[0], mark.rgb[1], mark.rgb[2]), brightness: brightness)
+            return (encoder: encoder, led: mark.led, red: rgb.0, green: rgb.1, blue: rgb.2)
+        }
     }
 
     /// The dimmest a color's largest part goes: a lit ring stays visibly lit (the LEDs are bright
@@ -683,21 +740,23 @@ public struct E16Driver: Sendable {
         guard sentRings[index] != look else { return [] }
         sentRings[index] = look
         return E16Outgoing.rings([(encoder: index, ring: look.exact ? look.ring : dimmed(look.ring))])
+            + E16Outgoing.leds(Self.leds(for: look, encoder: index, brightness: brightness))
     }
 
-    /// A strip's ring, by the rules from the UI review (2026-11-04), drawn with RING messages
-    /// alone:
+    /// A strip's ring, by the rules from the UI review (2026-11-04), with RING messages and, for
+    /// a switch's marks, LED messages after them (test 5):
     /// - dark means no channel: a strip with a channel always lights at least one LED (`floor`,
     ///   as OXI's own "Color Indicator" setting does);
-    /// - a complete ring always means a switch is on: a level never fills the last LED (`cap`);
-    /// - color is the second cue, shape and motion the first: orange for mute, pink for PFL,
-    ///   the colors the other surfaces use;
-    /// - one meaning per motion: steady is a value or a state; a symmetric blink (full orange
-    ///   ring ↔ half ring, `blinkPeriod` each) is a mute that is set but not in effect while
-    ///   TotalMix FX's Mute Master is off; the heartbeat (`heartbeatOn` of each
-    ///   `heartbeatPeriod` a complete pink ring, then a dip to what is underneath: the level,
-    ///   or the mute's ring) is PFL; a one-shot pink arc growing (or, for PFL off, shrinking)
-    ///   is the push held for PFL.
+    /// - a level fills the ring at 0 dB and above (`levelAmount`; Adam, 2026-11-05), since a
+    ///   switch that is on is no longer a full ring;
+    /// - color is the second cue, shape and motion the first: orange for mute, as on the
+    ///   other surfaces, and pink for PFL (`pflRGB`);
+    /// - one meaning per motion: steady is a value; four marks a quarter ring apart rotating on
+    ///   a dark ring (`rotationStep` a step) is a switch that is on, orange for mute and pink
+    ///   for PFL (both: interleaved); a mute that is set but not in effect while TotalMix FX's
+    ///   Mute Master is off shows its marks still, alternating with the level every
+    ///   `blinkPeriod`, or, with PFL on, turning with PFL's and blinking; a one-shot pink arc growing (or, for PFL off, shrinking) is the push
+    ///   held for PFL.
     func look(_ index: Int, hub: SurfaceHub) -> RingLook {
         if shiftHeld { return buttonRing(index, hub: hub) }
         guard let info = infos[index], let value = knobValues[index] else { return RingLook(ring: .off) }
@@ -707,29 +766,78 @@ public struct E16Driver: Sendable {
             return RingLook(ring: E16Ring(red: Self.pflRGB.0, green: Self.pflRGB.1, blue: Self.pflRGB.2, amount: amount))
         }
         var rgb = Self.rgb(for: info)
+        if pushTurning == index, let alt = alternateValues[index] {
+            // Push-and-turn: the alternate function's value in the channel's color, a pan as
+            // its arc from the top.
+            let ring: E16Ring = isPan
+                ? E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: Self.levelAmount(alt))
+                : Self.panRing(alt, rgb)
+            return RingLook(ring: ring)
+        }
         if case .send(let n) = function, hub.sendTargets.indices.contains(n) {
             let output = ChannelRef(.output, hub.sendTargets[n])
             if let color = hub.mirror.channels[output]?.color, color != 1, let sendRGB = Self.totalMixRGB[color] { rgb = sendRGB }
         }
         let level: E16Ring = isPan
-            ? E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: value, bipolar: true)
-            : E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: min(max(value, Self.floor), Self.cap))
-        var underneath = level
-        if muteOn[index] {
-            let amount = hub.mirror.muteMaster == false && !blinkLit ? 0.5 : 1
-            underneath = E16Ring(red: Self.muteRGB.0, green: Self.muteRGB.1, blue: Self.muteRGB.2, amount: amount)
+            ? Self.panRing(value, rgb)
+            : E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: Self.levelAmount(value))
+        // A switch that is on is four marks a quarter ring apart turning on a dark ring: orange
+        // for mute, pink for PFL, interleaved two LEDs apart when both are on (Adam,
+        // 2026-11-05: mute and PFL alike, by color). A mute that is set while TotalMix FX's
+        // Mute Master is off (not silencing) shows its marks still, alternating with the level
+        // every `blinkPeriod`; with PFL on, they turn with PFL's and blink, and the level
+        // does not show.
+        let muteInEffect = muteOn[index] && hub.mirror.muteMaster != false
+        let muteSetOnly = muteOn[index] && hub.mirror.muteMaster == false
+        let turning = pflOn[index] || muteInEffect
+        let start = turning ? rotation : 0
+        var marks: [Mark] = []
+        if muteInEffect || (muteSetOnly && blinkLit) {
+            marks += Self.quarterMarks(from: start, Self.muteRGB)
         }
-        if pflOn[index], heartbeatHigh {
-            return RingLook(ring: E16Ring(red: Self.pflRGB.0, green: Self.pflRGB.1, blue: Self.pflRGB.2, amount: 1))
+        if pflOn[index] {
+            marks += Self.quarterMarks(from: start + Self.stripCount / Self.markCount / 2, Self.pflRGB)
         }
-        return RingLook(ring: underneath)
+        guard !marks.isEmpty else { return RingLook(ring: level) }
+        return RingLook(ring: .off, marks: marks)
     }
+
+    /// Four marks a quarter ring apart, from `start`.
+    static func quarterMarks(from start: Int, _ rgb: (UInt8, UInt8, UInt8)) -> [Mark] {
+        (0..<markCount).map { Mark(led: (start + $0 * stripCount / markCount) % stripCount, rgb: [rgb.0, rgb.1, rgb.2]) }
+    }
+
+    /// A pan's ring, from the top: in the channel's color at center, red as soon as it is off
+    /// center, since a pan of L1 or R1 draws too small an arc to tell from center (Adam,
+    /// 2026-11-05).
+    /// Off center, the arc is also at least `panMinimumOffset` from the top, so L1 and R1 show
+    /// by shape too, on a channel that is red itself (Adam, 2026-11-05).
+    static func panRing(_ position: Double, _ rgb: (UInt8, UInt8, UInt8)) -> E16Ring {
+        let position = position.isFinite ? min(max(position, 0), 1) : 0.5  // a NaN never equals itself, so would re-send forever
+        let offset = position - 0.5
+        guard abs(offset) > 0.001 else {
+            return E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: position, bipolar: true)
+        }
+        let shown = 0.5 + (offset < 0 ? -1 : 1) * max(abs(offset), Self.panMinimumOffset)
+        let c = Self.panOffCenterRGB
+        return E16Ring(red: c.0, green: c.1, blue: c.2, amount: shown, bipolar: true)
+    }
+
+    /// The least a pan off center is drawn from the top, as a fraction of the pan's range: one
+    /// LED's worth: at R1 the device lit one red LED right of the top (docs/OXI-E16.md, test 7).
+    public static let panMinimumOffset = 1.0 / 16
+
+    /// A pan's color off center (`panRing`).
+    public static let panOffCenterRGB: (UInt8, UInt8, UInt8) = (127, 0, 0)
 
     /// The least a strip with a channel lights, as a fraction of the ring: one LED.
     public static let floor = 1.0 / 16
-    /// The most a level lights, as a fraction of the ring: fifteen LEDs, so a complete ring is
-    /// a switch.
-    public static let cap = 15.0 / 16
+    /// How much of the ring a level (a fader position, 0…1) lights: the whole ring at 0 dB and
+    /// above (Adam, 2026-11-05), in proportion below, and never less than `floor`.
+    public static func levelAmount(_ position: Double) -> Double {
+        guard position.isFinite else { return floor }
+        return min(max(position / FaderCurve.unityPosition, floor), 1)
+    }
 
     /// A ring on the Shift page, full, in the button's color (`buttonColors`), at one of four
     /// levels (Adam, 2026-11-04, after the brightness ramp): dark for a blank or an arrow that

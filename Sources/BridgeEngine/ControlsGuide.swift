@@ -162,9 +162,10 @@ public struct ControlsGuide: Equatable, Sendable {
         ],
         tables: [
             Table(controlHeading: "Control (each encoder)", actionHeading: "What it does for that encoder's channel", rows: [
-                Row("Turn", "Level in Main Out, pan in Main Out, or a send, by the mode (**Shift**, below). The screen shows the value while it turns; turning faster moves further."),
-                Row("Press and release", "Mute on or off. A muted channel's ring is orange, and flashes while TotalMix FX's Mute Master is off. The screen says \"MUTE ON\" or \"MUTE OFF\", or \"MUTE SET\" or \"MUTE CLR\" while Mute Master is off, when a mute does nothing in the audio."),
-                Row("Hold for one second", "PFL on or off. After a quarter second, a pink arc counts down around the ring, and when it closes PFL switches. While PFL is on, the ring pulses pink. The screen says \"PFL ON\" or \"PFL OFF\" while the encoder is held."),
+                Row("Turn", "Level in Main Out, pan in Main Out, or a send, by the mode (**Shift**, below). The screen shows the value while it turns; turning faster moves further. A level or send fills its ring at 0 dB and above."),
+                Row("Press and release", "Mute on or off. A muted channel's ring goes dark with four orange lights turning around it. While TotalMix FX's Mute Master is off, so a mute does nothing in the audio, the four lights stand still and take turns with the level, half a second each; with PFL also on, they turn with the pink ones and blink. The screen says \"MUTE ON\" or \"MUTE OFF\", or \"MUTE SET\" or \"MUTE CLR\" while Mute Master is off, when a mute does nothing in the audio."),
+                Row("Hold for one second", "PFL on or off. After a quarter second, a pink arc counts down around the ring, and when it closes PFL switches. While PFL is on, the ring goes dark with four pink lights turning around it, as a mute's orange ones do; with both on, the orange and pink lights turn together. The screen says \"PFL ON\" or \"PFL OFF\" while the encoder is held."),
+                Row("Push and turn", "In LEVEL and SEND modes, pan in Main Out; in PAN mode, the level in Main Out. Either lasts while the encoder is held: the ring shows it and the screen its value, and on release the ring goes back to the mode's. Start turning within a second of pushing: a push that turns then neither mutes nor switches PFL."),
             ]),
             Table(controlHeading: "Hold Shift and press", actionHeading: "What it does", rows: [
                 Row("**1** LEVEL / **2** PAN / **3** SEND", "What a turn does: level (white), pan (magenta), or a send (green) to the last output used. The one in use lights brighter."),
@@ -175,7 +176,8 @@ public struct ControlsGuide: Equatable, Sendable {
         notes: [
             "While Shift is held, the screen names each button and the rings show them: dim where a button is available, brighter for the one in use, and full while pressed; the other encoders go dark.",
             "The top line of the screen shows the mode (LEVEL, PAN, or the send's output, e.g., \"> PHONES 1\"). At the right, it shows \"PFL\" while any channel's PFL is on, and the page (e.g., \"2/3\") when there is more than one page.",
-            "A ring that is dark has no channel. A ring filled all the way around means the channel's mute or PFL is on; a level never fills the last light.",
+            "A ring that is dark has no channel, unless lights turn around it or stand on it: four orange for a mute, four pink for a PFL.",
+            "A pan shows as an arc from the top: in the channel's color at center, and red as soon as it moves off center, however little.",
             "The rings' brightness can be set in Performance Bridge's **Settings… → Connections**, from 1 to 100.",
             "Levels and pans are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so TotalMix FX's window shows the levels and pans set here only while Main Out's output is selected in its bottom row.",
             "The E16 needs firmware 1.3.0 or later (Remote Mode doesn't work before 1.3.0). When Performance Bridge quits, it gives the E16 back to its own firmware; if the E16 is ever left blank, switch it off and on.",

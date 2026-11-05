@@ -27,8 +27,11 @@ reasoning that has not been checked, the text says so in words ("inference", "un
     (2026-11-04), section 7; firmware 1.3.0.
 [^test-3]: [Test 3](#test-3-2026-11-04-the-app) (2026-11-04), section 7; firmware 1.3.0.
 [^test-4]: [Test 4](#test-4-2026-11-04-sends) (2026-11-04), section 7; firmware 1.3.0.
+[^test-5]: [Test 5](#test-5-2026-11-05-the-per-led-message) (2026-11-05), section 7; firmware 1.3.0.
+[^test-6]: [Test 6](#test-6-2026-11-05-push-and-turn) (2026-11-05), section 7; firmware 1.3.0.
+[^test-7]: [Test 7](#test-7-2026-11-05-111-on-the-device) (2026-11-05), section 7; firmware 1.3.0.
 
-**Status (2026-11-04).** Four tests have been run, all on Adam's E16 with firmware 1.3.0 (section
+**Status (2026-11-05).** Seven tests have been run, all on Adam's E16 with firmware 1.3.0 (section
 7). Section 6 lists what is still open.
 
 ## 1. Sources
@@ -101,9 +104,14 @@ What the device sends, all on MIDI channel 1:[^sheet] [^test-1]
   was set at 3%–80% with proportional dimming (3% being the floor, a color's largest part at 4), which the app's slider shows as 1–100.[^test-3] Sixteen
   rings sent at 60 frames per second (180 messages in 3057 ms) looked smooth to the eye; the tool
   measures only its own sending.[^test-1]
-- **LED (single)** is a persistent override: an LED set this way keeps its color through later
-  LED RING messages for that ring, and the encoder's label on the screen draws inverted, until a
-  power cycle.[^test-2] The driver never uses it.
+- **LED (single)** sets one LED (index 0 is the first LED left of six o'clock, the index running
+  clockwise) and holds it until the next LED RING message for that ring, which replaces the whole
+  ring; a LED message after a RING fill punches that LED into the fill; sixteen LED messages draw
+  a striped ring or, sent every 150 ms, a smooth rotation of four LEDs; and RING draws normally
+  afterwards, with nothing left behind.[^test-5] (Test 2 had read the message as a persistent
+  override that also inverted the encoder's label: test 5 shows it is not. The likely cause was
+  the driver of that build re-sending its own LED messages every tick, not the device; the label
+  inversion is unexplained.) The driver uses it from 1.1.1 for the rotating marks of a mute and a PFL, at most sixteen LEDs to a message (the most test 5 sent in one).
 - **OLED LABELS** draws the title on the top line and the labels in the 4×4 layout of the
   encoders. The firmware centers the title and shows only 15 of its 16 characters; padding a
   title with spaces moves it off center, padding with nulls doesn't.[^test-2]
@@ -123,6 +131,11 @@ always sources.
   a 0.25 s tap window; the title says "NAME -> PFL" while the countdown runs and "NAME PFL ON" (or
   OFF) while the encoder stays held. One push at a time: a second push while one is held replaces
   it (a design choice; two-finger mutes would need a hold per encoder).
+- **Push and turn** (1.1.1; Adam, 2026-11-05): pan in LEVEL and SEND modes, the level in PAN mode (both in Main Out), while the encoder is
+  held; the ring shows that value and the title its number, and on release the ring goes back to
+  the mode's. A turn while pushed, before PFL has switched (1 s), cancels the push: no mute on
+  release, and no PFL however long it is then held; a turn after PFL has switched is an ordinary
+  turn of the mode's function.[^test-6]
 - **Shift** makes the encoders buttons: 1 LEVEL (white), 2 PAN (magenta), 3 SEND (deep green; back
   to the last output used), 11 and 12 the previous and next send output (deep green; outside SEND
   mode either arrow enters it at the last output used),[^test-4] 15 and 16 the previous and next
@@ -139,11 +152,19 @@ always sources.
   next arrows, and its arrows on row 3, have no counterpart there. The firmware's documented
   colors (red for Off and No, green for Yes, a scene's own color) do not conflict with the
   driver's (no red on the Shift page; deep green for SEND).
-- **Rings**, from the UI review of 2026-11-04: the strip's TotalMix FX color filled to its level
-  (bipolar for a pan); dark means no strip (a strip always lights at least one LED); a complete
-  ring means the strip's mute or PFL is on (a level never fills the last LED); mute is a steady
-  orange ring, blinking between full and half while TotalMix FX's Mute Master is off; PFL is a
-  heartbeat (0.8 s of pink, a 0.2 s dip to what is underneath).
+- **Rings**, from the UI review of 2026-11-04, as changed in 1.1.1: the strip's TotalMix FX color
+  filled to its level, the whole ring at 0 dB and above (`levelAmount`; Adam, 2026-11-05; 1.1.0
+  kept the last LED for a switch); a pan as its arc from the top, in the channel's color at center and red as
+  soon as it is off center, drawn at least one LED's worth off the top (`panMinimumOffset`; R1
+  lit one red LED[^test-7]) so L1 and R1 show by shape on a red channel too; dark means
+  no strip (a strip always lights at least one LED), unless marks turn on it: a switch that is on
+  is four marks a quarter ring apart turning one LED every 150 ms (by LED messages after the
+  RING message[^test-5] [^test-7]), orange for a mute and pink for a PFL, interleaved two LEDs
+  apart when both are on (Adam, 2026-11-05: mute and PFL alike, by color); a mute that is set
+  while TotalMix FX's Mute Master is off shows its marks still, alternating every 0.5 s with the
+  level, or, with PFL also on, turning with PFL's and blinking every 0.5 s (the level does not
+  show). (1.1.0 showed mute as a steady full orange ring, one LED from a full-level orange
+  channel, and PFL as a pink heartbeat: Adam, 2026-11-04.)
 - **Colors.** TotalMix FX's channel colors are mapped so they stay apart on these LEDs: gray is
   shown as cyan (0, 110, 127), the hue TotalMix FX leaves free, since a dim gray read as a dim
   white or a level; orange (127, 25, 0), red (127, 0, 0), blue (0, 0, 127), green (0, 105, 0),
@@ -173,8 +194,9 @@ always sources.
   anything in Remote Mode.
 - The partial OLED messages (scanline, rectangle, clear) and the bipolar flag's exact drawing:
   untested; the driver uses FRAMEBUFFER and sends bipolar rings for pans, which looked right.
-- Whether the LED override from a single-LED message can be cleared by anything short of a power
-  cycle: EXIT and ENTER didn't (test 2).
+- Why test 2 saw stuck LEDs and inverted labels: test 5 found no override in the device; the
+  driver of that build re-sending its own LED messages is the likely cause (inference), and the
+  inversion is unexplained. Watch for it when the driver uses LED messages in 1.1.1.
 - Whether the driver needs an acceleration curve of its own. For now it multiplies the device's
   1–8 steps by a fixed step.
 - A 4-channel "strip" layout (four channels across, LEVEL on the fourth row, rows 1–3 each
@@ -220,9 +242,10 @@ runs, logged from the TotalMix FX side only (`--verbose` off).
   and one pan (`/mix/in/0/0/balpan`); pushes muted (`/input/n/mute`, `/playback/n/mute`) and held
   pushes set PFL (`/input/n/pfl`); TotalMix FX's changes drew on the rings. Sends are in test 4.
 - **The ACK** came 1–6 ms after ENTER in every run.
-- **The single-LED message** is a persistent override: rings showed holes and alternating LEDs
-  and some labels drew inverted; EXIT and ENTER didn't clear it, a power cycle did. The driver
-  stopped using it.
+- **The single-LED message** appeared to be a persistent override: rings showed holes and
+  alternating LEDs and some labels drew inverted; EXIT and ENTER didn't clear it, a power cycle
+  did. The driver stopped using it. (Test 5 later showed the device holds no such override; see
+  it for the likely cause.)
 - **The title** is cut to 15 characters on the screen; space padding moved it off center, null
   padding didn't.
 - **Brightness.** From the `ramp` command (white rings at 1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48,
@@ -272,3 +295,60 @@ whose two app runs were of the previous build (a `git pull` had been refused).
 - Shift + 12 (SEND>) moved the title to the next output, "> PHONES 2"; turning encoder 1 sent
   `/mix/in/4/6/faderlin` (14 messages: the same input's send to output 7).
 - Shift + 1 (LEVEL) went back to LEVEL; Control-C sent EXIT.
+
+### Test 5 (2026-11-05): the per-LED message
+
+**Setup.** As test 1, with `sbdev e16 led` (branch `e16-shapes`): ten scripted steps on rings 1 and
+2, Adam reporting each. The ACK came 0.7 ms after ENTER (the probe now measures from the ENTER).
+
+**Findings:**
+
+- A LED message for ring 1, LED 0, red, lit the first LED left of six o'clock; the rest of the
+  ring's half-blue fill was unchanged and the label was not inverted.
+- A RING fill to three-quarters replaced it: the red LED went away.
+- A LED message setting LED 0 black punched a dark LED into the three-quarter fill; a RING fill
+  to half then drew the ring normally.
+- Sixteen LED messages drew ring 2 striped (every other LED orange, the rest dark), with ring 1
+  unchanged.
+- Four orange LEDs at the quadrants, moved one LED every 150 ms by sixteen LED messages a frame
+  for 4 s, rotated smoothly with no flicker.
+- Sixteen LED messages set to black left ring 2 dark; a RING fill to half, then a full green
+  ring, drew normally with no LED stuck.
+- So a LED message holds until the next RING message for its ring, and the mute indicator of
+  1.1.1 (four orange marks rotating on a dark ring) needs one RING and four LED messages per step.
+  The driver's drawing of it is test 7.
+
+### Test 6 (2026-11-05): push and turn
+
+**Setup.** As test 1, with `sbdev e16 labels TEST` (Remote Mode, every event printed). Adam pushed
+encoder 1, turned it while holding it, and released it. (`sbdev e16 monitor` first, without Remote
+Mode, showed only the device's own scene: CC 1–16 on several channels, no pushes.)
+
+**Findings:**
+
+- The device sends the push, the turns, and the release in order: `PUSH encoder 1 down` at
+  2.681 s, 27 turns of +1 to +4 from 2.817 s to 3.926 s, `PUSH encoder 1 up` at 3.991 s. So
+  push-and-turn is a gesture the host can see.
+- The push was held 1.3 s. In 1.1.0 that would have set PFL on top of the turns; from 1.1.1 a turn
+  while pushed cancels the push.
+- Push-and-turn as pan was then seen working through `sbdev e16bridge`; at first L1, L2, R1, and
+  R2 drew in the channel's white like center, so off-center pans are now red (Adam).
+
+### Test 7 (2026-11-05): 1.1.1 on the device
+
+**Setup.** As test 2, `sbdev e16bridge` on branch `e16-shapes` after the Tier 1 review's fixes.
+
+**Findings (Adam):**
+
+- A muted channel's ring was dark with four orange lights turning around it.
+- Push-and-turn from center: at R1 (the screen's value) one red LED lit to the right of the top;
+  turning on, the screen went to R2.
+- Later the same day, at `ecc08ed` (PFL as marks, the set-only mute alternating, a level full at
+  0 dB): a muted channel with PFL also on showed eight lights, orange and pink alternating, all
+  turning together; with PFL off and Mute Master off, the four orange lights stood still and
+  alternated with the level about every half second; a fader at 0 dB lit the whole ring; PFL on an
+  unmuted channel showed the pink arc filling, then a dark ring with four pink lights turning.
+- With Mute Master off and a channel's mute set (its orange lights still, alternating with the
+  level), turning PFL on made the orange lights turn with the pink ones, blinking.
+- Orange and pink were clearly told apart (Adam). Both turn the same way: opposite directions were
+  considered and not taken, since the marks would collide every 0.3 s when both are on.
