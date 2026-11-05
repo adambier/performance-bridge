@@ -437,6 +437,14 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(turn(8, 2.6), "Keys R9")
         XCTAssertEqual(turn(-20, 2.7), "Keys C", "crossing from the right stops at center too")
         XCTAssertEqual(turn(-(units + 3), 2.8), "Keys L3")
+        // Amounts side by side, for trying them: encoder 2 (index 1) takes the second.
+        driver.panCenterTrial = [0, 8]
+        XCTAssertEqual(turn(8, 2.9), "Keys C", "crossing still stops at center")
+        XCTAssertEqual(turn(2, 2.92), "Keys R2", "encoder 1 takes 0: no units held")
+        _ = driver.receive([0xB0, 2, 0x08], hub: &hub, now: 2.95)
+        XCTAssertTrue(driver.title(hub: hub).hasSuffix(" C"), "encoder 2 held for 8 units")
+        _ = driver.receive([0xB0, 2, 0x01], hub: &hub, now: 2.97)
+        XCTAssertTrue(driver.title(hub: hub).hasSuffix(" R1"))
         // A level has no sticky point.
         _ = driver.receive([0x90, 16, 0x7F, 0x90, 0, 0x7F, 0x80, 0, 0x00, 0x90, 16, 0x00], hub: &hub, now: 3)  // LEVEL
         let level = driver.receive([0xB0, 1, 0x01], hub: &hub, now: 3.1)

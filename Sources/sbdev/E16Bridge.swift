@@ -12,7 +12,8 @@ import E16Driver
 
 let e16BridgeUsage = """
     Usage:
-      sbdev e16bridge [--host H] [--in-port P] [--out-port P] [--port NAME] [--home N] [--verbose]
+      sbdev e16bridge [--host H] [--in-port P] [--out-port P] [--port NAME] [--home N]
+                      [--pan-center A,B,C…] [--verbose]
           Connects TotalMix FX and an OXI E16 (in its Remote Mode) through SurfaceCore and the E16
           driver, as the app does. Prints what is sent to TotalMix FX, with the time since
           starting; --verbose also prints every MIDI message to and from the device. Then reads
@@ -20,6 +21,9 @@ let e16BridgeUsage = """
           --port names the device's first USB port (default "OXI E16 Port 1").
           --host, --in-port, and --out-port are TotalMix FX's, as for monitor. --home is the home
           submix's output number, counting from 1 (default: TotalMix FX's Main Out).
+          --pan-center gives the pans' sticky center a different number of units per encoder, to
+          compare them side by side: with 2,5,10, encoders 1, 4, 7… take 2, encoders 2, 5, 8…
+          take 5, and encoders 3, 6, 9… take 10 (default: the driver's 4 on every encoder).
           Stop sbdev monitor, the other bridges, and the app first: they need the same ports.
 
       On the device: turn is level, pan, or a send, by the mode; push and release is mute; a hold of
@@ -41,6 +45,7 @@ struct E16BridgeOptions {
     var endpoint = TotalMixEndpoint.standard
     var portName = "OXI E16 Port 1"
     var home: Int?
+    var panCenter: [Int] = []
     var verbose = false
 }
 
@@ -64,6 +69,10 @@ func parseE16BridgeOptions(_ arguments: ArraySlice<String>) -> E16BridgeOptions 
         case "--home":
             guard let number = Int(value(argument)), number >= 1 else { fail("--home needs an output number from 1.") }
             options.home = number - 1
+        case "--pan-center":
+            let units = value(argument).split(separator: ",").map { Int($0.trimmingCharacters(in: .whitespaces)) }
+            guard !units.isEmpty, units.allSatisfy({ ($0 ?? -1) >= 0 }) else { fail("--pan-center needs numbers from 0, separated by commas.") }
+            options.panCenter = units.compactMap { $0 }
         case "--verbose": options.verbose = true
         case "-h", "--help": print(e16BridgeUsage); exit(0)
         default: fail("Unknown option \(argument).\n\n\(e16BridgeUsage)")
@@ -85,6 +94,7 @@ final class E16BridgeSession: @unchecked Sendable {
 
     init(options: E16BridgeOptions) {
         self.options = options
+        driver.panCenterTrial = options.panCenter
     }
 
     private var now: Double { Date().timeIntervalSince(start) }

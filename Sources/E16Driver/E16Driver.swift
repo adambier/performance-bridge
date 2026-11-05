@@ -168,6 +168,9 @@ public struct E16Driver: Sendable {
     /// How many units of turning, one way, a pan at center takes before it moves (`centerStop`):
     /// a starting value, to tune on the device.
     public static let panCenterUnits = 4
+    /// For trying amounts side by side (`sbdev e16bridge --pan-center`): encoder n's pan takes
+    /// the (n mod count)th of these instead of `panCenterUnits`. Empty in the app.
+    public var panCenterTrial: [Int] = []
     /// How near center (in the 0…1 pan) counts as center: well under one of TotalMix FX's 200
     /// pan steps (0.005).
     static let panCenterTolerance = 0.001
@@ -464,12 +467,13 @@ public struct E16Driver: Sendable {
         var hold = panCenterHold[encoder] ?? (direction, 0)
         if hold.direction != direction { hold = (direction, 0) }
         hold.units += abs(delta)
-        guard hold.units > Self.panCenterUnits else {
+        let units = panCenterTrial.isEmpty ? Self.panCenterUnits : panCenterTrial[encoder % panCenterTrial.count]
+        guard hold.units > units else {
             panCenterHold[encoder] = hold
             return 0.5
         }
         panCenterHold[encoder] = nil
-        return min(max(0.5 + Double(direction * (hold.units - Self.panCenterUnits)) * Self.panStep, 0), 1)
+        return min(max(0.5 + Double(direction * (hold.units - units)) * Self.panStep, 0), 1)
     }
 
     /// A short push released: toggles the strip's mute and says so on the screen.
