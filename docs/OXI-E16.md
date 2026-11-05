@@ -98,7 +98,7 @@ What the device sends, all on MIDI channel 1:[^sheet] [^test-1]
   LEDs are already bright at small values: 3 or 4 of 127 is clearly lit, 2 reads dim, and 1 is
   barely there; the steps above about 64 are hard to tell apart.[^test-2] With the driver's
   brightness setting below about 15%, orange and yellow were hard to tell apart; the usable range
-  was set at 6%–80% with proportional dimming, which the app's slider shows as 1–100.[^test-3] Sixteen
+  was set at 3%–80% with proportional dimming (3% being the floor, a color's largest part at 4), which the app's slider shows as 1–100.[^test-3] Sixteen
   rings sent at 60 frames per second (180 messages in 3057 ms) looked smooth to the eye; the tool
   measures only its own sending.[^test-1]
 - **LED (single)** is a persistent override: an LED set this way keeps its color through later
@@ -148,7 +148,7 @@ always sources.
   shown as cyan (0, 110, 127), the hue TotalMix FX leaves free, since a dim gray read as a dim
   white or a level; orange (127, 16, 0), red (127, 0, 0), blue (0, 0, 127), green (0, 105, 0),
   yellow (127, 85, 0), purple (70, 0, 127). Mute uses this orange, and PFL is pink (127, 30, 60), the hue TotalMix FX leaves free: with more blue it blended with purple at the top of the range. The
-  brightness setting (6%–80%, shown as 1–100; default 55%) scales all of them in proportion, so
+  brightness setting (3%–80%, shown as 1–100; default 55%) scales all of them in proportion, so
   a color's hue is the same at every setting; a color's largest part never goes below 4, so a lit
   ring stays lit. (A floor added to each part was tried first and pushed orange toward yellow at
   the lowest settings.) The colors and brightness are
@@ -251,7 +251,7 @@ whose two app runs were of the previous build (a `git pull` had been refused).
   Roto-Control isn't") and connected it; the menu showed "OXI E16: Connected".
 - The Brightness slider dimmed the rings at once. With the setting below about 15%, orange and
   yellow were hard to tell apart, with or without the dimming floor. With a 0–100% slider, Adam set
-  the usable range at 10%–80% with the floor, then 6%–80% once the dimming kept proportions (`sbdev e16 colors`, with orange and red distinct at 6%), shown as 1–100; a pressed Shift button stays at full.
+  the usable range at 10%–80% with the floor, then 3%–80% once the dimming kept proportions (`sbdev e16 colors`: every color distinct at the floor, PFL chosen there and at 80%), shown as 1–100; a pressed Shift button stays at full.
 - Colors as finally set (section 5): TotalMix FX's green, yellow, and orange read as three colors
   and PFL as a fourth; the yellow was moved toward orange, the orange toward red, the green a
   little darker, and PFL from the first lime (too green) to a paler yellow-green. Then, with
