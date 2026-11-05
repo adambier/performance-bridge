@@ -567,28 +567,25 @@ public struct E16Driver: Sendable {
         return bytes
     }
 
-    /// The host-drawn screen: the title at the left and its tail ("PFL 2/3") at the right in
-    /// the 7-pixel font, a rule under them, and the sixteen labels in four rows of four, 14
-    /// pixels apart, each centered in its 32-pixel cell and no wider than `labelMaxWidth`.
+    /// The host-drawn screen, on a grid of four columns: the title in the first column and its
+    /// tail ("PFL 2/3") ending at the last column's edge, a rule under them, and the sixteen
+    /// labels in four rows 14 pixels apart, each at the left of its 32-pixel cell and no wider
+    /// than `labelMaxWidth`. Everything in a column starts on the same pixel, so the title
+    /// lines up with the labels (Adam, 2026-11-04).
     public static func screen(title: String, tail: String = "", labels: [String]) -> E16Screen {
         var screen = E16Screen()
-        // The title and tail align with the widest label's edges: a label at `labelMaxWidth`
-        // centered in a 32-pixel cell starts 3 pixels in (Adam, 2026-11-04).
-        let margin = (E16Screen.width / 4 - labelMaxWidth) / 2
-        screen.draw(title, x: margin, y: 1)
+        let cell = E16Screen.width / 4
+        let margin = (cell - labelMaxWidth) / 2
+        screen.draw(title, x: margin, y: 0)
         if !tail.isEmpty {
             let x = E16Screen.width - margin - E16Screen.width(of: tail)
             // Blank the title under the tail if a long one runs into it.
-            for px in (x - 3)..<E16Screen.width { for py in 0..<9 { screen.set(px, py, false) } }
-            screen.draw(tail, x: x, y: 1)
+            for px in (x - 3)..<E16Screen.width { for py in 0..<8 { screen.set(px, py, false) } }
+            screen.draw(tail, x: x, y: 0)
         }
         screen.line(y: 10, from: 0, to: E16Screen.width - 1)
         for (index, label) in labels.prefix(stripCount).enumerated() {
-            let cell = E16Screen.width / 4
-            let width = E16Screen.width(of: label)
-            let x = (index % 4) * cell + max((cell - width) / 2, 0)
-            let y = 14 + (index / 4) * 14
-            screen.draw(label, x: x, y: y)
+            screen.draw(label, x: (index % 4) * cell + margin, y: 14 + (index / 4) * 14)
         }
         return screen
     }
@@ -780,7 +777,7 @@ public struct E16Driver: Sendable {
     /// the vowels, then letters from the end ("AD11", "Mic1", "Anl1"); anything else is cut
     /// ("Tonv"). Hyphens go first ("ADI2").
     public static func fit(_ text: String, _ length: Int) -> String {
-        candidates(text).first { $0.count <= length } ?? ""
+        candidates(text).first { $0.count <= length } ?? String(candidates(text).last!.prefix(length))
     }
 
     /// The same, for the host-drawn screen: the first form of `text` no wider than `width`
@@ -790,10 +787,10 @@ public struct E16Driver: Sendable {
     }
 
     /// The forms of a channel name from longest to shortest: as it is; without hyphens
-    /// ("ADI2"); for a numbered name, the whole pair without its space ("ADAT3/4"), with the
-    /// word's vowels gone ("ADT3/4"), a playback's "PB" as "P" ("P11/12"), then the first
-    /// number alone after the word ("ADAT 3", "ADAT3", "ADT 3", "ADT3", "AD3", "A3", "3"); for
-    /// anything else, the name cut from the end.
+    /// ("ADI2"); for a stereo pair, the pair with less and less of its word ("ADAT3/4",
+    /// "ADT3/4", "AD3/4", "A3/4", "3/4"; "P11/12", "11/12") and never less than the pair; for a
+    /// single numbered name, the number after less and less of the word ("ADAT 3", "ADAT3",
+    /// "ADT 3", "ADT3", "AD3", "A3", "3"); for anything else, the name cut from the end.
     static func candidates(_ text: String) -> [String] {
         var out = [text]
         let text = text.replacingOccurrences(of: "-", with: "")
@@ -805,8 +802,12 @@ public struct E16Driver: Sendable {
             var tight = ""
             for (i, c) in word.enumerated() where i == 0 || !vowels.contains(c) { tight.append(c) }
             if last.contains("/") {
-                out += [word + last, tight + last]
-                if word == "PB" { out.append("P" + last) }
+                // A stereo pair always shows both numbers (Adam, 2026-11-04): the word goes
+                // first, without its space, then its vowels, then letters from the end, then
+                // altogether ("ADAT3/4", "ADT3/4", "AD3/4", "A3/4", "3/4"; "P15/16", "15/16").
+                out += [word + last]
+                for k in stride(from: tight.count, through: 0, by: -1) { out.append(String(tight.prefix(k)) + last) }
+                return out
             }
             let digits = String(number)
             out += [word + " " + digits, word + digits, tight + " " + digits]

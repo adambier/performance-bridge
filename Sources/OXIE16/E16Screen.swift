@@ -88,8 +88,8 @@ public struct E16Glyph: Sendable {
     public let rows: [UInt8]
 }
 
-/// A 5×7 pixel font, proportionally spaced: capitals, digits, and the punctuation channel names
-/// use, one pixel between characters. (3×5 and 4×6 fonts were tried first and were too small to
+/// A 5×7 pixel font, proportionally spaced: capitals, digits (4 wide, so a pair like "P15/16"
+/// fits a label), and the punctuation channel names use, one pixel between characters. (3×5 and 4×6 fonts were tried first and were too small to
 /// read on the device; Adam, 2026-11-04.)
 public enum E16Font {
     /// A glyph's height in pixels.
@@ -132,16 +132,16 @@ public enum E16Font {
         "X": E16Glyph(width: 5, rows: [0b10001, 0b10001, 0b01010, 0b00100, 0b01010, 0b10001, 0b10001]),
         "Y": E16Glyph(width: 5, rows: [0b10001, 0b10001, 0b01010, 0b00100, 0b00100, 0b00100, 0b00100]),
         "Z": E16Glyph(width: 5, rows: [0b11111, 0b00001, 0b00010, 0b00100, 0b01000, 0b10000, 0b11111]),
-        "0": E16Glyph(width: 5, rows: [0b01110, 0b10001, 0b10011, 0b10101, 0b11001, 0b10001, 0b01110]),
+        "0": E16Glyph(width: 4, rows: [0b01100, 0b10010, 0b10010, 0b10010, 0b10010, 0b10010, 0b01100]),
         "1": E16Glyph(width: 3, rows: [0b01000, 0b11000, 0b01000, 0b01000, 0b01000, 0b01000, 0b11100]),
-        "2": E16Glyph(width: 5, rows: [0b01110, 0b10001, 0b00001, 0b00010, 0b00100, 0b01000, 0b11111]),
-        "3": E16Glyph(width: 5, rows: [0b11111, 0b00010, 0b00100, 0b00010, 0b00001, 0b10001, 0b01110]),
-        "4": E16Glyph(width: 5, rows: [0b00010, 0b00110, 0b01010, 0b10010, 0b11111, 0b00010, 0b00010]),
-        "5": E16Glyph(width: 5, rows: [0b11111, 0b10000, 0b11110, 0b00001, 0b00001, 0b10001, 0b01110]),
-        "6": E16Glyph(width: 5, rows: [0b00110, 0b01000, 0b10000, 0b11110, 0b10001, 0b10001, 0b01110]),
-        "7": E16Glyph(width: 5, rows: [0b11111, 0b00001, 0b00010, 0b00100, 0b01000, 0b01000, 0b01000]),
-        "8": E16Glyph(width: 5, rows: [0b01110, 0b10001, 0b10001, 0b01110, 0b10001, 0b10001, 0b01110]),
-        "9": E16Glyph(width: 5, rows: [0b01110, 0b10001, 0b10001, 0b01111, 0b00001, 0b00010, 0b01100]),
+        "2": E16Glyph(width: 4, rows: [0b01100, 0b10010, 0b00010, 0b00100, 0b01000, 0b10000, 0b11110]),
+        "3": E16Glyph(width: 4, rows: [0b11100, 0b00010, 0b00010, 0b01100, 0b00010, 0b00010, 0b11100]),
+        "4": E16Glyph(width: 4, rows: [0b00100, 0b01100, 0b10100, 0b10100, 0b11110, 0b00100, 0b00100]),
+        "5": E16Glyph(width: 4, rows: [0b11110, 0b10000, 0b11100, 0b00010, 0b00010, 0b00010, 0b11100]),
+        "6": E16Glyph(width: 4, rows: [0b01100, 0b10000, 0b10000, 0b11100, 0b10010, 0b10010, 0b01100]),
+        "7": E16Glyph(width: 4, rows: [0b11110, 0b00010, 0b00010, 0b00100, 0b01000, 0b01000, 0b01000]),
+        "8": E16Glyph(width: 4, rows: [0b01100, 0b10010, 0b10010, 0b01100, 0b10010, 0b10010, 0b01100]),
+        "9": E16Glyph(width: 4, rows: [0b01100, 0b10010, 0b10010, 0b01110, 0b00010, 0b00010, 0b01100]),
         "/": E16Glyph(width: 2, rows: [0b01000, 0b01000, 0b01000, 0b10000, 0b10000, 0b10000, 0b00000]),
         "-": E16Glyph(width: 3, rows: [0b00000, 0b00000, 0b00000, 0b11100, 0b00000, 0b00000, 0b00000]),
         "+": E16Glyph(width: 5, rows: [0b00000, 0b00100, 0b00100, 0b11111, 0b00100, 0b00100, 0b00000]),

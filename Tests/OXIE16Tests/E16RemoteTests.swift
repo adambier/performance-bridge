@@ -97,6 +97,7 @@ final class E16ScreenTests: XCTestCase {
         XCTAssertTrue(screen.pixel(7, 0), "the 1")
         XCTAssertEqual(E16Screen.width(of: "A1"), 9, "no gap after the last character")
         XCTAssertEqual(E16Screen.width(of: "1/1"), 10, "narrow glyphs")
+        XCTAssertEqual(E16Screen.width(of: "P15/16"), 26, "digits 4 wide")
         var big = E16Screen()
         big.draw("a", x: 0, y: 0, scale: 2)
         XCTAssertTrue(big.pixel(2, 0) && big.pixel(3, 1), "scaled 2×, lowercase drawn as A")
