@@ -342,3 +342,10 @@ Mode, showed only the device's own scene: CC 1–16 on several channels, no push
 - A muted channel's ring was dark with four orange lights turning around it.
 - Push-and-turn from center: at R1 (the screen's value) one red LED lit to the right of the top;
   turning on, the screen went to R2.
+- Later the same day, at `ecc08ed` (PFL as marks, the set-only mute alternating, a level full at
+  0 dB): a muted channel with PFL also on showed eight lights, orange and pink alternating, all
+  turning together; with PFL off and Mute Master off, the four orange lights stood still and
+  alternated with the level about every half second; a fader at 0 dB lit the whole ring; PFL on an
+  unmuted channel showed the pink arc filling, then a dark ring with four pink lights turning.
+- Orange and pink were clearly told apart (Adam). Both turn the same way: opposite directions were
+  considered and not taken, since the marks would collide every 0.3 s when both are on.
