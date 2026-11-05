@@ -84,7 +84,9 @@ public struct E16Screen: Hashable, Sendable {
 /// One character of the font: up to five pixels wide, seven tall; each row's leftmost pixel is
 /// bit 4, and a narrow glyph ("1", "/", "I", "L") uses only its first `width` columns.
 public struct E16Glyph: Sendable {
+    /// How many of the five columns the glyph uses.
     public let width: Int
+    /// The seven rows, top first, the leftmost pixel in bit 4.
     public let rows: [UInt8]
 }
 
