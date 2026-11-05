@@ -655,23 +655,27 @@ public struct E16Driver: Sendable {
         return E16Outgoing.rings(rings)
     }
 
-    /// A lit part of a color never goes below this when dimmed, and the scaling starts from it:
-    /// at low brightness a small part scaled all the way down vanished, so orange and red were
-    /// the same below about 10% (Adam, 2026-11-04). The LEDs are bright already at 3 or 4.
+    /// The dimmest a color's largest part goes: a lit ring stays visibly lit (the LEDs are bright
+    /// already at 3 or 4). Below the brightness where a color would reach it, the whole color is
+    /// held there, in proportion.
     public static let dimFloor: UInt8 = 4
 
-    /// A part of a color at the driver's `brightness`: `dimFloor` plus the rest scaled, so the
-    /// parts keep their proportions above the floor and a lit part stays visibly lit.
-    private func dim(_ part: UInt8) -> UInt8 {
-        guard part > 0 else { return 0 }
-        guard part > Self.dimFloor else { return part }
-        let scale = brightness.isFinite ? min(max(brightness, 0), 1) : 1
-        let above = Double(part - Self.dimFloor) * scale
-        return UInt8(min(Double(Self.dimFloor) + above.rounded(), 127))
+    /// A color at a brightness, 0…1, in proportion: every part scaled alike, so the hue is the
+    /// same at every setting (a floor added to each part pushed orange toward yellow at low
+    /// settings; Adam, 2026-11-04); the largest part never below `dimFloor`, and a part that is
+    /// lit never rounds to nothing.
+    public static func scaled(_ rgb: (UInt8, UInt8, UInt8), brightness: Double) -> (UInt8, UInt8, UInt8) {
+        let top = Double(max(rgb.0, rgb.1, rgb.2))
+        guard top > 0 else { return (0, 0, 0) }
+        var scale = brightness.isFinite ? min(max(brightness, 0), 1) : 1
+        if top * scale < Double(dimFloor) { scale = Double(dimFloor) / top }
+        func part(_ v: UInt8) -> UInt8 { v == 0 ? 0 : UInt8(min(max((Double(v) * scale).rounded(), 1), 127)) }
+        return (part(rgb.0), part(rgb.1), part(rgb.2))
     }
 
     private func dimmed(_ ring: E16Ring) -> E16Ring {
-        E16Ring(red: dim(ring.red), green: dim(ring.green), blue: dim(ring.blue), amount: ring.amount, bipolar: ring.bipolar)
+        let rgb = Self.scaled((ring.red, ring.green, ring.blue), brightness: brightness)
+        return E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: ring.amount, bipolar: ring.bipolar)
     }
 
     private mutating func drawRing(_ index: Int, hub: SurfaceHub) -> [UInt8] {
@@ -773,7 +777,7 @@ public struct E16Driver: Sendable {
         = ((127, 127, 127), (127, 0, 100), (0, 60, 0), (0, 0, 127))
 
     /// Orange, for a mute, as on the other surfaces.
-    public static let muteRGB: (UInt8, UInt8, UInt8) = (127, 16, 0)
+    public static let muteRGB: (UInt8, UInt8, UInt8) = (127, 25, 0)
     /// A pale yellow-green, for a PFL and for the countdown, apart from TotalMix FX's
     /// channel yellow, which is nearer orange (Adam, 2026-11-04).
     public static let pflRGB: (UInt8, UInt8, UInt8) = (110, 127, 18)
@@ -784,7 +788,7 @@ public struct E16Driver: Sendable {
     public static let totalMixRGB: [Int: (UInt8, UInt8, UInt8)] = [
         1: (127, 127, 127),
         2: (0, 110, 127),  // grey as cyan, the hue TotalMix FX leaves free: a dim grey looked like a dimmer white or a level, and blue-greys like blue (Adam, 2026-11-04)
-        3: (127, 16, 0),   // orange, redder still, apart from the yellow that moved toward it (Adam, 2026-11-04)
+        3: (127, 25, 0),   // orange: at 10% (13, 3, 0), three steps of green over red's none (Adam, 2026-11-04)
         4: (127, 0, 0),
         5: (0, 0, 127),
         6: (0, 105, 0),    // green, slightly darker, further from PFL's yellow-green (Adam, 2026-11-04)

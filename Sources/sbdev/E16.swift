@@ -4,6 +4,7 @@
 import Foundation
 import MIDITransport
 import OXIE16
+import E16Driver
 
 let e16Usage = """
     Usage:
@@ -17,6 +18,13 @@ let e16Usage = """
       sbdev e16 palette [--port N]    enters Remote Mode and shows candidate colors, one per ring,
                                       full, named on the screen (TotalMix FX's own first); leaves
                                       Remote Mode on Control-C
+      sbdev e16 colors [--port N] [--brightness B] [--rgb R,G,B …]
+                                      enters Remote Mode and shows the driver's colors, full rings,
+                                      named on the screen, dimmed as the driver dims them at
+                                      brightness B (0…1; default 0.10, the slider's 1): rows 1–2
+                                      TotalMix FX's colors as the driver maps them, row 3 mute,
+                                      PFL, and the Shift buttons, row 4 up to four --rgb trials;
+                                      leaves Remote Mode on Control-C
       sbdev e16 ramp [--port N]       enters Remote Mode and shows white rings at 16 brightness
                                       values from 1 to 127, labeled; leaves Remote Mode on Control-C
       sbdev e16 demo [--port N] [--rate HZ]
@@ -113,12 +121,19 @@ func e16(_ arguments: ArraySlice<String>) -> Never {
     rest.removeFirst()
     var port = 1
     var rate = 25.0
+    var brightness = 0.10
+    var trials: [(UInt8, UInt8, UInt8)] = []
     var positional: [String] = []
     while let a = rest.first {
         rest.removeFirst()
         switch a {
         case "--port": guard let p = rest.first.flatMap({ Int($0) }) else { fail("--port needs a number") }; rest.removeFirst(); port = p
         case "--rate": guard let r = rest.first.flatMap({ Double($0) }) else { fail("--rate needs a number") }; rest.removeFirst(); rate = r
+        case "--brightness": guard let b = rest.first.flatMap({ Double($0) }) else { fail("--brightness needs a number from 0 to 1") }; rest.removeFirst(); brightness = b
+        case "--rgb":
+            let parts = rest.first?.split(separator: ",").compactMap { UInt8($0.trimmingCharacters(in: .whitespaces)) } ?? []
+            guard parts.count == 3, parts.allSatisfy({ $0 <= 127 }) else { fail("--rgb needs R,G,B, each 0–127") }
+            rest.removeFirst(); trials.append((parts[0], parts[1], parts[2]))
         case "-h", "--help": print(e16Usage); exit(0)
         default: positional.append(a)
         }
@@ -166,6 +181,32 @@ func e16(_ arguments: ArraySlice<String>) -> Never {
             (encoder: i, ring: E16Ring(red: v, green: v, blue: v, amount: 1))
         }))
         print("White rings at 1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64, 80, 96, 112, 127. Control-C leaves Remote Mode."); flushOutput()
+        while true { Thread.sleep(forTimeInterval: 60) }
+
+    case "colors":
+        installExitOnInterrupt()
+        guard session.enter() else { exit(1) }
+        let tm = E16Driver.totalMixRGB
+        var colors: [(String, (UInt8, UInt8, UInt8))] = [
+            ("WHIT", tm[1]!), ("GREY", tm[2]!), ("ORNG", tm[3]!), ("RED", tm[4]!),
+            ("BLUE", tm[5]!), ("GREN", tm[6]!), ("YELO", tm[7]!), ("PURP", tm[8]!),
+            ("MUTE", E16Driver.muteRGB), ("PFL", E16Driver.pflRGB),
+            ("LVL", E16Driver.buttonColors.level), ("PAN", E16Driver.buttonColors.pan),
+            ("SEND", E16Driver.buttonColors.send), ("PAGE", E16Driver.buttonColors.page),
+        ]
+        for (i, t) in trials.prefix(4).enumerated() { colors.append(("T\(i + 1)", t)) }
+        while colors.count < 16 { colors.append(("", (0, 0, 0))) }
+        let percent = Int((brightness * 100).rounded())
+        session.send(E16Outgoing.labels(title: "COLORS \(percent)%", labels: colors.map { $0.0 }))
+        session.send(E16Outgoing.rings(colors.enumerated().map { (i, c) in
+            let rgb = E16Driver.scaled(c.1, brightness: brightness)
+            return (encoder: i, ring: E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: c.0.isEmpty ? 0 : 1))
+        }))
+        for (i, c) in colors.enumerated() where !c.0.isEmpty {
+            let d = E16Driver.scaled(c.1, brightness: brightness)
+            print(String(format: "%2d %-4@  full (%3d,%3d,%3d)  sent (%3d,%3d,%3d)", i + 1, c.0 as NSString, Int(c.1.0), Int(c.1.1), Int(c.1.2), Int(d.0), Int(d.1), Int(d.2)))
+        }
+        print("At brightness \(percent)%, as the driver dims. Control-C leaves Remote Mode."); flushOutput()
         while true { Thread.sleep(forTimeInterval: 60) }
 
     case "palette":

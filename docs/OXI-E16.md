@@ -148,8 +148,10 @@ always sources.
   shown as cyan (0, 110, 127), the hue TotalMix FX leaves free, since a dim gray read as a dim
   white or a level; orange (127, 16, 0), red (127, 0, 0), blue (0, 0, 127), green (0, 105, 0),
   yellow (127, 72, 0), purple (70, 0, 127). Mute uses this orange, and PFL is (110, 127, 18). The
-  brightness setting (10%–80%, shown as 1–100; default 55%) scales all of them but keeps every nonzero
-  color component at 4 or more, so colors keep their hue when dim. The colors and brightness are
+  brightness setting (10%–80%, shown as 1–100; default 55%) scales all of them in proportion, so
+  a color's hue is the same at every setting; a color's largest part never goes below 4, so a lit
+  ring stays lit. (A floor added to each part was tried first and pushed orange toward yellow at
+  the lowest settings.) The colors and brightness are
   to be tuned by side-by-side comparison after 1.1.0 (Adam, 2026-11-04).
 - **Screen.** The host draws it (FRAMEBUFFER) with a 5×7 proportional font of the project's own,
   after 3×5 and 4×6 fonts were too small to read. The title (the mode, or an overlay) is at the
