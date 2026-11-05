@@ -31,6 +31,11 @@ let e16Usage = """
                                       indicators: steady full, a level (15/16), sweep, breathe,
                                       blink, heartbeat, bounce, a bipolar sweep; leaves Remote
                                       Mode on Control-C
+      sbdev e16 led [--port N]        the per-LED probe: a scripted sequence of LED and RING messages
+                                      on rings 1 and 2, one step per Return, printing what to look
+                                      for (does a per-LED color persist through later RING fills,
+                                      can a LED message clear it, do labels invert, can a ring be
+                                      striped or rotated with 16 LED messages); Control-C leaves
       sbdev e16 ramp [--port N]       enters Remote Mode and shows white rings at 16 brightness
                                       values from 1 to 127, labeled; leaves Remote Mode on Control-C
       sbdev e16 demo [--port N] [--rate HZ]
@@ -240,6 +245,56 @@ func e16(_ arguments: ArraySlice<String>) -> Never {
             show(current)
             state.unlock()
         }
+        while true { Thread.sleep(forTimeInterval: 60) }
+
+    case "led":
+        installExitOnInterrupt()
+        guard session.enter() else { exit(1) }
+        session.send(E16Outgoing.labels(title: "LED PROBE", labels: ["ONE", "TWO", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]))
+        let blue = E16Ring(red: 0, green: 0, blue: 100, amount: 0.5)
+        func step(_ n: Int, _ text: String, _ send: () -> Void) {
+            print("\nStep \(n): \(text)"); flushOutput()
+            send()
+            print("  Press Return for the next step."); flushOutput()
+            _ = readLine()
+        }
+        step(1, "RING: rings 1 and 2 half full, blue. Look: both half blue, labels ONE and TWO normal?") {
+            session.send(E16Outgoing.rings([(encoder: 0, ring: blue), (encoder: 1, ring: blue)]))
+        }
+        step(2, "LED: ring 1, LED 0 (one LED) red. Look: where is the red LED (six o'clock?), is the rest of ring 1 unchanged, is label ONE inverted?") {
+            session.send(E16Outgoing.leds([(encoder: 0, led: 0, red: 127, green: 0, blue: 0)]))
+        }
+        step(3, "RING: ring 1 three-quarters full, blue. Look: does the red LED stay (an override), or does blue cover it?") {
+            session.send(E16Outgoing.rings([(encoder: 0, ring: E16Ring(red: 0, green: 0, blue: 100, amount: 0.75))]))
+        }
+        step(4, "LED: ring 1, LED 0 set to black (0,0,0). Look: is the LED dark now, blue, or still red?") {
+            session.send(E16Outgoing.leds([(encoder: 0, led: 0, red: 0, green: 0, blue: 0)]))
+        }
+        step(5, "RING: ring 1 half full, blue again. Look: does ring 1 draw normally (LED 0 blue as part of the fill)? Label ONE?") {
+            session.send(E16Outgoing.rings([(encoder: 0, ring: blue)]))
+        }
+        step(6, "LED: ring 2, all 16 LEDs: every other one orange, the rest black. Look: a striped ring? Label TWO?") {
+            session.send(E16Outgoing.leds((0..<16).map { (encoder: 1, led: $0, red: $0 % 2 == 0 ? 127 : 0, green: $0 % 2 == 0 ? 25 : 0, blue: 0) }))
+        }
+        step(7, "LED: ring 2, four orange LEDs at the quadrants, rotating one LED every 150 ms for 4 s. Look: smooth? any flicker?") {
+            let t0 = Date()
+            var k = 0
+            while Date().timeIntervalSince(t0) < 4 {
+                session.send(E16Outgoing.leds((0..<16).map { (encoder: 1, led: $0, red: ($0 - k) % 4 == 0 ? 127 : 0, green: ($0 - k) % 4 == 0 ? 25 : 0, blue: 0) }))
+                k = (k + 1) % 16
+                Thread.sleep(forTimeInterval: 0.15)
+            }
+        }
+        step(8, "LED: ring 2, all 16 LEDs black. Look: ring 2 dark?") {
+            session.send(E16Outgoing.leds((0..<16).map { (encoder: 1, led: $0, red: 0, green: 0, blue: 0) }))
+        }
+        step(9, "RING: ring 2 half full, blue. Look: does the RING message draw again after the LED messages? Label TWO?") {
+            session.send(E16Outgoing.rings([(encoder: 1, ring: blue)]))
+        }
+        step(10, "RING: ring 2 full, green. Look: all 16 LEDs green, none stuck?") {
+            session.send(E16Outgoing.rings([(encoder: 1, ring: E16Ring(red: 0, green: 100, blue: 0, amount: 1))]))
+        }
+        print("\nDone. Control-C leaves Remote Mode; then switch the E16 off and on if anything is stuck."); flushOutput()
         while true { Thread.sleep(forTimeInterval: 60) }
 
     case "shapes":
