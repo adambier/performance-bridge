@@ -133,6 +133,9 @@ public struct E16Driver: Sendable {
     /// How far one unit of a turn moves a pan, as a fraction of the hub's 0…1 (about one of
     /// TotalMix FX's 200 steps).
     public static let panStep: Double = 0.005
+    /// How many of the title's 16 characters the device shows: the last one was cut off ("PF"
+    /// for "PFL" at the end; seen 2026-11-04).
+    public static let titleWidth = 15
     /// How long the title shows a turned encoder's value or a press's result, in seconds.
     public static let overlayTime: Double = 1
     /// How long each half of a flashing mute lasts, in seconds (a mute set while TotalMix FX's Mute
@@ -545,7 +548,7 @@ public struct E16Driver: Sendable {
         if let overlay { return overlay.text }
         var tail = pageCount > 1 ? " \(page.first / Self.stripCount + 1)/\(pageCount)" : ""
         if pflOn.contains(true) { tail = " PFL" + tail }
-        let width = E16Outgoing.titleLength - tail.count
+        let width = Self.titleWidth - tail.count
         let name = Self.fit(functionName(hub: hub), width)
         return tail.isEmpty ? name : name.padding(toLength: width, withPad: " ", startingAt: 0) + tail
     }
@@ -706,6 +709,11 @@ public struct E16Driver: Sendable {
     /// space goes, then vowels after the word's first letter, then letters from the end ("ADT3",
     /// "AD11", "PB 1", "PB11", "Mic1", "Anl1"); anything else is cut ("Tonv").
     static func fit(_ text: String, _ length: Int) -> String {
+        if text.count <= length { return text }
+        // A playback pair's default name keeps its "/2", so it reads as a pair, not a skipped
+        // channel: "PB 1/2" to "P1/2" (Adam, 2026-11-04).
+        if length == 4, text.hasPrefix("PB "), text.count == 6, text.dropFirst(3).contains("/") { return "P" + text.dropFirst(3) }
+        let text = text.replacingOccurrences(of: "-", with: "")  // "ADI-2" to "ADI2"
         if text.count <= length { return text }
         let parts = text.split(separator: " ", omittingEmptySubsequences: true).map(String.init)
         if parts.count >= 2, let last = parts.last, let number = last.split(separator: "/").first, Int(number) != nil {

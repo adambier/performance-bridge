@@ -120,7 +120,7 @@ final class E16DriverTests: XCTestCase {
         let answer = driver.receive(ack, hub: &hub, now: 1.2)
         XCTAssertTrue(driver.isConnected)
         XCTAssertEqual(answer.midi.lastTitle, "LEVEL")
-        XCTAssertEqual(answer.midi.lastLabels?.prefix(5), ["Keys", "Vox", "Gtr", "PB 1", ""])
+        XCTAssertEqual(answer.midi.lastLabels?.prefix(5), ["Keys", "Vox", "Gtr", "P1/2", ""])
         let rings = answer.midi.rings
         XCTAssertEqual(rings[0]?.r, 127, "Keys is red")
         XCTAssertEqual(rings[0]?.amount, 8192, "at 0.5")
@@ -196,7 +196,7 @@ final class E16DriverTests: XCTestCase {
         let release = driver.receive([0x80, 2, 0x00], hub: &hub, now: 5)
         XCTAssertEqual(release.core.messages, [], "no mute")
         _ = driver.tick(hub: &hub, now: 6.1)
-        XCTAssertEqual(driver.title(hub: hub), "LEVEL        PFL", "a second after the release, with the PFL marker")
+        XCTAssertEqual(driver.title(hub: hub), "LEVEL       PFL", "a second after the release, with the PFL marker")
         // The heartbeat: a complete yellow ring 0.8 s, then the level 0.2 s.
         let dip = driver.tick(hub: &hub, now: 6.85)
         XCTAssertEqual(dip.midi.rings[2]?.r, 127, "the level underneath, white")
@@ -321,22 +321,22 @@ final class E16DriverTests: XCTestCase {
         driver.brightness = 1
         _ = driver.start(hub: &hub, now: 0)
         let answer = driver.receive(ack, hub: &hub, now: 0)
-        XCTAssertEqual(answer.midi.lastTitle, "LEVEL        1/2")
+        XCTAssertEqual(answer.midi.lastTitle, "LEVEL       1/2")
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(shift.midi.rings[14]?.amount, 0, "no previous page: dark")
         XCTAssertEqual(shift.midi.rings[15]?.amount, Int((0.25 * 16383).rounded()), "blue, a quarter ring")
         let next = driver.receive([0x90, 15, 0x7F, 0x80, 15, 0x00], hub: &hub, now: 1.5)
-        XCTAssertEqual(next.midi.lastTitle, "LEVEL        2/2")
+        XCTAssertEqual(next.midi.lastTitle, "LEVEL       2/2")
         XCTAssertEqual(next.midi.rings[14]?.amount, Int((0.25 * 16383).rounded()), "a previous page now")
         XCTAssertEqual(next.midi.rings[15]?.amount, 0, "no next page")
         let past = driver.receive([0x90, 15, 0x7F, 0x80, 15, 0x00], hub: &hub, now: 1.6)
         XCTAssertNil(past.midi.lastTitle, "nothing past the end")
         XCTAssertEqual(past.midi.rings[15]?.amount, 0, "lit while down, dark again")
         let release = driver.receive([0x90, 16, 0x00], hub: &hub, now: 2)
-        XCTAssertEqual(release.midi.lastLabels?.prefix(4), ["In18","In19","In20","PB 1"],"In 18, In 19, In 20, PB 1/2")
+        XCTAssertEqual(release.midi.lastLabels?.prefix(4), ["In18","In19","In20","P1/2"],"In 18, In 19, In 20, PB 1/2")
         _ = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 3)
         let back = driver.receive([0x90, 14, 0x7F, 0x80, 14, 0x00], hub: &hub, now: 3.5)
-        XCTAssertEqual(back.midi.lastTitle, "LEVEL        1/2")
+        XCTAssertEqual(back.midi.lastTitle, "LEVEL       1/2")
     }
 
     func testTotalMixChangesRedrawOnlyWhatChanged() {
@@ -385,13 +385,13 @@ final class E16DriverTests: XCTestCase {
 
     func testLabelsKeepTheFirstNumber() {
         XCTAssertEqual(E16Driver.fit("PB 11/12", 4), "PB11")
-        XCTAssertEqual(E16Driver.fit("PB 1/2", 4), "PB 1")
+        XCTAssertEqual(E16Driver.fit("PB 1/2", 4), "P1/2")
         XCTAssertEqual(E16Driver.fit("ADAT 3/4", 4), "ADT3")
         XCTAssertEqual(E16Driver.fit("ADAT 11/12", 4), "AD11")
         XCTAssertEqual(E16Driver.fit("Mic 1/2", 4), "Mic1")
         XCTAssertEqual(E16Driver.fit("Analog 1/2", 4), "Anl1")
         XCTAssertEqual(E16Driver.fit("Tonverk", 4), "Tonv")
-        XCTAssertEqual(E16Driver.fit("ADI-2", 4), "ADI-")
+        XCTAssertEqual(E16Driver.fit("ADI-2", 4), "ADI2")
         XCTAssertEqual(E16Driver.fit("Mic 1/2", 8), "Mic 1/2")
         XCTAssertEqual(E16Driver.fit("ADAT 3/4", 7), "ADAT 3")
         XCTAssertEqual(E16Driver.fit("Analog 1/2", 7), "Analog1", "all the letters before any vowel goes")

@@ -17,6 +17,8 @@ let e16Usage = """
       sbdev e16 palette [--port N]    enters Remote Mode and shows candidate colors, one per ring,
                                       full, named on the screen (TotalMix FX's own first); leaves
                                       Remote Mode on Control-C
+      sbdev e16 ramp [--port N]       enters Remote Mode and shows white rings at 16 brightness
+                                      values from 1 to 127, labeled; leaves Remote Mode on Control-C
       sbdev e16 demo [--port N] [--rate HZ]
                                       enters Remote Mode, shows 16 named channels with colored rings,
                                       and reacts: a turn moves its ring, a push toggles its color,
@@ -150,6 +152,17 @@ func e16(_ arguments: ArraySlice<String>) -> Never {
 
     case "demo":
         e16Demo(session, rate: rate)
+
+    case "ramp":
+        installExitOnInterrupt()
+        guard session.enter() else { exit(1) }
+        let values: [UInt8] = [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64, 80, 96, 112, 127]
+        session.send(E16Outgoing.labels(title: "BRIGHTNESS", labels: values.map { String($0) }))
+        session.send(E16Outgoing.rings(values.enumerated().map { (i, v) in
+            (encoder: i, ring: E16Ring(red: v, green: v, blue: v, amount: 1))
+        }))
+        print("White rings at 1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64, 80, 96, 112, 127. Control-C leaves Remote Mode."); flushOutput()
+        while true { Thread.sleep(forTimeInterval: 60) }
 
     case "palette":
         installExitOnInterrupt()
