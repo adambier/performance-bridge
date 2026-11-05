@@ -132,8 +132,9 @@ always sources.
   it (a design choice; two-finger mutes would need a hold per encoder).
 - **Push and turn** (1.1.1; Adam, 2026-11-05): pan, or the level in PAN mode, while the encoder is
   held; the ring shows that value and the title its number, and on release the ring goes back to
-  the mode's. A turn while pushed cancels the push: no mute on release, no PFL however long it is
-  held.[^test-6]
+  the mode's. A turn while pushed, before PFL has switched (1 s), cancels the push: no mute on
+  release, and no PFL however long it is then held; a turn after PFL has switched is an ordinary
+  turn of the mode's function.[^test-6]
 - **Shift** makes the encoders buttons: 1 LEVEL (white), 2 PAN (magenta), 3 SEND (deep green; back
   to the last output used), 11 and 12 the previous and next send output (deep green; outside SEND
   mode either arrow enters it at the last output used),[^test-4] 15 and 16 the previous and next
@@ -309,9 +310,9 @@ whose two app runs were of the previous build (a `git pull` had been refused).
   for 4 s, rotated smoothly with no flicker.
 - Sixteen LED messages set to black left ring 2 dark; a RING fill to half, then a full green
   ring, drew normally with no LED stuck.
-- So a LED message holds until the next RING message for its ring, and the mute indicator
-  planned for 1.1.1 (four orange LEDs rotating over the channel's level) needs one RING and four
-  LED messages per step.
+- So a LED message holds until the next RING message for its ring, and the mute indicator of
+  1.1.1 (four orange marks rotating on a dark ring) needs one RING and four LED messages per step.
+  That drawing as the driver does it is to be recorded on the device with 1.1.1's check.
 
 ### Test 6 (2026-11-05): push and turn
 

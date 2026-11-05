@@ -36,6 +36,7 @@ let e16Usage = """
                                       for (does a per-LED color persist through later RING fills,
                                       can a LED message clear it, do labels invert, can a ring be
                                       striped or rotated with 16 LED messages); Control-C leaves
+                                      Remote Mode
       sbdev e16 ramp [--port N]       enters Remote Mode and shows white rings at 16 brightness
                                       values from 1 to 127, labeled; leaves Remote Mode on Control-C
       sbdev e16 demo [--port N] [--rate HZ]
@@ -302,7 +303,7 @@ func e16(_ arguments: ArraySlice<String>) -> Never {
         guard session.enter() else { exit(1) }
         let names = ["FULL", "LVL", "SWEP", "BRTH", "BLNK", "HART", "BNCE", "BIPO", "SWP2", "FAST", "SLOW", "HALF", "", "", "", ""]
         session.send(E16Outgoing.labels(title: "RING SHAPES", labels: names))
-        print("Rings: 1 steady full (mute now), 2 a level at 15/16, 3 sweep (2 s a lap), 4 breathe (2 s), 5 blink full/half (0.5 s), 6 heartbeat (PFL's), 7 bounce (grows then shrinks), 8 bipolar sweep from the top, 9 sweep 1 s, 10 breathe 1 s, 11 breathe 4 s, 12 steady half ring. Control-C leaves Remote Mode."); flushOutput()
+        print("Rings: 1 steady full (mute in 1.1.0), 2 a level at 15/16, 3 sweep (2 s a lap), 4 breathe (2 s), 5 blink bright/dim (0.5 s), 6 heartbeat rhythm (bright/dim), 7 bounce (grows then shrinks), 8 bipolar sweep from the top, 9 sweep 1 s, 10 breathe 1 s, 11 breathe 4 s, 12 steady half ring. Control-C leaves Remote Mode."); flushOutput()
         let t0 = Date()
         while true {
             let t = Date().timeIntervalSince(t0)

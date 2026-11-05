@@ -258,7 +258,7 @@ from TotalMix FX, filled to its level.
 | Turn | Level in Main Out, pan in Main Out, or a send, by the mode (**Shift**, below). The screen shows the value while it turns; turning faster moves further. |
 | Press and release | Mute on or off. A muted channel's ring goes dark with four orange lights turning around it; while TotalMix FX's Mute Master is off, the four lights blink in place instead. The screen says "MUTE ON" or "MUTE OFF", or "MUTE SET" or "MUTE CLR" while Mute Master is off, when a mute does nothing in the audio. |
 | Hold for one second | PFL on or off. After a quarter second, a pink arc counts down around the ring, and when it closes PFL switches. While PFL is on, the ring pulses pink. The screen says "PFL ON" or "PFL OFF" while the encoder is held. |
-| Push and turn | Pan in Main Out (in PAN mode, the level instead), while the encoder is held: the ring shows it and the screen its value, and on release the ring goes back to the mode's. A push that turns neither mutes nor switches PFL. |
+| Push and turn | Pan in Main Out (in PAN mode, the level instead), while the encoder is held: the ring shows it and the screen its value, and on release the ring goes back to the mode's. Start turning within a second of pushing: a push that turns then neither mutes nor switches PFL. |
 
 | Hold Shift and press | What it does |
 |---|---|
@@ -271,8 +271,9 @@ from TotalMix FX, filled to its level.
 - The top line of the screen shows the mode (LEVEL, PAN, or the send's output, e.g., "> PHONES 1"). At the
   right, it shows "PFL" while any channel's PFL is on, and the page (e.g., "2/3") when there is more than
   one page.
-- A ring that is dark has no channel, unless four orange lights turn around it: then the channel is muted. A
-  ring filled all the way around is a PFL that is on; a level never fills the last light.
+- A ring that is dark has no channel, unless four orange lights turn around it or blink on it: then the
+  channel is muted. A ring filled all the way around is a PFL that is on; a level never fills the last
+  light.
 - A pan shows as an arc from the top: in the channel's color at center, and red as soon as it moves off
   center, however little.
 - The rings' brightness can be set in Performance Bridge's **Settings… → Connections**, from 1 to 100.
