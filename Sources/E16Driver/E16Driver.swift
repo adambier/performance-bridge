@@ -168,6 +168,11 @@ public struct E16Driver: Sendable {
     /// How many units of turning, one way, a pan at center takes before it moves (`centerStop`):
     /// a starting value, to tune on the device.
     public static let panCenterUnits = 4
+    /// How long a turn must pause, after it has stopped at center, before turning moves the pan
+    /// on (`centerStop`); a starting value, to tune on the device.
+    public static let panCenterPauseDefault = 0.25
+    /// `panCenterPauseDefault`, settable for trying values (`sbdev e16bridge --pan-pause`).
+    public var panCenterPause = E16Driver.panCenterPauseDefault
     /// For trying amounts side by side (`sbdev e16bridge --pan-center`): encoder n's pan takes
     /// the (n mod count)th of these instead of `panCenterUnits`. Empty in the app.
     public var panCenterTrial: [Int] = []
@@ -185,6 +190,8 @@ public struct E16Driver: Sendable {
     private var rotation = 0
     /// Units turned at a centered pan so far, and which way, by encoder (`centerStop`).
     private var panCenterHold: [Int: (direction: Int, units: Int)] = [:]
+    /// When a turn that stopped at center last sent a message, by encoder (`centerStop`).
+    private var panCenterArrival: [Int: Double] = [:]
     private var overlay: (text: String, until: Double)?
     /// The encoder held down, if any, since when, and whether the hold has already toggled PFL.
     /// Its overlay stays until it is released (Adam, 2026-11-04).
@@ -437,7 +444,7 @@ public struct E16Driver: Sendable {
             stepSize = Self.levelStep
         }
         var position = min(max(current + Double(delta) * stepSize, 0), 1)
-        if case .pan = target { position = centerStop(encoder, from: current, to: position, delta: delta) }
+        if case .pan = target { position = centerStop(encoder, from: current, to: position, delta: delta, now: now) }
         take(hub.controlMoved(id(layer), strip: encoder, to: position, now: now), hub: hub, into: &step)
         // The hub doesn't send a surface its own move back: draw the ring from the mirror, and
         // show the value in the title.
@@ -453,16 +460,27 @@ public struct E16Driver: Sendable {
     }
 
     /// A pan's sticky center (Adam, 2026-11-05): a turn that reaches or crosses center stops
-    /// there, however fast; from center, the pan stays until `panCenterUnits` units have been
-    /// turned one way (a turn the other way starts the count again), and the units beyond move it
-    /// on. The device's turns are accelerated (1–8 units a message) and endless, so center is
-    /// otherwise hard to land on.
-    private mutating func centerStop(_ encoder: Int, from current: Double, to proposed: Double, delta: Int) -> Double {
+    /// there, however fast, and the rest of that turn is ignored: turn messages arriving less than
+    /// `panCenterPause` apart count as the same turn (a fast turn arrived as a burst of messages
+    /// of up to 8 units each and went straight through a count of units: Adam, 14:56). After a
+    /// pause, the pan stays until `panCenterUnits` units have been turned one way (a turn the
+    /// other way starts the count again), and the units beyond move it on. The device's turns are
+    /// accelerated (1–8 units a message) and endless, so center is otherwise hard to land on.
+    private mutating func centerStop(_ encoder: Int, from current: Double, to proposed: Double, delta: Int, now: Double) -> Double {
         guard delta != 0 else { return proposed }
         let direction = delta > 0 ? 1 : -1
         guard abs(current - 0.5) <= Self.panCenterTolerance else {
             panCenterHold[encoder] = nil
-            return (current - 0.5) * (proposed - 0.5) <= 0 ? 0.5 : proposed
+            guard (current - 0.5) * (proposed - 0.5) <= 0 else { return proposed }
+            panCenterArrival[encoder] = now
+            return 0.5
+        }
+        if let last = panCenterArrival[encoder] {
+            if now - last < panCenterPause {
+                panCenterArrival[encoder] = now  // the same turn, still going
+                return 0.5
+            }
+            panCenterArrival[encoder] = nil
         }
         var hold = panCenterHold[encoder] ?? (direction, 0)
         if hold.direction != direction { hold = (direction, 0) }

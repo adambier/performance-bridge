@@ -137,11 +137,14 @@ always sources.
   release, and no PFL however long it is then held; a turn after PFL has switched is an ordinary
   turn of the mode's function.[^test-6]
 - **A pan's sticky center** (Adam, 2026-11-05): a turn that reaches or crosses center stops
-  there, however fast; from center, the pan moves only after `panCenterUnits` (4) units turned one
-  way, a turn the other way starting the count again. The encoders are endless and accelerated
+  there, however fast, and the rest of that turn is ignored (messages less than
+  `panCenterPause`, 0.25 s, apart are one turn: a fast turn arrives as a burst of up to 8 units a
+  message, and went straight through a count of units alone, Adam, 14:56); after a pause, the
+  pan moves only after `panCenterUnits` (4) units turned one way, a turn the other way starting
+  the count again. The encoders are endless and accelerated
   (1–8 units a message), so center is otherwise hard to land on; a double press to reset was
-  considered and not taken (it would delay every mute, or mute and unmute). The 4 is a starting
-  value, to tune on the device.
+  considered and not taken (it would delay every mute, or mute and unmute). The 4 and the 0.25 s
+  are starting values, to tune on the device (`sbdev e16bridge --pan-center`, `--pan-pause`).
 - **Shift** makes the encoders buttons: 1 LEVEL (white), 2 PAN (magenta), 3 SEND (deep green; back
   to the last output used), 11 and 12 the previous and next send output (deep green; outside SEND
   mode either arrow enters it at the last output used),[^test-4] 15 and 16 the previous and next
