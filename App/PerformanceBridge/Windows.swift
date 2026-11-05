@@ -362,12 +362,13 @@ struct E16BrightnessView: View {
     @ObservedObject var model: BridgeModel
 
     /// The slider reads 1–100 for the engine's usable range (`BridgeEngine.e16MinimumBrightness`
-    /// to `e16MaximumBrightness`, 10%–80% of the LEDs' full output; Adam, 2026-11-04).
+    /// to `e16MaximumBrightness`, 3%–80% of the LEDs' full output; Adam, 2026-11-04).
     static let shownRange = 1.0...100.0
 
     /// The slider's reading for an engine brightness.
     static func shown(_ brightness: Double) -> Double {
         let low = BridgeEngine.e16MinimumBrightness, high = BridgeEngine.e16MaximumBrightness
+        guard brightness.isFinite else { return shownRange.lowerBound }
         let fraction = (brightness - low) / (high - low)
         return min(max(shownRange.lowerBound + fraction * (shownRange.upperBound - shownRange.lowerBound), shownRange.lowerBound), shownRange.upperBound)
     }
@@ -375,6 +376,7 @@ struct E16BrightnessView: View {
     /// The engine brightness for a slider reading.
     static func brightness(shown: Double) -> Double {
         let low = BridgeEngine.e16MinimumBrightness, high = BridgeEngine.e16MaximumBrightness
+        guard shown.isFinite else { return low }
         let fraction = (shown - shownRange.lowerBound) / (shownRange.upperBound - shownRange.lowerBound)
         return min(max(low + fraction * (high - low), low), high)
     }

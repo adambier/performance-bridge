@@ -104,7 +104,7 @@ public struct BridgeSettings: Equatable, Sendable {
     public var e16Enabled = false
     /// The name of the E16's first USB MIDI port.
     public var e16PortName = E16Driver.defaultPortName
-    /// How bright the E16's rings are, 0…1 (`E16Driver.brightness`); a must-have setting, since
+    /// How bright the E16's rings are (`E16Driver.brightness`, kept within the range below); a must-have setting, since
     /// how bright is right depends on the room and is the user's call (Adam, 2026-11-04).
     public var e16Brightness = E16Driver.defaultBrightness
     /// How often the engine tries again to open TotalMix FX's port or the Roto-Control's MIDI ports
@@ -188,7 +188,7 @@ public struct BridgeStatus: Equatable, Sendable {
     public var e16Found = false
     /// Whether the E16 has answered (entered Remote Mode).
     public var e16Connected = false
-    /// How bright the E16's rings are, 0…1.
+    /// How bright the E16’s rings are (`BridgeEngine.e16MinimumBrightness`…`e16MaximumBrightness`).
     public var e16Brightness = E16Driver.defaultBrightness
     /// The outputs the send controls step through, in order (`SurfaceHub.sendTargets`), with their
     /// names as the strips show them, for choosing a send row's output.
@@ -305,7 +305,7 @@ public final class BridgeEngine: @unchecked Sendable {
         }
         self.sendRows = rows
         self.levelBrightness = settings.launchControlLevelBrightness
-        self.e16Brightness = min(max(settings.e16Brightness, Self.e16MinimumBrightness), Self.e16MaximumBrightness)
+        self.e16Brightness = Self.clampedBrightness(settings.e16Brightness)
     }
 
     private var now: Double { Date().timeIntervalSince(startDate) }
@@ -731,11 +731,18 @@ public final class BridgeEngine: @unchecked Sendable {
     /// See `e16MinimumBrightness`.
     public static let e16MaximumBrightness = 0.80
 
-    /// Sets the E16's ring brightness (`e16MinimumBrightness`…1) from the app. Takes effect at
+    /// A brightness within the range; a non-finite value (a corrupted saved setting) becomes
+    /// the default, since `min(max(NaN, …))` lets NaN through (review of 2026-11-04).
+    static func clampedBrightness(_ value: Double) -> Double {
+        guard value.isFinite else { return E16Driver.defaultBrightness }
+        return min(max(value, e16MinimumBrightness), e16MaximumBrightness)
+    }
+
+    /// Sets the E16's ring brightness (`e16MinimumBrightness`…`e16MaximumBrightness`) from the app. Takes effect at
     /// once on a connected device, and is kept for the next one otherwise.
     public func setE16Brightness(_ value: Double) {
         lock.lock()
-        e16Brightness = min(max(value, Self.e16MinimumBrightness), Self.e16MaximumBrightness)
+        e16Brightness = Self.clampedBrightness(value)
         if var e16 = e16Driver {
             let bytes = e16.setBrightness(e16Brightness, hub: hub)
             e16Driver = e16

@@ -146,9 +146,9 @@ always sources.
   heartbeat (0.8 s of pink, a 0.2 s dip to what is underneath).
 - **Colors.** TotalMix FX's channel colors are mapped so they stay apart on these LEDs: gray is
   shown as cyan (0, 110, 127), the hue TotalMix FX leaves free, since a dim gray read as a dim
-  white or a level; orange (127, 16, 0), red (127, 0, 0), blue (0, 0, 127), green (0, 105, 0),
+  white or a level; orange (127, 25, 0), red (127, 0, 0), blue (0, 0, 127), green (0, 105, 0),
   yellow (127, 85, 0), purple (70, 0, 127). Mute uses this orange, and PFL is pink (127, 30, 60), the hue TotalMix FX leaves free: with more blue it blended with purple at the top of the range. The
-  brightness setting (3%–80%, shown as 1–100; default 55%) scales all of them in proportion, so
+  brightness setting (3%–80%, shown as 1–100; default 55%, 68 on the slider) scales all of them in proportion, so
   a color's hue is the same at every setting; a color's largest part never goes below 4, so a lit
   ring stays lit. (A floor added to each part was tried first and pushed orange toward yellow at
   the lowest settings.) The colors and brightness are

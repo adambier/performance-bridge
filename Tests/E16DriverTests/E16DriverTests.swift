@@ -191,7 +191,7 @@ final class E16DriverTests: XCTestCase {
         let pfl = driver.tick(hub: &hub, now: 3.05)
         XCTAssertEqual(pfl.core.messages.map(\.address), ["/input/3/pfl"])
         XCTAssertEqual(driver.title(hub: hub), "Gtr PFL ON")
-        XCTAssertEqual(pfl.midi.rings[2]?.amount, 16383, "a complete yellow ring")
+        XCTAssertEqual(pfl.midi.rings[2]?.amount, 16383, "a complete pink ring")
         XCTAssertEqual(pfl.midi.rings[2]?.r, E16Driver.pflRGB.0)
         XCTAssertNil(driver.tick(hub: &hub, now: 4.5).midi.lastTitle, "the title stays while held")
         XCTAssertEqual(driver.title(hub: hub), "Gtr PFL ON")
@@ -199,7 +199,7 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(release.core.messages, [], "no mute")
         _ = driver.tick(hub: &hub, now: 6.1)
         XCTAssertEqual(driver.title(hub: hub), "LEVEL       PFL", "a second after the release, with the PFL marker")
-        // The heartbeat: a complete yellow ring 0.8 s, then the level 0.2 s.
+        // The heartbeat: a complete pink ring 0.8 s, then the level 0.2 s.
         let dip = driver.tick(hub: &hub, now: 6.85)
         XCTAssertEqual(dip.midi.rings[2]?.r, 127, "the level underneath, white")
         XCTAssertEqual(dip.midi.rings[2]?.b, 127)

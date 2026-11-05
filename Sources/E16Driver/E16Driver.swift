@@ -695,7 +695,7 @@ public struct E16Driver: Sendable {
     /// - one meaning per motion: steady is a value or a state; a symmetric blink (full orange
     ///   ring ↔ half ring, `blinkPeriod` each) is a mute that is set but not in effect while
     ///   TotalMix FX's Mute Master is off; the heartbeat (`heartbeatOn` of each
-    ///   `heartbeatPeriod` a complete yellow ring, then a dip to what is underneath: the level,
+    ///   `heartbeatPeriod` a complete pink ring, then a dip to what is underneath: the level,
     ///   or the mute's ring) is PFL; a one-shot pink arc growing (or, for PFL off, shrinking)
     ///   is the push held for PFL.
     func look(_ index: Int, hub: SurfaceHub) -> RingLook {

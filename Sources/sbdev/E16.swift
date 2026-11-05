@@ -21,7 +21,7 @@ let e16Usage = """
       sbdev e16 colors [--port N] [--brightness B] [--rgb R,G,B …]
                                       enters Remote Mode and shows the driver's colors, full rings,
                                       named on the screen, dimmed as the driver dims them at
-                                      brightness B (0…1; default 0.10, the slider's 1): rows 1–2
+                                      brightness B (0…1; default 0.10; the app's slider runs 0.03–0.80): rows 1–2
                                       TotalMix FX's colors as the driver maps them, row 3 mute,
                                       PFL, and the Shift buttons, then up to two --rgb trials (up
                                       to six when the Shift buttons are left out for them);
@@ -130,7 +130,7 @@ func e16(_ arguments: ArraySlice<String>) -> Never {
         switch a {
         case "--port": guard let p = rest.first.flatMap({ Int($0) }) else { fail("--port needs a number") }; rest.removeFirst(); port = p
         case "--rate": guard let r = rest.first.flatMap({ Double($0) }) else { fail("--rate needs a number") }; rest.removeFirst(); rate = r
-        case "--brightness": guard let b = rest.first.flatMap({ Double($0) }) else { fail("--brightness needs a number from 0 to 1") }; rest.removeFirst(); brightness = b
+        case "--brightness": guard let b = rest.first.flatMap({ Double($0) }), (0...1).contains(b) else { fail("--brightness needs a number from 0 to 1") }; rest.removeFirst(); brightness = b
         case "--rgb":
             let parts = rest.first?.split(separator: ",").compactMap { UInt8($0.trimmingCharacters(in: .whitespaces)) } ?? []
             guard parts.count == 3, parts.allSatisfy({ $0 <= 127 }) else { fail("--rgb needs R,G,B, each 0–127") }
@@ -218,13 +218,12 @@ func e16(_ arguments: ArraySlice<String>) -> Never {
         show(current)
         session.onEvents { events in
             var delta = 0
-            for case .turned(_, let d) in events { delta += d > 0 ? 1 : -1 }
+            for case .turned(_, let d) in events where d != 0 { delta += d > 0 ? 1 : -1 }
             guard delta != 0 else { return }
             state.lock()
             current = min(max(current + Double(delta) / 100, 0), 1)
-            let b = current
+            show(current)  // drawn with the lock held, so two sources can't draw out of order
             state.unlock()
-            show(b)
         }
         while let line = readLine() {
             let text = line.trimmingCharacters(in: .whitespaces)
@@ -233,9 +232,8 @@ func e16(_ arguments: ArraySlice<String>) -> Never {
             else if text == "-" { current = max(current - 0.01, 0) }
             else if let n = Double(text.replacingOccurrences(of: "%", with: "")) { current = min(max(n / 100, 0), 1) }
             else { state.unlock(); print("A percentage, + or -."); flushOutput(); continue }
-            let b = current
+            show(current)
             state.unlock()
-            show(b)
         }
         while true { Thread.sleep(forTimeInterval: 60) }
 
