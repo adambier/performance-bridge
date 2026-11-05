@@ -250,14 +250,14 @@ final class E16DriverTests: XCTestCase {
                                                "", "", "<SND", "SND>", "", "", "", ""],
                        "one page: no page arrows")
         let rings = shift.midi.rings
-        XCTAssertEqual(rings[0]?.g, 127, "LEVEL, in use: white, the full ring")
+        XCTAssertEqual(rings[0]?.g, 127, "LEVEL, in use: white at the driver's brightness (1 in the tests)")
         XCTAssertEqual(rings[0]?.amount, 16383)
-        XCTAssertEqual(rings[1]?.r, 127, "PAN: magenta, a quarter ring")
-        XCTAssertEqual(rings[1]?.amount, Int((0.25 * 16383).rounded()))
-        XCTAssertEqual(rings[2]?.g, 60, "SEND: green, a quarter ring")
-        XCTAssertEqual(rings[2]?.amount, Int((0.25 * 16383).rounded()))
-        XCTAssertEqual(rings[10]?.amount, Int((0.25 * 16383).rounded()), "either arrow enters SEND mode at the last output used")
-        XCTAssertEqual(rings[11]?.amount, Int((0.25 * 16383).rounded()))
+        XCTAssertEqual(rings[1]?.r, 2, "PAN: magenta at the available level")
+        XCTAssertEqual(rings[1]?.b, 2)
+        XCTAssertEqual(rings[1]?.amount, 16383)
+        XCTAssertEqual(rings[2]?.g, 2, "SEND: green at the available level")
+        XCTAssertEqual(rings[10]?.g, 2, "either arrow enters SEND mode at the last output used")
+        XCTAssertEqual(rings[11]?.g, 2)
         XCTAssertEqual(rings[3]?.amount, 0, "a blank is dark")
         XCTAssertNil(rings[14], "no pages: an empty strip's ring was dark already")
         // A turn does nothing on the Shift page.
@@ -266,19 +266,19 @@ final class E16DriverTests: XCTestCase {
         let pan = driver.receive([0x90, 1, 0x7F, 0x80, 1, 0x00], hub: &hub, now: 1.2)
         XCTAssertEqual(driver.function, .pan)
         XCTAssertEqual(pan.midi.lastTitle, "PAN", "said at once")
-        XCTAssertEqual(pan.midi.rings[1]?.amount, 16383, "now PAN is in use")
-        XCTAssertEqual(pan.midi.rings[0]?.amount, Int((0.25 * 16383).rounded()))
+        XCTAssertEqual(pan.midi.rings[1]?.r, 127, "now PAN is in use")
+        XCTAssertEqual(pan.midi.rings[0]?.g, 2, "and LEVEL available")
         XCTAssertEqual(pan.core.messages, [], "no mute from a button")
         // A button held down is full bright, whatever it does.
         let down = driver.receive([0x90, 15, 0x7F], hub: &hub, now: 1.25)
-        XCTAssertEqual(down.midi.rings[15]?.b, 127, "NEXT page, pressed: a full ring in its own blue, though it goes nowhere")
+        XCTAssertEqual(down.midi.rings[15]?.b, 127, "NEXT page, pressed: its blue at 127, though it goes nowhere")
         XCTAssertEqual(down.midi.rings[15]?.amount, 16383)
         XCTAssertEqual(driver.receive([0x80, 15, 0x00], hub: &hub, now: 1.26).midi.rings[15]?.amount, 0, "dark again")
         // Next output: the only send, Phones; the arrow enters SEND mode.
         let out = driver.receive([0x90, 11, 0x7F, 0x80, 11, 0x00], hub: &hub, now: 1.3)
         XCTAssertEqual(driver.function, .send(0))
         XCTAssertEqual(out.midi.lastTitle, "> PHONES")
-        XCTAssertEqual(out.midi.rings[2]?.amount, 16383, "SEND in use")
+        XCTAssertEqual(out.midi.rings[2]?.g, 60, "SEND in use")
         XCTAssertEqual(out.midi.rings[11]?.amount, 0, "no next output: dark once released")
         XCTAssertEqual(out.midi.rings[10]?.amount, 0, "no previous output either")
         XCTAssertEqual(driver.receive([0x90, 11, 0x7F, 0x80, 11, 0x00], hub: &hub, now: 1.4).core.messages, [])
@@ -324,10 +324,10 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(answer.midi.lastTitle, "LEVEL       1/2")
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(shift.midi.rings[14]?.amount, 0, "no previous page: dark")
-        XCTAssertEqual(shift.midi.rings[15]?.amount, Int((0.25 * 16383).rounded()), "blue, a quarter ring")
+        XCTAssertEqual(shift.midi.rings[15]?.b, 2, "blue, available")
         let next = driver.receive([0x90, 15, 0x7F, 0x80, 15, 0x00], hub: &hub, now: 1.5)
         XCTAssertEqual(next.midi.lastTitle, "LEVEL       2/2")
-        XCTAssertEqual(next.midi.rings[14]?.amount, Int((0.25 * 16383).rounded()), "a previous page now")
+        XCTAssertEqual(next.midi.rings[14]?.b, 2, "a previous page now")
         XCTAssertEqual(next.midi.rings[15]?.amount, 0, "no next page")
         let past = driver.receive([0x90, 15, 0x7F, 0x80, 15, 0x00], hub: &hub, now: 1.6)
         XCTAssertNil(past.midi.lastTitle, "nothing past the end")
@@ -368,6 +368,19 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(clear.midi.lastTitle, "Vox MUTE CLR")
         _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 3)
         XCTAssertEqual(driver.receive([0x80, 1, 0x00], hub: &hub, now: 3.1).midi.lastTitle, "Vox MUTE SET")
+    }
+
+    func testTheShiftPagesDimAndMaximumIgnoreBrightness() {
+        var hub = loadedHub()
+        var driver = E16Driver(name: "e16")
+        driver.brightness = 0.5
+        _ = driver.start(hub: &hub, now: 0)
+        _ = driver.receive(ack, hub: &hub, now: 0)
+        let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
+        XCTAssertEqual(shift.midi.rings[0]?.g, 64, "in use: at the brightness")
+        XCTAssertEqual(shift.midi.rings[1]?.r, 2, "available: 2, whatever the brightness")
+        let down = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 1.1)
+        XCTAssertEqual(down.midi.rings[1]?.r, 127, "pressed: 127, whatever the brightness")
     }
 
     func testBrightnessScalesEveryColorSent() {

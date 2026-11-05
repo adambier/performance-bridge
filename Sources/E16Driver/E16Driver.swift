@@ -170,6 +170,9 @@ public struct E16Driver: Sendable {
     /// encoder's label until a power cycle (seen 2026-11-04).
     struct RingLook: Hashable {
         var ring: E16Ring
+        /// Whether the ring's color is sent as it is, outside the driver's `brightness`: the
+        /// Shift page's dim and maximum levels.
+        var exact = false
     }
 
     /// A driver for one device; `name` starts the hub surfaces' names.
@@ -574,7 +577,7 @@ public struct E16Driver: Sendable {
             let look = look(index, hub: hub)
             guard sentRings[index] != look else { continue }
             sentRings[index] = look
-            rings.append((index, dimmed(look.ring)))
+            rings.append((index, look.exact ? look.ring : dimmed(look.ring)))
         }
         return E16Outgoing.rings(rings)
     }
@@ -594,7 +597,7 @@ public struct E16Driver: Sendable {
         let look = look(index, hub: hub)
         guard sentRings[index] != look else { return [] }
         sentRings[index] = look
-        return E16Outgoing.rings([(encoder: index, ring: dimmed(look.ring))])
+        return E16Outgoing.rings([(encoder: index, ring: look.exact ? look.ring : dimmed(look.ring))])
     }
 
     /// A strip's ring, by the rules from the UI review (2026-11-04), drawn with RING messages
@@ -611,7 +614,7 @@ public struct E16Driver: Sendable {
     ///   or the mute's ring) is PFL; a one-shot yellow arc growing (or, for PFL off, shrinking)
     ///   is the push held for PFL.
     func look(_ index: Int, hub: SurfaceHub) -> RingLook {
-        if shiftHeld { return RingLook(ring: buttonRing(index, hub: hub)) }
+        if shiftHeld { return buttonRing(index, hub: hub) }
         guard let info = infos[index], let value = knobValues[index] else { return RingLook(ring: .off) }
         if let held, held.encoder == index, !held.didPFL, countdownShown >= 0 {
             let progress = min(Double(countdownShown) * Self.countdownStep / (Self.pflHold - Self.tapTime), 1)
@@ -643,14 +646,14 @@ public struct E16Driver: Sendable {
     /// a switch.
     public static let cap = 15.0 / 16
 
-    /// A ring on the Shift page, in the button's color (`buttonColors`; Adam, 2026-11-04): a
-    /// quarter ring for a button that is available, the full ring for the mode in use and for
-    /// any button while it is held down (in its own color, so a mode press shows its result and
-    /// keeps it; UI review, 2026-11-04). The state is in the fill, not the brightness, since the
-    /// device's LEDs are nearly as bright at 3 as at 127 (seen 2026-11-04). An arrow that goes
-    /// nowhere, and a blank, are dark.
-    func buttonRing(_ index: Int, hub: SurfaceHub) -> E16Ring {
-        guard let button = ShiftButton.layout[index] else { return .off }
+    /// A ring on the Shift page, full, in the button's color (`buttonColors`), at one of four
+    /// levels (Adam, 2026-11-04, after the brightness ramp): dark for a blank or an arrow that
+    /// goes nowhere; `availableLevel` (a color scaled to a maximum part of 2 of 127, the lowest
+    /// level that reads as lit) for a button that is available; the driver's `brightness` for
+    /// the mode in use; and the full 127 while a button is held down, a momentary answer to
+    /// the press.
+    func buttonRing(_ index: Int, hub: SurfaceHub) -> RingLook {
+        guard let button = ShiftButton.layout[index] else { return RingLook(ring: .off) }
         let rgb: (UInt8, UInt8, UInt8)
         var inUse = false
         switch button {
@@ -662,13 +665,19 @@ public struct E16Driver: Sendable {
         case .output: rgb = Self.buttonColors.send
         case .page: rgb = Self.buttonColors.page
         }
-        let pressed = pressedButton == index
-        guard inUse || pressed || isAvailable(button, hub: hub) else { return .off }
-        return E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: inUse || pressed ? 1 : Self.availableArc)
+        if pressedButton == index {
+            return RingLook(ring: E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: 1), exact: true)
+        }
+        if inUse { return RingLook(ring: E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: 1)) }
+        guard isAvailable(button, hub: hub) else { return RingLook(ring: .off) }
+        let top = Double(max(rgb.0, rgb.1, rgb.2))
+        func part(_ v: UInt8) -> UInt8 { v == 0 ? 0 : UInt8(max((Double(v) / top * Self.availableLevel).rounded(), 1)) }
+        return RingLook(ring: E16Ring(red: part(rgb.0), green: part(rgb.1), blue: part(rgb.2), amount: 1), exact: true)
     }
 
-    /// How much of the ring an available button lights, as a fraction.
-    public static let availableArc = 0.25
+    /// The largest part of an available button's color, 0–127: 2, the lowest value that read as
+    /// lit on the device (Adam, 2026-11-04, from `sbdev e16 ramp`).
+    public static let availableLevel = 2.0
 
     /// The Shift page's colors (Adam and the UI review, 2026-11-04): white for LEVEL (orange is
     /// the mute color), magenta for PAN, a deep green for SEND and the output arrows, a deep
