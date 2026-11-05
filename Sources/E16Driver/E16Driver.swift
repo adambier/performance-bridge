@@ -70,7 +70,7 @@ public struct E16Driver: Sendable {
     /// name a stereo pair.
     public var drawsScreen = true
     /// How many characters a label has on the host-drawn screen.
-    public static let longLabelLength = 7
+    public static let longLabelLength = 6
     /// How bright the rings are, 0…1, applied to every color sent: full was too bright for a
     /// dark room, and 70% still a little (Adam, 2026-11-04). A lit part never goes below 1.
     public var brightness: Double = 0.55
@@ -563,18 +563,20 @@ public struct E16Driver: Sendable {
         return bytes
     }
 
-    /// The host-drawn screen: the title centered in the font at twice its size, a rule under
-    /// it, and the sixteen labels in four rows of four, each centered in its 32-pixel cell.
+    /// The host-drawn screen: the title centered in the font (which is 6 pixels tall; the 15
+    /// characters of the title at a 5-pixel pitch are 74 pixels wide), a rule under it, and the
+    /// sixteen labels in four rows of four, each centered in its 32-pixel cell (six characters
+    /// at most: 29 pixels).
     public static func screen(title: String, labels: [String]) -> E16Screen {
         var screen = E16Screen()
-        let titleWidth = E16Screen.width(of: title, scale: 2) - 2
-        screen.draw(title, x: max((E16Screen.width - titleWidth) / 2, 0), y: 0, scale: 2)
-        screen.line(y: 11, from: 0, to: E16Screen.width - 1)
+        let titleWidth = E16Screen.width(of: title) - 1
+        screen.draw(title, x: max((E16Screen.width - titleWidth) / 2, 0), y: 1)
+        screen.line(y: 9, from: 0, to: E16Screen.width - 1)
         for (index, label) in labels.prefix(stripCount).enumerated() {
             let cell = E16Screen.width / 4
             let width = E16Screen.width(of: label) - 1
             let x = (index % 4) * cell + max((cell - width) / 2, 0)
-            let y = 15 + (index / 4) * 13
+            let y = 14 + (index / 4) * 13
             screen.draw(label, x: x, y: y)
         }
         return screen
@@ -752,31 +754,34 @@ public struct E16Driver: Sendable {
 
     /// `text` cut to `length` characters, keeping what tells strips apart (UI review,
     /// 2026-11-04): a name that fits is kept as is; one that ends in a number or a pair ("ADAT
-    /// 3/4", "PB 11/12") first loses its space ("ADAT3/4", "PB11/12"); failing that it keeps its
-    /// first number, loses "/n", and shortens its word: the space goes, then vowels after the
-    /// word's first letter, then letters from the end ("ADT3", "AD11", "PB11", "Mic1", "Anl1");
-    /// anything else is cut ("Tonv"). Hyphens go first ("ADI2"), and at four characters a
-    /// playback pair keeps its "/2" ("P1/2").
+    /// 3/4", "PB 11/12") first keeps the whole pair: without its space ("ADAT3/4"), with the
+    /// word's vowels gone ("ADT3/4"), or a playback's "PB" as "P" ("P11/12", "P1/2"); failing
+    /// that it keeps its first number, loses "/n", and shortens its word: the space goes, then
+    /// the vowels, then letters from the end ("AD11", "Mic1", "Anl1"); anything else is cut
+    /// ("Tonv"). Hyphens go first ("ADI2").
     public static func fit(_ text: String, _ length: Int) -> String {
         if text.count <= length { return text }
-        // A playback pair's default name keeps its "/2", so it reads as a pair, not a skipped
-        // channel: "PB 1/2" to "P1/2" (Adam, 2026-11-04).
-        if length == 4, text.hasPrefix("PB "), text.count == 6, text.dropFirst(3).contains("/") { return "P" + text.dropFirst(3) }
         let text = text.replacingOccurrences(of: "-", with: "")  // "ADI-2" to "ADI2"
         if text.count <= length { return text }
         let parts = text.split(separator: " ", omittingEmptySubsequences: true).map(String.init)
         if parts.count >= 2, let last = parts.last, let number = last.split(separator: "/").first, Int(number) != nil {
             var word = parts.dropLast().joined(separator: " ")
-            // The whole pair without its space, when that fits ("PB11/12", "ADAT3/4").
-            if last.contains("/"), word.count + last.count <= length { return word + last }
+            let vowels: Set<Character> = ["a", "e", "i", "o", "u", "A", "E", "I", "O", "U"]
+            var tight = ""
+            for (i, c) in word.enumerated() where i == 0 || !vowels.contains(c) { tight.append(c) }
+            if last.contains("/") {
+                // The whole pair, so it reads as a pair and not as skipped channels (Adam,
+                // 2026-11-04): without its space ("ADAT3/4"), then with the word's vowels gone
+                // ("ADT3/4"), then a playback's "PB" as "P" ("P11/12", "P1/2").
+                if word.count + last.count <= length { return word + last }
+                if tight.count + last.count <= length { return tight + last }
+                if word == "PB", 1 + last.count <= length { return "P" + last }
+            }
             let digits = String(number)
             let room = length - digits.count
             if word.count + 1 + digits.count <= length { return word + " " + digits }
             if word.count + digits.count <= length { return word + digits }  // all the letters, no space
-            let vowels: Set<Character> = ["a", "e", "i", "o", "u", "A", "E", "I", "O", "U"]
-            var kept = ""
-            for (i, c) in word.enumerated() where i == 0 || !vowels.contains(c) { kept.append(c) }
-            word = kept
+            word = tight
             if word.count + 1 + digits.count <= length { return word + " " + digits }
             return String(word.prefix(max(room, 0))) + digits
         }

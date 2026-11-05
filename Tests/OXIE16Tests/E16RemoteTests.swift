@@ -90,18 +90,18 @@ final class E16ScreenTests: XCTestCase {
 
     func testTheFontDrawsAndScales() {
         var screen = E16Screen()
-        XCTAssertEqual(screen.draw("A1", x: 0, y: 0), 8, "two characters at a four-pixel advance")
-        let a = (0..<5).map { y in (0..<3).map { x in screen.pixel(x, y) ? "#" : "." }.joined() }
-        XCTAssertEqual(a, [".#.", "#.#", "###", "#.#", "#.#"])
-        XCTAssertFalse(screen.pixel(3, 0), "a pixel of space between characters")
-        XCTAssertTrue(screen.pixel(5, 0), "the 1")
+        XCTAssertEqual(screen.draw("A1", x: 0, y: 0), 10, "two characters at a five-pixel advance")
+        let a = (0..<6).map { y in (0..<4).map { x in screen.pixel(x, y) ? "#" : "." }.joined() }
+        XCTAssertEqual(a, [".##.", "#..#", "#..#", "####", "#..#", "#..#"])
+        XCTAssertFalse(screen.pixel(4, 0), "a pixel of space between characters")
+        XCTAssertTrue(screen.pixel(6, 0), "the 1")
         var big = E16Screen()
         big.draw("a", x: 0, y: 0, scale: 2)
         XCTAssertTrue(big.pixel(2, 0) && big.pixel(3, 1), "scaled 2×, lowercase drawn as A")
-        XCTAssertEqual(E16Screen.width(of: "LEVEL", scale: 2), 40)
+        XCTAssertEqual(E16Screen.width(of: "LEVEL", scale: 2), 50)
         var box = E16Screen()
         box.draw("é", x: 0, y: 0)
-        XCTAssertTrue(box.pixel(0, 0) && box.pixel(2, 4) && !box.pixel(1, 2), "an unknown character is a box")
+        XCTAssertTrue(box.pixel(0, 0) && box.pixel(3, 5) && !box.pixel(1, 2), "an unknown character is a box")
         XCTAssertEqual(screen.art.split(separator: "\n").count, 64)
     }
 }
