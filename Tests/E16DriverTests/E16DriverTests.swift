@@ -400,13 +400,13 @@ final class E16DriverTests: XCTestCase {
         let screen = E16Driver.screen(title: "LEVEL", tail: "PFL 2/3", labels: ["ADT3", "P11/12", "", "", "", "", "", "", "", "", "", "", "A", "B", "C", "D"])
         let art = screen.art.split(separator: "\n")
         XCTAssertTrue(art[10].allSatisfy { $0 == "#" }, "the rule under the title")
-        XCTAssertTrue(art[7].hasPrefix("#####"), "the title at the left edge (L's foot)")
-        XCTAssertTrue(art[1].hasSuffix("###"), "the tail at the right edge (3's top)")
+        XCTAssertTrue(art[7].hasPrefix("...#####"), "the title 3 px in, where a 26 px label starts (L's foot)")
+        XCTAssertTrue(art[1].hasSuffix("#####..."), "the tail 3 px from the right edge (3's top)")
         XCTAssertTrue(art[14].contains("#"), "the first label row")
         XCTAssertFalse(art[11].contains("#") || art[12].contains("#") || art[13].contains("#"), "space under the rule")
         XCTAssertTrue(art[20].contains("#") && !art[21].contains("#"), "the first row is 7 pixels tall")
         XCTAssertTrue(!art[55].contains("#") && art[56].contains("#") && art[62].contains("#"), "the fourth row at 56, 14 pixels per row")
-        XCTAssertTrue(E16Driver.screen(title: "LEVEL", labels: []).art.split(separator: "\n")[1].hasSuffix("....."), "no tail")
+        XCTAssertTrue(E16Driver.screen(title: "LEVEL", labels: []).art.split(separator: "\n")[1].hasSuffix("........"), "no tail")
         XCTAssertEqual(E16Driver.ShiftButton.output(1).longLabel, "SEND>")
     }
 

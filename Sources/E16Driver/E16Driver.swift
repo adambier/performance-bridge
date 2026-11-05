@@ -572,9 +572,12 @@ public struct E16Driver: Sendable {
     /// pixels apart, each centered in its 32-pixel cell and no wider than `labelMaxWidth`.
     public static func screen(title: String, tail: String = "", labels: [String]) -> E16Screen {
         var screen = E16Screen()
-        screen.draw(title, x: 0, y: 1)
+        // The title and tail align with the widest label's edges: a label at `labelMaxWidth`
+        // centered in a 32-pixel cell starts 3 pixels in (Adam, 2026-11-04).
+        let margin = (E16Screen.width / 4 - labelMaxWidth) / 2
+        screen.draw(title, x: margin, y: 1)
         if !tail.isEmpty {
-            let x = E16Screen.width - E16Screen.width(of: tail)
+            let x = E16Screen.width - margin - E16Screen.width(of: tail)
             // Blank the title under the tail if a long one runs into it.
             for px in (x - 3)..<E16Screen.width { for py in 0..<9 { screen.set(px, py, false) } }
             screen.draw(tail, x: x, y: 1)
