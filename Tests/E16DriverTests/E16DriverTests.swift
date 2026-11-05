@@ -191,11 +191,9 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(up.core.messages.map(\.address), ["/input/2/mute"])
         XCTAssertEqual(up.core.messages.first?.arguments.first, .float(1))
         XCTAssertEqual(up.midi.lastTitle, "Vox MUTE ON")
-        // Muted: the level stays (white, Vox's color), with four orange marks over it, a
-        // quarter ring apart, that rotate (Adam, 2026-11-05).
-        XCTAssertEqual(up.midi.rings[1]?.r, 127, "the level, in the channel's white")
-        XCTAssertEqual(up.midi.rings[1]?.b, 127)
-        XCTAssertLessThan(up.midi.rings[1]?.amount ?? 0, 16383, "not a complete ring")
+        // Muted: a dark ring with four orange marks a quarter ring apart, which rotate (Adam,
+        // 2026-11-05).
+        XCTAssertEqual(up.midi.rings[1]?.amount, 0, "the ring dark under the marks")
         let marks = up.midi.leds[1] ?? []
         XCTAssertEqual(marks.count, 4, "four marks")
         XCTAssertEqual(Set(marks.map { ($0.led - (marks.first?.led ?? 0) + 16) % 16 }), [0, 4, 8, 12], "a quarter ring apart")
@@ -256,20 +254,15 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(unmute.midi.rings[1]?.g, 127, "in the channel's color")
     }
 
-    /// Over an orange or red channel the marks are white, where orange would not show (Adam,
-    /// 2026-11-05).
-    func testMuteMarksAreWhiteOverRedAndOrange() {
+    /// The marks are orange on every channel: nothing is drawn under them (Adam, 2026-11-05).
+    func testMuteMarksAreOrangeOnEveryChannel() {
         var (driver, hub, _) = connected()
         let red = driver.receive([0x90, 0, 0x7F, 0x80, 0, 0x00], hub: &hub, now: 1)  // mute Keys, red
-        XCTAssertEqual(red.midi.rings[0]?.r, 127, "the level, red")
-        XCTAssertEqual(red.midi.rings[0]?.g, 0)
-        XCTAssertEqual(red.midi.leds[0]?.first.map { [$0.r, $0.g, $0.b] }, [127, 127, 127], "white marks")
-        _ = driver.take(hub.handle(.channel(bus: .input, channel: 2, parameter: "color", value: .number(3)), now: 2), hub: &hub, now: 2)  // Vox orange
-        let orange = driver.receive([0x90, 1, 0x7F, 0x80, 1, 0x00], hub: &hub, now: 3)
-        XCTAssertEqual(orange.midi.leds[1]?.first.map { [$0.r, $0.g, $0.b] }, [127, 127, 127])
-        _ = driver.take(hub.handle(.channel(bus: .input, channel: 2, parameter: "color", value: .number(5)), now: 4), hub: &hub, now: 4)  // Vox blue
-        let blue = driver.tick(hub: &hub, now: 4 + E16Driver.rotationStep)
-        XCTAssertEqual(blue.midi.leds[1]?.first.map { [$0.r, $0.g, $0.b] }, [E16Driver.muteRGB.0, E16Driver.muteRGB.1, E16Driver.muteRGB.2], "orange marks again")
+        XCTAssertEqual(red.midi.rings[0]?.amount, 0, "dark under the marks")
+        XCTAssertEqual(red.midi.leds[0]?.first.map { [$0.r, $0.g, $0.b] }, [E16Driver.muteRGB.0, E16Driver.muteRGB.1, E16Driver.muteRGB.2])
+        let unmute = driver.receive([0x90, 0, 0x7F, 0x80, 0, 0x00], hub: &hub, now: 2)
+        XCTAssertEqual(unmute.midi.rings[0]?.r, 127, "the level back, in red")
+        XCTAssertNil(unmute.midi.leds[0], "no marks")
     }
 
     func testMuteAndPFLTogether() {
@@ -279,8 +272,7 @@ final class E16DriverTests: XCTestCase {
         let on = driver.tick(hub: &hub, now: 3.05)  // PFL on
         XCTAssertEqual(on.midi.rings[1]?.r, E16Driver.pflRGB.0, "yellow")
         let dip = driver.tick(hub: &hub, now: 4.85)
-        XCTAssertEqual(dip.midi.rings[1]?.r, 127, "the dip shows the level with the mute's marks")
-        XCTAssertLessThan(dip.midi.rings[1]?.amount ?? 0, 16383)
+        XCTAssertEqual(dip.midi.rings[1]?.amount, 0, "the dip shows the mute's marks on a dark ring")
         XCTAssertEqual(dip.midi.leds[1]?.count, 4)
     }
 
@@ -410,7 +402,7 @@ final class E16DriverTests: XCTestCase {
         _ = driver.take(output, hub: &hub, now: 0.2)
         // Mute Master off: the marks blink in place instead of rotating.
         let off = driver.tick(hub: &hub, now: 0.6)
-        XCTAssertEqual(off.midi.rings[1]?.r, 127, "the level alone")
+        XCTAssertEqual(off.midi.rings[1]?.amount, 0, "dark")
         XCTAssertNil(off.midi.leds[1], "no marks in the dark half of the blink")
         let back = driver.tick(hub: &hub, now: 1.1)
         XCTAssertEqual(back.midi.leds[1]?.map(\.led), [0, 4, 8, 12], "the marks again, in place")

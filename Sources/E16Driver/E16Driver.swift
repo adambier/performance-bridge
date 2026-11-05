@@ -165,9 +165,9 @@ public struct E16Driver: Sendable {
     /// How long each half of a flashing mute lasts, in seconds (a mute set while TotalMix FX's Mute
     /// Master is off, as on the other surfaces).
     public static let blinkPeriod: Double = 0.5
-    /// A mute's marks: four LEDs a quarter ring apart, moved one LED every `rotationStep`
-    /// seconds over the channel's level (Adam's choice, 2026-11-05, OXI's own rotating idiom;
-    /// a steady full ring had been one LED from a full-level orange channel).
+    /// A mute's marks: four orange LEDs a quarter ring apart on a dark ring, moved one LED every
+    /// `rotationStep` seconds (Adam's choice, 2026-11-05, OXI's own rotating idiom; a steady
+    /// full ring had been one LED from a full-level orange channel).
     public static let rotationStep: Double = 0.15
     /// How many marks a mute shows.
     public static let markCount = 4
@@ -718,12 +718,13 @@ public struct E16Driver: Sendable {
     /// - a complete ring always means a switch is on: a level never fills the last LED (`cap`);
     /// - color is the second cue, shape and motion the first: orange for mute, pink for PFL,
     ///   the colors the other surfaces use;
-    /// - one meaning per motion: steady is a value or a state; four marks a quarter ring apart
-    ///   rotating over the level (`rotationStep` a step) is a mute in effect, and the same marks
-    ///   blinking in place (`blinkPeriod`) a mute that is set but not in effect while TotalMix
-    ///   FX's Mute Master is off; the heartbeat (`heartbeatOn` of each `heartbeatPeriod` a
-    ///   complete pink ring, then a dip to what is underneath: the level, with its marks) is
-    ///   PFL; a one-shot pink arc growing (or, for PFL off, shrinking) is the push held for PFL.
+    /// - one meaning per motion: steady is a value or a state; four orange marks a quarter ring
+    ///   apart rotating on a dark ring (`rotationStep` a step) is a mute in effect, and the
+    ///   same marks blinking in place (`blinkPeriod`) a mute that is set but not in effect
+    ///   while TotalMix FX's Mute Master is off; the heartbeat (`heartbeatOn` of each
+    ///   `heartbeatPeriod` a complete pink ring, then a dip to what is underneath: the level,
+    ///   or the mute's marks) is PFL; a one-shot pink arc growing (or, for PFL off, shrinking)
+    ///   is the push held for PFL.
     func look(_ index: Int, hub: SurfaceHub) -> RingLook {
         if shiftHeld { return buttonRing(index, hub: hub) }
         guard let info = infos[index], let value = knobValues[index] else { return RingLook(ring: .off) }
@@ -744,16 +745,15 @@ public struct E16Driver: Sendable {
             return RingLook(ring: E16Ring(red: Self.pflRGB.0, green: Self.pflRGB.1, blue: Self.pflRGB.2, amount: 1))
         }
         guard muteOn[index] else { return RingLook(ring: level) }
-        // Muted: the level stays, with four marks over it. They rotate while the mute is in
-        // effect and blink in place while TotalMix FX's Mute Master is off (a mute that is set
-        // but not silencing). Orange, or white over an orange or red fill, where orange would
-        // vanish (Adam, 2026-11-05).
-        let warm = (rgb == Self.totalMixRGB[3]!) || (rgb == Self.totalMixRGB[4]!)
-        let mark = warm ? Self.markOnWarmRGB : Self.muteRGB
-        if hub.mirror.muteMaster == false, !blinkLit { return RingLook(ring: level) }
+        // Muted: four orange marks a quarter ring apart on a dark ring, nothing underneath (the
+        // level was tried under them and dropped: it needed white marks over orange channels
+        // and mixed two meanings in one ring; Adam, 2026-11-05). They rotate while the mute is
+        // in effect and blink in place while TotalMix FX's Mute Master is off (a mute that is
+        // set but not silencing).
+        if hub.mirror.muteMaster == false, !blinkLit { return RingLook(ring: .off) }
         let start = hub.mirror.muteMaster == false ? 0 : rotation
         let marks = (0..<Self.markCount).map { (start + $0 * Self.stripCount / Self.markCount) % Self.stripCount }
-        return RingLook(ring: level, marks: marks, markColor: [mark.0, mark.1, mark.2])
+        return RingLook(ring: .off, marks: marks, markColor: [Self.muteRGB.0, Self.muteRGB.1, Self.muteRGB.2])
     }
 
     /// The least a strip with a channel lights, as a fraction of the ring: one LED.
@@ -807,8 +807,6 @@ public struct E16Driver: Sendable {
                                      send: (UInt8, UInt8, UInt8), page: (UInt8, UInt8, UInt8))
         = ((127, 127, 127), (127, 0, 100), (0, 60, 0), (0, 0, 127))
 
-    /// The mute marks' color over an orange or red channel, where orange would not show.
-    public static let markOnWarmRGB: (UInt8, UInt8, UInt8) = (127, 127, 127)
     /// Orange, for a mute, as on the other surfaces.
     public static let muteRGB: (UInt8, UInt8, UInt8) = (127, 25, 0)
     /// Pink, for a PFL and for the countdown: the hue TotalMix FX's colors leave free; the
