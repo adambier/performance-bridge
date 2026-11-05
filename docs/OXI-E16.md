@@ -131,7 +131,7 @@ always sources.
   a 0.25 s tap window; the title says "NAME -> PFL" while the countdown runs and "NAME PFL ON" (or
   OFF) while the encoder stays held. One push at a time: a second push while one is held replaces
   it (a design choice; two-finger mutes would need a hold per encoder).
-- **Push and turn** (1.1.1; Adam, 2026-11-05): pan, or the level in PAN mode, while the encoder is
+- **Push and turn** (1.1.1; Adam, 2026-11-05): pan in LEVEL and SEND modes, the level in PAN mode (both in Main Out), while the encoder is
   held; the ring shows that value and the title its number, and on release the ring goes back to
   the mode's. A turn while pushed, before PFL has switched (1 s), cancels the push: no mute on
   release, and no PFL however long it is then held; a turn after PFL has switched is an ordinary
