@@ -308,7 +308,7 @@ struct SettingsView: View {
             return "Connect the Roto-Control by USB. Performance Bridge finds it by the name of its MIDI port."
         }
         if edited.controller == .e16 {
-            return "Connect the E16 by USB. Performance Bridge finds its first MIDI port (“OXI E16 Port 1”) by name and puts the E16 in Remote Mode, which needs firmware 1.3.0 or later."
+            return "Connect the E16 by USB."
         }
         let model = edited.controller.launchControl ?? .xl3
         return "Connect the \(model.name) by USB. Performance Bridge finds its DAW port (“\(model.portPrefix) 1 DAW”) by name; with more than one connected, it uses the one with the lowest device ID."
