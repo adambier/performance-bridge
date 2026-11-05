@@ -48,6 +48,7 @@ struct SetupView: View {
             "mutemaster": ["totalmix-control-strip"],
             "roto": ["app-connections-roto"],
             "launchcontrol": [launchControl],
+            "e16": ["app-connections-e16"],
             "livemode": ["totalmix-live-mode"],
             "cue": ["totalmix-cue-pfl-to"],
             "hide": ["totalmix-channel-layout"],
