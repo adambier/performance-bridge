@@ -32,7 +32,7 @@ public enum DetectedController: Equatable, Sendable {
         var found: [DetectedController] = []
         if MIDIEndpointInfo.match(rotoPortName, in: sources) != nil { found.append(.roto) }
         let names = sources.map(\.name)
-        if names.contains(E16Driver.defaultPortName) { found.append(.e16) }
+        if MIDIEndpointInfo.match(E16Driver.defaultPortName, in: sources) != nil { found.append(.e16) }
         for model in LaunchControlModel.allCases where model.dawPort(among: names) != nil {
             found.append(.launchControl(model))
         }
