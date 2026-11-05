@@ -35,7 +35,8 @@ public struct E16Step: Equatable, Sendable {
 /// encoder each, always the sources:
 /// - turn: the strip's level in the home submix, or its pan or its send to one output, as the
 ///   surface's function is set (`function`);
-/// - a short push (under `pflHold`): mute, on release; a push held `pflHold`: PFL;
+/// - a short push (under `pflHold`): mute, on release; a push held `pflHold`: PFL; a turn
+///   while pushed (push-and-turn): pan, or level in PAN mode, and no mute or PFL for that push;
 /// - with Shift held the encoders are buttons (`ShiftButton`, as OXI's own firmware does it):
 ///   the modes LEVEL, PAN, and SEND (encoders 1–3), the previous and next send output (11 and
 ///   12), the previous and next page of sixteen strips (15 and 16); the screen names them and
@@ -192,6 +193,11 @@ public struct E16Driver: Sendable {
     private var page = (first: 0, count: 0)
     private var infos: [StripInfo?] = Array(repeating: nil, count: E16Driver.stripCount)
     private var knobValues: [Double?] = Array(repeating: nil, count: E16Driver.stripCount)
+    /// The PFL layer's knob values: the alternate function's (`alternate`), for push-and-turn.
+    private var alternateValues: [Double?] = Array(repeating: nil, count: E16Driver.stripCount)
+    /// The encoder being pushed and turned, whose ring shows the alternate function until it is
+    /// released.
+    private var pushTurning: Int?
     private var muteOn: [Bool] = Array(repeating: false, count: E16Driver.stripCount)
     private var pflOn: [Bool] = Array(repeating: false, count: E16Driver.stripCount)
     private var sentLabels: [UInt8]?
@@ -330,13 +336,16 @@ public struct E16Driver: Sendable {
             // 6, Adam, 2026-11-05). Push-and-turn is then just a turn until it is given a job.
             if let held, held.encoder == encoder, !held.didPFL {
                 self.held = nil
+                pushTurning = encoder
                 if countdownShown >= 0 {
                     countdownShown = -1
                     overlay = nil
                     step.midi += drawLabels(hub: hub)
                 }
             }
-            turn(encoder, by: delta, hub: &hub, now: now, into: &step)
+            // Push-and-turn is the alternate function: pan, or level in PAN mode (Adam,
+            // 2026-11-05).
+            turn(encoder, by: delta, layer: pushTurning == encoder ? .pfl : .main, hub: &hub, now: now, into: &step)
         case .pushed(let encoder, true):
             guard (0..<Self.stripCount).contains(encoder) else { return }
             if shiftHeld {
@@ -346,11 +355,19 @@ public struct E16Driver: Sendable {
             } else {
                 held = (encoder, now, false)
                 countdownShown = -1
+                if let other = pushTurning, other != encoder {
+                    pushTurning = nil
+                    step.midi += drawRing(other, hub: hub)
+                }
             }
         case .pushed(let encoder, false):
             if pressedButton == encoder {
                 pressedButton = nil
                 step.midi += drawRing(encoder, hub: hub)
+            }
+            if pushTurning == encoder {
+                pushTurning = nil
+                step.midi += drawRing(encoder, hub: hub)  // back to the mode's own value
             }
             guard let held, held.encoder == encoder else { return }
             self.held = nil
@@ -378,6 +395,7 @@ public struct E16Driver: Sendable {
         overlay = nil
         held = nil
         pressedButton = nil
+        pushTurning = nil
         blinkLit = true
         sentLabels = nil
         shownScreen = nil
@@ -399,8 +417,8 @@ public struct E16Driver: Sendable {
     // MARK: - Controls
 
     /// An encoder turned without Shift: moves its strip's knob by `delta` units.
-    private mutating func turn(_ encoder: Int, by delta: Int, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
-        guard let strips = hub.strips(of: id(.main)), strips.indices.contains(encoder),
+    private mutating func turn(_ encoder: Int, by delta: Int, layer: Layer = .main, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
+        guard let strips = hub.strips(of: id(layer)), strips.indices.contains(encoder),
               let target = strips[encoder].knobTarget else { return }
         let stored = hub.mirror.value(of: target)
         let current: Double
@@ -413,14 +431,16 @@ public struct E16Driver: Sendable {
             stepSize = Self.levelStep
         }
         let position = min(max(current + Double(delta) * stepSize, 0), 1)
-        take(hub.controlMoved(id(.main), strip: encoder, to: position, now: now), hub: hub, into: &step)
+        take(hub.controlMoved(id(layer), strip: encoder, to: position, now: now), hub: hub, into: &step)
         // The hub doesn't send a surface its own move back: draw the ring from the mirror, and
         // show the value in the title.
         let moved = hub.mirror.value(of: target)
-        knobValues[encoder] = isPan ? moved.map { ($0 + 1) / 2 } : moved
+        let panning: Bool = { if case .pan = target { return true } else { return false } }()
+        let value = panning ? moved.map { ($0 + 1) / 2 } : moved
+        if layer == .main { knobValues[encoder] = value } else { alternateValues[encoder] = value }
         step.midi += drawRing(encoder, hub: hub)
         if let info = infos[encoder], let moved {
-            let text = isPan ? ValueText.pan(moved) : ValueText.level(position: moved)
+            let text = panning ? ValueText.pan(moved) : ValueText.level(position: moved)
             show(Self.fit(info.name, 8) + " " + text, now: now, into: &step, hub: hub)
         }
     }
@@ -510,7 +530,7 @@ public struct E16Driver: Sendable {
     func mode(for layer: Layer, first: Int) -> SurfaceMode {
         switch layer {
         case .main: return .strips(view: .sources, first: first, knob: function, switch: .mute)
-        case .pfl: return .strips(view: .sources, first: first, knob: .level, switch: .pfl)
+        case .pfl: return .strips(view: .sources, first: first, knob: alternate, switch: .pfl)
         }
     }
 
@@ -524,6 +544,10 @@ public struct E16Driver: Sendable {
     }
 
     private var isPan: Bool { if case .pan = function { return true } else { return false } }
+
+    /// What push-and-turn does: pan, or level in PAN mode (Adam, 2026-11-05). The PFL layer's
+    /// knob carries it, since that layer's knobs were otherwise unused.
+    var alternate: KnobFunction { isPan ? .level : .pan }
 
     // MARK: - To the device
 
@@ -560,8 +584,8 @@ public struct E16Driver: Sendable {
                     infos[index] = info
                     touched.insert(index)
                 case .knob(let index, let value):
-                    guard layer == .main, knobValues.indices.contains(index) else { continue }
-                    knobValues[index] = value
+                    guard knobValues.indices.contains(index) else { continue }
+                    if layer == .main { knobValues[index] = value } else { alternateValues[index] = value }
                     touched.insert(index)
                 case .valueText:
                     break  // the title shows the value of a turn from `turn(_:by:hub:now:into:)`
@@ -745,6 +769,14 @@ public struct E16Driver: Sendable {
             return RingLook(ring: E16Ring(red: Self.pflRGB.0, green: Self.pflRGB.1, blue: Self.pflRGB.2, amount: amount))
         }
         var rgb = Self.rgb(for: info)
+        if pushTurning == index, let alt = alternateValues[index] {
+            // Push-and-turn: the alternate function's value in the channel's color, a pan as
+            // its arc from the top.
+            let ring: E16Ring = isPan
+                ? E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: min(max(alt, Self.floor), Self.cap))
+                : E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: alt, bipolar: true)
+            return RingLook(ring: ring)
+        }
         if case .send(let n) = function, hub.sendTargets.indices.contains(n) {
             let output = ChannelRef(.output, hub.sendTargets[n])
             if let color = hub.mirror.channels[output]?.color, color != 1, let sendRGB = Self.totalMixRGB[color] { rgb = sendRGB }
