@@ -94,7 +94,7 @@ public struct E16Driver: Sendable {
     public static let tapTime: Double = 0.25
     /// How often the countdown is redrawn, in seconds.
     public static let countdownStep: Double = 0.1
-    /// The PFL heartbeat: the ring is a complete yellow ring for `heartbeatOn` of each
+    /// The PFL heartbeat: the ring is a complete pink ring for `heartbeatOn` of each
     /// `heartbeatPeriod`, then dips to what is underneath for the rest.
     public static let heartbeatPeriod: Double = 1
     /// How long the heartbeat's ring is complete, in seconds.
@@ -793,7 +793,7 @@ public struct E16Driver: Sendable {
         4: (127, 0, 0),
         5: (0, 0, 127),
         6: (0, 105, 0),    // green, slightly darker (Adam, 2026-11-04)
-        7: (127, 85, 0),   // yellow: at 6% (8, 5, 0), apart from orange's (8, 2, 0); PFL is greener now (Adam, 2026-11-04)
+        7: (127, 85, 0),   // yellow: at 6% (8, 5, 0), apart from orange's (8, 2, 0) (Adam, 2026-11-04)
         8: (70, 0, 127),   // purple: (16, 0, 127) was too close to blue on the device, (90, 0, 127) read as magenta (Adam, 2026-11-04)
     ]
 
