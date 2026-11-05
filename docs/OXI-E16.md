@@ -124,8 +124,8 @@ always sources.
   it (a design choice; two-finger mutes would need a hold per encoder).
 - **Shift** makes the encoders buttons: 1 LEVEL (white), 2 PAN (magenta), 3 SEND (deep green; back
   to the last output used), 11 and 12 the previous and next send output (deep green; outside SEND
-  mode either arrow enters it at the last output used), 15 and 16 the previous and next page
-  (blue). While Shift is held the screen names them (blank where an arrow goes nowhere) and the
+  mode either arrow enters it at the last output used),[^test-4] 15 and 16 the previous and next
+  page (blue). While Shift is held the screen names them (blank where an arrow goes nowhere) and the
   rings show them at four levels: off (nothing there, or nowhere to go), 2 of 127 (available), the
   brightness setting (in use), and the button's color with its largest part at 127 (pressed).
 - **How this compares with the factory firmware's Shift** (the manual, sections 1.5–1.6 and 2.6,
