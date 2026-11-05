@@ -96,15 +96,22 @@ private extension Array where Element == UInt8 {
 }
 
 private extension Array where Element == UInt8 {
-    /// The LEDs set by LED messages, by encoder: the LED indices and their colors, in order.
+    /// The LEDs set by LED messages, by encoder: the LED indices and their colors, in order,
+    /// from the last LED message for that encoder (a RING message for an encoder clears its
+    /// LEDs, as on the device).
     var leds: [Int: [(led: Int, r: UInt8, g: UInt8, b: UInt8)]] {
         var leds: [Int: [(led: Int, r: UInt8, g: UInt8, b: UInt8)]] = [:]
-        for message in sysExMessages where message.starts(with: ledsID) {
+        for message in sysExMessages {
             let raw = E16Outgoing.unpack(Array(message[8..<(message.count - 1)]))
-            var i = 0
-            while i + 5 <= raw.count {
-                leds[Int(raw[i]), default: []].append((Int(raw[i + 1]), raw[i + 2], raw[i + 3], raw[i + 4]))
-                i += 5
+            if message.starts(with: ringsID) {
+                var i = 0
+                while i + 7 <= raw.count { leds[Int(raw[i])] = nil; i += 7 }
+            } else if message.starts(with: ledsID) {
+                var i = 0
+                while i + 5 <= raw.count {
+                    leds[Int(raw[i]), default: []].append((Int(raw[i + 1]), raw[i + 2], raw[i + 3], raw[i + 4]))
+                    i += 5
+                }
             }
         }
         return leds
@@ -207,25 +214,25 @@ final class E16DriverTests: XCTestCase {
         let counting = driver.tick(hub: &hub, now: 2.55)
         XCTAssertEqual(counting.core.messages, [])
         XCTAssertEqual(counting.midi.lastTitle, "Gtr -> PFL")
-        XCTAssertEqual(counting.midi.rings[2]?.r, E16Driver.pflRGB.0, "a yellow arc")
+        XCTAssertEqual(counting.midi.rings[2]?.r, E16Driver.pflRGB.0, "a pink arc")
         XCTAssertEqual(counting.midi.rings[2]?.amount, Int((0.3 / 0.75 * 16383).rounded()), "0.3 s of the 0.75 s sweep")
         let pfl = driver.tick(hub: &hub, now: 3.05)
         XCTAssertEqual(pfl.core.messages.map(\.address), ["/input/3/pfl"])
         XCTAssertEqual(driver.title(hub: hub), "Gtr PFL ON")
-        XCTAssertEqual(pfl.midi.rings[2]?.amount, 16383, "a complete pink ring")
-        XCTAssertEqual(pfl.midi.rings[2]?.r, E16Driver.pflRGB.0)
+        XCTAssertEqual(pfl.midi.rings[2]?.amount, 0, "a dark ring")
+        XCTAssertEqual(pfl.midi.leds[2]?.count, 4, "four pink marks")
+        XCTAssertEqual(pfl.midi.leds[2]?.first?.b, E16Driver.pflRGB.2)
         XCTAssertNil(driver.tick(hub: &hub, now: 4.5).midi.lastTitle, "the title stays while held")
         XCTAssertEqual(driver.title(hub: hub), "Gtr PFL ON")
         let release = driver.receive([0x80, 2, 0x00], hub: &hub, now: 5)
         XCTAssertEqual(release.core.messages, [], "no mute")
         _ = driver.tick(hub: &hub, now: 6.1)
         XCTAssertEqual(driver.title(hub: hub), "LEVEL       PFL", "a second after the release, with the PFL marker")
-        // The heartbeat: a complete pink ring 0.8 s, then the level 0.2 s.
-        let dip = driver.tick(hub: &hub, now: 6.85)
-        XCTAssertEqual(dip.midi.rings[2]?.r, 127, "the level underneath, white")
-        XCTAssertEqual(dip.midi.rings[2]?.b, 127)
-        XCTAssertEqual(dip.midi.rings[2]?.amount, 8192)
-        XCTAssertEqual(driver.tick(hub: &hub, now: 7.05).midi.rings[2]?.r, E16Driver.pflRGB.0, "and yellow again")
+        // PFL's marks rotate, as a mute's do (Adam, 2026-11-05).
+        let a = driver.tick(hub: &hub, now: 6.85).midi.leds[2]?.map(\.led)
+        let b = driver.tick(hub: &hub, now: 7.15).midi.leds[2]?.map(\.led)
+        XCTAssertNotNil(a)
+        XCTAssertNotEqual(a, b, "the pink marks turn")
         // Holding again counts down the other way and turns PFL off.
         _ = driver.receive([0x90, 2, 0x7F], hub: &hub, now: 8)
         let reverse = driver.tick(hub: &hub, now: 8.65)
@@ -304,10 +311,14 @@ final class E16DriverTests: XCTestCase {
         _ = driver.receive([0x90, 1, 0x7F, 0x80, 1, 0x00], hub: &hub, now: 1)  // mute Vox
         _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 2)
         let on = driver.tick(hub: &hub, now: 3.05)  // PFL on
-        XCTAssertEqual(on.midi.rings[1]?.r, E16Driver.pflRGB.0, "yellow")
-        let dip = driver.tick(hub: &hub, now: 4.85)
-        XCTAssertEqual(dip.midi.rings[1]?.amount, 0, "the dip shows the mute's marks on a dark ring")
-        XCTAssertEqual(dip.midi.leds[1]?.count, 4)
+        // Both: eight marks on a dark ring, orange and pink interleaved two LEDs apart.
+        XCTAssertEqual(on.midi.rings[1]?.amount, 0)
+        let marks = on.midi.leds[1] ?? []
+        XCTAssertEqual(marks.count, 8)
+        let orange = marks.filter { $0.b == 0 }.map(\.led), pink = marks.filter { $0.b != 0 }.map(\.led)
+        XCTAssertEqual(orange.count, 4)
+        XCTAssertEqual(pink.count, 4)
+        XCTAssertEqual(Set(pink), Set(orange.map { ($0 + 2) % 16 }))
     }
 
 
@@ -434,10 +445,11 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(driver.title(hub: hub), "Vox MUTE ON")
         let output = hub.handle(.other(path: "globalmute", value: .number(0)), now: 0.2)
         _ = driver.take(output, hub: &hub, now: 0.2)
-        // Mute Master off: the marks blink in place instead of rotating.
+        // Mute Master off: the marks, still, alternate with the level (Adam, 2026-11-05).
         let off = driver.tick(hub: &hub, now: 0.6)
-        XCTAssertEqual(off.midi.rings[1]?.amount, 0, "dark")
-        XCTAssertNil(off.midi.leds[1], "no marks in the dark half of the blink")
+        XCTAssertEqual(off.midi.rings[1]?.amount, 8192, "the level, half")
+        XCTAssertEqual(off.midi.rings[1]?.b, 127, "in the channel's white")
+        XCTAssertNil(off.midi.leds[1], "no marks in this half of the blink")
         let back = driver.tick(hub: &hub, now: 1.1)
         XCTAssertEqual(back.midi.leds[1]?.map(\.led), [0, 4, 8, 12], "the marks again, in place")
         _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 2)

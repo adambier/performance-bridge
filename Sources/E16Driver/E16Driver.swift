@@ -95,11 +95,6 @@ public struct E16Driver: Sendable {
     public static let tapTime: Double = 0.25
     /// How often the countdown is redrawn, in seconds.
     public static let countdownStep: Double = 0.1
-    /// The PFL heartbeat: the ring is a complete pink ring for `heartbeatOn` of each
-    /// `heartbeatPeriod`, then dips to what is underneath for the rest.
-    public static let heartbeatPeriod: Double = 1
-    /// How long the heartbeat's ring is complete, in seconds.
-    public static let heartbeatOn: Double = 0.8
 
     /// What an encoder does as a button while Shift is held: a mode button (LEVEL, PAN, SEND:
     /// one of them is in use) or a step button (an arrow: it goes somewhere, or nowhere).
@@ -179,8 +174,6 @@ public struct E16Driver: Sendable {
     private var blinkLit = true
     /// The position of the mutes' marks, 0–15, advanced every `rotationStep`.
     private var rotation = 0
-    /// Whether PFL rings are in the complete-ring phase of their heartbeat now.
-    private var heartbeatHigh = true
     private var overlay: (text: String, until: Double)?
     /// The encoder held down, if any, since when, and whether the hold has already toggled PFL.
     /// Its overlay stays until it is released (Adam, 2026-11-04).
@@ -214,11 +207,15 @@ public struct E16Driver: Sendable {
         /// Whether the ring's color is sent as it is, outside the driver's `brightness`: the
         /// Shift page's dim and maximum levels.
         var exact = false
-        /// LEDs drawn over the ring with LED messages after it (a mute's rotating marks), by
-        /// index (0 is the first LED left of six o'clock, clockwise; docs/OXI-E16.md, test 5).
-        var marks: [Int] = []
-        /// The marks' color, as red, green, blue.
-        var markColor: [UInt8] = []
+        /// LEDs drawn over the ring with LED messages after it (mute's and PFL's rotating
+        /// marks), by index (0 is the first LED left of six o'clock, clockwise; docs/OXI-E16.md,
+        /// test 5), each with its color as red, green, blue.
+        var marks: [Mark] = []
+    }
+
+    struct Mark: Hashable {
+        var led: Int
+        var rgb: [UInt8]
     }
 
     /// A driver for one device; `name` starts the hub surfaces' names.
@@ -294,11 +291,9 @@ public struct E16Driver: Sendable {
             step.midi += drawLabels(hub: hub)
         }
         let lit = Int((now / Self.blinkPeriod).rounded(.down)) % 2 == 0
-        let high = now.truncatingRemainder(dividingBy: Self.heartbeatPeriod) < Self.heartbeatOn
         let turn = Int((now / Self.rotationStep).rounded(.down)) % Self.stripCount
-        if lit != blinkLit || high != heartbeatHigh || turn != rotation {
+        if lit != blinkLit || turn != rotation {
             blinkLit = lit
-            heartbeatHigh = high
             rotation = turn
             step.midi += drawRings(hub: hub)  // only the rings that change are sent
         }
@@ -710,9 +705,11 @@ public struct E16Driver: Sendable {
 
     /// A look's marks as LED messages' chunks, dimmed like the ring.
     private static func leds(for look: RingLook, encoder: Int, brightness: Double) -> [(encoder: Int, led: Int, red: UInt8, green: UInt8, blue: UInt8)] {
-        guard !look.marks.isEmpty, look.markColor.count == 3 else { return [] }
-        let rgb = scaled((look.markColor[0], look.markColor[1], look.markColor[2]), brightness: brightness)
-        return look.marks.map { (encoder: encoder, led: $0, red: rgb.0, green: rgb.1, blue: rgb.2) }
+        look.marks.compactMap { mark in
+            guard mark.rgb.count == 3 else { return nil }
+            let rgb = scaled((mark.rgb[0], mark.rgb[1], mark.rgb[2]), brightness: brightness)
+            return (encoder: encoder, led: mark.led, red: rgb.0, green: rgb.1, blue: rgb.2)
+        }
     }
 
     /// The dimmest a color's largest part goes: a lit ring stays visibly lit (the LEDs are bright
@@ -753,13 +750,12 @@ public struct E16Driver: Sendable {
     /// - a complete ring always means a switch is on: a level never fills the last LED (`cap`);
     /// - color is the second cue, shape and motion the first: orange for mute, pink for PFL,
     ///   the colors the other surfaces use;
-    /// - one meaning per motion: steady is a value or a state; four orange marks a quarter ring
-    ///   apart rotating on a dark ring (`rotationStep` a step) is a mute in effect, and the
-    ///   same marks blinking in place (`blinkPeriod`) a mute that is set but not in effect
-    ///   while TotalMix FX's Mute Master is off; the heartbeat (`heartbeatOn` of each
-    ///   `heartbeatPeriod` a complete pink ring, then a dip to what is underneath: the level,
-    ///   or the mute's marks) is PFL; a one-shot pink arc growing (or, for PFL off, shrinking)
-    ///   is the push held for PFL.
+    /// - one meaning per motion: steady is a value; four marks a quarter ring apart rotating on
+    ///   a dark ring (`rotationStep` a step) is a switch that is on, orange for mute and pink
+    ///   for PFL (both: interleaved); a mute that is set but not in effect while TotalMix FX's
+    ///   Mute Master is off shows its marks still, alternating with the level every
+    ///   `blinkPeriod`; a one-shot pink arc growing (or, for PFL off, shrinking) is the push
+    ///   held for PFL.
     func look(_ index: Int, hub: SurfaceHub) -> RingLook {
         if shiftHeld { return buttonRing(index, hub: hub) }
         guard let info = infos[index], let value = knobValues[index] else { return RingLook(ring: .off) }
@@ -784,19 +780,29 @@ public struct E16Driver: Sendable {
         let level: E16Ring = isPan
             ? Self.panRing(value, rgb)
             : E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: min(max(value, Self.floor), Self.cap))
-        if pflOn[index], heartbeatHigh {
-            return RingLook(ring: E16Ring(red: Self.pflRGB.0, green: Self.pflRGB.1, blue: Self.pflRGB.2, amount: 1))
+        // A switch that is on is four marks a quarter ring apart turning on a dark ring: orange
+        // for mute, pink for PFL, interleaved two LEDs apart when both are on (Adam,
+        // 2026-11-05: mute and PFL alike, by color). A mute that is set while TotalMix FX's
+        // Mute Master is off (not silencing) shows its marks still, alternating with the level
+        // every `blinkPeriod`.
+        let muteInEffect = muteOn[index] && hub.mirror.muteMaster != false
+        let muteSetOnly = muteOn[index] && hub.mirror.muteMaster == false
+        let turning = pflOn[index] || muteInEffect
+        let start = turning ? rotation : 0
+        var marks: [Mark] = []
+        if muteInEffect || (muteSetOnly && blinkLit) {
+            marks += Self.quarterMarks(from: start, Self.muteRGB)
         }
-        guard muteOn[index] else { return RingLook(ring: level) }
-        // Muted: four orange marks a quarter ring apart on a dark ring, nothing underneath (the
-        // level was tried under them and dropped: it needed white marks over orange channels
-        // and mixed two meanings in one ring; Adam, 2026-11-05). They rotate while the mute is
-        // in effect and blink in place while TotalMix FX's Mute Master is off (a mute that is
-        // set but not silencing).
-        if hub.mirror.muteMaster == false, !blinkLit { return RingLook(ring: .off) }
-        let start = hub.mirror.muteMaster == false ? 0 : rotation
-        let marks = (0..<Self.markCount).map { (start + $0 * Self.stripCount / Self.markCount) % Self.stripCount }
-        return RingLook(ring: .off, marks: marks, markColor: [Self.muteRGB.0, Self.muteRGB.1, Self.muteRGB.2])
+        if pflOn[index] {
+            marks += Self.quarterMarks(from: start + Self.stripCount / Self.markCount / 2, Self.pflRGB)
+        }
+        guard !marks.isEmpty else { return RingLook(ring: level) }
+        return RingLook(ring: .off, marks: marks)
+    }
+
+    /// Four marks a quarter ring apart, from `start`.
+    static func quarterMarks(from start: Int, _ rgb: (UInt8, UInt8, UInt8)) -> [Mark] {
+        (0..<markCount).map { Mark(led: (start + $0 * stripCount / markCount) % stripCount, rgb: [rgb.0, rgb.1, rgb.2]) }
     }
 
     /// A pan's ring, from the top: in the channel's color at center, red as soon as it is off

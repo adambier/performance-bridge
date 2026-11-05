@@ -156,12 +156,13 @@ always sources.
   filled to its level; a pan as its arc from the top, in the channel's color at center and red as
   soon as it is off center, drawn at least one LED's worth off the top (`panMinimumOffset`; R1
   lit one red LED[^test-7]) so L1 and R1 show by shape on a red channel too; dark means
-  no strip (a strip always lights at least one LED), unless four orange marks a quarter ring apart
-  turn on it (one LED every 150 ms, by LED messages after the RING message[^test-5] [^test-7]): that is a
-  mute, and the marks blink in place instead while TotalMix FX's Mute Master is off; a complete
-  ring is a PFL (a level never fills the last LED), a heartbeat of 0.8 s of pink and a 0.2 s dip
-  to what is underneath. (1.1.0 showed mute as a steady full orange ring, one LED from a
-  full-level orange channel: Adam, 2026-11-04.)
+  no strip (a strip always lights at least one LED), unless marks turn on it: a switch that is on
+  is four marks a quarter ring apart turning one LED every 150 ms (by LED messages after the
+  RING message[^test-5] [^test-7]), orange for a mute and pink for a PFL, interleaved two LEDs
+  apart when both are on (Adam, 2026-11-05: mute and PFL alike, by color); a mute that is set
+  while TotalMix FX's Mute Master is off shows its marks still, alternating every 0.5 s with the
+  level. (1.1.0 showed mute as a steady full orange ring, one LED from a full-level orange
+  channel, and PFL as a pink heartbeat: Adam, 2026-11-04.)
 - **Colors.** TotalMix FX's channel colors are mapped so they stay apart on these LEDs: gray is
   shown as cyan (0, 110, 127), the hue TotalMix FX leaves free, since a dim gray read as a dim
   white or a level; orange (127, 25, 0), red (127, 0, 0), blue (0, 0, 127), green (0, 105, 0),
