@@ -759,7 +759,7 @@ public struct E16Driver: Sendable {
         = ((127, 127, 127), (127, 0, 100), (0, 60, 0), (0, 0, 127))
 
     /// Orange, for a mute, as on the other surfaces.
-    public static let muteRGB: (UInt8, UInt8, UInt8) = (127, 25, 0)
+    public static let muteRGB: (UInt8, UInt8, UInt8) = (127, 16, 0)
     /// Yellow-green, for a PFL and for the countdown, apart from TotalMix FX's
     /// channel yellow, which is nearer orange (Adam, 2026-11-04).
     public static let pflRGB: (UInt8, UInt8, UInt8) = (85, 127, 0)
@@ -770,7 +770,7 @@ public struct E16Driver: Sendable {
     public static let totalMixRGB: [Int: (UInt8, UInt8, UInt8)] = [
         1: (127, 127, 127),
         2: (0, 110, 127),  // grey as cyan, the hue TotalMix FX leaves free: a dim grey looked like a dimmer white or a level, and blue-greys like blue (Adam, 2026-11-04)
-        3: (127, 25, 0),   // orange, redder, so yellow stays yellow (Adam, 2026-11-04)
+        3: (127, 16, 0),   // orange, redder still, apart from the yellow that moved toward it (Adam, 2026-11-04)
         4: (127, 0, 0),
         5: (0, 0, 127),
         6: (0, 127, 0),
