@@ -202,8 +202,8 @@ Choose **Settings…** from the menu and open the **Channel Layout** tab.
 
 The app has the same, for every hardware controller: choose **Controls Guide…** from Performance Bridge's menu.
 
-Every hardware controller works the same way: **each column of controls is one channel** and every control in
-a column acts on that channel.
+Every hardware controller works the same way: **each channel has its own controls**, a column of them on the
+Roto-Control and the Launch Controls and one encoder on the E16, and every one of them acts on that channel.
 
 Levels and pans go into Main Out's submix: the output TotalMix FX's control room assigns to Main Out,
 whichever it is. Set the outputs themselves (e.g., Main Out's volume and Speaker B) in TotalMix FX or with an
