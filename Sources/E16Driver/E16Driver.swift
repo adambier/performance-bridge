@@ -816,9 +816,7 @@ public struct E16Driver: Sendable {
     }
 
     /// The least a pan off center is drawn from the top, as a fraction of the pan's range: one
-    /// LED's worth if each side of center spans the whole ring's sixteen LEDs (an inference, to
-    /// check on the device: if each side spans half the ring, 1/16 is half an LED and may light
-    /// nothing).
+    /// LED's worth: at R1 the device lit one red LED right of the top (docs/OXI-E16.md, test 7).
     public static let panMinimumOffset = 1.0 / 16
 
     /// A pan's color off center (`panRing`).

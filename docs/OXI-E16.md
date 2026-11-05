@@ -29,8 +29,9 @@ reasoning that has not been checked, the text says so in words ("inference", "un
 [^test-4]: [Test 4](#test-4-2026-11-04-sends) (2026-11-04), section 7; firmware 1.3.0.
 [^test-5]: [Test 5](#test-5-2026-11-05-the-per-led-message) (2026-11-05), section 7; firmware 1.3.0.
 [^test-6]: [Test 6](#test-6-2026-11-05-push-and-turn) (2026-11-05), section 7; firmware 1.3.0.
+[^test-7]: [Test 7](#test-7-2026-11-05-111-on-the-device) (2026-11-05), section 7; firmware 1.3.0.
 
-**Status (2026-11-05).** Six tests have been run, all on Adam's E16 with firmware 1.3.0 (section
+**Status (2026-11-05).** Seven tests have been run, all on Adam's E16 with firmware 1.3.0 (section
 7). Section 6 lists what is still open.
 
 ## 1. Sources
@@ -153,10 +154,10 @@ always sources.
   driver's (no red on the Shift page; deep green for SEND).
 - **Rings**, from the UI review of 2026-11-04, as changed in 1.1.1: the strip's TotalMix FX color
   filled to its level; a pan as its arc from the top, in the channel's color at center and red as
-  soon as it is off center, drawn at least one LED's worth off the top (`panMinimumOffset`, an
-  inference to check on the device) so L1 and R1 show by shape on a red channel too; dark means
+  soon as it is off center, drawn at least one LED's worth off the top (`panMinimumOffset`; R1
+  lit one red LED[^test-7]) so L1 and R1 show by shape on a red channel too; dark means
   no strip (a strip always lights at least one LED), unless four orange marks a quarter ring apart
-  turn on it (one LED every 150 ms, by LED messages after the RING message[^test-5]): that is a
+  turn on it (one LED every 150 ms, by LED messages after the RING message[^test-5] [^test-7]): that is a
   mute, and the marks blink in place instead while TotalMix FX's Mute Master is off; a complete
   ring is a PFL (a level never fills the last LED), a heartbeat of 0.8 s of pink and a 0.2 s dip
   to what is underneath. (1.1.0 showed mute as a steady full orange ring, one LED from a
@@ -312,7 +313,7 @@ whose two app runs were of the previous build (a `git pull` had been refused).
   ring, drew normally with no LED stuck.
 - So a LED message holds until the next RING message for its ring, and the mute indicator of
   1.1.1 (four orange marks rotating on a dark ring) needs one RING and four LED messages per step.
-  That drawing as the driver does it is to be recorded on the device with 1.1.1's check.
+  The driver's drawing of it is test 7.
 
 ### Test 6 (2026-11-05): push and turn
 
@@ -329,3 +330,13 @@ Mode, showed only the device's own scene: CC 1–16 on several channels, no push
   while pushed cancels the push.
 - Push-and-turn as pan was then seen working through `sbdev e16bridge`; at first L1, L2, R1, and
   R2 drew in the channel's white like center, so off-center pans are now red (Adam).
+
+### Test 7 (2026-11-05): 1.1.1 on the device
+
+**Setup.** As test 2, `sbdev e16bridge` on branch `e16-shapes` after the Tier 1 review's fixes.
+
+**Findings (Adam):**
+
+- A muted channel's ring was dark with four orange lights turning around it.
+- Push-and-turn from center: at R1 (the screen's value) one red LED lit to the right of the top;
+  turning on, the screen went to R2.
