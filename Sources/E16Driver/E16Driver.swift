@@ -802,11 +802,22 @@ public struct E16Driver: Sendable {
     /// A pan's ring, from the top: in the channel's color at center, red as soon as it is off
     /// center, since a pan of L1 or R1 draws too small an arc to tell from center (Adam,
     /// 2026-11-05).
+    /// Off center, the arc is also at least `panMinimumOffset` from the top, so L1 and R1 show
+    /// by shape too, on a channel that is red itself (Adam, 2026-11-05).
     static func panRing(_ position: Double, _ rgb: (UInt8, UInt8, UInt8)) -> E16Ring {
-        let off = abs(position - 0.5) > 0.001
-        let color = off ? Self.panOffCenterRGB : rgb
-        return E16Ring(red: color.0, green: color.1, blue: color.2, amount: position, bipolar: true)
+        let offset = position - 0.5
+        guard abs(offset) > 0.001 else {
+            return E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: position, bipolar: true)
+        }
+        let shown = 0.5 + (offset < 0 ? -1 : 1) * max(abs(offset), Self.panMinimumOffset)
+        let c = Self.panOffCenterRGB
+        return E16Ring(red: c.0, green: c.1, blue: c.2, amount: shown, bipolar: true)
     }
+
+    /// The least a pan off center is drawn from the top, as a fraction of the pan's range: one
+    /// LED's worth, if the device spreads the range over the whole ring (an inference, to check
+    /// on the device: two LEDs' worth if it spreads it over half).
+    public static let panMinimumOffset = 1.0 / 16
 
     /// A pan's color off center (`panRing`).
     public static let panOffCenterRGB: (UInt8, UInt8, UInt8) = (127, 0, 0)
