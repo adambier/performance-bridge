@@ -48,7 +48,7 @@ public struct ControlsGuide: Equatable, Sendable {
 
     /// What every hardware controller has in common: paragraphs shown before each guide.
     public static let common: [String] = [
-        "Every hardware controller works the same way: **each channel has its own controls**, a column of them on the Roto-Control and the Launch Controls and one encoder on the E16, and every one of them acts on that channel.",
+        "Every hardware controller works the same way: **the controls are grouped by channel**. On the Roto-Control and the Launch Controls, each column of controls is one channel; on the E16, each encoder is one channel. A control acts only on its own channel.",
         "Levels and pans go into Main Out's submix: the output TotalMix FX's control room assigns to Main Out, whichever it is. Set the outputs themselves (e.g., Main Out's volume and Speaker B) in TotalMix FX or with an ARC USB; the hardware controllers don't change them.",
         "**Sends** set the headphone mixes and the other submixes. A send control sets how much of its channel goes to one other output, e.g., Phones 1. A row of send controls is that output's whole submix, one channel per column.",
         "The outputs a send row can feed are the ones in **Settings… → Channel Layout → Outputs**, in that order. Main Out and Main Out B (they carry the main mix) aren't listed there, nor is an output that has CUE on in TotalMix FX's Control Room.",
