@@ -747,7 +747,8 @@ public struct E16Driver: Sendable {
     /// a mute's marks, LED messages after them (test 5):
     /// - dark means no channel: a strip with a channel always lights at least one LED (`floor`,
     ///   as OXI's own "Color Indicator" setting does);
-    /// - a complete ring always means a switch is on: a level never fills the last LED (`cap`);
+    /// - a level fills the ring at 0 dB and above (`levelAmount`; Adam, 2026-11-05), since a
+    ///   switch that is on is no longer a full ring;
     /// - color is the second cue, shape and motion the first: orange for mute, pink for PFL,
     ///   the colors the other surfaces use;
     /// - one meaning per motion: steady is a value; four marks a quarter ring apart rotating on
@@ -769,7 +770,7 @@ public struct E16Driver: Sendable {
             // Push-and-turn: the alternate function's value in the channel's color, a pan as
             // its arc from the top.
             let ring: E16Ring = isPan
-                ? E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: min(max(alt, Self.floor), Self.cap))
+                ? E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: Self.levelAmount(alt))
                 : Self.panRing(alt, rgb)
             return RingLook(ring: ring)
         }
@@ -779,7 +780,7 @@ public struct E16Driver: Sendable {
         }
         let level: E16Ring = isPan
             ? Self.panRing(value, rgb)
-            : E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: min(max(value, Self.floor), Self.cap))
+            : E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: Self.levelAmount(value))
         // A switch that is on is four marks a quarter ring apart turning on a dark ring: orange
         // for mute, pink for PFL, interleaved two LEDs apart when both are on (Adam,
         // 2026-11-05: mute and PFL alike, by color). A mute that is set while TotalMix FX's
@@ -830,9 +831,12 @@ public struct E16Driver: Sendable {
 
     /// The least a strip with a channel lights, as a fraction of the ring: one LED.
     public static let floor = 1.0 / 16
-    /// The most a level lights, as a fraction of the ring: fifteen LEDs, so a complete ring is
-    /// a switch.
-    public static let cap = 15.0 / 16
+    /// How much of the ring a level (a fader position, 0…1) lights: the whole ring at 0 dB and
+    /// above (Adam, 2026-11-05), in proportion below, and never less than `floor`.
+    public static func levelAmount(_ position: Double) -> Double {
+        guard position.isFinite else { return floor }
+        return min(max(position / FaderCurve.unityPosition, floor), 1)
+    }
 
     /// A ring on the Shift page, full, in the button's color (`buttonColors`), at one of four
     /// levels (Adam, 2026-11-04, after the brightness ramp): dark for a blank or an arrow that

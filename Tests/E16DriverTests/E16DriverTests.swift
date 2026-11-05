@@ -130,6 +130,9 @@ private func connected() -> (driver: E16Driver, hub: SurfaceHub, midi: [UInt8]) 
 }
 
 final class E16DriverTests: XCTestCase {
+    /// A level at half the fader's travel, as the ring shows it (0 dB fills the ring).
+    static let half = Int((E16Driver.levelAmount(0.5) * 16383).rounded())
+
     func testStartAsksForRemoteModeAndDrawsOnceAnswered() {
         var hub = loadedHub()
         var driver = E16Driver(name: "e16")
@@ -146,15 +149,17 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(answer.midi.lastLabels?.prefix(5), ["Keys", "Vox", "Gtr", "P1/2", ""])
         let rings = answer.midi.rings
         XCTAssertEqual(rings[0]?.r, 127, "Keys is red")
-        XCTAssertEqual(rings[0]?.amount, 8192, "at 0.5")
+        XCTAssertEqual(rings[0]?.amount, Int((0.5 / FaderCurve.unityPosition * 16383).rounded()), "at 0.5, scaled so 0 dB fills the ring")
         XCTAssertEqual(rings[0]?.bipolar, false)
         XCTAssertEqual(rings[1]?.r, 127, "Vox is white")
         XCTAssertEqual(rings[1]?.g, 127)
         XCTAssertEqual(rings[4]?.amount, 0, "an empty strip is dark")
         XCTAssertEqual(rings[4]?.r, 0)
-        // A level never fills the last LED, and a strip with a channel never goes dark.
-        let top = driver.take(hub.handle(.mix(bus: .input, channel: 2, output: 0, parameter: "faderlin", value: .number(1)), now: 2), hub: &hub, now: 2)
-        XCTAssertEqual(top.midi.rings[1]?.amount, Int((15.0 / 16 * 16383).rounded()), "capped at 15 LEDs")
+        // A level fills the ring at 0 dB and above, and a strip with a channel never goes dark.
+        let unity = driver.take(hub.handle(.mix(bus: .input, channel: 2, output: 0, parameter: "faderlin", value: .number(FaderCurve.unityPosition)), now: 2), hub: &hub, now: 2)
+        XCTAssertEqual(unity.midi.rings[1]?.amount, 16383, "full at 0 dB")
+        let top = driver.take(hub.handle(.mix(bus: .input, channel: 2, output: 0, parameter: "faderlin", value: .number(1)), now: 2.5), hub: &hub, now: 2.5)
+        XCTAssertEqual(top.midi.rings[1]?.amount ?? 16383, 16383, "still full above 0 dB (nothing new to send)")
         let bottom = driver.take(hub.handle(.mix(bus: .input, channel: 2, output: 0, parameter: "faderlin", value: .number(0)), now: 3), hub: &hub, now: 3)
         XCTAssertEqual(bottom.midi.rings[1]?.amount, Int((1.0 / 16 * 16383).rounded()), "one LED at -oo")
         XCTAssertEqual(driver.tick(hub: &hub, now: 5).midi, [], "nothing to send while quiet")
@@ -173,7 +178,7 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(step.core.messages.map(\.address), ["/mix/in/2/0/faderlin"])
         let position = 0.5 + 4 * E16Driver.levelStep
         XCTAssertEqual(step.core.messages.first?.arguments.first, .float(Float(position)))
-        XCTAssertEqual(step.midi.rings[1]?.amount, Int((position * 16383).rounded()))
+        XCTAssertEqual(step.midi.rings[1]?.amount, Int((E16Driver.levelAmount(position) * 16383).rounded()))
         XCTAssertEqual(step.midi.lastTitle, "Vox " + ValueText.level(position: position))
         // The title goes back to the function after a second.
         XCTAssertEqual(driver.tick(hub: &hub, now: 1.5).midi, [])
@@ -257,7 +262,7 @@ final class E16DriverTests: XCTestCase {
         let unmute = driver.receive([0x80, 1, 0x00], hub: &hub, now: 12.1)
         XCTAssertEqual(unmute.core.messages.first?.arguments.first, .float(0))
         XCTAssertEqual(unmute.midi.lastTitle, "Vox MUTE OFF")
-        XCTAssertEqual(unmute.midi.rings[1]?.amount, 8192, "the fill again")
+        XCTAssertEqual(unmute.midi.rings[1]?.amount, Self.half, "the fill again")
         XCTAssertEqual(unmute.midi.rings[1]?.g, 127, "in the channel's color")
     }
 
@@ -373,7 +378,7 @@ final class E16DriverTests: XCTestCase {
         let release = driver.receive([0x90, 16, 0x00], hub: &hub, now: 2)
         XCTAssertEqual(release.midi.lastLabels?.prefix(2), ["Keys", "Vox"])
         XCTAssertEqual(release.midi.rings[0]?.r, 127)
-        XCTAssertEqual(release.midi.rings[0]?.amount, 8192)
+        XCTAssertEqual(release.midi.rings[0]?.amount, Self.half)
         XCTAssertEqual(release.midi.lastTitle, "> PHONES")
         // A turn now sets the send.
         let turn = driver.receive([0xB0, 1, 0x01], hub: &hub, now: 3)
@@ -447,7 +452,7 @@ final class E16DriverTests: XCTestCase {
         _ = driver.take(output, hub: &hub, now: 0.2)
         // Mute Master off: the marks, still, alternate with the level (Adam, 2026-11-05).
         let off = driver.tick(hub: &hub, now: 0.6)
-        XCTAssertEqual(off.midi.rings[1]?.amount, 8192, "the level, half")
+        XCTAssertEqual(off.midi.rings[1]?.amount, Self.half, "the level, half")
         XCTAssertEqual(off.midi.rings[1]?.b, 127, "in the channel's white")
         XCTAssertNil(off.midi.leds[1], "no marks in this half of the blink")
         let back = driver.tick(hub: &hub, now: 1.1)
@@ -505,7 +510,7 @@ final class E16DriverTests: XCTestCase {
         let answer = driver.receive(ack, hub: &hub, now: 0)
         XCTAssertEqual(answer.midi.rings[0]?.r, 64, "Keys, red, at half")
         XCTAssertEqual(answer.midi.rings[1]?.g, 64, "Vox, white, at half")
-        XCTAssertEqual(answer.midi.rings[0]?.amount, 8192, "the fill is the level, not dimmed")
+        XCTAssertEqual(answer.midi.rings[0]?.amount, Self.half, "the fill is the level, not dimmed")
         driver.brightness = 0.001
         XCTAssertEqual(driver.take(hub.handle(.channel(bus: .input, channel: 2, parameter: "color", value: .number(4)), now: 3), hub: &hub, now: 3).midi.rings[1]?.r, 4, "a color's largest part never goes below the floor")
         // Dimming keeps the proportions, so orange stays orange and apart from red at the lowest

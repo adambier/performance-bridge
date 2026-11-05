@@ -153,7 +153,8 @@ always sources.
   colors (red for Off and No, green for Yes, a scene's own color) do not conflict with the
   driver's (no red on the Shift page; deep green for SEND).
 - **Rings**, from the UI review of 2026-11-04, as changed in 1.1.1: the strip's TotalMix FX color
-  filled to its level; a pan as its arc from the top, in the channel's color at center and red as
+  filled to its level, the whole ring at 0 dB and above (`levelAmount`; Adam, 2026-11-05; 1.1.0
+  kept the last LED for a switch); a pan as its arc from the top, in the channel's color at center and red as
   soon as it is off center, drawn at least one LED's worth off the top (`panMinimumOffset`; R1
   lit one red LED[^test-7]) so L1 and R1 show by shape on a red channel too; dark means
   no strip (a strip always lights at least one LED), unless marks turn on it: a switch that is on

@@ -162,7 +162,7 @@ public struct ControlsGuide: Equatable, Sendable {
         ],
         tables: [
             Table(controlHeading: "Control (each encoder)", actionHeading: "What it does for that encoder's channel", rows: [
-                Row("Turn", "Level in Main Out, pan in Main Out, or a send, by the mode (**Shift**, below). The screen shows the value while it turns; turning faster moves further."),
+                Row("Turn", "Level in Main Out, pan in Main Out, or a send, by the mode (**Shift**, below). The screen shows the value while it turns; turning faster moves further. A level or send fills its ring at 0 dB and above."),
                 Row("Press and release", "Mute on or off. A muted channel's ring goes dark with four orange lights turning around it; while TotalMix FX's Mute Master is off, the four lights, still, alternate with the level instead. The screen says \"MUTE ON\" or \"MUTE OFF\", or \"MUTE SET\" or \"MUTE CLR\" while Mute Master is off, when a mute does nothing in the audio."),
                 Row("Hold for one second", "PFL on or off. After a quarter second, a pink arc counts down around the ring, and when it closes PFL switches. While PFL is on, the ring goes dark with four pink lights turning around it, as a mute's orange ones do; with both on, the orange and pink lights turn together. The screen says \"PFL ON\" or \"PFL OFF\" while the encoder is held."),
                 Row("Push and turn", "Pan in Main Out (in PAN mode, the level instead), while the encoder is held: the ring shows it and the screen its value, and on release the ring goes back to the mode's. Start turning within a second of pushing: a push that turns then neither mutes nor switches PFL."),
