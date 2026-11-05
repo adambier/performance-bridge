@@ -382,7 +382,7 @@ struct E16BrightnessView: View {
                         .frame(width: 40, alignment: .trailing)
                 }
             }
-            Text("Sets how bright the E16’s rings are, from 15% to 100%.")
+            Text("Sets how bright full-brightness E16 encoder rings are.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
