@@ -26,6 +26,11 @@ let e16Usage = """
                                       PFL, and the Shift buttons, then up to two --rgb trials (up
                                       to six when the Shift buttons are left out for them);
                                       leaves Remote Mode on Control-C
+      sbdev e16 shapes [--port N]     enters Remote Mode and shows every shape a ring can make with
+                                      the RING message, all in mute's orange, for comparing mute
+                                      indicators: steady full, a level (15/16), sweep, breathe,
+                                      blink, heartbeat, bounce, a bipolar sweep; leaves Remote
+                                      Mode on Control-C
       sbdev e16 ramp [--port N]       enters Remote Mode and shows white rings at 16 brightness
                                       values from 1 to 127, labeled; leaves Remote Mode on Control-C
       sbdev e16 demo [--port N] [--rate HZ]
@@ -236,6 +241,39 @@ func e16(_ arguments: ArraySlice<String>) -> Never {
             state.unlock()
         }
         while true { Thread.sleep(forTimeInterval: 60) }
+
+    case "shapes":
+        installExitOnInterrupt()
+        guard session.enter() else { exit(1) }
+        let names = ["FULL", "LVL", "SWEP", "BRTH", "BLNK", "HART", "BNCE", "BIPO", "SWP2", "FAST", "SLOW", "HALF", "", "", "", ""]
+        session.send(E16Outgoing.labels(title: "RING SHAPES", labels: names))
+        print("Rings: 1 steady full (mute now), 2 a level at 15/16, 3 sweep (2 s a lap), 4 breathe (2 s), 5 blink full/half (0.5 s), 6 heartbeat (PFL's), 7 bounce (grows then shrinks), 8 bipolar sweep from the top, 9 sweep 1 s, 10 breathe 1 s, 11 breathe 4 s, 12 steady half ring. Control-C leaves Remote Mode."); flushOutput()
+        let t0 = Date()
+        while true {
+            let t = Date().timeIntervalSince(t0)
+            func ring(_ amount: Double, _ level: Double = 1, bipolar: Bool = false) -> E16Ring {
+                let rgb = E16Driver.scaled(E16Driver.muteRGB, brightness: 0.55 * level)
+                return E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: amount, bipolar: bipolar)
+            }
+            let tri = { (period: Double) -> Double in let x = t.truncatingRemainder(dividingBy: period) / period; return x < 0.5 ? x * 2 : 2 - x * 2 }
+            let rings: [E16Ring] = [
+                ring(1),
+                ring(15.0 / 16),
+                ring(t.truncatingRemainder(dividingBy: 2) / 2),
+                ring(1, 0.35 + 0.65 * (0.5 - 0.5 * cos(t * .pi))),
+                ring(1, t.truncatingRemainder(dividingBy: 0.5) < 0.25 ? 1 : 0.5),
+                ring(1, t.truncatingRemainder(dividingBy: 1) < 0.8 ? 1 : 0.3),
+                ring(tri(2)),
+                ring(t.truncatingRemainder(dividingBy: 2) / 2, bipolar: true),
+                ring(t.truncatingRemainder(dividingBy: 1)),
+                ring(1, 0.35 + 0.65 * (0.5 - 0.5 * cos(t * 2 * .pi))),
+                ring(1, 0.35 + 0.65 * (0.5 - 0.5 * cos(t * .pi / 2))),
+                ring(0.5),
+                .off, .off, .off, .off,
+            ]
+            session.send(E16Outgoing.rings(rings.enumerated().map { (encoder: $0.offset, ring: $0.element) }))
+            Thread.sleep(forTimeInterval: 0.04)
+        }
 
     case "palette":
         installExitOnInterrupt()
