@@ -27,8 +27,9 @@ reasoning that has not been checked, the text says so in words ("inference", "un
     (2026-11-04), section 7; firmware 1.3.0.
 [^test-3]: [Test 3](#test-3-2026-11-04-the-app) (2026-11-04), section 7; firmware 1.3.0.
 [^test-4]: [Test 4](#test-4-2026-11-04-sends) (2026-11-04), section 7; firmware 1.3.0.
+[^test-5]: [Test 5](#test-5-2026-11-05-the-per-led-message) (2026-11-05), section 7; firmware 1.3.0.
 
-**Status (2026-11-04).** Four tests have been run, all on Adam's E16 with firmware 1.3.0 (section
+**Status (2026-11-05).** Five tests have been run, all on Adam's E16 with firmware 1.3.0 (section
 7). Section 6 lists what is still open.
 
 ## 1. Sources
@@ -101,9 +102,14 @@ What the device sends, all on MIDI channel 1:[^sheet] [^test-1]
   was set at 3%–80% with proportional dimming (3% being the floor, a color's largest part at 4), which the app's slider shows as 1–100.[^test-3] Sixteen
   rings sent at 60 frames per second (180 messages in 3057 ms) looked smooth to the eye; the tool
   measures only its own sending.[^test-1]
-- **LED (single)** is a persistent override: an LED set this way keeps its color through later
-  LED RING messages for that ring, and the encoder's label on the screen draws inverted, until a
-  power cycle.[^test-2] The driver never uses it.
+- **LED (single)** sets one LED (index 0 is the first LED left of six o'clock, the index running
+  clockwise) and holds it until the next LED RING message for that ring, which replaces the whole
+  ring; a LED message after a RING fill punches that LED into the fill; sixteen LED messages draw
+  a striped ring or, sent every 150 ms, a smooth rotation of four LEDs; and RING draws normally
+  afterwards, with nothing left behind.[^test-5] (Test 2 had read the message as a persistent
+  override that also inverted the encoder's label: test 5 shows it is not. The likely cause was
+  the driver of that build re-sending its own LED messages every tick, not the device; the label
+  inversion is unexplained.) The driver does not use it in 1.1.0; 1.1.1 is to use it for mute.
 - **OLED LABELS** draws the title on the top line and the labels in the 4×4 layout of the
   encoders. The firmware centers the title and shows only 15 of its 16 characters; padding a
   title with spaces moves it off center, padding with nulls doesn't.[^test-2]
@@ -173,8 +179,9 @@ always sources.
   anything in Remote Mode.
 - The partial OLED messages (scanline, rectangle, clear) and the bipolar flag's exact drawing:
   untested; the driver uses FRAMEBUFFER and sends bipolar rings for pans, which looked right.
-- Whether the LED override from a single-LED message can be cleared by anything short of a power
-  cycle: EXIT and ENTER didn't (test 2).
+- Why test 2 saw stuck LEDs and inverted labels: test 5 found no override in the device; the
+  driver of that build re-sending its own LED messages is the likely cause (inference), and the
+  inversion is unexplained. Watch for it when the driver uses LED messages in 1.1.1.
 - Whether the driver needs an acceleration curve of its own. For now it multiplies the device's
   1–8 steps by a fixed step.
 - A 4-channel "strip" layout (four channels across, LEVEL on the fourth row, rows 1–3 each
@@ -220,9 +227,10 @@ runs, logged from the TotalMix FX side only (`--verbose` off).
   and one pan (`/mix/in/0/0/balpan`); pushes muted (`/input/n/mute`, `/playback/n/mute`) and held
   pushes set PFL (`/input/n/pfl`); TotalMix FX's changes drew on the rings. Sends are in test 4.
 - **The ACK** came 1–6 ms after ENTER in every run.
-- **The single-LED message** is a persistent override: rings showed holes and alternating LEDs
-  and some labels drew inverted; EXIT and ENTER didn't clear it, a power cycle did. The driver
-  stopped using it.
+- **The single-LED message** appeared to be a persistent override: rings showed holes and
+  alternating LEDs and some labels drew inverted; EXIT and ENTER didn't clear it, a power cycle
+  did. The driver stopped using it. (Test 5 later showed the device holds no such override; see
+  it for the likely cause.)
 - **The title** is cut to 15 characters on the screen; space padding moved it off center, null
   padding didn't.
 - **Brightness.** From the `ramp` command (white rings at 1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48,
@@ -272,3 +280,25 @@ whose two app runs were of the previous build (a `git pull` had been refused).
 - Shift + 12 (SEND>) moved the title to the next output, "> PHONES 2"; turning encoder 1 sent
   `/mix/in/4/6/faderlin` (14 messages: the same input's send to output 7).
 - Shift + 1 (LEVEL) went back to LEVEL; Control-C sent EXIT.
+
+### Test 5 (2026-11-05): the per-LED message
+
+**Setup.** As test 1, with `sbdev e16 led` (branch `e16-shapes`): ten scripted steps on rings 1 and
+2, Adam reporting each. The ACK came 0.7 ms after ENTER (the probe now measures from the ENTER).
+
+**Findings:**
+
+- A LED message for ring 1, LED 0, red, lit the first LED left of six o'clock; the rest of the
+  ring's half-blue fill was unchanged and the label was not inverted.
+- A RING fill to three-quarters replaced it: the red LED went away.
+- A LED message setting LED 0 black punched a dark LED into the three-quarter fill; a RING fill
+  to half then drew the ring normally.
+- Sixteen LED messages drew ring 2 striped (every other LED orange, the rest dark), with ring 1
+  unchanged.
+- Four orange LEDs at the quadrants, moved one LED every 150 ms by sixteen LED messages a frame
+  for 4 s, rotated smoothly with no flicker.
+- Sixteen LED messages set to black left ring 2 dark; a RING fill to half, then a full green
+  ring, drew normally with no LED stuck.
+- So a LED message holds until the next RING message for its ring, and the mute indicator
+  planned for 1.1.1 (four orange LEDs rotating over the channel's level) needs one RING and four
+  LED messages per step.
