@@ -140,14 +140,14 @@ public enum SetupChecklist {
         if status.e16Enabled {
             if status.e16Connected {
                 steps.append(SetupStep(id: "e16", title: "OXI E16 is connected", state: .done,
-                                       detail: "It is in Remote Mode, and it controls TotalMix FX.",
-                                       instructions: "Connect the E16 by USB and switch it on. If it doesn’t connect, quit any other program that uses its first MIDI port (“OXI E16 Port 1”), and check that its firmware is 1.3.0 or later (1.2 has no Remote Mode)."))
+                                       detail: "It is in Remote Mode and controls TotalMix FX.",
+                                       instructions: "Connect the E16 by USB and switch it on. If it doesn’t connect, quit any other program that uses its first MIDI port (“OXI E16 Port 1”) and check that its firmware is 1.3.0 or later (Remote Mode doesn’t work before 1.3.0)."))
             } else if status.e16Found {
                 steps.append(SetupStep(id: "e16", title: "OXI E16 found, connecting", state: .waiting,
-                                       detail: "If it stays here, quit any other program that uses its first MIDI port (“OXI E16 Port 1”), and check that its firmware is 1.3.0 or later: firmware 1.2 has no Remote Mode. Update it with OXI’s Firmware Updater."))
+                                       detail: "If it stays here, quit any other program that uses its first MIDI port (“OXI E16 Port 1”) and check that its firmware is 1.3.0 or later (Remote Mode doesn’t work before 1.3.0). If it’s older, update it with OXI Instruments’ firmware updater."))
             } else {
                 steps.append(SetupStep(id: "e16", title: "OXI E16 not found", state: .waiting,
-                                       detail: "Connect the E16 by USB and switch it on. If it’s connected, try another cable or USB port.\n\nUntil a hardware controller connects or you click Apply in Settings, Performance Bridge switches by itself to a Roto-Control or Launch Control that is the only hardware controller plugged in."))
+                                       detail: "Connect the E16 by USB and switch it on. If it’s connected, try another cable or USB port.\n\nUntil a hardware controller connects or you click Apply in Settings, Performance Bridge switches by itself to a Roto-Control, Launch Control XL 3, or Launch Control 3 that is the only hardware controller plugged in. Otherwise, choose the E16 in Performance Bridge’s Settings, on the Connections tab, and click Apply."))
             }
         }
 
@@ -161,7 +161,7 @@ public enum SetupChecklist {
                                        detail: "If it stays here, quit any other program that uses its DAW ports, such as a DAW with its Launch Control integration."))
             } else {
                 steps.append(SetupStep(id: "launchcontrol", title: "\(name) not found", state: .waiting,
-                                       detail: "Connect the Launch Control by USB. If it’s connected, check that the model chosen in Performance Bridge’s Settings, on the Connections tab, is the one connected (click Apply after changing it), then try another cable or USB port.\n\nUntil a hardware controller connects or you click Apply in Settings, Performance Bridge switches by itself to a Roto-Control, other Launch Control, or OXI E16 that is the only hardware controller plugged in."))
+                                       detail: "Connect the Launch Control by USB. If it’s connected, check that the model chosen in Performance Bridge’s Settings, on the Connections tab, is the one connected (click Apply after changing it), then try another cable or USB port.\n\nUntil a hardware controller connects or you click Apply in Settings, Performance Bridge switches by itself to a Roto-Control, OXI E16, or other Launch Control that is the only hardware controller plugged in."))
             }
         }
 

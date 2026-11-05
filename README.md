@@ -6,13 +6,13 @@ bidirectionally through TotalMix FX's Global OSC interface.
 With Melbourne Instruments' Roto-Control, its motorized knobs turn in real time with the TotalMix
 FX faders, with detents and other haptics, and channel names and colors are carried over.
 
-OXI Instruments' E16 and Novation's Launch Control 3 and Launch Control XL 3 are also currently supported.
+Performance Bridge also supports OXI Instruments' E16, Novation's Launch Control XL 3, and Novation's Launch Control 3.
 
 The repository also holds the Swift libraries behind the app and a developer tool for checking
 them against TotalMix FX. The libraries depend only on Foundation, and they build on macOS, Linux, and
 Windows.
 
-Performance Bridge is not affiliated with or endorsed by RME, Melbourne Instruments, or Novation.
+Performance Bridge is not affiliated with or endorsed by RME, Melbourne Instruments, OXI Instruments, or Novation.
 
 To set it up, follow the in-app setup guide or preview it here: [`docs/SETUP.md`](docs/SETUP.md). A guide to controls may be found in the in-app Controls Guide.
 
@@ -35,8 +35,8 @@ app's own Setup Guide (in its menu) checks each step as it goes.
     or a send; switches for mute and PFL; and each channel's name, TotalMix FX color, and meter. Tested
     on the device (`docs/ROTO-CONTROL.md`).
   - **OXI Instruments' E16**, in its Remote Mode (firmware 1.3.0 or later): sixteen push encoders
-    for level, pan, or a send, with mute on a press and PFL on a hold, each channel's name on the
-    screen and its TotalMix FX color and level on the encoder's ring. Tested on the device
+    for level, pan, or a send; mute on a press and PFL on a hold; and each channel's name on the
+    screen, with its TotalMix FX color and level on its encoder's ring. Tested on the device
     (`docs/OXI-E16.md`).
   - **Novation's Launch Control XL 3**, in its DAW mode: faders for level, two encoder rows for
     sends and one for pan, PFL and mute buttons, and the screen. Tested on the device
@@ -67,7 +67,7 @@ a DAW, for arming tracks and controlling the transport, starting with Logic Pro 
 - **The app** (`App/PerformanceBridge/`): the menu-bar app, which runs `BridgeEngine`.
 - **`MIDITransport`**: a MIDI connection through CoreMIDI, on macOS.
 - **`UDPTransport`**: a small UDP socket, on macOS and Linux.
-- **`sbdev`**: a developer tool that prints what TotalMix FX sends and sends single messages to it, talks to a Roto-Control, (`sbdev lcxl`) a Launch Control XL 3, or (`sbdev e16`) an E16, and runs the core and a driver between TotalMix FX and a Roto-Control (`sbdev bridge`), a Launch Control (`sbdev lcbridge`), or an E16 (`sbdev e16bridge`).
+- **`sbdev`**: a developer tool that prints what TotalMix FX sends and sends single messages to it, talks to a Roto-Control (`sbdev roto`), a Launch Control XL 3 (`sbdev lcxl`), or an E16 (`sbdev e16`), and runs the core and a driver between TotalMix FX and a Roto-Control (`sbdev bridge`), a Launch Control (`sbdev lcbridge`), or an E16 (`sbdev e16bridge`).
 
 ## Building from source
 

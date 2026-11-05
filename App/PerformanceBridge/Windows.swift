@@ -308,7 +308,7 @@ struct SettingsView: View {
             return "Connect the Roto-Control by USB. Performance Bridge finds it by the name of its MIDI port."
         }
         if edited.controller == .e16 {
-            return "Connect the E16 by USB. Performance Bridge finds its first MIDI port (“OXI E16 Port 1”) by name and puts the E16 in its Remote Mode, which needs firmware 1.3.0 or later."
+            return "Connect the E16 by USB. Performance Bridge finds its first MIDI port (“OXI E16 Port 1”) by name and puts the E16 in Remote Mode, which needs firmware 1.3.0 or later."
         }
         let model = edited.controller.launchControl ?? .xl3
         return "Connect the \(model.name) by USB. Performance Bridge finds its DAW port (“\(model.portPrefix) 1 DAW”) by name; with more than one connected, it uses the one with the lowest device ID."
@@ -367,7 +367,7 @@ struct E16BrightnessView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Rings")
+            Text("E16 Rings")
                 .font(.headline)
             Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 10, verticalSpacing: 8) {
                 GridRow {
@@ -382,7 +382,7 @@ struct E16BrightnessView: View {
                         .frame(width: 40, alignment: .trailing)
                 }
             }
-            Text("How bright the encoders’ light rings are. Changes take effect at once. Full brightness is too much for a dark room.")
+            Text("Sets how bright the E16’s rings are. Changes take effect at once, without Apply. Full brightness is too much for a dark room.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

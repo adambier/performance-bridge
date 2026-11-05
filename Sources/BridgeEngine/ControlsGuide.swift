@@ -158,21 +158,21 @@ public struct ControlsGuide: Equatable, Sendable {
         tables: [
             Table(controlHeading: "Control (each encoder)", actionHeading: "What it does for that encoder's channel", rows: [
                 Row("Turn", "Level in Main Out, pan in Main Out, or a send, by the mode (**Shift**, below). The screen shows the value while it turns; turning faster moves further."),
-                Row("Press and release", "Mute. The ring turns orange, and flashes while TotalMix FX's Mute Master is off; the screen says \"MUTE ON\" or \"MUTE OFF\"."),
-                Row("Hold for one second", "PFL. After a quarter second a yellow arc counts down around the ring; when it closes, PFL is on (or off) and the ring pulses yellow while it stays on. The screen says \"PFL ON\" or \"PFL OFF\" while the encoder is held."),
+                Row("Press and release", "Mute on or off. A muted channel's ring is orange, and flashes while TotalMix FX's Mute Master is off. The screen says \"MUTE ON\" or \"MUTE OFF\", or \"MUTE SET\" or \"MUTE CLR\" while Mute Master is off, when a mute does nothing in the audio."),
+                Row("Hold for one second", "PFL on or off. After a quarter second, a yellow-green arc counts down around the ring, and when it closes PFL switches. While PFL is on, the ring pulses yellow-green. The screen says \"PFL ON\" or \"PFL OFF\" while the encoder is held."),
             ]),
-            Table(controlHeading: "Shift + encoder (press)", actionHeading: "What it does", rows: [
+            Table(controlHeading: "Hold Shift and press", actionHeading: "What it does", rows: [
                 Row("**1** LEVEL / **2** PAN / **3** SEND", "What a turn does: level (white), pan (magenta), or a send (green) to the last output used. The one in use lights brighter."),
-                Row("**11** <SEND / **12** SEND>", "The previous or next output in the Outputs list for the sends, entering SEND mode if it isn't on. Dark at the ends of the list."),
-                Row("**15** <PAGE / **16** PAGE>", "The previous or next sixteen channels (blue). Dark at the first and last page."),
+                Row("**11** <SEND / **12** SEND>", "The previous or next output in the Outputs list (Performance Bridge's **Settings… → Channel Layout**) for the sends. In LEVEL or PAN mode either arrow enters SEND mode at the last output used; in SEND mode an arrow is dark at the end of the list."),
+                Row("**15** <PAGE / **16** PAGE>", "The previous or next sixteen channels (blue). <PAGE is dark on the first page and PAGE> on the last."),
             ]),
         ],
         notes: [
             "While Shift is held, the screen names each button and the rings show them: dim where a button is available, brighter for the one in use, and full while pressed; the other encoders go dark.",
-            "The top line of the screen shows the mode (LEVEL, PAN, or the send's output, e.g., \"> PHONES 1\"), with \"PFL\" at the right while any channel's PFL is on and the page (e.g., \"2/3\") when there is more than one.",
-            "A ring that is dark has no channel. A ring filled all the way around is a switch that is on: a level never fills the last light.",
-            "The brightness of the rings is set in **Settings… → Connections**; full brightness is too much for a dark room.",
+            "The top line of the screen shows the mode (LEVEL, PAN, or the send's output, e.g., \"> PHONES 1\"). At the right, it shows \"PFL\" while any channel's PFL is on, and the page (e.g., \"2/3\") when there is more than one page.",
+            "A ring that is dark has no channel. A ring filled all the way around means the channel's mute or PFL is on; a level never fills the last light.",
+            "The rings' brightness can be set in Performance Bridge's **Settings… → Connections**; full brightness is too much for a dark room.",
             "Levels and pans are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so TotalMix FX's window shows the levels and pans set here only while Main Out's output is selected in its bottom row.",
-            "The E16 needs firmware 1.3.0 or later (1.2 has no Remote Mode). When Performance Bridge quits, it gives the E16 back to its own firmware; if the E16 is ever left blank, switch it off and on.",
+            "The E16 needs firmware 1.3.0 or later (Remote Mode doesn't work before 1.3.0). When Performance Bridge quits, it gives the E16 back to its own firmware; if the E16 is ever left blank, switch it off and on.",
         ])
 }
