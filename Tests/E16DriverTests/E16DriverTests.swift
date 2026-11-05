@@ -179,7 +179,7 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(up.midi.lastTitle, "Vox MUTE ON")
         XCTAssertEqual(up.midi.rings[1]?.amount, 16383, "a complete ring: a switch is on")
         XCTAssertEqual(up.midi.rings[1]?.r, 127, "orange")
-        XCTAssertEqual(up.midi.rings[1]?.g, 25)
+        XCTAssertEqual(up.midi.rings[1]?.g, E16Driver.muteRGB.1)
         // Held: nothing in the tap window, then a countdown, PFL at 1 s, and no mute on release.
         _ = driver.receive([0x90, 2, 0x7F], hub: &hub, now: 2)  // push Gtr
         XCTAssertEqual(driver.tick(hub: &hub, now: 2.2).midi.lastTitle, "LEVEL", "the tap window: only the mute's overlay ends")
@@ -222,7 +222,7 @@ final class E16DriverTests: XCTestCase {
         let short = driver.receive([0x80, 3, 0x00], hub: &hub, now: 11.6)
         XCTAssertEqual(short.core.messages.map(\.address), ["/playback/0/mute"])
         XCTAssertEqual(short.midi.lastTitle, "PB 1/2 MUTE ON")
-        XCTAssertEqual(short.midi.rings[3]?.g, 25, "orange, no arc")
+        XCTAssertEqual(short.midi.rings[3]?.g, E16Driver.muteRGB.1, "orange, no arc")
         // A second short push turns mute off, and the level is back.
         _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 12)
         let unmute = driver.receive([0x80, 1, 0x00], hub: &hub, now: 12.1)
@@ -239,7 +239,7 @@ final class E16DriverTests: XCTestCase {
         let on = driver.tick(hub: &hub, now: 3.05)  // PFL on
         XCTAssertEqual(on.midi.rings[1]?.r, E16Driver.pflRGB.0, "yellow")
         let dip = driver.tick(hub: &hub, now: 4.85)
-        XCTAssertEqual(dip.midi.rings[1]?.g, 25, "the dip shows the mute's orange ring")
+        XCTAssertEqual(dip.midi.rings[1]?.g, E16Driver.muteRGB.1, "the dip shows the mute's orange ring")
         XCTAssertEqual(dip.midi.rings[1]?.amount, 16383)
     }
 
@@ -348,7 +348,7 @@ final class E16DriverTests: XCTestCase {
         let step = driver.take(output, hub: &hub, now: 1)
         XCTAssertEqual(step.midi.sysExMessages.count, 1, "one ring message, no labels")
         XCTAssertEqual(step.midi.rings.keys.sorted(), [1])
-        XCTAssertEqual(step.midi.rings[1]?.g, 25, "muted: orange")
+        XCTAssertEqual(step.midi.rings[1]?.g, E16Driver.muteRGB.1, "muted: orange")
         let rename = hub.handle(.channel(bus: .input, channel: 2, parameter: "name", value: .text("Vocal")), now: 2)
         let renamed = driver.take(rename, hub: &hub, now: 2)
         XCTAssertEqual(renamed.midi.lastLabels?[1], "Voca")
@@ -363,7 +363,7 @@ final class E16DriverTests: XCTestCase {
         _ = driver.take(output, hub: &hub, now: 0.2)
         let half = driver.tick(hub: &hub, now: 0.6)
         XCTAssertEqual(half.midi.rings[1]?.amount, 8192, "half an orange ring")
-        XCTAssertEqual(half.midi.rings[1]?.g, 25)
+        XCTAssertEqual(half.midi.rings[1]?.g, E16Driver.muteRGB.1)
         let back = driver.tick(hub: &hub, now: 1.1)
         XCTAssertEqual(back.midi.rings[1]?.amount, 16383, "and the full ring again")
         _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 2)
