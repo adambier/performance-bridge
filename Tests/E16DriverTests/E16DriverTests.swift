@@ -381,7 +381,7 @@ final class E16DriverTests: XCTestCase {
         _ = driver.start(hub: &hub, now: 0)
         _ = driver.receive(ack, hub: &hub, now: 0)
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
-        XCTAssertEqual(shift.midi.rings[0]?.g, 64, "in use: at the brightness")
+        XCTAssertEqual(shift.midi.rings[0]?.g, 66, "in use: at the brightness (4 + 123 × 0.5)")
         XCTAssertEqual(shift.midi.rings[1]?.r, 2, "available: 2, whatever the brightness")
         let down = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 1.1)
         XCTAssertEqual(down.midi.rings[1]?.r, 127, "pressed: 127, whatever the brightness")
@@ -417,11 +417,17 @@ final class E16DriverTests: XCTestCase {
         driver.brightness = 0.5
         _ = driver.start(hub: &hub, now: 0)
         let answer = driver.receive(ack, hub: &hub, now: 0)
-        XCTAssertEqual(answer.midi.rings[0]?.r, 64, "Keys, red, at half")
-        XCTAssertEqual(answer.midi.rings[1]?.g, 64, "Vox, white, at half")
+        XCTAssertEqual(answer.midi.rings[0]?.r, 66, "Keys, red, at half: the floor (4) plus half the rest")
+        XCTAssertEqual(answer.midi.rings[1]?.g, 66, "Vox, white, at half")
         XCTAssertEqual(answer.midi.rings[0]?.amount, 8192, "the fill is the level, not dimmed")
         driver.brightness = 0.001
-        XCTAssertEqual(driver.take(hub.handle(.channel(bus: .input, channel: 2, parameter: "color", value: .number(4)), now: 3), hub: &hub, now: 3).midi.rings[1]?.r, 1, "a lit part stays lit")
+        XCTAssertEqual(driver.take(hub.handle(.channel(bus: .input, channel: 2, parameter: "color", value: .number(4)), now: 3), hub: &hub, now: 3).midi.rings[1]?.r, 4, "a lit part never goes below the floor")
+        // Orange keeps its green part at low brightness, so it stays apart from red (Adam,
+        // 2026-11-04: below about 10% the two were the same).
+        driver.brightness = 0.1
+        let orange = driver.take(hub.handle(.channel(bus: .input, channel: 2, parameter: "color", value: .number(3)), now: 4), hub: &hub, now: 4).midi.rings[1]
+        XCTAssertEqual(orange?.r, 16)
+        XCTAssertEqual(orange?.g, 5)
     }
 
     func testLabelsKeepTheFirstNumber() {

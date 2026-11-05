@@ -652,11 +652,19 @@ public struct E16Driver: Sendable {
         return E16Outgoing.rings(rings)
     }
 
-    /// A part of a color at the driver's `brightness`; a lit part stays lit.
+    /// A lit part of a color never goes below this when dimmed, and the scaling starts from it:
+    /// at low brightness a small part scaled all the way down vanished, so orange and red were
+    /// the same below about 10% (Adam, 2026-11-04). The LEDs are bright already at 3 or 4.
+    public static let dimFloor: UInt8 = 4
+
+    /// A part of a color at the driver's `brightness`: `dimFloor` plus the rest scaled, so the
+    /// parts keep their proportions above the floor and a lit part stays visibly lit.
     private func dim(_ part: UInt8) -> UInt8 {
         guard part > 0 else { return 0 }
+        guard part > Self.dimFloor else { return part }
         let scale = brightness.isFinite ? min(max(brightness, 0), 1) : 1
-        return UInt8(min(max((Double(part) * scale).rounded(), 1), 127))
+        let above = Double(part - Self.dimFloor) * scale
+        return UInt8(min(Double(Self.dimFloor) + above.rounded(), 127))
     }
 
     private func dimmed(_ ring: E16Ring) -> E16Ring {
