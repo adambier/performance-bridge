@@ -348,5 +348,7 @@ Mode, showed only the device's own scene: CC 1–16 on several channels, no push
   turning together; with PFL off and Mute Master off, the four orange lights stood still and
   alternated with the level about every half second; a fader at 0 dB lit the whole ring; PFL on an
   unmuted channel showed the pink arc filling, then a dark ring with four pink lights turning.
+- With Mute Master off and a channel's mute set (its orange lights still, alternating with the
+  level), turning PFL on made the orange lights turn with the pink ones, blinking.
 - Orange and pink were clearly told apart (Adam). Both turn the same way: opposite directions were
   considered and not taken, since the marks would collide every 0.3 s when both are on.
