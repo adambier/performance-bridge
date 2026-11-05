@@ -129,7 +129,7 @@ on a Launch Control 3, the number being the device ID). With more than one Launc
 connected, it uses the one with the lowest device ID.
 
 With the E16 chosen, the Connections tab also shows a **Brightness** slider for its rings below Apply, from
-15% to 100%. The slider takes effect at once, without Apply.
+1 to 100. The slider takes effect at once, without Apply.
 
 With a Launch Control chosen, the Connections tab also shows its send rows below Apply. Their outputs can
 be chosen there at any time while TotalMix FX is open, with the Launch Control connected or not, and a

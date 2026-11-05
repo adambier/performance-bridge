@@ -97,7 +97,8 @@ What the device sends, all on MIDI channel 1:[^sheet] [^test-1]
   the boundary dimmed in proportion rather than on or off; the color is per ring.[^test-1] The
   LEDs are already bright at small values: 3 or 4 of 127 is clearly lit, 2 reads dim, and 1 is
   barely there; the steps above about 64 are hard to tell apart.[^test-2] With the driver's
-  brightness setting below about 15%, orange and yellow can't be told apart.[^test-3] Sixteen
+  brightness setting below about 15%, orange and yellow were hard to tell apart; the usable range
+  was set at 10%–80%, which the app's slider shows as 1–100.[^test-3] Sixteen
   rings sent at 60 frames per second (180 messages in 3057 ms) looked smooth to the eye; the tool
   measures only its own sending.[^test-1]
 - **LED (single)** is a persistent override: an LED set this way keeps its color through later
@@ -147,7 +148,7 @@ always sources.
   shown as cyan (0, 110, 127), the hue TotalMix FX leaves free, since a dim gray read as a dim
   white or a level; orange (127, 16, 0), red (127, 0, 0), blue (0, 0, 127), green (0, 105, 0),
   yellow (127, 72, 0), purple (70, 0, 127). Mute uses this orange, and PFL is (110, 127, 18). The
-  brightness setting (default 55%, no lower than 15%) scales all of them but keeps every nonzero
+  brightness setting (10%–80%, shown as 1–100; default 55%) scales all of them but keeps every nonzero
   color component at 4 or more, so colors keep their hue when dim. The colors and brightness are
   to be tuned by side-by-side comparison after 1.1.0 (Adam, 2026-11-04).
 - **Screen.** The host draws it (FRAMEBUFFER) with a 5×7 proportional font of the project's own,
@@ -247,7 +248,8 @@ whose two app runs were of the previous build (a `git pull` had been refused).
 - The app switched to the E16 by itself ("Choosing the OXI E16: it is plugged in and the
   Roto-Control isn't") and connected it; the menu showed "OXI E16: Connected".
 - The Brightness slider dimmed the rings at once. With the setting below about 15%, orange and
-  yellow could not be told apart, with or without the dimming floor; the slider now stops at 15%.
+  yellow were hard to tell apart, with or without the dimming floor. With a 0–100% slider, Adam set
+  the usable range at 10%–80%, shown as 1–100; a pressed Shift button stays at full.
 - Colors as finally set (section 5): TotalMix FX's green, yellow, and orange read as three colors
   and PFL as a fourth; the yellow was moved toward orange, the orange toward red, the green a
   little darker, and PFL from the first lime (too green) to a paler yellow-green.

@@ -89,9 +89,9 @@ final class BridgeEngineTests: XCTestCase {
         engine.setE16Brightness(0.2)
         XCTAssertEqual(engine.status.e16Brightness, 0.2)
         engine.setE16Brightness(1.5)
-        XCTAssertEqual(engine.status.e16Brightness, 1, "clamped")
+        XCTAssertEqual(engine.status.e16Brightness, BridgeEngine.e16MaximumBrightness, "never above 80%")
         engine.setE16Brightness(-1)
-        XCTAssertEqual(engine.status.e16Brightness, BridgeEngine.e16MinimumBrightness, "never below the minimum")
+        XCTAssertEqual(engine.status.e16Brightness, BridgeEngine.e16MinimumBrightness, "never below 10%: Adam's usable range, 2026-11-04")
         var saved = BridgeSettings()
         saved.e16Enabled = true
         saved.e16Brightness = 0.3

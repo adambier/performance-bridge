@@ -361,9 +361,23 @@ struct SettingsView: View {
 struct E16BrightnessView: View {
     @ObservedObject var model: BridgeModel
 
-    /// The slider's lowest setting: below about 15% the rings' orange and yellow can't be told
-    /// apart on the device (Adam, 2026-11-04).
-    static let minimum = BridgeEngine.e16MinimumBrightness
+    /// The slider reads 1–100 for the engine's usable range (`BridgeEngine.e16MinimumBrightness`
+    /// to `e16MaximumBrightness`, 10%–80% of the LEDs' full output; Adam, 2026-11-04).
+    static let shownRange = 1.0...100.0
+
+    /// The slider's reading for an engine brightness.
+    static func shown(_ brightness: Double) -> Double {
+        let low = BridgeEngine.e16MinimumBrightness, high = BridgeEngine.e16MaximumBrightness
+        let fraction = (brightness - low) / (high - low)
+        return min(max(shownRange.lowerBound + fraction * (shownRange.upperBound - shownRange.lowerBound), shownRange.lowerBound), shownRange.upperBound)
+    }
+
+    /// The engine brightness for a slider reading.
+    static func brightness(shown: Double) -> Double {
+        let low = BridgeEngine.e16MinimumBrightness, high = BridgeEngine.e16MaximumBrightness
+        let fraction = (shown - shownRange.lowerBound) / (shownRange.upperBound - shownRange.lowerBound)
+        return min(max(low + fraction * (high - low), low), high)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -374,10 +388,10 @@ struct E16BrightnessView: View {
                     Text("Brightness")
                         .frame(width: 110, alignment: .trailing)
                     Slider(value: Binding(
-                        get: { model.status.e16Brightness },
-                        set: { model.setE16Brightness($0) }), in: E16BrightnessView.minimum...1)
+                        get: { Self.shown(model.status.e16Brightness) },
+                        set: { model.setE16Brightness(Self.brightness(shown: $0)) }), in: Self.shownRange)
                         .frame(width: 200)
-                    Text("\(Int((model.status.e16Brightness * 100).rounded()))%")
+                    Text("\(Int(Self.shown(model.status.e16Brightness).rounded()))")
                         .monospacedDigit()
                         .frame(width: 40, alignment: .trailing)
                 }

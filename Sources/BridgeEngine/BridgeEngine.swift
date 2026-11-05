@@ -305,7 +305,7 @@ public final class BridgeEngine: @unchecked Sendable {
         }
         self.sendRows = rows
         self.levelBrightness = settings.launchControlLevelBrightness
-        self.e16Brightness = min(max(settings.e16Brightness, Self.e16MinimumBrightness), 1)
+        self.e16Brightness = min(max(settings.e16Brightness, Self.e16MinimumBrightness), Self.e16MaximumBrightness)
     }
 
     private var now: Double { Date().timeIntervalSince(startDate) }
@@ -722,15 +722,18 @@ public final class BridgeEngine: @unchecked Sendable {
         publishStatusIfChanged()
     }
 
-    /// The lowest brightness the engine accepts: below about 15% the rings' orange and yellow
-    /// can't be told apart on the device (Adam, 2026-11-04).
-    public static let e16MinimumBrightness = 0.0  // 0 for Adam's test of the usable range (2026-11-04); was 0.15
+    /// The lowest brightness the engine accepts, and the highest: the usable range on the
+    /// device, found by Adam with a 0–100% slider (2026-11-04). The app's slider shows this
+    /// range as 1–100; a pressed Shift button is always at the LEDs' full 127.
+    public static let e16MinimumBrightness = 0.10
+    /// See `e16MinimumBrightness`.
+    public static let e16MaximumBrightness = 0.80
 
     /// Sets the E16's ring brightness (`e16MinimumBrightness`…1) from the app. Takes effect at
     /// once on a connected device, and is kept for the next one otherwise.
     public func setE16Brightness(_ value: Double) {
         lock.lock()
-        e16Brightness = min(max(value, Self.e16MinimumBrightness), 1)
+        e16Brightness = min(max(value, Self.e16MinimumBrightness), Self.e16MaximumBrightness)
         if var e16 = e16Driver {
             let bytes = e16.setBrightness(e16Brightness, hub: hub)
             e16Driver = e16
