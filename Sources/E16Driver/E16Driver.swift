@@ -559,26 +559,32 @@ public struct E16Driver: Sendable {
             let name = infos[index]?.name ?? ""
             return drawsScreen ? Self.fit(name, width: Self.labelMaxWidth) : Self.fit(name, E16Outgoing.labelLength)
         }
-        let bytes = drawsScreen ? E16Outgoing.framebuffer(Self.screen(title: title(hub: hub), labels: labels))
+        let parts = titleParts(hub: hub)
+        let bytes = drawsScreen ? E16Outgoing.framebuffer(Self.screen(title: parts.0, tail: parts.1, labels: labels))
             : E16Outgoing.labels(title: title(hub: hub), labels: labels)
         guard bytes != sentLabels else { return [] }
         sentLabels = bytes
         return bytes
     }
 
-    /// The host-drawn screen: the title centered in the 7-pixel font, a rule under it, and the
-    /// sixteen labels in four rows of four, each centered in its 32-pixel cell and no wider
-    /// than `labelMaxWidth`.
-    public static func screen(title: String, labels: [String]) -> E16Screen {
+    /// The host-drawn screen: the title at the left and its tail ("PFL 2/3") at the right in
+    /// the 7-pixel font, a rule under them, and the sixteen labels in four rows of four, 14
+    /// pixels apart, each centered in its 32-pixel cell and no wider than `labelMaxWidth`.
+    public static func screen(title: String, tail: String = "", labels: [String]) -> E16Screen {
         var screen = E16Screen()
-        let titleWidth = E16Screen.width(of: title)
-        screen.draw(title, x: max((E16Screen.width - titleWidth) / 2, 0), y: 1)
+        screen.draw(title, x: 0, y: 1)
+        if !tail.isEmpty {
+            let x = E16Screen.width - E16Screen.width(of: tail)
+            // Blank the title under the tail if a long one runs into it.
+            for px in (x - 3)..<E16Screen.width { for py in 0..<9 { screen.set(px, py, false) } }
+            screen.draw(tail, x: x, y: 1)
+        }
         screen.line(y: 10, from: 0, to: E16Screen.width - 1)
         for (index, label) in labels.prefix(stripCount).enumerated() {
             let cell = E16Screen.width / 4
             let width = E16Screen.width(of: label)
             let x = (index % 4) * cell + max((cell - width) / 2, 0)
-            let y = 14 + (index / 4) * 13
+            let y = 14 + (index / 4) * 14
             screen.draw(label, x: x, y: y)
         }
         return screen
@@ -590,12 +596,21 @@ public struct E16Driver: Sendable {
     /// than one page, the page. The same with Shift held, so the choice made there shows at
     /// once and stays (Adam, 2026-11-04).
     public func title(hub: SurfaceHub) -> String {
-        if let overlay { return overlay.text }
-        var tail = pageCount > 1 ? " \(page.first / Self.stripCount + 1)/\(pageCount)" : ""
-        if pflOn.contains(true) { tail = " PFL" + tail }
-        let width = Self.titleWidth - tail.count
-        let name = Self.fit(functionName(hub: hub), width)
-        return tail.isEmpty ? name : name.padding(toLength: width, withPad: " ", startingAt: 0) + tail
+        let (name, tail) = titleParts(hub: hub)
+        guard !tail.isEmpty else { return name }
+        let width = Self.titleWidth - tail.count - 1
+        return Self.fit(name, width).padding(toLength: width, withPad: " ", startingAt: 0) + " " + tail
+    }
+
+    /// The title in two parts: the text on the left (the function or an overlay) and, on the
+    /// right, the "PFL" marker and the page ("PFL 2/3"), or nothing (an overlay has the whole
+    /// title). On the host-drawn screen they are left- and right-justified (Adam, 2026-11-04).
+    public func titleParts(hub: SurfaceHub) -> (String, String) {
+        if let overlay { return (overlay.text, "") }
+        var tail: [String] = []
+        if pflOn.contains(true) { tail.append("PFL") }
+        if pageCount > 1 { tail.append("\(page.first / Self.stripCount + 1)/\(pageCount)") }
+        return (functionName(hub: hub), tail.joined(separator: " "))
     }
 
     /// The function's name for the title: "LEVEL", "PAN", or "> " and the send's output.
