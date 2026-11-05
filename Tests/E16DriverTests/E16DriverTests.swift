@@ -273,6 +273,7 @@ final class E16DriverTests: XCTestCase {
         let turn = driver.receive([0xB0, 2, 0x02], hub: &hub, now: 1.1)
         XCTAssertEqual(turn.core.messages.map(\.address), ["/mix/in/2/0/balpan"], "pan, in LEVEL mode")
         XCTAssertEqual(turn.midi.rings[1]?.bipolar, true, "the ring shows the pan")
+        XCTAssertEqual(turn.midi.rings[1].map { [$0.r, $0.g, $0.b] }, [127, 0, 0], "red off center, however little")
         XCTAssertTrue(driver.title(hub: hub).hasPrefix("Vox "), "and the title its value")
         XCTAssertEqual(driver.tick(hub: &hub, now: 1.5).midi, [], "no countdown")
         let late = driver.tick(hub: &hub, now: 2.2)

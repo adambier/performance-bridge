@@ -774,7 +774,7 @@ public struct E16Driver: Sendable {
             // its arc from the top.
             let ring: E16Ring = isPan
                 ? E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: min(max(alt, Self.floor), Self.cap))
-                : E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: alt, bipolar: true)
+                : Self.panRing(alt, rgb)
             return RingLook(ring: ring)
         }
         if case .send(let n) = function, hub.sendTargets.indices.contains(n) {
@@ -782,7 +782,7 @@ public struct E16Driver: Sendable {
             if let color = hub.mirror.channels[output]?.color, color != 1, let sendRGB = Self.totalMixRGB[color] { rgb = sendRGB }
         }
         let level: E16Ring = isPan
-            ? E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: value, bipolar: true)
+            ? Self.panRing(value, rgb)
             : E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: min(max(value, Self.floor), Self.cap))
         if pflOn[index], heartbeatHigh {
             return RingLook(ring: E16Ring(red: Self.pflRGB.0, green: Self.pflRGB.1, blue: Self.pflRGB.2, amount: 1))
@@ -798,6 +798,18 @@ public struct E16Driver: Sendable {
         let marks = (0..<Self.markCount).map { (start + $0 * Self.stripCount / Self.markCount) % Self.stripCount }
         return RingLook(ring: .off, marks: marks, markColor: [Self.muteRGB.0, Self.muteRGB.1, Self.muteRGB.2])
     }
+
+    /// A pan's ring, from the top: in the channel's color at center, red as soon as it is off
+    /// center, since a pan of L1 or R1 draws too small an arc to tell from center (Adam,
+    /// 2026-11-05).
+    static func panRing(_ position: Double, _ rgb: (UInt8, UInt8, UInt8)) -> E16Ring {
+        let off = abs(position - 0.5) > 0.001
+        let color = off ? Self.panOffCenterRGB : rgb
+        return E16Ring(red: color.0, green: color.1, blue: color.2, amount: position, bipolar: true)
+    }
+
+    /// A pan's color off center (`panRing`).
+    public static let panOffCenterRGB: (UInt8, UInt8, UInt8) = (127, 0, 0)
 
     /// The least a strip with a channel lights, as a fraction of the ring: one LED.
     public static let floor = 1.0 / 16
