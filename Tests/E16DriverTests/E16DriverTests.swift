@@ -719,6 +719,13 @@ final class E16FourLayoutTests: XCTestCase {
 
     func testShortLevels() {
         XCTAssertEqual(E16Driver.shortLevel(0, width: nil), "-oo")
+        var drawn = E16Driver.screen(title: "", labels: ["-oo"])
+        var expected = E16Screen()
+        let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2
+        expected.line(y: 10, from: 0, to: E16Screen.width - 1)
+        expected.draw("-∞", x: margin, y: 14)
+        XCTAssertEqual(drawn, expected, "drawn with the infinity glyph")
+        XCTAssertNotEqual(E16Screen.glyph("∞"), E16Screen.glyph("\u{1F600}"), "a glyph of its own, not the box")
         XCTAssertEqual(E16Driver.shortLevel(FaderCurve.unityPosition, width: nil), "0.0")
         let low = E16Driver.shortLevel(0.3, width: nil)
         XCTAssertLessThanOrEqual(low.count, 4, "fits the firmware's four characters: \(low)")

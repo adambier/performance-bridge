@@ -863,6 +863,9 @@ public struct E16Driver: Sendable {
     /// than `labelMaxWidth`. Everything in a column starts on the same pixel, so the title
     /// lines up with the labels (Adam, 2026-11-04).
     public static func screen(title: String, tail: String = "", labels: [String]) -> E16Screen {
+        // "-oo" (off) as "-∞": the font has no lowercase (Adam, 2026-11-05).
+        let title = title.replacingOccurrences(of: "-oo", with: "-∞")
+        let labels = labels.map { $0.replacingOccurrences(of: "-oo", with: "-∞") }
         var screen = E16Screen()
         let cell = E16Screen.width / 4
         let margin = (cell - labelMaxWidth) / 2
