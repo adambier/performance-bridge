@@ -131,8 +131,14 @@ public struct E16Driver: Sendable {
     /// of TotalMix FX's peaks in power. TotalMix FX draws its bar as RMS under a peak line, but
     /// OSC carries only the peaks (OXI-E16 doc; Adam, 2026-11-06: −1.7 dB sent against a −2.9 dB
     /// peak readout), so the bar is an RMS-like average of them, not true RMS; the held pixel is
-    /// the true peak. 0.3 s is a starting value (`sbdev e16bridge --meter-average`).
-    public var meterAverage = 0.3
+    /// the true peak. 0.1 s: 0.3 s moved slower than TotalMix FX's bar (Adam, 2026-11-06); a
+    /// starting value (`sbdev e16bridge --meter-average`).
+    public var meterAverage = 0.1
+    /// How far below the averaged peaks the bar sits, in dB: 3 dB makes a steady sine read its
+    /// true RMS, as TotalMix FX shows it with "RMS +3 dB" off. Music has more crest than a sine,
+    /// so its bar still sits nearer the peak than TotalMix FX's (Adam, 2026-11-06); a starting
+    /// value (`sbdev e16bridge --meter-offset`).
+    public var meterOffset = 3.0
     /// Each channel's averaged level, in power, and when it was last updated.
     private var averages: [ChannelRef: (power: Double, at: Double)] = [:]
     /// When the screen was last sent, by the driver's clock (`tick`'s `now`).
@@ -926,7 +932,7 @@ public struct E16Driver: Sendable {
                     average.power += (power - average.power) * (meterAverage > 0 ? 1 - exp(-dt / meterAverage) : 1)
                     average.at = clock
                     averages[ref] = average
-                    return average.power > 0 ? width(10 * log10(average.power)) : 0
+                    return average.power > 0 ? width(10 * log10(average.power) - meterOffset) : 0
                 }
                 peakWidths[index] = refs.map { ref in
                     let now = width(hub.mirror.meters[ref] ?? -.infinity)
