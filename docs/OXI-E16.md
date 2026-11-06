@@ -30,8 +30,9 @@ reasoning that has not been checked, the text says so in words ("inference", "un
 [^test-5]: [Test 5](#test-5-2026-11-05-the-per-led-message) (2026-11-05), section 7; firmware 1.3.0.
 [^test-6]: [Test 6](#test-6-2026-11-05-push-and-turn) (2026-11-05), section 7; firmware 1.3.0.
 [^test-7]: [Test 7](#test-7-2026-11-05-111-on-the-device) (2026-11-05), section 7; firmware 1.3.0.
+[^test-8]: [Test 8](#test-8-2026-11-06-the-screens-rate) (2026-11-06), section 7; firmware 1.3.0.
 
-**Status (2026-11-05).** Seven tests have been run, all on Adam's E16 with firmware 1.3.0 (section
+**Status (2026-11-06).** Eight tests have been run, all on Adam's E16 with firmware 1.3.0 (section
 7). Section 6 lists what is still open.
 
 ## 1. Sources
@@ -117,7 +118,9 @@ What the device sends, all on MIDI channel 1:[^sheet] [^test-1]
   title with spaces moves it off center, padding with nulls doesn't.[^test-2]
 - **OLED FRAMEBUFFER** replaces the whole screen; the page layout above (bit 0 at the top) was
   confirmed by readable text.[^test-2] A screen drawn this way and one drawn with LABELS
-  replace each other.
+  replace each other. Whole framebuffers (1180 bytes as sent) at up to 60 a second, with sixteen
+  rings at 60 a second beside them, drew smoothly, and turns still moved their rings at once:
+  the rate is no obstacle to meters on the screen.[^test-8]
 
 ## 5. The layout Performance Bridge uses
 
@@ -364,3 +367,27 @@ Mode, showed only the device's own scene: CC 1–16 on several channels, no push
   level), turning PFL on made the orange lights turn with the pink ones, blinking.
 - Orange and pink were clearly told apart (Adam). Both turn the same way: opposite directions were
   considered and not taken, since the marks would collide every 0.3 s when both are on.
+
+### Test 8 (2026-11-06): the screen's rate
+
+**Setup.** `sbdev e16 screenrate` on branch `e16-four` (a probe for meters on the screen): the
+whole screen redrawn (four meter bars two pixels wide and up to 48 tall, a frame counter, four
+names) at 0, 5, 10, 20, 30, 45, and 60 frames per second, one rate per Return, while the top row
+of rings swept at 60 frames per second and a turn in rows 2–4 moved its ring. Two runs.
+
+**What the tool sent** (its own sending only; what the device drew is for the eye):
+
+| Rate asked | Run 1 | Run 2 |
+|---|---|---|
+| 5 | 51 in 10.0 s (5.1/s); 0.76 ms average, 1.31 ms most | 18 in 3.2 s (5.6/s); 0.74, 1.64 |
+| 10 | 86 in 8.6 s (10.0/s); 0.68, 1.88 | 29 in 3.0 s (9.6/s); 0.73, 1.20 |
+| 20 | 186 in 9.3 s (19.9/s); 0.68, 1.69 | 91 in 4.6 s (20.0/s); 0.69, 1.21 |
+| 30 | 235 in 7.8 s (30.0/s); 0.70, 10.04 | 127 in 4.3 s (29.9/s); 0.66, 1.74 |
+| 45 | 264 in 5.9 s (45.0/s); 0.60, 4.19 | 130 in 2.9 s (44.9/s); 0.71, 2.45 |
+| 60 | 326 in 5.4 s (60.0/s); 0.67, 9.85 | 333 in 5.5 s (60.1/s); 0.61, 1.66 |
+
+Each screen was 1180 bytes as sent. The time is how long the send call took on the Mac; the
+occasional maximum near 10 ms in run 1 didn't recur in run 2.
+
+**Findings (Adam):** at every rate, the bars and the counter moved smoothly, the top row of rings
+stayed smooth, and turns moved their rings at once.
