@@ -707,6 +707,18 @@ final class E16FourLayoutTests: XCTestCase {
         _ = hub
     }
 
+    func testASendTurnNamesItsOutput() {
+        var (driver, hub, _) = connectedFour()
+        driver.drawsScreen = true
+        _ = driver.receive([0xB0, 1, 0x04], hub: &hub, now: 1)  // Keys's send A
+        let title = driver.title(hub: hub)
+        XCTAssertTrue(title.hasPrefix("KEYS>") || title.hasPrefix("Keys>"), title)
+        let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2
+        XCTAssertLessThanOrEqual(E16Screen.width(of: title.replacingOccurrences(of: "-oo", with: "-∞")), E16Screen.width - 2 * margin, title)
+        _ = driver.receive([0xB0, 13, 0x04], hub: &hub, now: 2)  // Keys's level
+        XCTAssertFalse(driver.title(hub: hub).contains(">"), "a level turn names only the channel")
+    }
+
     func testEachRowTurnsItsOwnControl() {
         var (driver, hub, _) = connectedFour()
         XCTAssertEqual(driver.receive([0xB0, 1, 0x04], hub: &hub, now: 1).core.messages.map(\.address), ["/mix/in/0/2/faderlin"], "row 1: send A")

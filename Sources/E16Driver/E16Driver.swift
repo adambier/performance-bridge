@@ -592,7 +592,13 @@ public struct E16Driver: Sendable {
         step.midi += drawRing(encoder, hub: hub)
         if let info = infos[strip], let moved {
             let text = panning ? ValueText.pan(moved) : ValueText.level(position: moved)
-            show(Self.fit(info.name, 8) + " " + text, now: now, into: &step, hub: hub)
+            var who = Self.fit(info.name, 8)
+            // A send names its output too, "KEYS>ADI2 -6.0 dB", on the host-drawn screen, where
+            // it fits (Adam, 2026-11-06: the title showed only the channel and the level).
+            if drawsScreen, case .strips(_, _, .send(let n), _)? = hub.mode(of: id(layer)), hub.sendTargets.indices.contains(n) {
+                who = Self.fit(info.name, width: 34) + ">" + Self.fit(outputName(n, hub: hub).uppercased(), width: 34)
+            }
+            show(who + " " + text, now: now, into: &step, hub: hub)
         }
     }
 
