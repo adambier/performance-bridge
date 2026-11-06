@@ -1109,14 +1109,14 @@ public struct E16Driver: Sendable {
             let indices = sendIndices(hub: hub)
             let margin = (E16Screen.width / 4 - Self.labelMaxWidth) / 2
             let room = E16Screen.width - 2 * margin - E16Screen.width(of: "PFL 9/9") - 4
-                - E16Screen.width(of: "A> B>")
+                - E16Screen.width(of: "A>" + Self.sendNameGap + "B>")
             func part(_ row: Int) -> String {
                 let index = indices.indices.contains(row) ? indices[row] : nil
                 let name = index.map { outputName($0, hub: hub) }
                 let short = name.map { drawsScreen ? Self.fit($0.uppercased(), width: room / 2) : Self.fit($0, 3).uppercased() }
                 return (row == 0 ? "A>" : "B>") + (short ?? "-")
             }
-            return part(0) + " " + part(1)
+            return part(0) + (drawsScreen ? Self.sendNameGap : " ") + part(1)
         }
         switch function {
         case .level: return "LEVEL"
@@ -1144,6 +1144,10 @@ public struct E16Driver: Sendable {
         let all = forms + forms.map { $0.hasPrefix("+") ? String($0.dropFirst()) : $0 }
         return all.first(where: fits) ?? all.last!
     }
+
+    /// The space between the 4-channel title's two send names on the host-drawn screen: two of
+    /// the font's spaces, since one was crowded (Adam, 2026-11-06).
+    static let sendNameGap = "  "
 
     /// A send target's name (an index into `SurfaceHub.sendTargets`): the app's label for it, or
     /// TotalMix FX's name.

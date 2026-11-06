@@ -700,7 +700,7 @@ final class E16FourLayoutTests: XCTestCase {
         var (driver, hub, _) = connectedFour()
         driver.drawsScreen = true
         let name = driver.functionName(hub: hub)
-        XCTAssertTrue(name.hasPrefix("A>") && name.contains(" B>MON"), name)
+        XCTAssertTrue(name.hasPrefix("A>") && name.contains("  B>MON"), "two spaces between the names: \(name)")
         XCTAssertGreaterThan(name.count, "A>PHO B>MON".count, "more than three characters each where they fit: \(name)")
         let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2
         XCTAssertLessThanOrEqual(E16Screen.width(of: name) + 4 + E16Screen.width(of: "PFL 9/9"), E16Screen.width - 2 * margin, "room for the tail")
