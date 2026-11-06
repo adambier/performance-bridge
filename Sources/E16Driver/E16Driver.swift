@@ -1048,10 +1048,13 @@ public struct E16Driver: Sendable {
                 screen.set(cellX + margin + min(peak, labelMaxWidth) - 1, y + E16Font.glyphHeight + 2 + line)
             }
             if values.contains(index), drawValue(label, cellX: cellX, y: y, on: &screen) { continue }
-            if pairWords[index] != nil || pairWords[index - 1] != nil {
-                // An arrow of a pair: "<" at the left cell's margin, ">" ending at the right's.
-                let isLeft = pairWords[index] != nil
-                let x = isLeft ? cellX + margin : cellX + cell - margin - E16Screen.width(of: label)
+            if let word = pairWords[index] ?? pairWords[index - 1] {
+                // An arrow of a pair, close beside its word: "< SEND >" (Adam, 2026-11-06: the
+                // arrows at the cells' margins left too much space).
+                let left = pairWords[index] != nil ? index : index - 1
+                let wordX = (left % 4 + 1) * cell - E16Screen.width(of: word) / 2
+                let x = left == index ? wordX - Self.pairGap - E16Screen.width(of: label)
+                    : wordX + E16Screen.width(of: word) + Self.pairGap
                 screen.draw(label, x: x, y: y)
                 continue
             }
@@ -1086,6 +1089,9 @@ public struct E16Driver: Sendable {
         }
         return screen
     }
+
+    /// The space between a Shift-page pair's word and its arrows, in pixels.
+    static let pairGap = 3
 
     /// The width of a label across two cells (`spans`): from the first cell's margin to the
     /// second's.
