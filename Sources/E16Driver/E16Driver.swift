@@ -1119,10 +1119,10 @@ public struct E16Driver: Sendable {
     /// 2026-11-06: 3 px was tight).
     static let pairGap = E16Font.gap + E16Screen.width(of: " ") + E16Font.gap
 
-    /// How far below a label's top its meter's first line is: one blank line under the letters
-    /// (Adam, 2026-11-06: two left it nearly as close to the next row's name as to its own; the
-    /// rows can't move further apart on the 64-line screen).
-    public static let meterTop = E16Font.glyphHeight + 1
+    /// How far below a label's top its meter's first line is: two blank lines under the letters.
+    /// One blank line was tried for a clearer tie to its own name and felt crowded (Adam,
+    /// 2026-11-06); the rows can't move further apart on the 64-line screen.
+    public static let meterTop = E16Font.glyphHeight + 2
 
         /// The width of a label across two cells (`spans`): from the first cell's margin to the
     /// second's.
