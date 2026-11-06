@@ -712,6 +712,21 @@ final class E16FourLayoutTests: XCTestCase {
         _ = hub
     }
 
+    func testTitleShowsPFLOnlyWhenItIsOffThePage() {
+        var (driver, hub, _) = connectedFour()
+        driver.drawsScreen = true
+        _ = hub.handle(.channel(bus: .input, channel: 2, parameter: "pfl", value: .number(1)), now: 1)
+        XCTAssertFalse(driver.titleParts(hub: hub).1.contains("■"), "Vox is on this page: its name shows the square")
+        driver.marksNames = false
+        XCTAssertTrue(driver.titleParts(hub: hub).1.contains("■"), "without name marks, the title shows it")
+        driver.marksNames = true
+        _ = hub.handle(.channel(bus: .input, channel: 2, parameter: "pfl", value: .number(0)), now: 2)
+        _ = hub.handle(.channel(bus: .input, channel: 30, parameter: "pfl", value: .number(1)), now: 2)
+        XCTAssertTrue(driver.titleParts(hub: hub).1.contains("■"), "a PFL off the page shows in the title")
+        driver.drawsScreen = false
+        XCTAssertTrue(driver.titleParts(hub: hub).1.contains("PFL"), "the firmware's labels say PFL")
+    }
+
     func testASendTurnNamesItsOutput() {
         var (driver, hub, _) = connectedFour()
         driver.drawsScreen = true

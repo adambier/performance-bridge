@@ -1101,9 +1101,17 @@ public struct E16Driver: Sendable {
     public func titleParts(hub: SurfaceHub) -> (String, String) {
         if let overlay { return (overlay.text, "") }
         var tail: [String] = []
-        // PFL as the name marks' square on the host-drawn screen, narrow enough that the
-        // 4-channel title's send B can end at the third column (Adam, 2026-11-06).
-        if pflOn.contains(true) { tail.append(drawsScreen ? "■" : "PFL") }
+        // PFL anywhere in the mixer, not only on this page (it read only this page's strips
+        // before, so a PFL left on another page didn't show; found 2026-11-06). On the host-drawn
+        // screen with name marks on, a PFL'd channel on this page already shows its square, so
+        // the title shows the square only for one that isn't on the page (Adam, 2026-11-06); it
+        // is the name marks' square, narrow enough for the 4-channel title's send B.
+        let pflRefs = Set(hub.mirror.channels.filter { $0.value.pfl }.map(\.key))
+        if !pflRefs.isEmpty {
+            let shown = Set(infos.compactMap { $0?.channel })
+            if !drawsScreen || !marksNames { tail.append(drawsScreen ? "■" : "PFL") }
+            else if !pflRefs.isSubset(of: shown) { tail.append("■") }
+        }
         if pageCount > 1 { tail.append("\(page.first / columns + 1)/\(pageCount)") }
         return (functionName(hub: hub), tail.joined(separator: " "))
     }
