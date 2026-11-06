@@ -234,6 +234,14 @@ public struct E16Driver: Sendable {
             case .output, .page, .rowOutput: return false
             }
         }
+
+        /// An arrow's direction (−1 back, +1 forward); 0 for a mode.
+        public var direction: Int {
+            switch self {
+            case .output(let d), .page(let d), .rowOutput(_, let d): return d
+            default: return 0
+            }
+        }
     }
     /// How far one unit of a turn moves a level or send, as a fraction of the fader's travel. The
     /// device sends 1–8 units a message with its own acceleration.
@@ -887,6 +895,12 @@ public struct E16Driver: Sendable {
             if shiftHeld {
                 // An arrow that goes nowhere shows no label either (Adam, 2026-11-04).
                 guard let button = shiftButton(at: index), button.isMode || isAvailable(button, hub: hub) else { return "" }
+                if drawsScreen, !button.isMode, case let direction = button.direction {
+                    // On the host-drawn screen every arrow pair is "<  WORD  >": the arrows at
+                    // the pair's outer margins and one word ("SEND", "PAGE") centered between
+                    // them (`pairWords`; Adam, 2026-11-06).
+                    return direction < 0 ? "<" : ">"
+                }
                 if case .rowOutput(_, let direction) = button {
                     // Plain arrows: the row's own label names the send's current output, and a
                     // press shows the new one at once; naming the destination here was read as
@@ -966,8 +980,14 @@ public struct E16Driver: Sendable {
         shownScreen = (parts.0, parts.1, labels, drawsScreen, key, meters, peakWidths)
         screenSentAt = clock
         let spans: Set<Int> = shiftHeld && layout == .four ? [0, 4] : []
+        // The word between each pair of arrows on the Shift page, keyed by the pair's left cell.
+        var pairWords: [Int: String] = [:]
+        if shiftHeld, drawsScreen {
+            let pairs: [(Int, String)] = layout == .four ? [(2, "SEND"), (6, "SEND"), (14, "PAGE")] : [(10, "SEND"), (14, "PAGE")]
+            for (left, word) in pairs where !labels[left].isEmpty || !labels[left + 1].isEmpty { pairWords[left] = word }
+        }
         let bytes = drawsScreen ? E16Outgoing.framebuffer(Self.screen(title: parts.0, tail: parts.1, labels: labels, inverted: inverted, pflMarked: pflMarked,
-                                                                      centered: centersLabels, values: values, meters: meters, peaks: peakWidths, spans: spans))
+                                                                      centered: centersLabels, values: values, meters: meters, peaks: peakWidths, spans: spans, pairWords: pairWords))
             : E16Outgoing.labels(title: title(hub: hub), labels: labels)
         guard bytes != sentLabels else { return [] }
         sentLabels = bytes
@@ -991,7 +1011,8 @@ public struct E16Driver: Sendable {
     /// mute) and `pflMarked` ones followed by a small square (a PFL); `meters` draws a bar of the
     /// given width under a name, a second one under it for a stereo channel's right side.
     public static func screen(title: String, tail: String = "", labels: [String], inverted: Set<Int> = [], pflMarked: Set<Int> = [],
-                              centered: Bool = false, values: Set<Int> = [], meters: [Int: [Int]] = [:], peaks: [Int: [Int]] = [:], spans: Set<Int> = []) -> E16Screen {
+                              centered: Bool = false, values: Set<Int> = [], meters: [Int: [Int]] = [:], peaks: [Int: [Int]] = [:], spans: Set<Int> = [],
+                              pairWords: [Int: String] = [:]) -> E16Screen {
         // "-oo" (off) as "-∞": the font has no lowercase (Adam, 2026-11-05).
         let title = title.replacingOccurrences(of: "-oo", with: "-∞")
         let labels = labels.map { $0.replacingOccurrences(of: "-oo", with: "-∞") }
@@ -1027,6 +1048,13 @@ public struct E16Driver: Sendable {
                 screen.set(cellX + margin + min(peak, labelMaxWidth) - 1, y + E16Font.glyphHeight + 2 + line)
             }
             if values.contains(index), drawValue(label, cellX: cellX, y: y, on: &screen) { continue }
+            if pairWords[index] != nil || pairWords[index - 1] != nil {
+                // An arrow of a pair: "<" at the left cell's margin, ">" ending at the right's.
+                let isLeft = pairWords[index] != nil
+                let x = isLeft ? cellX + margin : cellX + cell - margin - E16Screen.width(of: label)
+                screen.draw(label, x: x, y: y)
+                continue
+            }
             if spans.contains(index) {
                 // A label across this cell and the next, from this cell's margin.
                 screen.draw(label, x: cellX + margin, y: y)
@@ -1050,6 +1078,11 @@ public struct E16Driver: Sendable {
                     for py in (y - 1)...(y + E16Font.glyphHeight) { screen.set(px, py, !screen.pixel(px, py)) }
                 }
             }
+        }
+        for (left, word) in pairWords {
+            // Centered on the line between the pair's two cells.
+            let y = Self.labelTop + (left / 4) * Self.labelPitch
+            screen.draw(word, x: (left % 4 + 1) * cell - E16Screen.width(of: word) / 2, y: y)
         }
         return screen
     }
