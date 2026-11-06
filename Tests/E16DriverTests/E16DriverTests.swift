@@ -351,7 +351,7 @@ final class E16DriverTests: XCTestCase {
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(shift.midi.lastTitle, "LEVEL", "the title stays")
         XCTAssertEqual(shift.midi.lastLabels, ["LVL", "PAN", "SEND", "", "", "", "", "",
-                                               "", "", "<SND", "SND>", "", "", "", ""],
+                                               "Phon", "", "<SND", "SND>", "", "", "", ""],
                        "one page: no page arrows")
         let rings = shift.midi.rings
         XCTAssertEqual(rings[0]?.g, 127, "LEVEL, in use: white at the driver's brightness (1 in the tests)")

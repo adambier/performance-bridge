@@ -895,6 +895,15 @@ public struct E16Driver: Sendable {
                 if !drawsScreen { return Self.fit(outputName(current, hub: hub), E16Outgoing.labelLength) }
                 return prefix + shortOutputName(current, width: Self.spanWidth - E16Screen.width(of: prefix), hub: hub)
             }
+            if shiftHeld, layout == .sixteen, index == 8, !hub.sendTargets.isEmpty {
+                // The 16-channel Shift page: the send output across encoders 9–10, beside
+                // "< SEND >" (the one in use in SEND mode, else the one SEND goes back to), as
+                // the 4-channel page's rows show theirs (Adam, 2026-11-06).
+                let current: Int = { if case .send(let n) = function { return n } else { return min(lastSend, hub.sendTargets.count - 1) } }()
+                if !drawsScreen { return Self.fit(outputName(current, hub: hub), E16Outgoing.labelLength) }
+                // The plain name: a ">" in front read as one more arrow beside "< SEND >".
+                return shortOutputName(current, width: Self.spanWidth, hub: hub)
+            }
             if shiftHeld {
                 // An arrow that goes nowhere shows no label either (Adam, 2026-11-04).
                 guard let button = shiftButton(at: index), button.isMode || isAvailable(button, hub: hub) else { return "" }
@@ -982,7 +991,7 @@ public struct E16Driver: Sendable {
         }
         shownScreen = (parts.0, parts.1, labels, drawsScreen, key, meters, peakWidths)
         screenSentAt = clock
-        let spans: Set<Int> = shiftHeld && layout == .four ? [0, 4] : []
+        let spans: Set<Int> = !shiftHeld ? [] : layout == .four ? [0, 4] : [8]
         // The word between each pair of arrows on the Shift page, keyed by the pair's left cell.
         var pairWords: [Int: String] = [:]
         if shiftHeld, drawsScreen {
@@ -1216,7 +1225,12 @@ public struct E16Driver: Sendable {
         case .send(let index):
             let targets = hub.sendTargets
             guard targets.indices.contains(index) else { return "SEND" }
-            return "> " + outputName(index, hub: hub).uppercased()
+            guard drawsScreen else { return "> " + outputName(index, hub: hub).uppercased() }
+            // ">ADI 3/4", shortened with the rest of the send targets, as the 4-channel title's
+            // "A>…" is (Adam, 2026-11-06); room is left for a "■ 9/9" tail.
+            let margin = (E16Screen.width / 4 - Self.labelMaxWidth) / 2
+            let room = E16Screen.width - 2 * margin - E16Screen.width(of: "■ 9/9") - 4 - E16Screen.width(of: ">")
+            return ">" + shortOutputName(index, width: room, hub: hub).uppercased()
         }
     }
 
