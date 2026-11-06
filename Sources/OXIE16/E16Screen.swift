@@ -82,7 +82,7 @@ public struct E16Screen: Hashable, Sendable {
     }
 }
 
-/// One character of the font: five pixels wide (up to eight for a wide one, "∞"), seven tall;
+/// One character of the font: five pixels wide (up to eight for a wide one), seven tall;
 /// each row's leftmost pixel is bit 4 (bit `width - 1` for a wide glyph), and a narrow glyph
 /// ("1", "/", "I", "L") uses only its first `width` columns.
 public struct E16Glyph: Sendable {
@@ -148,10 +148,10 @@ public enum E16Font {
         "9": E16Glyph(width: 4, rows: [0b01100, 0b10010, 0b10010, 0b01110, 0b00010, 0b00010, 0b01100]),
         "/": E16Glyph(width: 2, rows: [0b01000, 0b01000, 0b01000, 0b10000, 0b10000, 0b10000, 0b00000]),
         "-": E16Glyph(width: 3, rows: [0b00000, 0b00000, 0b00000, 0b11100, 0b00000, 0b00000, 0b00000]),
-        // Infinity, for "-∞" (off): the font has no lowercase, so "-oo" drew as "-OO"; seven
-        // wide, since five was too small to read, after an empty column, since the minus
-        // crowded it (Adam, 2026-11-05).
-        "∞": E16Glyph(width: 8, rows: [0b00000000, 0b00000000, 0b00110110, 0b01001001, 0b01001001, 0b00110110, 0b00000000]),
+        // An em dash, for a level that is off: the font has no lowercase, so "-oo" drew as
+        // "-OO", and an infinity sign was too small to read (Adam, 2026-11-05). Five wide, so it
+        // is clearly longer than the minus.
+        "—": E16Glyph(width: 5, rows: [0b00000, 0b00000, 0b00000, 0b11111, 0b00000, 0b00000, 0b00000]),
         "+": E16Glyph(width: 5, rows: [0b00000, 0b00100, 0b00100, 0b11111, 0b00100, 0b00100, 0b00000]),
         ".": E16Glyph(width: 1, rows: [0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b10000]),
         ",": E16Glyph(width: 2, rows: [0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b01000, 0b10000]),

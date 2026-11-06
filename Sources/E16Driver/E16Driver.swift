@@ -109,6 +109,9 @@ public struct E16Driver: Sendable {
     /// one's underlined, on the host-drawn screen: a trial (Adam, 2026-11-05: "let's see it",
     /// with a way to turn it off; `sbdev e16bridge --no-name-marks`).
     public var marksNames = true
+    /// Whether the labels are centered in their cells rather than at the left (the title stays
+    /// at the left): a trial (Adam, 2026-11-05; `sbdev e16bridge --center`).
+    public var centersLabels = false
     /// The widest a label may be on the host-drawn screen, in pixels: a 32-pixel cell with at
     /// least 6 pixels between neighbors (Adam, 2026-11-04: 3 was too close).
     public static let labelMaxWidth = 26
@@ -866,9 +869,10 @@ public struct E16Driver: Sendable {
             }
         }
         let marks = inverted.sorted() + [-1] + underlined.sorted()
-        if let shown = shownScreen, shown.title == parts.0, shown.tail == parts.1, shown.labels == labels, shown.drawn == drawsScreen, shown.marks == marks { return [] }
-        shownScreen = (parts.0, parts.1, labels, drawsScreen, marks)
-        let bytes = drawsScreen ? E16Outgoing.framebuffer(Self.screen(title: parts.0, tail: parts.1, labels: labels, inverted: inverted, underlined: underlined))
+        let key = marks + (centersLabels ? [-2] : [])
+        if let shown = shownScreen, shown.title == parts.0, shown.tail == parts.1, shown.labels == labels, shown.drawn == drawsScreen, shown.marks == key { return [] }
+        shownScreen = (parts.0, parts.1, labels, drawsScreen, key)
+        let bytes = drawsScreen ? E16Outgoing.framebuffer(Self.screen(title: parts.0, tail: parts.1, labels: labels, inverted: inverted, underlined: underlined, centered: centersLabels))
             : E16Outgoing.labels(title: title(hub: hub), labels: labels)
         guard bytes != sentLabels else { return [] }
         sentLabels = bytes
@@ -885,10 +889,11 @@ public struct E16Driver: Sendable {
     /// labels in four rows 14 pixels apart, each at the left of its 32-pixel cell and no wider
     /// than `labelMaxWidth`. Everything in a column starts on the same pixel, so the title
     /// lines up with the labels (Adam, 2026-11-04).
-    public static func screen(title: String, tail: String = "", labels: [String], inverted: Set<Int> = [], underlined: Set<Int> = []) -> E16Screen {
-        // "-oo" (off) as "-∞": the font has no lowercase (Adam, 2026-11-05).
-        let title = title.replacingOccurrences(of: "-oo", with: "-∞")
-        let labels = labels.map { $0.replacingOccurrences(of: "-oo", with: "-∞") }
+    public static func screen(title: String, tail: String = "", labels: [String], inverted: Set<Int> = [], underlined: Set<Int> = [], centered: Bool = false) -> E16Screen {
+        // "-oo" (off) as an em dash: the font has no lowercase, and an infinity sign was too
+        // small to read (Adam, 2026-11-05).
+        let title = title.replacingOccurrences(of: "-oo", with: "—")
+        let labels = labels.map { $0.replacingOccurrences(of: "-oo", with: "—") }
         var screen = E16Screen()
         let cell = E16Screen.width / 4
         let margin = (cell - labelMaxWidth) / 2
@@ -901,10 +906,10 @@ public struct E16Driver: Sendable {
         }
         screen.line(y: 10, from: 0, to: E16Screen.width - 1)
         for (index, label) in labels.prefix(stripCount).enumerated() {
-            let x = (index % 4) * cell + margin, y = Self.labelTop + (index / 4) * 14
+            let width = E16Screen.width(of: label)
+            let x = (index % 4) * cell + (centered ? (cell - width) / 2 : margin), y = Self.labelTop + (index / 4) * 14
             screen.draw(label, x: x, y: y)
             guard !label.isEmpty else { continue }
-            let width = E16Screen.width(of: label)
             if underlined.contains(index) { screen.line(y: y + E16Font.glyphHeight + 1, from: x, to: x + width - 1) }
             if inverted.contains(index) {
                 // A box one pixel larger than the letters all round, its pixels flipped.
