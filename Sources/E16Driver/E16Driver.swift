@@ -888,9 +888,9 @@ public struct E16Driver: Sendable {
                 // 2026-11-06).
                 let row = index / 4
                 guard sendIndexNow.indices.contains(row), let current = sendIndexNow[row] else { return "" }
-                let prefix = row == 0 ? "A: " : "B: "
+                // No "A:"/"B:": the row's arrows say "SEND A" / "SEND B" (Adam, 2026-11-06).
                 if !drawsScreen { return Self.fit(outputName(current, hub: hub), E16Outgoing.labelLength) }
-                return prefix + shortOutputName(current, width: Self.spanWidth - E16Screen.width(of: prefix), hub: hub)
+                return shortOutputName(current, width: Self.spanWidth, hub: hub)
             }
             if shiftHeld {
                 // An arrow that goes nowhere shows no label either (Adam, 2026-11-04).
@@ -983,7 +983,7 @@ public struct E16Driver: Sendable {
         // The word between each pair of arrows on the Shift page, keyed by the pair's left cell.
         var pairWords: [Int: String] = [:]
         if shiftHeld, drawsScreen {
-            let pairs: [(Int, String)] = layout == .four ? [(2, "SEND"), (6, "SEND"), (14, "PAGE")] : [(10, "SEND"), (14, "PAGE")]
+            let pairs: [(Int, String)] = layout == .four ? [(2, "SEND A"), (6, "SEND B"), (14, "PAGE")] : [(10, "SEND"), (14, "PAGE")]
             for (left, word) in pairs where !labels[left].isEmpty || !labels[left + 1].isEmpty { pairWords[left] = word }
         }
         let bytes = drawsScreen ? E16Outgoing.framebuffer(Self.screen(title: parts.0, tail: parts.1, labels: labels, inverted: inverted, pflMarked: pflMarked,
