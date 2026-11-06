@@ -596,7 +596,7 @@ public struct E16Driver: Sendable {
             // A send names its output too, "KEYS>ADI2 -6.0 dB", on the host-drawn screen, where
             // it fits (Adam, 2026-11-06: the title showed only the channel and the level).
             if drawsScreen, case .strips(_, _, .send(let n), _)? = hub.mode(of: id(layer)), hub.sendTargets.indices.contains(n) {
-                who = Self.fit(info.name, width: 34) + ">" + Self.fit(outputName(n, hub: hub).uppercased(), width: 34)
+                who = Self.fit(info.name, width: 34) + ">" + shortOutputName(n, width: 34, hub: hub).uppercased()
             }
             show(who + " " + text, now: now, into: &step, hub: hub)
         }
@@ -870,7 +870,20 @@ public struct E16Driver: Sendable {
     /// driver (`drawsScreen`) or by the firmware's label layout.
     private mutating func drawLabels(hub: SurfaceHub) -> [UInt8] {
         guard connected else { return [] }
+        // Channel names fitted as a set, so no two strips show the same short name.
+        let fittedNames = Self.fitSet((0..<columns).map { infos[$0]?.name ?? "" }, width: Self.labelMaxWidth)
+        let sendIndexNow = sendIndices(hub: hub)
         let labels: [String] = (0..<Self.stripCount).map { index in
+            if shiftHeld, layout == .four, index == 0 || index == 4 {
+                // The 4-channel Shift page: each send's current output, across the row's two free
+                // cells, so the arrows' labels (where they lead) aren't read as it (Adam,
+                // 2026-11-06).
+                let row = index / 4
+                guard sendIndexNow.indices.contains(row), let current = sendIndexNow[row] else { return "" }
+                let prefix = row == 0 ? "A: " : "B: "
+                if !drawsScreen { return Self.fit(outputName(current, hub: hub), E16Outgoing.labelLength) }
+                return prefix + shortOutputName(current, width: Self.spanWidth - E16Screen.width(of: prefix), hub: hub)
+            }
             if shiftHeld {
                 // An arrow that goes nowhere shows no label either (Adam, 2026-11-04).
                 guard let button = shiftButton(at: index), button.isMode || isAvailable(button, hub: hub) else { return "" }
@@ -880,7 +893,7 @@ public struct E16Driver: Sendable {
                     let name = outputName(next, hub: hub)
                     if drawsScreen {
                         let room = 28 - E16Screen.width(of: "<")
-                        let short = Self.fit(name, width: room)
+                        let short = shortOutputName(next, width: room, hub: hub)
                         return direction < 0 ? "<" + short : short + ">"
                     }
                     let short = Self.fit(name, E16Outgoing.labelLength - 1)
@@ -905,7 +918,7 @@ public struct E16Driver: Sendable {
                 return level == "-oo" ? "" : level
             }
             let name = infos[column(index)]?.name ?? ""
-            return drawsScreen ? Self.fit(name, width: Self.labelMaxWidth) : Self.fit(name, E16Outgoing.labelLength)
+            return drawsScreen ? fittedNames[column(index)] : Self.fit(name, E16Outgoing.labelLength)
         }
         let parts = titleParts(hub: hub)
         // The names that show a switch (`marksNames`): the 16-channel layout's every label, the
@@ -958,8 +971,9 @@ public struct E16Driver: Sendable {
         }
         shownScreen = (parts.0, parts.1, labels, drawsScreen, key, meters, peakWidths)
         screenSentAt = clock
+        let spans: Set<Int> = shiftHeld && layout == .four ? [0, 4] : []
         let bytes = drawsScreen ? E16Outgoing.framebuffer(Self.screen(title: parts.0, tail: parts.1, labels: labels, inverted: inverted, pflMarked: pflMarked,
-                                                                      centered: centersLabels, values: values, meters: meters, peaks: peakWidths))
+                                                                      centered: centersLabels, values: values, meters: meters, peaks: peakWidths, spans: spans))
             : E16Outgoing.labels(title: title(hub: hub), labels: labels)
         guard bytes != sentLabels else { return [] }
         sentLabels = bytes
@@ -983,7 +997,7 @@ public struct E16Driver: Sendable {
     /// mute) and `pflMarked` ones followed by a small square (a PFL); `meters` draws a bar of the
     /// given width under a name, a second one under it for a stereo channel's right side.
     public static func screen(title: String, tail: String = "", labels: [String], inverted: Set<Int> = [], pflMarked: Set<Int> = [],
-                              centered: Bool = false, values: Set<Int> = [], meters: [Int: [Int]] = [:], peaks: [Int: [Int]] = [:]) -> E16Screen {
+                              centered: Bool = false, values: Set<Int> = [], meters: [Int: [Int]] = [:], peaks: [Int: [Int]] = [:], spans: Set<Int> = []) -> E16Screen {
         // "-oo" (off) as "-∞": the font has no lowercase (Adam, 2026-11-05).
         let title = title.replacingOccurrences(of: "-oo", with: "-∞")
         let labels = labels.map { $0.replacingOccurrences(of: "-oo", with: "-∞") }
@@ -1019,6 +1033,11 @@ public struct E16Driver: Sendable {
                 screen.set(cellX + margin + min(peak, labelMaxWidth) - 1, y + E16Font.glyphHeight + 2 + line)
             }
             if values.contains(index), drawValue(label, cellX: cellX, y: y, on: &screen) { continue }
+            if spans.contains(index) {
+                // A label across this cell and the next, from this cell's margin.
+                screen.draw(label, x: cellX + margin, y: y)
+                continue
+            }
             let width = E16Screen.width(of: label)
             let x = cellX + (centered ? (cell - width) / 2 : margin)
             screen.draw(label, x: x, y: y)
@@ -1040,6 +1059,10 @@ public struct E16Driver: Sendable {
         }
         return screen
     }
+
+    /// The width of a label across two cells (`spans`): from the first cell's margin to the
+    /// second's.
+    static let spanWidth = E16Screen.width / 2 - 2 * ((E16Screen.width / 4 - labelMaxWidth) / 2)
 
     /// The width of a digit's place in `drawValue`: the widest digit.
     static let digitSlot = 4
@@ -1132,7 +1155,7 @@ public struct E16Driver: Sendable {
             func part(_ row: Int) -> String {
                 let index = indices.indices.contains(row) ? indices[row] : nil
                 let name = index.map { outputName($0, hub: hub) }
-                let short = name.map { drawsScreen ? Self.fit($0.uppercased(), width: room / 2) : Self.fit($0, 3).uppercased() }
+                let short = index.flatMap { i in name.map { drawsScreen ? shortOutputName(i, width: room / 2, hub: hub).uppercased() : Self.fit($0, 3).uppercased() } }
                 return (row == 0 ? "A>" : "B>") + (short ?? "-")
             }
             return part(0) + (drawsScreen ? Self.sendNameBreak : " ") + part(1)
@@ -1170,6 +1193,14 @@ public struct E16Driver: Sendable {
 
     /// A send target's name (an index into `SurfaceHub.sendTargets`): the app's label for it, or
     /// TotalMix FX's name.
+    /// A send target's name fitted to `width` pixels as one of the set of send targets
+    /// (`fitSet`), so no two outputs show the same short name.
+    func shortOutputName(_ index: Int, width: Int, hub: SurfaceHub) -> String {
+        let names = hub.sendTargets.indices.map { outputName($0, hub: hub) }
+        guard names.indices.contains(index) else { return "" }
+        return Self.fitSet(names, width: width)[index]
+    }
+
     func outputName(_ index: Int, hub: SurfaceHub) -> String {
         let targets = hub.sendTargets
         guard targets.indices.contains(index) else { return "" }
@@ -1440,7 +1471,55 @@ public struct E16Driver: Sendable {
     /// "ADT3/4", "AD3/4", "A3/4", "3/4"; "P11/12", "11/12") and never less than the pair; for a
     /// single numbered name, the number after less and less of the word ("ADAT 3", "ADAT3",
     /// "ADT 3", "ADT3", "AD3", "A3", "3"); for anything else, the name cut from the end.
+    /// Fits a set of names to `width` pixels together (Adam, 2026-11-06): each takes the
+    /// longest of its `candidates` that fits, and where two different names would come out the
+    /// same ("ADI-2 3/4" and "ADAT 3/4" both "AD3/4"), each of them takes instead the first of its
+    /// `distinctForms` that fits and no other name in the set uses ("AI3/4", "AT3/4").
+    static func fitSet(_ names: [String], width: Int) -> [String] {
+        var chosen = names.map { fit($0, width: width) }
+        for _ in 0..<3 {
+            var changed = false
+            let groups = Dictionary(grouping: chosen.indices, by: { chosen[$0].uppercased() })
+            for (_, members) in groups where members.count > 1 && Set(members.map { names[$0].uppercased() }).count > 1 {
+                let others = Set(chosen.indices.filter { !members.contains($0) }.map { chosen[$0].uppercased() })
+                var taken = others
+                for i in members {
+                    if let form = distinctForms(names[i]).first(where: { E16Screen.width(of: $0) <= width && !taken.contains($0.uppercased()) }) {
+                        chosen[i] = form
+                        taken.insert(form.uppercased())
+                        changed = true
+                    }
+                }
+            }
+            if !changed { break }
+        }
+        return chosen
+    }
+
+    /// Short forms of a "word number" name that keep more of what tells it apart: the word's
+    /// first three letters, then its first letter with each later letter (the last first), each
+    /// with the number or pair ("ADAT 3/4": "ADA3/4", "AT3/4", "AA3/4", "AD3/4").
+    static func distinctForms(_ text: String) -> [String] {
+        let plain = text.replacingOccurrences(of: #"-[0-9]+(?= )"#, with: "", options: .regularExpression)
+        let parts = plain.split(separator: " ").map(String.init)
+        guard parts.count >= 2, let rest = parts.last, rest.first?.isNumber == true else { return [] }
+        let word = Array(parts.dropLast().joined())
+        guard word.count >= 2 else { return [] }
+        var forms = [String(word.prefix(3)) + rest]
+        for j in stride(from: word.count - 1, through: 1, by: -1) { forms.append(String(word[0]) + String(word[j]) + rest) }
+        return forms
+    }
+
     static func candidates(_ text: String) -> [String] {
+        // A hyphenated model number before a pair or number ("ADI-2 3/4") goes before any of
+        // the word's letters: "ADI 3/4", "ADI3/4", then the word's ladder (Adam, 2026-11-06).
+        if let range = text.range(of: #"^[A-Za-z]+-[0-9]+(?= [0-9])"#, options: .regularExpression),
+           let hyphen = text[range].firstIndex(of: "-") {
+            let shorter = String(text[..<hyphen]) + String(text[range.upperBound...])
+            var out = [text]
+            for form in candidates(shorter) where !out.contains(form) { out.append(form) }
+            return out
+        }
         var out = [text]
         let text = text.replacingOccurrences(of: "-", with: "")
         out.append(text)

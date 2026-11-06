@@ -929,10 +929,31 @@ final class E16FourLayoutTests: XCTestCase {
         XCTAssertNil(release.leds[2], "the send ring keeps its value")
     }
 
+    func testNamesFitAsASet() {
+        let names = ["ADI-2 3/4", "ADAT 1/2", "ADAT 3/4"]
+        let arrows = E16Driver.fitSet(names, width: 28 - E16Screen.width(of: "<"))
+        XCTAssertEqual(Set(arrows.map { $0.uppercased() }).count, 3, "no two alike: \(arrows)")
+        let title = E16Driver.fitSet(names, width: 31)
+        XCTAssertEqual(title.map { $0.uppercased() }, ["ADI3/4", "ADT1/2", "ADT3/4"], "the model number goes first: \(title)")
+        XCTAssertEqual(E16Driver.fitSet(["Keys", "Keys"], width: 26), ["Keys", "Keys"], "the same name stays the same")
+    }
+
+    func testShiftRowsShowTheCurrentOutputs() {
+        var (driver, hub, _) = connectedFour()
+        let labels = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1).midi.lastLabels ?? []
+        XCTAssertEqual(labels[0], "Phon", "send A's output, in the firmware's four characters: \(labels)")
+        XCTAssertEqual(labels[4], "Mon", "send B's")
+        XCTAssertEqual(labels[1], "")
+        var screen = E16Screen()
+        screen = E16Driver.screen(title: "", labels: ["A: ADI 3/4"], centered: true, spans: [0])
+        let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2
+        XCTAssertTrue((E16Driver.labelTop..<E16Driver.labelTop + 7).contains { screen.pixel(margin, $0) }, "from the first cell's margin, not centered")
+    }
+
     func testShiftPageStepsTheSendRows() {
         var (driver, hub, _) = connectedFour()
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
-        XCTAssertEqual(shift.midi.lastLabels, ["", "", "", "Roo>", "", "", "", "Roo>",
+        XCTAssertEqual(shift.midi.lastLabels, ["Phon", "", "", "Roo>", "Mon", "", "", "Roo>",
                                                "", "", "", "", "", "", "", ""],
                        "A's back arrow and B's go nowhere (B's would be A's output); one page")
         XCTAssertEqual(shift.midi.rings[3]?.g, 2, "an available arrow, dim deep green")
