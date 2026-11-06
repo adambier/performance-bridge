@@ -784,11 +784,11 @@ final class E16FourLayoutTests: XCTestCase {
         let labels = Array(repeating: "", count: 12) + ["Vox", "P1/2", "", ""]
         let screen = E16Driver.screen(title: "", labels: labels, centered: true, meters: [12: [13], 13: [26, 5]])
         let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2, y = E16Driver.labelTop + 3 * E16Driver.labelPitch
-        let line = y + E16Font.glyphHeight + 2
-        XCTAssertEqual(line, 62)
+        let line = y + E16Driver.meterTop
+        XCTAssertEqual(line, 61, "one blank line under the name")
         XCTAssertTrue(screen.pixel(margin, line) && screen.pixel(margin + 12, line), "half a cell")
         XCTAssertFalse(screen.pixel(margin + 13, line))
-        XCTAssertFalse(screen.pixel(margin, line - 1), "two pixels under the letters")
+        XCTAssertFalse(screen.pixel(margin, line - 1), "a blank line under the letters")
         XCTAssertTrue(screen.pixel(32 + margin + 25, line), "full")
         XCTAssertFalse(screen.pixel(32 + margin + 26, line))
         XCTAssertTrue(screen.pixel(32 + margin + 4, line + 1) && !screen.pixel(32 + margin + 5, line + 1), "a stereo channel's right side under its left")

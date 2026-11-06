@@ -1052,12 +1052,12 @@ public struct E16Driver: Sendable {
             // channel's right side on the line under its left (Adam, 2026-11-06: below the name
             // in both layouts, so it is plainly that channel's).
             for (line, width) in (meters[index] ?? []).enumerated() where width > 0 {
-                screen.line(y: y + E16Font.glyphHeight + 2 + line, from: cellX + margin, to: cellX + margin + min(width, labelMaxWidth) - 1)
+                screen.line(y: y + Self.meterTop + line, from: cellX + margin, to: cellX + margin + min(width, labelMaxWidth) - 1)
             }
             // A held peak: one pixel where the bar last reached, while it's past the bar (Adam,
             // 2026-11-06: "a fast bar and just a pixel for peaks").
             for (line, peak) in (peaks[index] ?? []).enumerated() where peak > (meters[index].map { $0.indices.contains(line) ? $0[line] : 0 } ?? 0) {
-                screen.set(cellX + margin + min(peak, labelMaxWidth) - 1, y + E16Font.glyphHeight + 2 + line)
+                screen.set(cellX + margin + min(peak, labelMaxWidth) - 1, y + Self.meterTop + line)
             }
             if values.contains(index), drawValue(label, cellX: cellX, y: y, on: &screen) { continue }
             if pairWords[index] != nil || pairWords[index - 1] != nil {
@@ -1119,7 +1119,12 @@ public struct E16Driver: Sendable {
     /// 2026-11-06: 3 px was tight).
     static let pairGap = E16Font.gap + E16Screen.width(of: " ") + E16Font.gap
 
-    /// The width of a label across two cells (`spans`): from the first cell's margin to the
+    /// How far below a label's top its meter's first line is: one blank line under the letters
+    /// (Adam, 2026-11-06: two left it nearly as close to the next row's name as to its own; the
+    /// rows can't move further apart on the 64-line screen).
+    public static let meterTop = E16Font.glyphHeight + 1
+
+        /// The width of a label across two cells (`spans`): from the first cell's margin to the
     /// second's.
     static let spanWidth = E16Screen.width / 2 - 2 * ((E16Screen.width / 4 - labelMaxWidth) / 2)
 
