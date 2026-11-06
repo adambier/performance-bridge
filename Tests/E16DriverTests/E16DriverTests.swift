@@ -763,9 +763,8 @@ final class E16FourLayoutTests: XCTestCase {
             XCTAssertEqual(columns(text).last, right, "\(text): the tenths end at the right margin")
             XCTAssertTrue(columns(text).contains(right - 5) && !columns(text).contains(right - 4) && !columns(text).contains(right - 6), "\(text): the point in its place")
         }
-        XCTAssertEqual(columns("L24").last, right - 7, "a pan's last digit where a level's units end")
-        XCTAssertEqual(columns("C").last, right - 7, "C there too")
-        XCTAssertEqual(columns("R8").last, columns("-6.0").filter { $0 < right - 5 }.last, "lined up with the units digit")
+        XCTAssertEqual(columns("L24").last, right, "a pan's last digit at the right margin")
+        XCTAssertEqual(columns("C").first, (32 - E16Screen.width(of: "C")) / 2, "C centered in its cell")
         XCTAssertEqual(columns("-6.0").first, columns("-16.0").first.map { $0 + 5 }, "the sign moves a place when a digit is added")
         var screen = E16Screen()
         XCTAssertFalse(E16Driver.drawValue("Keys", cellX: 0, y: 0, on: &screen), "not a number")

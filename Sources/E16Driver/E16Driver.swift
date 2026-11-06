@@ -984,18 +984,17 @@ public struct E16Driver: Sendable {
 
     /// Draws a number in a cell with its digits in fixed places, so a value holds still while it
     /// changes (Adam, 2026-11-06): a level's tenths digit ends at the cell's right margin and its
-    /// point stays put; a pan's last digit, and "C", end where a level's units digit does, as if
-    /// a pan had a point after it; each digit sits at the right of a place `digitSlot` wide (a
-    /// "1" is narrower), and the sign ("-", "+", "L", "R") just before the first digit's place.
-    /// Returns false for text it doesn't lay out this way.
+    /// point stays put; a pan's last digit ends there too (lining it up with a level's units was
+    /// tried and dropped: pans and levels aren't compared, and the right edge is tidier); each
+    /// digit sits at the right of a place `digitSlot` wide (a "1" is narrower), and the sign
+    /// ("-", "+", "L", "R") just before the first digit's place. "C" is centered. Returns false
+    /// for text it doesn't lay out this way.
     static func drawValue(_ text: String, cellX: Int, y: Int, on screen: inout E16Screen) -> Bool {
         guard !text.isEmpty else { return true }
         let cell = E16Screen.width / 4
         let right = cellX + (cell - labelMaxWidth) / 2 + labelMaxWidth - 1
-        // Where a level's units digit ends: the tenths' place, a gap, the point, a gap.
-        let units = right - digitSlot - E16Font.gap - E16Screen.width(of: ".") - E16Font.gap
         if text == "C" {
-            screen.draw(text, x: units - E16Screen.width(of: text) + 1, y: y)
+            screen.draw(text, x: cellX + (cell - E16Screen.width(of: text)) / 2, y: y)
             return true
         }
         var body = Substring(text)
@@ -1007,7 +1006,7 @@ public struct E16Driver: Sendable {
         func place(_ digit: Character, endingAt end: Int) {
             screen.draw(String(digit), x: end - E16Screen.width(of: String(digit)) + 1, y: y)
         }
-        var end = parts.count == 2 ? right : units
+        var end = right
         if parts.count == 2 {
             for digit in parts[1].reversed() { place(digit, endingAt: end); end -= digitSlot + gap }
             // `end` is now the point's column: the tenths' place, then a gap, after it.
