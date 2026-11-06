@@ -57,7 +57,7 @@ var targets: [Target] = [
     .target(name: "RotoDriver", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "SurfaceCore"]),
     .target(name: "LaunchControlDriver", dependencies: ["OSCCodec", "TotalMixOSC", "LaunchControl", "SurfaceCore"]),
     .target(name: "OXIE16"),
-    .target(name: "E16Driver", dependencies: ["OSCCodec", "TotalMixOSC", "OXIE16", "SurfaceCore", "LaunchControl", "LaunchControlDriver"]),
+    .target(name: "E16Driver", dependencies: ["OSCCodec", "TotalMixOSC", "OXIE16", "SurfaceCore"]),
     .target(name: "BridgeEngine", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "MIDITransport", "UDPTransport",
                                                  "SurfaceCore", "RotoDriver", "LaunchControl", "LaunchControlDriver", "OXIE16", "E16Driver"]),
     .executableTarget(name: "sbdev", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "LaunchControl", "MIDITransport", "UDPTransport",

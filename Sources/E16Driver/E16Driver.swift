@@ -11,12 +11,6 @@ import OXIE16
 #if canImport(SurfaceCore)
 import SurfaceCore
 #endif
-#if canImport(LaunchControl)
-import LaunchControl
-#endif
-#if canImport(LaunchControlDriver)
-import LaunchControlDriver
-#endif
 
 /// What the E16 driver produces in answer to MIDI or a call: SysEx for the device, and the core's
 /// output for TotalMix FX and the other surfaces.
@@ -99,10 +93,10 @@ public struct E16Driver: Sendable {
     public private(set) var function = KnobFunction.level
     /// The send output (an index into `SurfaceHub.sendTargets`) SEND goes back to.
     private var lastSend = 0
-    /// The 4-channel layout's send rows, A and B (as the Launch Control XL 3's two send rows:
-    /// never the same output, and a row without a choice takes the first output the other
-    /// doesn't use).
-    public private(set) var sendRows = LaunchControlSendRows(layout: .xl3)
+    /// The 4-channel layout's send rows, A and B (`SendRows`, as the Launch Control XL 3's two
+    /// send rows: never the same output, and a row without a choice takes the first output the
+    /// other doesn't use).
+    public private(set) var sendRows = SendRows(rowCount: 2, fillsEmptyRows: true)
     /// The output each send row (A, B) was chosen to send to; the app can save these and pass
     /// them back to `init`.
     public var sendOutputs: [Int?] { sendRows.choices }
@@ -295,7 +289,7 @@ public struct E16Driver: Sendable {
     public init(name: String, layout: Layout = .sixteen, sendOutputs: [Int?] = []) {
         self.name = name
         self.layout = layout
-        self.sendRows = LaunchControlSendRows(layout: .xl3, choices: sendOutputs)
+        self.sendRows = SendRows(rowCount: 2, fillsEmptyRows: true, choices: sendOutputs)
     }
 
     /// The layers this layout adds to the hub.
