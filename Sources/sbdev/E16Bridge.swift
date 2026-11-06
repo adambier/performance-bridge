@@ -50,6 +50,8 @@ let e16BridgeCommandHelp = """
       home N | home main   the home submix: output N (from 1), or TotalMix FX's Main Out
       pbpage on | pbpage off   start the first playback on a new page, or not
       sendall              ask TotalMix FX for its state again
+      peaks                the highest level TotalMix FX sent for each channel on the page since the
+                           last `peaks`, to compare with TotalMix FX's peak readouts
       status               the function, the home submix, the send targets, and the strips
       quit                 leave Remote Mode and stop
     """
@@ -172,12 +174,19 @@ final class E16BridgeSession: @unchecked Sendable {
         ticker.start()
     }
 
+    /// The highest level TotalMix FX has sent for each channel since the last `peaks` command.
+    private var levelMaxima: [ChannelRef: Double] = [:]
+
     private func fromTotalMix(_ bytes: [UInt8]) {
         lock.lock()
         defer { lock.unlock() }
         guard let packet = try? OSCPacket(decoding: bytes) else { return }
         for message in packet.messages {
             guard let event = TotalMixEvent(message) else { continue }
+            if case .level(let bus, let channel, let peak) = event {
+                let ref = ChannelRef(bus, channel)
+                levelMaxima[ref] = max(levelMaxima[ref] ?? -.infinity, peak)
+            }
             dispatch(hub.handle(event, now: now))
         }
     }
@@ -239,6 +248,17 @@ final class E16BridgeSession: @unchecked Sendable {
             return false
         case "help":
             print(e16BridgeCommandHelp)
+        case "peaks":
+            // The highest level TotalMix FX sent for each channel on the page since the last
+            // `peaks`, to compare with TotalMix FX's own peak readouts (Adam, 2026-11-06).
+            for strip in hub.strips(of: driver.id(driver.layout == .four ? .level : .main)) ?? [] {
+                guard let info = strip.info else { continue }
+                var refs = [info.channel]
+                if info.stereo { refs.append(ChannelRef(info.channel.bus, info.channel.channel + 1)) }
+                let text = refs.map { levelMaxima[$0].map { String(format: "%.1f", $0) } ?? "none" }.joined(separator: " / ")
+                log("  \(info.name): highest sent \(text) dB")
+            }
+            levelMaxima = [:]
         case "home":
             if words.count == 2, words[1] == "main" {
                 dispatch(hub.setHomeSubmix(nil, now: now))
