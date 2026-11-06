@@ -732,6 +732,9 @@ final class E16FourLayoutTests: XCTestCase {
         XCTAssertTrue(pfl.pixel(after, y + 2) && pfl.pixel(after + 2, y + 4), "a 3 x 3 square after the name")
         XCTAssertFalse(pfl.pixel(after - 1, y + 3) || pfl.pixel(after + 3, y + 3) || pfl.pixel(after + 1, y + 1))
         XCTAssertFalse((0..<E16Screen.width).contains { pfl.pixel($0, y + E16Font.glyphHeight + 1) }, "no underline")
+        let both = E16Driver.screen(title: "", labels: labels, inverted: [12], pflMarked: [12])
+        XCTAssertTrue(both.pixel(after + 3, y - 1), "the box takes in the square")
+        XCTAssertFalse(both.pixel(after + 1, y + 3), "the square dark in the lit box")
     }
 
     func testMeters() {
@@ -760,9 +763,10 @@ final class E16FourLayoutTests: XCTestCase {
             XCTAssertEqual(columns(text).last, right, "\(text): the tenths end at the right margin")
             XCTAssertTrue(columns(text).contains(right - 5) && !columns(text).contains(right - 4) && !columns(text).contains(right - 6), "\(text): the point in its place")
         }
-        XCTAssertEqual(columns("L24").last, right, "a pan's last digit at the right margin")
+        XCTAssertEqual(columns("L24").last, right - 7, "a pan's last digit where a level's units end")
+        XCTAssertEqual(columns("C").last, right - 7, "C there too")
+        XCTAssertEqual(columns("R8").last, columns("-6.0").filter { $0 < right - 5 }.last, "lined up with the units digit")
         XCTAssertEqual(columns("-6.0").first, columns("-16.0").first.map { $0 + 5 }, "the sign moves a place when a digit is added")
-        XCTAssertEqual(columns("C"), columns("C"), "C is centered")
         var screen = E16Screen()
         XCTAssertFalse(E16Driver.drawValue("Keys", cellX: 0, y: 0, on: &screen), "not a number")
     }

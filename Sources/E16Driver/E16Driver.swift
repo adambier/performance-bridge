@@ -967,8 +967,11 @@ public struct E16Driver: Sendable {
                 for px in (x + width + 2)...(x + width + 4) { for py in (y + 2)...(y + 4) { screen.set(px, py) } }
             }
             if inverted.contains(index) {
-                // A box one pixel larger than the letters all round, its pixels flipped.
-                for px in (x - 1)...(x + width) {
+                // A box one pixel larger than the letters all round, its pixels flipped; with PFL
+                // on too, it takes in the square, so the two read as one channel's (Adam,
+                // 2026-11-06).
+                let boxEnd = pflMarked.contains(index) ? x + width + 5 : x + width
+                for px in (x - 1)...boxEnd {
                     for py in (y - 1)...(y + E16Font.glyphHeight) { screen.set(px, py, !screen.pixel(px, py)) }
                 }
             }
@@ -981,14 +984,18 @@ public struct E16Driver: Sendable {
 
     /// Draws a number in a cell with its digits in fixed places, so a value holds still while it
     /// changes (Adam, 2026-11-06): a level's tenths digit ends at the cell's right margin and its
-    /// point stays put; a pan's last digit ends there; each digit sits at the right of a place
-    /// `digitSlot` wide (a "1" is narrower), and the sign ("-", "+", "L", "R") just before the
-    /// first digit's place. "C" is centered. Returns false for text it doesn't lay out this way.
+    /// point stays put; a pan's last digit, and "C", end where a level's units digit does, as if
+    /// a pan had a point after it; each digit sits at the right of a place `digitSlot` wide (a
+    /// "1" is narrower), and the sign ("-", "+", "L", "R") just before the first digit's place.
+    /// Returns false for text it doesn't lay out this way.
     static func drawValue(_ text: String, cellX: Int, y: Int, on screen: inout E16Screen) -> Bool {
         guard !text.isEmpty else { return true }
         let cell = E16Screen.width / 4
+        let right = cellX + (cell - labelMaxWidth) / 2 + labelMaxWidth - 1
+        // Where a level's units digit ends: the tenths' place, a gap, the point, a gap.
+        let units = right - digitSlot - E16Font.gap - E16Screen.width(of: ".") - E16Font.gap
         if text == "C" {
-            screen.draw(text, x: cellX + (cell - E16Screen.width(of: text)) / 2, y: y)
+            screen.draw(text, x: units - E16Screen.width(of: text) + 1, y: y)
             return true
         }
         var body = Substring(text)
@@ -996,12 +1003,11 @@ public struct E16Driver: Sendable {
         if let first = body.first, "+-LR".contains(first) { sign = String(first); body = body.dropFirst() }
         let parts = body.split(separator: ".", omittingEmptySubsequences: false)
         guard (1...2).contains(parts.count), parts.allSatisfy({ !$0.isEmpty && $0.allSatisfy(\.isNumber) }) else { return false }
-        let right = cellX + (cell - labelMaxWidth) / 2 + labelMaxWidth - 1
         let gap = E16Font.gap
         func place(_ digit: Character, endingAt end: Int) {
             screen.draw(String(digit), x: end - E16Screen.width(of: String(digit)) + 1, y: y)
         }
-        var end = right
+        var end = parts.count == 2 ? right : units
         if parts.count == 2 {
             for digit in parts[1].reversed() { place(digit, endingAt: end); end -= digitSlot + gap }
             // `end` is now the point's column: the tenths' place, then a gap, after it.
