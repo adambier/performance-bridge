@@ -145,6 +145,9 @@ always sources.
   (1–8 units a message), so center is otherwise hard to land on; a double press to reset was
   considered and not taken (it would delay every mute, or mute and unmute). The 4 and the 0.25 s
   are starting values, to tune on the device (`sbdev e16bridge --pan-center`, `--pan-pause`).
+  Seen (Adam, 2026-11-05, 16:02, `--pan-center 2,5,10` with the 0.25 s pause): fast turns from
+  well off center stopped at C on all three encoders, and the three amounts felt the same; the
+  pause does the catching, and the count only guards against a brush. 4 kept.
 - **Shift** makes the encoders buttons: 1 LEVEL (white), 2 PAN (magenta), 3 SEND (deep green; back
   to the last output used), 11 and 12 the previous and next send output (deep green; outside SEND
   mode either arrow enters it at the last output used),[^test-4] 15 and 16 the previous and next
