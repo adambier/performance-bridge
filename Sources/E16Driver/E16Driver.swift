@@ -1084,9 +1084,10 @@ public struct E16Driver: Sendable {
     }
 
     /// The title: an overlay while one shows; else the function ("LEVEL", "PAN", "> PHONES 1"),
-    /// "PFL" while any strip's PFL is on (TotalMix FX doesn't echo a PFL and "Cue/PFL to" can't
-    /// be read, so the app's own record is the only one; UI review, 2026-11-04), and, with more
-    /// than one page, the page. The same with Shift held, so the choice made there shows at
+    /// "PFL" (a square on the host-drawn screen) while a channel's PFL is on, anywhere in the mixer
+    /// (UI review, 2026-11-04: "Cue/PFL to" can't be read, so the app shows that PFL is in use;
+    /// TotalMix FX doesn't answer the app's own PFL, but does report one set in its window), and,
+    /// with more than one page, the page. The same with Shift held, so the choice made there shows at
     /// once and stays (Adam, 2026-11-04).
     public func title(hub: SurfaceHub) -> String {
         let (name, tail) = titleParts(hub: hub)
