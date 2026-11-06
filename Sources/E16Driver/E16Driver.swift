@@ -1090,8 +1090,10 @@ public struct E16Driver: Sendable {
         return screen
     }
 
-    /// The space between a Shift-page pair's word and its arrows, in pixels.
-    static let pairGap = 3
+    /// The space between a Shift-page pair's word and its arrows: one of the font's word spaces,
+    /// exactly as "< SEND >" would be set as text (a gap, the space, a gap: 5 px; Adam,
+    /// 2026-11-06: 3 px was tight).
+    static let pairGap = E16Font.gap + E16Screen.width(of: " ") + E16Font.gap
 
     /// The width of a label across two cells (`spans`): from the first cell's margin to the
     /// second's.
