@@ -1096,11 +1096,19 @@ public struct E16Driver: Sendable {
     /// The function's name for the title: "LEVEL", "PAN", or "> " and the send's output.
     public func functionName(hub: SurfaceHub) -> String {
         if layout == .four {
-            // The send rows' outputs, short: "A>PH1 B>PH2" (the plan, 2026-11-05).
+            // The send rows' outputs: "A>ADI2 3/4 B>MONS". On the host-drawn screen each name
+            // gets half the title's width left after a tail of "PFL 9/9" (so a name doesn't
+            // change as PFL comes and goes; Adam, 2026-11-06: longer names); the firmware's
+            // labels keep three characters.
             let indices = sendIndices(hub: hub)
+            let margin = (E16Screen.width / 4 - Self.labelMaxWidth) / 2
+            let room = E16Screen.width - 2 * margin - E16Screen.width(of: "PFL 9/9") - 4
+                - E16Screen.width(of: "A> B>")
             func part(_ row: Int) -> String {
                 let index = indices.indices.contains(row) ? indices[row] : nil
-                return (row == 0 ? "A>" : "B>") + (index.map { Self.fit(outputName($0, hub: hub), 3).uppercased() } ?? "-")
+                let name = index.map { outputName($0, hub: hub) }
+                let short = name.map { drawsScreen ? Self.fit($0.uppercased(), width: room / 2) : Self.fit($0, 3).uppercased() }
+                return (row == 0 ? "A>" : "B>") + (short ?? "-")
             }
             return part(0) + " " + part(1)
         }
