@@ -1052,7 +1052,7 @@ public struct E16Driver: Sendable {
                 // An arrow of a pair, close beside its word: "< SEND >" (Adam, 2026-11-06: the
                 // arrows at the cells' margins left too much space).
                 let left = pairWords[index] != nil ? index : index - 1
-                let wordX = (left % 4 + 1) * cell - E16Screen.width(of: word) / 2
+                let wordX = Self.pairWordX(word, left: left)
                 let x = left == index ? wordX - Self.pairGap - E16Screen.width(of: label)
                     : wordX + E16Screen.width(of: word) + Self.pairGap
                 screen.draw(label, x: x, y: y)
@@ -1085,9 +1085,18 @@ public struct E16Driver: Sendable {
         for (left, word) in pairWords {
             // Centered on the line between the pair's two cells.
             let y = Self.labelTop + (left / 4) * Self.labelPitch
-            screen.draw(word, x: (left % 4 + 1) * cell - E16Screen.width(of: word) / 2, y: y)
+            screen.draw(word, x: Self.pairWordX(word, left: left), y: y)
         }
         return screen
+    }
+
+    /// Where a Shift-page pair's word starts: the group "< WORD >" is set so the ">" ends at the
+    /// right cell's margin, where the column's values end (Adam, 2026-11-06), and stays there
+    /// whether or not an arrow is shown.
+    static func pairWordX(_ word: String, left: Int) -> Int {
+        let cell = E16Screen.width / 4
+        let rightEdge = (left % 4 + 2) * cell - (cell - labelMaxWidth) / 2 - 1
+        return rightEdge - E16Screen.width(of: ">") + 1 - pairGap - E16Screen.width(of: word)
     }
 
     /// The space between a Shift-page pair's word and its arrows: one of the font's word spaces,
