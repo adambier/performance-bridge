@@ -274,7 +274,7 @@ from TotalMix FX, filled to its level.
 - A ring that is dark has no channel, unless lights turn around it or stand on it: four orange for a mute, four
   pink for a PFL.
 - A pan shows as an arc from the top: in the channel's color at center, and red as soon as it moves off
-  center, however little.
+  center, however little. Turning a pan stops at center, however fast; to move past it, pause, then turn a little further.
 - The rings' brightness can be set in Performance Bridge's **Settings… → Connections**, from 1 to 100.
 - Levels and pans are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so
   TotalMix FX's window shows the levels and pans set here only while Main Out's output is selected in its

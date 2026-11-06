@@ -5,7 +5,9 @@
 #   ./make-app.sh              release build for this Mac
 #   ./make-app.sh debug        debug build
 #   ./make-app.sh --universal  release build for Apple Silicon and Intel (one binary; for a release)
-#   ./make-app.sh --zip        also write Performance-Bridge-<version>.zip, for a GitHub release
+#   ./make-app.sh --zip        also write Performance-Bridge-<version>.zip, for a GitHub release,
+#                              and then remove the bundle, so Spotlight finds only the installed
+#                              copy (Adam, 2026-11-05)
 #   ./make-app.sh --sign "Developer ID Application: Name (TEAMID)"
 #                              sign with that identity (hardened runtime, timestamp) instead of
 #                              the ad-hoc signature; `security find-identity -v -p codesigning`
@@ -134,6 +136,8 @@ if [ ! -d "$SPARKLE_DIR/Sparkle.framework" ]; then
     mv "$SPARKLE_DIR.partial" "$SPARKLE_DIR"
     rm -f "$SPARKLE_ARCHIVE"
 fi
+# The distribution's sample app isn't used; removed so Spotlight doesn't offer it.
+rm -rf "$SPARKLE_DIR/Sparkle Test App.app"
 
 SDK="$(xcrun --sdk macosx --show-sdk-path 2>/dev/null || true)"
 if [ -z "$SDK" ] || [ ! -d "$SDK" ]; then
@@ -297,7 +301,7 @@ fi
 
 echo
 echo "Built $APP ($(lipo -archs "$APP/Contents/MacOS/$EXECUTABLE" 2>/dev/null || echo "$ARCH"), version $VERSION, build $BUILD_NUMBER)"
-echo "Run it with:  open \"$APP\""
+if [ "$MAKE_ZIP" -eq 0 ]; then echo "Run it with:  open \"$APP\""; fi
 
 ZIP="Performance-Bridge-$VERSION.zip"
 if [ "$MAKE_ZIP" -eq 1 ]; then
@@ -335,4 +339,10 @@ if [ "$MAKE_APPCAST" -eq 1 ]; then
         "$APPCAST_DIR"
     cp "$APPCAST_DIR/appcast.xml" appcast.xml
     echo "Updated appcast.xml; commit it to main once the v$VERSION release with $ZIP is published."
+fi
+
+if [ "$MAKE_ZIP" -eq 1 ]; then
+    # The zip holds the app; the bundle goes, so Spotlight offers only the installed copy.
+    rm -rf "$APP"
+    echo "Removed $APP (it is in $ZIP)."
 fi
