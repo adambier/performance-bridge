@@ -987,14 +987,16 @@ public struct E16Driver: Sendable {
     /// point stays put; a pan's last digit ends there too (lining it up with a level's units was
     /// tried and dropped: pans and levels aren't compared, and the right edge is tidier); each
     /// digit sits at the right of a place `digitSlot` wide (a "1" is narrower), and the sign
-    /// ("-", "+", "L", "R") just before the first digit's place. "C" is centered. Returns false
+    /// ("-", "+", "L", "R") just before the first digit's place. "C" ends at the margin too. Returns false
     /// for text it doesn't lay out this way.
     static func drawValue(_ text: String, cellX: Int, y: Int, on screen: inout E16Screen) -> Bool {
         guard !text.isEmpty else { return true }
         let cell = E16Screen.width / 4
         let right = cellX + (cell - labelMaxWidth) / 2 + labelMaxWidth - 1
         if text == "C" {
-            screen.draw(text, x: cellX + (cell - E16Screen.width(of: text)) / 2, y: y)
+            // At the right margin, as a pan's last digit, so it holds still as C turns into R1
+            // (Adam, 2026-11-06; centered, it jumped).
+            screen.draw(text, x: right - E16Screen.width(of: text) + 1, y: y)
             return true
         }
         var body = Substring(text)
