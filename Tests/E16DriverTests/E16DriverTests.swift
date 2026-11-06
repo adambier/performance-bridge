@@ -753,10 +753,10 @@ final class E16FourLayoutTests: XCTestCase {
         var expected = E16Screen()
         let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2
         expected.line(y: 10, from: 0, to: E16Screen.width - 1)
-        expected.draw("—", x: margin, y: E16Driver.labelTop)
-        XCTAssertEqual(drawn, expected, "drawn as an em dash")
+        expected.draw("-∞", x: margin, y: E16Driver.labelTop)
+        XCTAssertEqual(drawn, expected, "drawn with the infinity sign")
         var dash = E16Screen(), missing = E16Screen()
-        dash.draw("—", x: 0, y: 0)
+        dash.draw("∞", x: 0, y: 0)
         missing.draw("\u{1F600}", x: 0, y: 0)
         XCTAssertNotEqual(dash, missing, "a glyph of its own, not the box for a missing one")
         let centered = E16Driver.screen(title: "", labels: ["Vox"], centered: true)
@@ -772,6 +772,8 @@ final class E16FourLayoutTests: XCTestCase {
         XCTAssertLessThanOrEqual(low.count, 4, "fits the firmware's four characters: \(low)")
         XCTAssertTrue(E16Screen.width(of: E16Driver.shortLevel(0.3, width: E16Driver.labelMaxWidth)) <= E16Driver.labelMaxWidth)
         var (driver, hub, _) = connectedFour()
+        let off = driver.take(hub.handle(.mix(bus: .input, channel: 2, output: 2, parameter: "faderlin", value: .number(0)), now: 0.5), hub: &hub, now: 0.5)
+        XCTAssertEqual(off.midi.lastLabels?[1], "", "a send that is off shows nothing")
         let turn = driver.receive([0xB0, 11, 0x0A], hub: &hub, now: 1)  // Gtr's pan, right
         XCTAssertTrue(turn.midi.lastLabels?[10].hasPrefix("R") == true, "the pan's label follows the turn")
     }

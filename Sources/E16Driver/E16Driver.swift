@@ -850,7 +850,11 @@ public struct E16Driver: Sendable {
                 // their values: send A's level, send B's, and the pan (Adam, 2026-11-05).
                 guard infos[column(index)] != nil, let value = knobValues[index] else { return "" }
                 let width = drawsScreen ? Self.labelMaxWidth : nil
-                return index >= 8 ? ValueText.pan(value * 2 - 1) : Self.shortLevel(value, width: width)
+                if index >= 8 { return ValueText.pan(value * 2 - 1) }
+                // A level that is off shows nothing: the name at the bottom of the column says
+                // there is a channel, and most sends are off (Adam, 2026-11-05).
+                let level = Self.shortLevel(value, width: width)
+                return level == "-oo" ? "" : level
             }
             let name = infos[column(index)]?.name ?? ""
             return drawsScreen ? Self.fit(name, width: Self.labelMaxWidth) : Self.fit(name, E16Outgoing.labelLength)
@@ -890,10 +894,9 @@ public struct E16Driver: Sendable {
     /// than `labelMaxWidth`. Everything in a column starts on the same pixel, so the title
     /// lines up with the labels (Adam, 2026-11-04).
     public static func screen(title: String, tail: String = "", labels: [String], inverted: Set<Int> = [], underlined: Set<Int> = [], centered: Bool = false) -> E16Screen {
-        // "-oo" (off) as an em dash: the font has no lowercase, and an infinity sign was too
-        // small to read (Adam, 2026-11-05).
-        let title = title.replacingOccurrences(of: "-oo", with: "—")
-        let labels = labels.map { $0.replacingOccurrences(of: "-oo", with: "—") }
+        // "-oo" (off) as "-∞": the font has no lowercase (Adam, 2026-11-05).
+        let title = title.replacingOccurrences(of: "-oo", with: "-∞")
+        let labels = labels.map { $0.replacingOccurrences(of: "-oo", with: "-∞") }
         var screen = E16Screen()
         let cell = E16Screen.width / 4
         let margin = (cell - labelMaxWidth) / 2
