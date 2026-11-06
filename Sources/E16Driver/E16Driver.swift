@@ -990,7 +990,14 @@ public struct E16Driver: Sendable {
         var screen = E16Screen()
         let cell = E16Screen.width / 4
         let margin = (cell - labelMaxWidth) / 2
-        screen.draw(title, x: margin, y: 0)
+        if let tab = title.firstIndex(of: "\t") {
+            // Send B, after the break, ends at the third column's right margin.
+            screen.draw(String(title[..<tab]), x: margin, y: 0)
+            let rest = String(title[title.index(after: tab)...])
+            screen.draw(rest, x: cell * 3 - margin - E16Screen.width(of: rest), y: 0)
+        } else {
+            screen.draw(title, x: margin, y: 0)
+        }
         if !tail.isEmpty {
             let x = E16Screen.width - margin - E16Screen.width(of: tail)
             // Blank the title under the tail if a long one runs into it.
@@ -1094,7 +1101,9 @@ public struct E16Driver: Sendable {
     public func titleParts(hub: SurfaceHub) -> (String, String) {
         if let overlay { return (overlay.text, "") }
         var tail: [String] = []
-        if pflOn.contains(true) { tail.append("PFL") }
+        // PFL as the name marks' square on the host-drawn screen, narrow enough that the
+        // 4-channel title's send B can end at the third column (Adam, 2026-11-06).
+        if pflOn.contains(true) { tail.append(drawsScreen ? "■" : "PFL") }
         if pageCount > 1 { tail.append("\(page.first / columns + 1)/\(pageCount)") }
         return (functionName(hub: hub), tail.joined(separator: " "))
     }
@@ -1108,15 +1117,16 @@ public struct E16Driver: Sendable {
             // labels keep three characters.
             let indices = sendIndices(hub: hub)
             let margin = (E16Screen.width / 4 - Self.labelMaxWidth) / 2
-            let room = E16Screen.width - 2 * margin - E16Screen.width(of: "PFL 9/9") - 4
-                - E16Screen.width(of: "A>" + Self.sendNameGap + "B>")
+            // Send B's name ends at the third column's right margin (Adam, 2026-11-06: one space
+            // between the names was crowded), so the two names share the first three columns.
+            let room = E16Screen.width * 3 / 4 - 2 * margin - E16Screen.width(of: "A>B>") - 6
             func part(_ row: Int) -> String {
                 let index = indices.indices.contains(row) ? indices[row] : nil
                 let name = index.map { outputName($0, hub: hub) }
                 let short = name.map { drawsScreen ? Self.fit($0.uppercased(), width: room / 2) : Self.fit($0, 3).uppercased() }
                 return (row == 0 ? "A>" : "B>") + (short ?? "-")
             }
-            return part(0) + (drawsScreen ? Self.sendNameGap : " ") + part(1)
+            return part(0) + (drawsScreen ? Self.sendNameBreak : " ") + part(1)
         }
         switch function {
         case .level: return "LEVEL"
@@ -1145,9 +1155,9 @@ public struct E16Driver: Sendable {
         return all.first(where: fits) ?? all.last!
     }
 
-    /// The space between the 4-channel title's two send names on the host-drawn screen: two of
-    /// the font's spaces, since one was crowded (Adam, 2026-11-06).
-    static let sendNameGap = "  "
+    /// Marks where the 4-channel title's send B starts: `screen` draws what follows ending at the
+    /// third column's right margin, not after send A (Adam, 2026-11-06).
+    static let sendNameBreak = "\t"
 
     /// A send target's name (an index into `SurfaceHub.sendTargets`): the app's label for it, or
     /// TotalMix FX's name.

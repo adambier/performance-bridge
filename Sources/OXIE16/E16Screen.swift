@@ -152,6 +152,8 @@ public enum E16Font {
         // "-OO"; nine by five, near the capitals' height (seven by four was too small to read,
         // an em dash ugly), after an empty column so the minus doesn't crowd it (Adam,
         // 2026-11-05).
+        // PFL in the title's tail: the square that marks a PFL'd name (Adam, 2026-11-06).
+        "■": E16Glyph(width: 3, rows: [0, 0, 0b11100, 0b11100, 0b11100, 0, 0]),
         "∞": E16Glyph(width: 10, rows: [0, 0b0011000110, 0b0100101001, 0b0100010001, 0b0100101001, 0b0011000110, 0]),
         "+": E16Glyph(width: 5, rows: [0b00000, 0b00100, 0b00100, 0b11111, 0b00100, 0b00100, 0b00000]),
         ".": E16Glyph(width: 1, rows: [0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b10000]),

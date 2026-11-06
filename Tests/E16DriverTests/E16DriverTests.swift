@@ -700,10 +700,15 @@ final class E16FourLayoutTests: XCTestCase {
         var (driver, hub, _) = connectedFour()
         driver.drawsScreen = true
         let name = driver.functionName(hub: hub)
-        XCTAssertTrue(name.hasPrefix("A>") && name.contains("  B>MON"), "two spaces between the names: \(name)")
-        XCTAssertGreaterThan(name.count, "A>PHO B>MON".count, "more than three characters each where they fit: \(name)")
+        XCTAssertTrue(name.hasPrefix("A>") && name.contains("\tB>MON"), name)
+        XCTAssertGreaterThan(name.count, "A>PHO\tB>MON".count, "more than three characters each where they fit: \(name)")
+        let parts = name.split(separator: "\t").map(String.init)
         let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2
-        XCTAssertLessThanOrEqual(E16Screen.width(of: name) + 4 + E16Screen.width(of: "PFL 9/9"), E16Screen.width - 2 * margin, "room for the tail")
+        let screen = E16Driver.screen(title: name, tail: "■ 10/12", labels: [])
+        let bEnd = E16Screen.width * 3 / 4 - margin - 1
+        XCTAssertTrue((0..<7).contains { screen.pixel(bEnd, $0) } || (0..<7).contains { screen.pixel(bEnd - 1, $0) }, "send B ends at the third column's margin")
+        XCTAssertLessThan(margin + E16Screen.width(of: parts[0]) + 4, bEnd - E16Screen.width(of: parts[1]), "a clear gap between the names")
+        XCTAssertFalse(driver.title(hub: hub).isEmpty)
         _ = hub
     }
 
