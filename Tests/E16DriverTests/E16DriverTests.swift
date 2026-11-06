@@ -683,7 +683,7 @@ final class E16FourLayoutTests: XCTestCase {
         let labels = midi.lastLabels ?? []
         let half = E16Driver.shortLevel(0.5, width: nil)
         XCTAssertEqual(Array(labels[0..<8]), Array(repeating: half, count: 8), "send A's and B's levels")
-        XCTAssertEqual(Array(labels[8..<12]), ["C", "C", "C", "C"], "the pans")
+        XCTAssertEqual(Array(labels[8..<12]), ["", "", "", ""], "centered pans show nothing")
         XCTAssertEqual(Array(labels[12..<16]), ["Keys", "Vox", "Gtr", "P1/2"], "the names, once, at the bottom")
         let rings = midi.rings
         XCTAssertEqual(rings[12]?.r, 127, "level: Keys is red")

@@ -865,7 +865,12 @@ public struct E16Driver: Sendable {
                 // their values: send A's level, send B's, and the pan (Adam, 2026-11-05).
                 guard infos[column(index)] != nil, let value = knobValues[index] else { return "" }
                 let width = drawsScreen ? Self.labelMaxWidth : nil
-                if index >= 8 { return ValueText.pan(value * 2 - 1) }
+                if index >= 8 {
+                    // A centered pan shows nothing, as an off send does: only values away from
+                    // rest show (Adam, 2026-11-06); the ring and, while turning, the title say C.
+                    let pan = ValueText.pan(value * 2 - 1)
+                    return pan == "C" ? "" : pan
+                }
                 // A level that is off shows nothing: the name at the bottom of the column says
                 // there is a channel, and most sends are off (Adam, 2026-11-05).
                 let level = Self.shortLevel(value, width: width)
