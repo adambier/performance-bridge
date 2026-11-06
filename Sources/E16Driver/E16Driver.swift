@@ -105,6 +105,10 @@ public struct E16Driver: Sendable {
     /// layout (a title and four characters a label). Adam, 2026-11-04: four characters can't
     /// name a stereo pair.
     public var drawsScreen = true
+    /// Whether a muted channel's name is drawn inverted (a lit box, dark letters) and a PFL'd
+    /// one's underlined, on the host-drawn screen: a trial (Adam, 2026-11-05: "let's see it",
+    /// with a way to turn it off; `sbdev e16bridge --no-name-marks`).
+    public var marksNames = true
     /// The widest a label may be on the host-drawn screen, in pixels: a 32-pixel cell with at
     /// least 6 pixels between neighbors (Adam, 2026-11-04: 3 was too close).
     public static let labelMaxWidth = 26
@@ -262,7 +266,7 @@ public struct E16Driver: Sendable {
     private var sentLabels: [UInt8]?
     /// What the last screen showed (its title parts and labels), so the framebuffer is drawn and
     /// packed only when something on it changed, not on every tick (review of 2026-11-04).
-    private var shownScreen: (title: String, tail: String, labels: [String], drawn: Bool)?
+    private var shownScreen: (title: String, tail: String, labels: [String], drawn: Bool, marks: [Int])?
     private var sentRings: [RingLook?] = Array(repeating: nil, count: E16Driver.stripCount)
 
     /// How one encoder's ring is drawn: a RING message, then LED messages for any marks. (A
@@ -848,9 +852,20 @@ public struct E16Driver: Sendable {
             return drawsScreen ? Self.fit(name, width: Self.labelMaxWidth) : Self.fit(name, E16Outgoing.labelLength)
         }
         let parts = titleParts(hub: hub)
-        if let shown = shownScreen, shown.title == parts.0, shown.tail == parts.1, shown.labels == labels, shown.drawn == drawsScreen { return [] }
-        shownScreen = (parts.0, parts.1, labels, drawsScreen)
-        let bytes = drawsScreen ? E16Outgoing.framebuffer(Self.screen(title: parts.0, tail: parts.1, labels: labels))
+        // The names that show a switch (`marksNames`): the 16-channel layout's every label, the
+        // 4-channel layout's bottom row.
+        var inverted = Set<Int>(), underlined = Set<Int>()
+        if marksNames, !shiftHeld {
+            for strip in 0..<columns {
+                let index = layout == .four ? 12 + strip : strip
+                if muteOn[strip] { inverted.insert(index) }
+                if pflOn[strip] { underlined.insert(index) }
+            }
+        }
+        let marks = inverted.sorted() + [-1] + underlined.sorted()
+        if let shown = shownScreen, shown.title == parts.0, shown.tail == parts.1, shown.labels == labels, shown.drawn == drawsScreen, shown.marks == marks { return [] }
+        shownScreen = (parts.0, parts.1, labels, drawsScreen, marks)
+        let bytes = drawsScreen ? E16Outgoing.framebuffer(Self.screen(title: parts.0, tail: parts.1, labels: labels, inverted: inverted, underlined: underlined))
             : E16Outgoing.labels(title: title(hub: hub), labels: labels)
         guard bytes != sentLabels else { return [] }
         sentLabels = bytes
@@ -862,7 +877,7 @@ public struct E16Driver: Sendable {
     /// labels in four rows 14 pixels apart, each at the left of its 32-pixel cell and no wider
     /// than `labelMaxWidth`. Everything in a column starts on the same pixel, so the title
     /// lines up with the labels (Adam, 2026-11-04).
-    public static func screen(title: String, tail: String = "", labels: [String]) -> E16Screen {
+    public static func screen(title: String, tail: String = "", labels: [String], inverted: Set<Int> = [], underlined: Set<Int> = []) -> E16Screen {
         // "-oo" (off) as "-∞": the font has no lowercase (Adam, 2026-11-05).
         let title = title.replacingOccurrences(of: "-oo", with: "-∞")
         let labels = labels.map { $0.replacingOccurrences(of: "-oo", with: "-∞") }
@@ -878,7 +893,17 @@ public struct E16Driver: Sendable {
         }
         screen.line(y: 10, from: 0, to: E16Screen.width - 1)
         for (index, label) in labels.prefix(stripCount).enumerated() {
-            screen.draw(label, x: (index % 4) * cell + margin, y: 14 + (index / 4) * 14)
+            let x = (index % 4) * cell + margin, y = 14 + (index / 4) * 14
+            screen.draw(label, x: x, y: y)
+            guard !label.isEmpty else { continue }
+            let width = E16Screen.width(of: label)
+            if underlined.contains(index) { screen.line(y: y + E16Font.glyphHeight + 1, from: x, to: x + width - 1) }
+            if inverted.contains(index) {
+                // A box one pixel larger than the letters all round, its pixels flipped.
+                for px in (x - 1)...(x + width) {
+                    for py in (y - 1)...(y + E16Font.glyphHeight) { screen.set(px, py, !screen.pixel(px, py)) }
+                }
+            }
         }
         return screen
     }
@@ -936,9 +961,12 @@ public struct E16Driver: Sendable {
             let rounded = abs(value) < 0.05 ? 0 : value
             return String(format: rounded > 0 ? "+" + format : format, rounded)
         }
-        let tenth = text("%.1f", (gain * 10).rounded() / 10)
-        let fits = width.map { E16Screen.width(of: tenth) <= $0 } ?? (tenth.count <= E16Outgoing.labelLength)
-        return fits ? tenth : text("%.0f", gain.rounded())
+        func fits(_ label: String) -> Bool { width.map { E16Screen.width(of: label) <= $0 } ?? (label.count <= E16Outgoing.labelLength) }
+        // A tenth, then whole decibels; the "+" goes only where nothing else fits (Adam,
+        // 2026-11-05).
+        let forms = [text("%.1f", (gain * 10).rounded() / 10), text("%.0f", gain.rounded())]
+        let all = forms + forms.map { $0.hasPrefix("+") ? String($0.dropFirst()) : $0 }
+        return all.first(where: fits) ?? all.last!
     }
 
     /// A send target's name (an index into `SurfaceHub.sendTargets`): the app's label for it, or

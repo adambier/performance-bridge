@@ -42,8 +42,9 @@ public struct E16Screen: Hashable, Sendable {
         var cursor = x
         for scalar in text.uppercased().unicodeScalars {
             let glyph = E16Font.glyph(scalar)
+            let leftmost = UInt8(1) << UInt8(max(glyph.width, 5) - 1)
             for (row, bits) in glyph.rows.enumerated() {
-                for column in 0..<glyph.width where bits & (0b10000 >> column) != 0 {
+                for column in 0..<glyph.width where bits & (leftmost >> UInt8(column)) != 0 {
                     for dy in 0..<scale {
                         for dx in 0..<scale { set(cursor + column * scale + dx, y + row * scale + dy) }
                     }
@@ -81,12 +82,13 @@ public struct E16Screen: Hashable, Sendable {
     }
 }
 
-/// One character of the font: up to five pixels wide, seven tall; each row's leftmost pixel is
-/// bit 4, and a narrow glyph ("1", "/", "I", "L") uses only its first `width` columns.
+/// One character of the font: five pixels wide (up to seven for a wide one, "∞"), seven tall;
+/// each row's leftmost pixel is bit 4 (bit `width - 1` for a wide glyph), and a narrow glyph
+/// ("1", "/", "I", "L") uses only its first `width` columns.
 public struct E16Glyph: Sendable {
-    /// How many of the five columns the glyph uses.
+    /// How many columns the glyph uses: up to five, or seven for a wide glyph.
     public let width: Int
-    /// The seven rows, top first, the leftmost pixel in bit 4.
+    /// The seven rows, top first, the leftmost pixel in bit 4 (bit `width - 1` if wider).
     public let rows: [UInt8]
 }
 
@@ -146,9 +148,9 @@ public enum E16Font {
         "9": E16Glyph(width: 4, rows: [0b01100, 0b10010, 0b10010, 0b01110, 0b00010, 0b00010, 0b01100]),
         "/": E16Glyph(width: 2, rows: [0b01000, 0b01000, 0b01000, 0b10000, 0b10000, 0b10000, 0b00000]),
         "-": E16Glyph(width: 3, rows: [0b00000, 0b00000, 0b00000, 0b11100, 0b00000, 0b00000, 0b00000]),
-        // Infinity, for "-∞" (off): the font has no lowercase, so "-oo" drew as "-OO" (Adam,
-        // 2026-11-05).
-        "∞": E16Glyph(width: 5, rows: [0b00000, 0b00000, 0b01010, 0b10101, 0b01010, 0b00000, 0b00000]),
+        // Infinity, for "-∞" (off): the font has no lowercase, so "-oo" drew as "-OO"; seven
+        // wide, since five was too small to read (Adam, 2026-11-05).
+        "∞": E16Glyph(width: 7, rows: [0b0000000, 0b0000000, 0b0110110, 0b1001001, 0b1001001, 0b0110110, 0b0000000]),
         "+": E16Glyph(width: 5, rows: [0b00000, 0b00100, 0b00100, 0b11111, 0b00100, 0b00100, 0b00000]),
         ".": E16Glyph(width: 1, rows: [0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b10000]),
         ",": E16Glyph(width: 2, rows: [0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b01000, 0b10000]),

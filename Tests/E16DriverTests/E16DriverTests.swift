@@ -717,6 +717,17 @@ final class E16FourLayoutTests: XCTestCase {
         XCTAssertNil(midi.rings[9], "the pan unchanged: nothing sent")
     }
 
+    func testNameMarks() {
+        let plain = E16Driver.screen(title: "", labels: Array(repeating: "", count: 12) + ["Vox", "", "", ""])
+        let marked = E16Driver.screen(title: "", labels: Array(repeating: "", count: 12) + ["Vox", "", "", ""], inverted: [12], underlined: [12])
+        let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2, y = 14 + 3 * 14
+        XCTAssertFalse(plain.pixel(margin - 1, y - 1))
+        XCTAssertTrue(marked.pixel(margin - 1, y - 1), "the box around the name")
+        XCTAssertNotEqual(plain.pixel(margin, y), marked.pixel(margin, y), "the letters flipped")
+        let empty = E16Driver.screen(title: "", labels: Array(repeating: "", count: 16), inverted: [12])
+        XCTAssertFalse(empty.pixel(margin - 1, y - 1), "no box without a name")
+    }
+
     func testShortLevels() {
         XCTAssertEqual(E16Driver.shortLevel(0, width: nil), "-oo")
         var drawn = E16Driver.screen(title: "", labels: ["-oo"])
