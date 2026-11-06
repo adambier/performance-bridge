@@ -30,7 +30,7 @@ let e16BridgeUsage = """
           compare them side by side: with 2,5,10, encoders 1, 4, 7… take 2, encoders 2, 5, 8…
           take 5, and encoders 3, 6, 9… take 10 (default: the driver's 4 on every encoder).
           --pan-pause is how long, in seconds, a turn that stopped at center must pause before
-          turning moves on (default 0.25).
+          turning moves on (default 0.05).
           Stop sbdev monitor, the other bridges, and the app first: they need the same ports.
 
       On the device: turn is level, pan, or a send, by the mode; push and release is mute; a hold of

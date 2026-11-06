@@ -235,8 +235,9 @@ public struct E16Driver: Sendable {
     /// a starting value, to tune on the device.
     public static let panCenterUnits = 4
     /// How long a turn must pause, after it has stopped at center, before turning moves the pan
-    /// on (`centerStop`); a starting value, to tune on the device.
-    public static let panCenterPauseDefault = 0.25
+    /// on (`centerStop`): 0.05 s, tuned on the device (Adam, 2026-11-06: 0.25 s and 0.1 s felt
+    /// like a wait; a fast turn's messages come 4–5 ms apart, so 0.05 s still catches it).
+    public static let panCenterPauseDefault = 0.05
     /// `panCenterPauseDefault`, settable for trying values (`sbdev e16bridge --pan-pause`).
     public var panCenterPause = E16Driver.panCenterPauseDefault
     /// For trying amounts side by side (`sbdev e16bridge --pan-center`): encoder n's pan takes

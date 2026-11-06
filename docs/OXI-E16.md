@@ -141,7 +141,7 @@ always sources.
   turn of the mode's function.[^test-6]
 - **A pan's sticky center** (Adam, 2026-11-05): a turn that reaches or crosses center stops
   there, however fast, and the rest of that turn is ignored (messages less than
-  `panCenterPause`, 0.25 s, apart are one turn: a fast turn arrives as a burst of up to 8 units a
+  `panCenterPause`, 0.05 s, apart are one turn: a fast turn arrives as a burst of up to 8 units a
   message, and went straight through a count of units alone, Adam, 14:56); after a pause, the
   pan moves only after `panCenterUnits` (4) units turned one way, a turn the other way starting
   the count again. The encoders are endless and accelerated
@@ -150,7 +150,10 @@ always sources.
   are starting values, to tune on the device (`sbdev e16bridge --pan-center`, `--pan-pause`).
   Seen (Adam, 2026-11-05, 16:02, `--pan-center 2,5,10` with the 0.25 s pause): fast turns from
   well off center stopped at C on all three encoders, and the three amounts felt the same; the
-  pause does the catching, and the count only guards against a brush. 4 kept.
+  pause does the catching, and the count only guards against a brush. 4 kept. The pause, tuned
+  with `--pan-pause` (Adam, 2026-11-06): 0.25 s and 0.1 s still felt like a wait before C could
+  be passed; at 0.05 s a brief stop lets the pan move on and fast turns still stop at C. 0.05 s
+  kept.
 - **Shift** makes the encoders buttons: 1 LEVEL (white), 2 PAN (magenta), 3 SEND (deep green; back
   to the last output used), 11 and 12 the previous and next send output (deep green; outside SEND
   mode either arrow enters it at the last output used),[^test-4] 15 and 16 the previous and next
