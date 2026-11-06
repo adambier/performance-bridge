@@ -11,6 +11,12 @@ import OXIE16
 #if canImport(SurfaceCore)
 import SurfaceCore
 #endif
+#if canImport(LaunchControl)
+import LaunchControl
+#endif
+#if canImport(LaunchControlDriver)
+import LaunchControlDriver
+#endif
 
 /// What the E16 driver produces in answer to MIDI or a call: SysEx for the device, and the core's
 /// output for TotalMix FX and the other surfaces.
@@ -46,17 +52,45 @@ public struct E16Step: Equatable, Sendable {
 ///   its comment); the screen's title shows the function and the page, "PFL" while any PFL is
 ///   on, and for a moment the value of a turned encoder or the result of a push.
 ///
-/// **Layers.** The hub gives a surface one switch per strip, and the E16's push is mute or PFL,
-/// so the driver adds two hub surfaces: the main one (the knob's function, with mute) and a PFL
-/// one (level, unused, with PFL), paged together.
+/// **The 4-channel layout** (`Layout.four`; Adam, 2026-11-05, "claude/E16 4-channel layout
+/// plan.md"): four strips a page, one column each; the rows are send A, send B, pan, and level,
+/// top to bottom. A push on any encoder of a column is that channel's mute, a 1 s hold its PFL
+/// (the countdown and the marks on the level ring); a mute leaves the pan ring as it is and
+/// darkens the send rings. With Shift held, 3 and 4 step send A's output back and forward, 7 and
+/// 8 send B's (each skipping the other's), and 15 and 16 the page.
+///
+/// **Layers.** The hub gives a surface one knob and one switch per strip. In the 16-channel
+/// layout the E16's push is mute or PFL, so the driver adds two hub surfaces: the main one (the
+/// knob's function, with mute) and a PFL one (the alternate function for push-and-turn, with
+/// PFL), paged together. In the 4-channel layout each row is a hub surface of four strips: level
+/// (with mute), pan (with PFL), send A, and send B.
 public struct E16Driver: Sendable {
     /// The hub surface for each layer.
     public enum Layer: String, Sendable, CaseIterable {
-        /// The encoders' function, and mute.
+        /// The 16-channel layout: the encoders' function, and mute.
         case main
-        /// PFL (its knobs are unused).
+        /// The 16-channel layout: PFL, and push-and-turn's alternate function.
         case pfl
+        /// The 4-channel layout: the fourth row, level, with mute.
+        case level
+        /// The 4-channel layout: the third row, pan, with PFL.
+        case pan
+        /// The 4-channel layout: the first row, send A.
+        case sendA
+        /// The 4-channel layout: the second row, send B.
+        case sendB
     }
+
+    /// How the encoders are laid out.
+    public enum Layout: String, Sendable, CaseIterable {
+        /// Sixteen channels a page, one encoder each (1.1.0).
+        case sixteen
+        /// Four channels a page, one column each: send A, send B, pan, level (Adam, 2026-11-05).
+        case four
+    }
+
+    /// The layout this driver uses.
+    public let layout: Layout
 
     /// The start of the hub surfaces' names; each layer adds its own (e.g., "e16.main").
     public let name: String
@@ -65,6 +99,13 @@ public struct E16Driver: Sendable {
     public private(set) var function = KnobFunction.level
     /// The send output (an index into `SurfaceHub.sendTargets`) SEND goes back to.
     private var lastSend = 0
+    /// The 4-channel layout's send rows, A and B (as the Launch Control XL 3's two send rows:
+    /// never the same output, and a row without a choice takes the first output the other
+    /// doesn't use).
+    public private(set) var sendRows = LaunchControlSendRows(layout: .xl3)
+    /// The output each send row (A, B) was chosen to send to; the app can save these and pass
+    /// them back to `init`.
+    public var sendOutputs: [Int?] { sendRows.choices }
     /// Whether the screen is drawn by the driver (the FRAMEBUFFER message, with this project's
     /// small font: a title and labels fitted to `labelMaxWidth`) rather than by the firmware's own label
     /// layout (a title and four characters a label). Adam, 2026-11-04: four characters can't
@@ -81,8 +122,10 @@ public struct E16Driver: Sendable {
     /// The name of the device's first USB MIDI port, the one Remote Mode uses.
     public static let defaultPortName = "OXI E16 Port 1"
 
-    /// How many strips the device shows at once.
+    /// How many encoders the device has (and strips the 16-channel layout shows at once).
     public static let stripCount = 16
+    /// How many strips a page shows: 16, or 4 in the 4-channel layout.
+    public var columns: Int { layout == .four ? 4 : Self.stripCount }
     /// How often ENTER REMOTE MODE is sent again until the device answers, in seconds.
     public static let enterInterval: Double = 1
     /// How long a push must be held to be PFL rather than mute, in seconds. A mute acts when a
@@ -109,11 +152,22 @@ public struct E16Driver: Sendable {
         case output(Int)
         /// The previous page of strips, or the next.
         case page(Int)
+        /// The 4-channel layout: a send row's (0 for A, 1 for B) previous output, or next.
+        case rowOutput(row: Int, direction: Int)
 
         /// The encoder each button is on: the modes on the first row, the output arrows at the
         /// end of the third, the page arrows at the end of the last (Adam, 2026-11-04).
         public static let layout: [Int: ShiftButton] = [
             0: .level, 1: .pan, 2: .send, 10: .output(-1), 11: .output(1), 14: .page(-1), 15: .page(1),
+        ]
+
+        /// The 4-channel layout's: each send row's arrows at the end of its own row, the page
+        /// arrows at the end of the last; back and forward always in the right two columns (Adam,
+        /// 2026-11-05).
+        public static let fourLayout: [Int: ShiftButton] = [
+            2: .rowOutput(row: 0, direction: -1), 3: .rowOutput(row: 0, direction: 1),
+            6: .rowOutput(row: 1, direction: -1), 7: .rowOutput(row: 1, direction: 1),
+            14: .page(-1), 15: .page(1),
         ]
 
         /// The label on the screen.
@@ -122,7 +176,7 @@ public struct E16Driver: Sendable {
             case .level: return "LVL"
             case .pan: return "PAN"
             case .send: return "SEND"
-            case .output(let d): return d < 0 ? "<SND" : "SND>"
+            case .output(let d), .rowOutput(_, let d): return d < 0 ? "<SND" : "SND>"
             case .page(let d): return d < 0 ? "<PG" : "PG>"
             }
         }
@@ -134,7 +188,7 @@ public struct E16Driver: Sendable {
             case .level: return "LEVEL"
             case .pan: return "PAN"
             case .send: return "SEND"
-            case .output(let d): return d < 0 ? "<SEND" : "SEND>"
+            case .output(let d), .rowOutput(_, let d): return d < 0 ? "<SEND" : "SEND>"
             case .page(let d): return d < 0 ? "<PAGE" : "PAGE>"
             }
         }
@@ -143,7 +197,7 @@ public struct E16Driver: Sendable {
         public var isMode: Bool {
             switch self {
             case .level, .pan, .send: return true
-            case .output, .page: return false
+            case .output, .page, .rowOutput: return false
             }
         }
     }
@@ -236,9 +290,42 @@ public struct E16Driver: Sendable {
         var rgb: [UInt8]
     }
 
-    /// A driver for one device; `name` starts the hub surfaces' names.
-    public init(name: String) {
+    /// A driver for one device; `name` starts the hub surfaces' names. `sendOutputs` are the
+    /// 4-channel layout's send rows' saved choices (`sendOutputs`).
+    public init(name: String, layout: Layout = .sixteen, sendOutputs: [Int?] = []) {
         self.name = name
+        self.layout = layout
+        self.sendRows = LaunchControlSendRows(layout: .xl3, choices: sendOutputs)
+    }
+
+    /// The layers this layout adds to the hub.
+    public var layers: [Layer] { layout == .four ? [.level, .pan, .sendA, .sendB] : [.main, .pfl] }
+    /// The layer whose switch is mute, and whose strips name the channels and set the page.
+    var muteLayer: Layer { layout == .four ? .level : .main }
+    /// The layer whose switch is PFL.
+    var pflLayer: Layer { layout == .four ? .pan : .pfl }
+    /// The 4-channel layout's row for a layer, top first.
+    static func row(of layer: Layer) -> Int? {
+        switch layer {
+        case .sendA: return 0
+        case .sendB: return 1
+        case .pan: return 2
+        case .level: return 3
+        case .main, .pfl: return nil
+        }
+    }
+    static let fourRows: [Layer] = [.sendA, .sendB, .pan, .level]
+
+    /// The strip (the column, in the 4-channel layout) an encoder belongs to.
+    func column(_ encoder: Int) -> Int { layout == .four ? encoder % 4 : encoder }
+    /// The encoders of a strip: one, or a column of four.
+    func encoders(ofStrip strip: Int) -> [Int] { layout == .four ? (0..<4).map { strip + $0 * 4 } : [strip] }
+    /// The encoder whose ring shows a strip's switches (mute and PFL marks, the countdown): its
+    /// own, or the column's level encoder.
+    func switchEncoder(ofStrip strip: Int) -> Int { layout == .four ? 12 + strip : strip }
+    /// The Shift page's button on an encoder, if any.
+    func shiftButton(at encoder: Int) -> ShiftButton? {
+        layout == .four ? ShiftButton.fourLayout[encoder] : ShiftButton.layout[encoder]
     }
 
     /// Whether the device has answered ENTER REMOTE MODE.
@@ -250,14 +337,19 @@ public struct E16Driver: Sendable {
     /// What each layer has, for the hub: sixteen strips with an endless encoder and a ring, which
     /// follow TotalMix FX, and a switch.
     public static let capabilities = SurfaceCapabilities(stripCount: stripCount, feel: .follows, hasSwitches: true)
+    /// What each layer has in this driver's layout: `capabilities`, with four strips in the
+    /// 4-channel layout.
+    public var layerCapabilities: SurfaceCapabilities {
+        SurfaceCapabilities(stripCount: columns, feel: .follows, hasSwitches: true)
+    }
 
     // MARK: - Starting and stopping
 
     /// Adds the layers to the hub and returns the bytes that ask for Remote Mode. Until the device
     /// answers, `tick(hub:now:)` asks again every `enterInterval`.
     public mutating func start(hub: inout SurfaceHub, now: Double) -> E16Step {
-        for layer in Layer.allCases {
-            _ = hub.addSurface(id(layer), capabilities: Self.capabilities, mode: mode(for: layer, first: page.first), now: now)
+        for layer in layers {
+            _ = hub.addSurface(id(layer), capabilities: layerCapabilities, mode: mode(for: layer, first: page.first, hub: hub), now: now)
         }
         connected = false
         lastEnter = now
@@ -269,7 +361,7 @@ public struct E16Driver: Sendable {
     /// The bytes that give the device back (EXIT REMOTE MODE; without it the device stays blank),
     /// for when the app quits or the device is let go; and the layers leave the hub.
     public mutating func stop(hub: inout SurfaceHub) -> [UInt8] {
-        for layer in Layer.allCases { hub.removeSurface(id(layer)) }
+        for layer in layers { hub.removeSurface(id(layer)) }
         connected = false
         lastEnter = nil
         return E16Outgoing.exitRemoteMode
@@ -296,11 +388,11 @@ public struct E16Driver: Sendable {
                 if stepIndex != countdownShown {
                     let first = countdownShown < 0
                     countdownShown = stepIndex
-                    if first, let info = infos[held.encoder] {
+                    if first, let info = infos[column(held.encoder)] {
                         overlay = (Self.fit(info.name, 7) + (pflOn[held.encoder] ? " -> PFL OFF" : " -> PFL"), .infinity)
                         step.midi += drawLabels(hub: hub)
                     }
-                    step.midi += drawRing(held.encoder, hub: hub)
+                    step.midi += drawRing(switchEncoder(ofStrip: column(held.encoder)), hub: hub)
                 }
             }
         }
@@ -357,13 +449,17 @@ public struct E16Driver: Sendable {
                 }
             }
             // Push-and-turn is the alternate function: pan, or level in PAN mode (Adam,
-            // 2026-11-05).
-            turn(encoder, by: delta, layer: pushTurning == encoder ? .pfl : .main, hub: &hub, now: now, into: &step)
+            // 2026-11-05). The 4-channel layout gives it no job: each row turns its own.
+            if layout == .four {
+                turn(encoder, by: delta, layer: Self.fourRows[encoder / 4], hub: &hub, now: now, into: &step)
+            } else {
+                turn(encoder, by: delta, layer: pushTurning == encoder ? .pfl : .main, hub: &hub, now: now, into: &step)
+            }
         case .pushed(let encoder, true):
             guard (0..<Self.stripCount).contains(encoder) else { return }
             if shiftHeld {
                 pressedButton = encoder
-                if let button = ShiftButton.layout[encoder] { press(button, hub: &hub, now: now, into: &step) }
+                if let button = shiftButton(at: encoder) { press(button, hub: &hub, now: now, into: &step) }
                 step.midi += drawRing(encoder, hub: hub)
             } else {
                 held = (encoder, now, false)
@@ -390,6 +486,7 @@ public struct E16Driver: Sendable {
             }
             if let overlay, overlay.until == .infinity { self.overlay = (overlay.text, now + Self.overlayTime) }
             step.midi += drawRing(encoder, hub: hub)
+            if layout == .four { step.midi += drawRing(switchEncoder(ofStrip: column(encoder)), hub: hub) }
         case .shift(let down):
             shiftHeld = down
             held = nil
@@ -414,7 +511,7 @@ public struct E16Driver: Sendable {
         shownScreen = nil
         sentRings = Array(repeating: nil, count: Self.stripCount)
         var output = CoreOutput()
-        for layer in Layer.allCases { output.append(hub.resend(id(layer), now: now)) }
+        for layer in layers { output.append(hub.resend(id(layer), now: now)) }
         take(output, hub: hub, into: &step)
     }
 
@@ -431,8 +528,9 @@ public struct E16Driver: Sendable {
 
     /// An encoder turned without Shift: moves its strip's knob by `delta` units.
     private mutating func turn(_ encoder: Int, by delta: Int, layer: Layer = .main, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
-        guard let strips = hub.strips(of: id(layer)), strips.indices.contains(encoder),
-              let target = strips[encoder].knobTarget else { return }
+        let strip = column(encoder)
+        guard let strips = hub.strips(of: id(layer)), strips.indices.contains(strip),
+              let target = strips[strip].knobTarget else { return }
         let stored = hub.mirror.value(of: target)
         let current: Double
         let stepSize: Double
@@ -445,15 +543,15 @@ public struct E16Driver: Sendable {
         }
         var position = min(max(current + Double(delta) * stepSize, 0), 1)
         if case .pan = target { position = centerStop(encoder, from: current, to: position, delta: delta, now: now) }
-        take(hub.controlMoved(id(layer), strip: encoder, to: position, now: now), hub: hub, into: &step)
+        take(hub.controlMoved(id(layer), strip: strip, to: position, now: now), hub: hub, into: &step)
         // The hub doesn't send a surface its own move back: draw the ring from the mirror, and
         // show the value in the title.
         let moved = hub.mirror.value(of: target)
         let panning: Bool = { if case .pan = target { return true } else { return false } }()
         let value = panning ? moved.map { ($0 + 1) / 2 } : moved
-        if layer == .main { knobValues[encoder] = value } else { alternateValues[encoder] = value }
+        if layer == .pfl { alternateValues[encoder] = value } else { knobValues[encoder] = value }
         step.midi += drawRing(encoder, hub: hub)
-        if let info = infos[encoder], let moved {
+        if let info = infos[strip], let moved {
             let text = panning ? ValueText.pan(moved) : ValueText.level(position: moved)
             show(Self.fit(info.name, 8) + " " + text, now: now, into: &step, hub: hub)
         }
@@ -496,20 +594,22 @@ public struct E16Driver: Sendable {
 
     /// A short push released: toggles the strip's mute and says so on the screen.
     private mutating func mute(_ encoder: Int, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
-        take(hub.switchPressed(id(.main), strip: encoder, now: now), hub: hub, into: &step)
-        guard let info = infos[encoder] else { return }
+        let strip = column(encoder)
+        take(hub.switchPressed(id(muteLayer), strip: strip, now: now), hub: hub, into: &step)
+        guard let info = infos[strip] else { return }
         // While Mute Master is off a mute is "set", TotalMix FX's own notion, and does nothing in
         // the audio; the ring's blink says so continuously, so the title says what the press did.
-        let on = muteOn[encoder]
+        let on = muteOn[strip]
         let result = hub.mirror.muteMaster == false ? (on ? " MUTE SET" : " MUTE CLR") : (on ? " MUTE ON" : " MUTE OFF")
         show(Self.fit(info.name, 7) + result, now: now, into: &step, hub: hub)
     }
 
     /// A push held `pflHold`: toggles the strip's PFL and says so on the screen.
     private mutating func pfl(_ encoder: Int, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
-        take(hub.switchPressed(id(.pfl), strip: encoder, now: now), hub: hub, into: &step)
-        guard let info = infos[encoder] else { return }
-        show(Self.fit(info.name, 7) + " PFL" + (pflOn[encoder] ? " ON" : " OFF"), now: now, into: &step, hub: hub)
+        let strip = column(encoder)
+        take(hub.switchPressed(id(pflLayer), strip: strip, now: now), hub: hub, into: &step)
+        guard let info = infos[strip] else { return }
+        show(Self.fit(info.name, 7) + " PFL" + (pflOn[strip] ? " ON" : " OFF"), now: now, into: &step, hub: hub)
     }
 
     /// A button on the Shift page pressed.
@@ -531,7 +631,47 @@ public struct E16Driver: Sendable {
             setFunction(.send(next), hub: &hub, now: now, into: &step)
         case .page(let direction):
             movePage(by: direction, hub: &hub, now: now, into: &step)
+        case .rowOutput(let row, let direction):
+            stepSend(row: row, by: direction, hub: &hub, now: now, into: &step)
         }
+    }
+
+    /// The send target (an index into `SurfaceHub.sendTargets`) each send row of the 4-channel
+    /// layout uses now (A, B); `nil` for a row with no output left.
+    public func sendIndices(hub: SurfaceHub) -> [Int?] { sendRows.indices(targets: hub.sendTargets) }
+
+    /// The output each send row feeds now (A, B), by output channel; `nil` for none.
+    public func currentSendOutputs(hub: SurfaceHub) -> [Int?] { sendRows.outputs(targets: hub.sendTargets) }
+
+    /// The send target a send row's arrow leads to (`delta` ±1), skipping the other row's; `nil`
+    /// past the ends (no wrap).
+    func nextSend(row: Int, by delta: Int, hub: SurfaceHub) -> Int? {
+        let count = hub.sendTargets.count
+        let indices = sendIndices(hub: hub)
+        guard indices.indices.contains(row) else { return nil }
+        let others = Set(indices.enumerated().filter { $0.offset != row }.compactMap(\.element))
+        var next = indices[row] ?? (delta > 0 ? -1 : count)
+        repeat { next += delta } while others.contains(next)
+        return (0..<count).contains(next) ? next : nil
+    }
+
+    /// A send row's arrow pressed: the row moves to the previous or next output.
+    private mutating func stepSend(row: Int, by delta: Int, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
+        guard let next = nextSend(row: row, by: delta, hub: hub) else { return }
+        let targets = hub.sendTargets
+        guard sendRows.set(row: row, to: targets[next], targets: targets) else { return }
+        setModes(first: page.first, hub: &hub, now: now, into: &step)
+        step.midi += drawLabels(hub: hub) + drawRings(hub: hub)
+    }
+
+    /// Sets a send row's output (0 for A, 1 for B) from the app, as the Shift page's arrows do;
+    /// an output the other row has, or that isn't a send target, is refused.
+    public mutating func setSendOutput(row: Int, to output: Int, hub: inout SurfaceHub, now: Double) -> E16Step {
+        var step = E16Step()
+        guard sendRows.set(row: row, to: output, targets: hub.sendTargets) else { return step }
+        setModes(first: page.first, hub: &hub, now: now, into: &step)
+        if connected { step.midi += drawLabels(hub: hub) + drawRings(hub: hub) }
+        return step
     }
 
     private mutating func setFunction(_ next: KnobFunction, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
@@ -553,20 +693,24 @@ public struct E16Driver: Sendable {
             let current: Int = { if case .send(let n) = function { return n } else { return min(lastSend, count - 1) - direction } }()
             return (0..<count).contains(current + direction)
         case .page(let direction):
-            let current = page.first / Self.stripCount
+            let current = page.first / columns
             return (0..<pageCount).contains(current + direction)
+        case .rowOutput(let row, let direction):
+            return nextSend(row: row, by: direction, hub: hub) != nil
         }
     }
 
     /// How many pages of strips there are.
-    var pageCount: Int { max(1, Int((Double(page.count) / Double(Self.stripCount)).rounded(.up))) }
+    var pageCount: Int { max(1, Int((Double(page.count) / Double(columns)).rounded(.up))) }
 
-    /// Moves both layers a page (`direction` ±1), staying within the view.
+    /// Moves every layer a page (`direction` ±1), staying within the view.
     private mutating func movePage(by direction: Int, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
-        let primary = id(.main)
+        let primary = id(muteLayer)
         var output = hub.page(primary, by: direction, now: now)
         if case .strips(_, let first, _, _)? = hub.mode(of: primary) {
-            output.append(hub.setMode(id(.pfl), mode(for: .pfl, first: first), now: now))
+            for layer in layers where layer != muteLayer {
+                output.append(hub.setMode(id(layer), mode(for: layer, first: first, hub: hub), now: now))
+            }
         }
         take(output, hub: hub, into: &step)
         step.midi += drawLabels(hub: hub) + drawRings(hub: hub)
@@ -575,18 +719,30 @@ public struct E16Driver: Sendable {
     // MARK: - Modes
 
     /// The hub mode for a layer: the sources, from `first`, with the encoders' function and mute
-    /// on the main layer, or level and PFL on the PFL layer.
-    func mode(for layer: Layer, first: Int) -> SurfaceMode {
+    /// on the main layer, or the alternate function and PFL on the PFL layer; in the 4-channel
+    /// layout, the row's function, with mute on the level row and PFL on the pan row. A send row
+    /// with no output left gets a send number past the end, which the hub binds to nothing.
+    func mode(for layer: Layer, first: Int, hub: SurfaceHub) -> SurfaceMode {
+        let knob: KnobFunction
+        let switchFunction: SwitchFunction
         switch layer {
-        case .main: return .strips(view: .sources, first: first, knob: function, switch: .mute)
-        case .pfl: return .strips(view: .sources, first: first, knob: alternate, switch: .pfl)
+        case .main: (knob, switchFunction) = (function, .mute)
+        case .pfl: (knob, switchFunction) = (alternate, .pfl)
+        case .level: (knob, switchFunction) = (.level, .mute)
+        case .pan: (knob, switchFunction) = (.pan, .pfl)
+        case .sendA, .sendB:
+            let indices = sendIndices(hub: hub)
+            let row = layer == .sendA ? 0 : 1
+            knob = (indices.indices.contains(row) ? indices[row] : nil).map { .send($0) } ?? .send(Int.max)
+            switchFunction = .none
         }
+        return .strips(view: .sources, first: first, knob: knob, switch: switchFunction)
     }
 
     private mutating func setModes(first: Int, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
         var output = CoreOutput()
-        for layer in Layer.allCases {
-            let mode = mode(for: layer, first: first)
+        for layer in layers {
+            let mode = mode(for: layer, first: first, hub: hub)
             if hub.mode(of: id(layer)) != mode { output.append(hub.setMode(id(layer), mode, now: now)) }
         }
         take(output, hub: hub, into: &step)
@@ -610,6 +766,9 @@ public struct E16Driver: Sendable {
             function = .level
             setModes(first: page.first, hub: &hub, now: now, into: &step)
         }
+        // The send rows follow the send targets as TotalMix FX reports or changes them.
+        // (`setModes` changes only the layers whose mode differs.)
+        if layout == .four { setModes(first: page.first, hub: &hub, now: now, into: &step) }
         if connected { step.midi += drawLabels(hub: hub) + drawRings(hub: hub) }
         return step
     }
@@ -617,7 +776,7 @@ public struct E16Driver: Sendable {
     private mutating func take(_ output: CoreOutput, hub: SurfaceHub, into step: inout E16Step) {
         var output = output
         var own: [(Layer, [SurfaceUpdate])] = []
-        for layer in Layer.allCases {
+        for layer in layers {
             if let updates = output.updates.removeValue(forKey: id(layer)) { own.append((layer, updates)) }
         }
         step.core.append(output)
@@ -627,21 +786,24 @@ public struct E16Driver: Sendable {
             for update in list {
                 switch update {
                 case .page(let first, let count):
-                    if layer == .main { page = (first, count) }
+                    if layer == muteLayer { page = (first, count) }
                 case .strip(let index, let info):
-                    guard layer == .main, infos.indices.contains(index) else { continue }
+                    guard layer == muteLayer, infos.indices.contains(index) else { continue }
                     infos[index] = info
-                    touched.insert(index)
+                    touched.formUnion(encoders(ofStrip: index))
                 case .knob(let index, let value):
-                    guard knobValues.indices.contains(index) else { continue }
-                    if layer == .main { knobValues[index] = value } else { alternateValues[index] = value }
-                    touched.insert(index)
+                    // The 16-channel layout: the strip's own encoder; the 4-channel layout: the
+                    // layer's row in the strip's column.
+                    let encoder = Self.row(of: layer).map { $0 * 4 + index } ?? index
+                    guard knobValues.indices.contains(encoder) else { continue }
+                    if layer == .pfl { alternateValues[encoder] = value } else { knobValues[encoder] = value }
+                    touched.insert(encoder)
                 case .valueText:
                     break  // the title shows the value of a turn from `turn(_:by:hub:now:into:)`
                 case .switchState(let index, let on):
                     guard muteOn.indices.contains(index) else { continue }
-                    if layer == .main { muteOn[index] = on } else { pflOn[index] = on }
-                    touched.insert(index)
+                    if layer == muteLayer { muteOn[index] = on } else if layer == pflLayer { pflOn[index] = on }
+                    touched.formUnion(encoders(ofStrip: index))
                 case .meter:
                     break
                 }
@@ -666,10 +828,22 @@ public struct E16Driver: Sendable {
         let labels: [String] = (0..<Self.stripCount).map { index in
             if shiftHeld {
                 // An arrow that goes nowhere shows no label either (Adam, 2026-11-04).
-                guard let button = ShiftButton.layout[index], button.isMode || isAvailable(button, hub: hub) else { return "" }
+                guard let button = shiftButton(at: index), button.isMode || isAvailable(button, hub: hub) else { return "" }
+                if case .rowOutput(let row, let direction) = button, let next = nextSend(row: row, by: direction, hub: hub) {
+                    // The 4-channel layout's send arrows name the output they lead to (the plan,
+                    // 2026-11-05): "<Phn1", "Phn2>".
+                    let name = outputName(next, hub: hub)
+                    if drawsScreen {
+                        let room = 28 - E16Screen.width(of: "<")
+                        let short = Self.fit(name, width: room)
+                        return direction < 0 ? "<" + short : short + ">"
+                    }
+                    let short = Self.fit(name, E16Outgoing.labelLength - 1)
+                    return direction < 0 ? "<" + short : short + ">"
+                }
                 return drawsScreen ? button.longLabel : button.label
             }
-            let name = infos[index]?.name ?? ""
+            let name = infos[column(index)]?.name ?? ""
             return drawsScreen ? Self.fit(name, width: Self.labelMaxWidth) : Self.fit(name, E16Outgoing.labelLength)
         }
         let parts = titleParts(hub: hub)
@@ -724,22 +898,38 @@ public struct E16Driver: Sendable {
         if let overlay { return (overlay.text, "") }
         var tail: [String] = []
         if pflOn.contains(true) { tail.append("PFL") }
-        if pageCount > 1 { tail.append("\(page.first / Self.stripCount + 1)/\(pageCount)") }
+        if pageCount > 1 { tail.append("\(page.first / columns + 1)/\(pageCount)") }
         return (functionName(hub: hub), tail.joined(separator: " "))
     }
 
     /// The function's name for the title: "LEVEL", "PAN", or "> " and the send's output.
     public func functionName(hub: SurfaceHub) -> String {
+        if layout == .four {
+            // The send rows' outputs, short: "A>PH1 B>PH2" (the plan, 2026-11-05).
+            let indices = sendIndices(hub: hub)
+            func part(_ row: Int) -> String {
+                let index = indices.indices.contains(row) ? indices[row] : nil
+                return (row == 0 ? "A>" : "B>") + (index.map { Self.fit(outputName($0, hub: hub), 3).uppercased() } ?? "-")
+            }
+            return part(0) + " " + part(1)
+        }
         switch function {
         case .level: return "LEVEL"
         case .pan: return "PAN"
         case .send(let index):
             let targets = hub.sendTargets
             guard targets.indices.contains(index) else { return "SEND" }
-            let ref = ChannelRef(.output, targets[index])
-            let name = hub.layout.label(for: ref) ?? hub.mirror.channels[ref]?.name ?? ref.description
-            return "> " + name.uppercased()
+            return "> " + outputName(index, hub: hub).uppercased()
         }
+    }
+
+    /// A send target's name (an index into `SurfaceHub.sendTargets`): the app's label for it, or
+    /// TotalMix FX's name.
+    func outputName(_ index: Int, hub: SurfaceHub) -> String {
+        let targets = hub.sendTargets
+        guard targets.indices.contains(index) else { return "" }
+        let ref = ChannelRef(.output, targets[index])
+        return hub.layout.label(for: ref) ?? hub.mirror.channels[ref]?.name ?? ref.description
     }
 
     /// Every ring, sent only where it changed, in one RING message.
@@ -813,14 +1003,29 @@ public struct E16Driver: Sendable {
     ///   held for PFL.
     func look(_ index: Int, hub: SurfaceHub) -> RingLook {
         if shiftHeld { return buttonRing(index, hub: hub) }
-        guard let info = infos[index], let value = knobValues[index] else { return RingLook(ring: .off) }
-        if let held, held.encoder == index, !held.didPFL, countdownShown >= 0 {
+        let strip = column(index)
+        guard let info = infos[strip], let value = knobValues[index] else { return RingLook(ring: .off) }
+        if let held, column(held.encoder) == strip, index == switchEncoder(ofStrip: strip), !held.didPFL, countdownShown >= 0 {
             let progress = min(Double(countdownShown) * Self.countdownStep / (Self.pflHold - Self.tapTime), 1)
-            let amount = pflOn[index] ? 1 - progress : progress
+            let amount = pflOn[strip] ? 1 - progress : progress
             return RingLook(ring: E16Ring(red: Self.pflRGB.0, green: Self.pflRGB.1, blue: Self.pflRGB.2, amount: amount))
         }
         var rgb = Self.rgb(for: info)
-        if pushTurning == index, let alt = alternateValues[index] {
+        let muteInEffect = muteOn[strip] && hub.mirror.muteMaster != false
+        if layout == .four, index < 12 {
+            // The 4-channel layout's other rows (the plan, 2026-11-05): a pan as in the
+            // 16-channel layout, unchanged by a mute; a send in its output's color (the
+            // channel's, for an output left white), dark while a mute is in effect, since a mute
+            // silences the channel's sends too (inference; to test on the device).
+            if index >= 8 { return RingLook(ring: Self.panRing(value, rgb)) }
+            guard !muteInEffect else { return RingLook(ring: .off) }
+            let indices = sendIndices(hub: hub)
+            if let n = indices[index / 4], hub.sendTargets.indices.contains(n),
+               let color = hub.mirror.channels[ChannelRef(.output, hub.sendTargets[n])]?.color, color != 1,
+               let sendRGB = Self.totalMixRGB[color] { rgb = sendRGB }
+            return RingLook(ring: E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: Self.levelAmount(value)))
+        }
+        if layout == .sixteen, pushTurning == index, let alt = alternateValues[index] {
             // Push-and-turn: the alternate function's value in the channel's color, a pan as
             // its arc from the top.
             let ring: E16Ring = isPan
@@ -828,7 +1033,7 @@ public struct E16Driver: Sendable {
                 : Self.panRing(alt, rgb)
             return RingLook(ring: ring)
         }
-        if case .send(let n) = function, hub.sendTargets.indices.contains(n) {
+        if layout == .sixteen, case .send(let n) = function, hub.sendTargets.indices.contains(n) {
             let output = ChannelRef(.output, hub.sendTargets[n])
             if let color = hub.mirror.channels[output]?.color, color != 1, let sendRGB = Self.totalMixRGB[color] { rgb = sendRGB }
         }
@@ -841,15 +1046,14 @@ public struct E16Driver: Sendable {
         // Mute Master is off (not silencing) shows its marks still, alternating with the level
         // every `blinkPeriod`; with PFL on, they turn with PFL's and blink, and the level
         // does not show.
-        let muteInEffect = muteOn[index] && hub.mirror.muteMaster != false
-        let muteSetOnly = muteOn[index] && hub.mirror.muteMaster == false
-        let turning = pflOn[index] || muteInEffect
+        let muteSetOnly = muteOn[strip] && hub.mirror.muteMaster == false
+        let turning = pflOn[strip] || muteInEffect
         let start = turning ? rotation : 0
         var marks: [Mark] = []
         if muteInEffect || (muteSetOnly && blinkLit) {
             marks += Self.quarterMarks(from: start, Self.muteRGB)
         }
-        if pflOn[index] {
+        if pflOn[strip] {
             marks += Self.quarterMarks(from: start + Self.stripCount / Self.markCount / 2, Self.pflRGB)
         }
         guard !marks.isEmpty else { return RingLook(ring: level) }
@@ -900,7 +1104,7 @@ public struct E16Driver: Sendable {
     /// the mode in use; and its color with its largest part at 127 while a button is held down, a momentary answer to
     /// the press.
     func buttonRing(_ index: Int, hub: SurfaceHub) -> RingLook {
-        guard let button = ShiftButton.layout[index] else { return RingLook(ring: .off) }
+        guard let button = shiftButton(at: index) else { return RingLook(ring: .off) }
         let rgb: (UInt8, UInt8, UInt8)
         var inUse = false
         switch button {
@@ -909,7 +1113,7 @@ public struct E16Driver: Sendable {
         case .send:
             rgb = Self.buttonColors.send
             if case .send = function { inUse = true }
-        case .output: rgb = Self.buttonColors.send
+        case .output, .rowOutput: rgb = Self.buttonColors.send
         case .page: rgb = Self.buttonColors.page
         }
         guard inUse || isAvailable(button, hub: hub) else { return RingLook(ring: .off) }  // dark stays dark, pressed or not

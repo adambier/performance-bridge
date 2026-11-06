@@ -644,3 +644,107 @@ final class E16DriverTests: XCTestCase {
     }
 
 }
+
+/// The 4-channel layout (Adam, 2026-11-05): `loadedHub()` with two more outputs, 4/5 ("Mon",
+/// blue) and 6/7 ("Room"), so the send targets are outputs 3/4, 5/6… as indices: Phones (2), Mon
+/// (4), and Room (6).
+private func fourHub() -> SurfaceHub {
+    var hub = loadedHub()
+    var events: [TotalMixEvent] = []
+    for (number, name, color) in [(4, "Mon", 5), (6, "Room", 1)] {
+        events.append(.channel(bus: .output, channel: number, parameter: "stereo", value: .number(1)))
+        events.append(.channel(bus: .output, channel: number, parameter: "name", value: .text(name)))
+        events.append(.channel(bus: .output, channel: number, parameter: "color", value: .number(Double(color))))
+        events.append(.channel(bus: .output, channel: number, parameter: "faderlin", value: .number(0.6)))
+        for (bus, channel) in [(TotalMixBus.input, 0), (.input, 2), (.input, 3), (.playback, 0)] {
+            events.append(.mix(bus: bus, channel: channel, output: number, parameter: "faderlin", value: .number(0.5)))
+        }
+    }
+    for event in events { _ = hub.handle(event, now: 0) }
+    return hub
+}
+
+private func connectedFour() -> (driver: E16Driver, hub: SurfaceHub, midi: [UInt8]) {
+    var hub = fourHub()
+    var driver = E16Driver(name: "e16", layout: .four)
+    driver.brightness = 1
+    driver.drawsScreen = false
+    let start = driver.start(hub: &hub, now: 0)
+    let answer = driver.receive(ack, hub: &hub, now: 0)
+    return (driver, hub, start.midi + answer.midi)
+}
+
+final class E16FourLayoutTests: XCTestCase {
+    func testColumnsAndRows() {
+        let (driver, hub, midi) = connectedFour()
+        XCTAssertEqual(hub.sendTargets, [2, 4, 6])
+        XCTAssertEqual(driver.currentSendOutputs(hub: hub), [2, 4], "A and B take the first two outputs")
+        XCTAssertEqual(midi.lastTitle, "A>PHO B>MON")
+        let labels = midi.lastLabels ?? []
+        for row in 0..<4 {
+            XCTAssertEqual(Array(labels[(row * 4)..<(row * 4 + 4)]), ["Keys", "Vox", "Gtr", "P1/2"], "every row names its column")
+        }
+        let rings = midi.rings
+        XCTAssertEqual(rings[12]?.r, 127, "level: Keys is red")
+        XCTAssertEqual(rings[12]?.amount, E16DriverTests.half)
+        XCTAssertEqual(rings[8]?.bipolar, true, "pan")
+        XCTAssertEqual(rings[8]?.amount, 8192, "centered")
+        XCTAssertEqual(rings[0]?.r, 127, "send A to a white output: the channel's color")
+        XCTAssertEqual(rings[0]?.amount, E16DriverTests.half)
+        XCTAssertEqual(rings[4]?.b, 127, "send B to a blue output: its color")
+        XCTAssertEqual(rings[4]?.r, 0)
+    }
+
+    func testEachRowTurnsItsOwnControl() {
+        var (driver, hub, _) = connectedFour()
+        XCTAssertEqual(driver.receive([0xB0, 1, 0x04], hub: &hub, now: 1).core.messages.map(\.address), ["/mix/in/0/2/faderlin"], "row 1: send A")
+        XCTAssertEqual(driver.receive([0xB0, 6, 0x04], hub: &hub, now: 2).core.messages.map(\.address), ["/mix/in/2/4/faderlin"], "row 2: send B")
+        XCTAssertEqual(driver.receive([0xB0, 11, 0x04], hub: &hub, now: 3).core.messages.first?.address.hasSuffix("balpan"), true, "row 3: pan")
+        XCTAssertEqual(driver.receive([0xB0, 16, 0x04], hub: &hub, now: 4).core.messages.map(\.address), ["/mix/pb/0/0/faderlin"], "row 4: level")
+    }
+
+    func testMuteFromAnyRowShowsOnTheLevelRingAndDarkensTheSends() {
+        var (driver, hub, _) = connectedFour()
+        let step = driver.receive([0x90, 5, 0x7F, 0x80, 5, 0x00], hub: &hub, now: 1)  // row 2, Vox
+        XCTAssertEqual(step.core.messages.map(\.address), ["/input/2/mute"])
+        let midi = step.midi + driver.tick(hub: &hub, now: 1.2).midi
+        XCTAssertEqual(midi.rings[13]?.amount, 0, "the level ring shows the marks")
+        XCTAssertEqual(midi.leds[13]?.count, 4)
+        XCTAssertEqual(midi.leds[13]?.first?.g, E16Driver.muteRGB.1, "orange")
+        XCTAssertEqual(midi.rings[1]?.amount, 0, "send A dark")
+        XCTAssertEqual(midi.rings[5]?.amount, 0, "send B dark")
+        XCTAssertNil(midi.rings[9], "the pan unchanged: nothing sent")
+    }
+
+    func testHoldIsPFLWithTheCountdownOnTheLevelRing() {
+        var (driver, hub, _) = connectedFour()
+        _ = driver.receive([0x90, 2, 0x7F], hub: &hub, now: 1)  // row 1, Gtr
+        let countdown = driver.tick(hub: &hub, now: 1.5).midi
+        XCTAssertEqual(countdown.rings[14]?.r, E16Driver.pflRGB.0, "the pink arc on Gtr's level ring")
+        XCTAssertEqual(countdown.rings[14]?.b, E16Driver.pflRGB.2)
+        XCTAssertNil(countdown.rings[2], "not on the encoder pushed")
+        let pfl = driver.tick(hub: &hub, now: 2.05)
+        XCTAssertEqual(pfl.core.messages.map(\.address), ["/input/3/pfl"])
+        let release = driver.receive([0x80, 2, 0x00], hub: &hub, now: 2.1).midi + driver.tick(hub: &hub, now: 2.3).midi
+        XCTAssertEqual(release.leds[14]?.count, 4, "PFL's marks on the level ring")
+        XCTAssertEqual(release.leds[14]?.first?.b, E16Driver.pflRGB.2)
+        XCTAssertNil(release.leds[2], "the send ring keeps its value")
+    }
+
+    func testShiftPageStepsTheSendRows() {
+        var (driver, hub, _) = connectedFour()
+        let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
+        XCTAssertEqual(shift.midi.lastLabels, ["", "", "", "Roo>", "", "", "", "Roo>",
+                                               "", "", "", "", "", "", "", ""],
+                       "A's back arrow and B's go nowhere (B's would be A's output); one page")
+        XCTAssertEqual(shift.midi.rings[3]?.g, 2, "an available arrow, dim deep green")
+        XCTAssertEqual(shift.midi.rings[2]?.amount, 0, "dark")
+        let press = driver.receive([0x90, 3, 0x7F, 0x80, 3, 0x00], hub: &hub, now: 2)  // A forward
+        XCTAssertEqual(driver.currentSendOutputs(hub: hub), [6, 4], "A skips B's output")
+        XCTAssertEqual(driver.sendOutputs, [6, 4])
+        XCTAssertEqual(press.midi.lastTitle, "A>ROO B>MON")
+        XCTAssertEqual(press.midi.lastLabels?[2], "<Pho", "A's back arrow skips Mon, B's output")
+        _ = driver.receive([0x90, 16, 0x00], hub: &hub, now: 3)
+        XCTAssertEqual(driver.receive([0xB0, 1, 0x04], hub: &hub, now: 4).core.messages.map(\.address), ["/mix/in/0/6/faderlin"], "send A now to Room")
+    }
+}

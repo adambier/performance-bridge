@@ -13,7 +13,7 @@ import E16Driver
 let e16BridgeUsage = """
     Usage:
       sbdev e16bridge [--host H] [--in-port P] [--out-port P] [--port NAME] [--home N]
-                      [--pan-center A,B,C…] [--pan-pause S] [--verbose]
+                      [--layout 16|4] [--sends A,B] [--pan-center A,B,C…] [--pan-pause S] [--verbose]
           Connects TotalMix FX and an OXI E16 (in its Remote Mode) through SurfaceCore and the E16
           driver, as the app does. Prints what is sent to TotalMix FX, with the time since
           starting; --verbose also prints every MIDI message to and from the device. Then reads
@@ -21,6 +21,8 @@ let e16BridgeUsage = """
           --port names the device's first USB port (default "OXI E16 Port 1").
           --host, --in-port, and --out-port are TotalMix FX's, as for monitor. --home is the home
           submix's output number, counting from 1 (default: TotalMix FX's Main Out).
+          --layout 4 is the 4-channel layout (default 16). --sends A,B are its send rows' outputs,
+          counting from 1 (default: the first two send targets).
           --pan-center gives the pans' sticky center a different number of units per encoder, to
           compare them side by side: with 2,5,10, encoders 1, 4, 7… take 2, encoders 2, 5, 8…
           take 5, and encoders 3, 6, 9… take 10 (default: the driver's 4 on every encoder).
@@ -32,6 +34,11 @@ let e16BridgeUsage = """
       one second is PFL; with Shift held the encoders are buttons: 1 LEVEL, 2 PAN, 3 SEND, 11 and 12
       the previous and next send output, 15 and 16 the previous and next page. Control-C or `quit`
       gives the device back.
+
+      In the 4-channel layout: four channels across, one column each; the rows turn send A, send
+      B, pan, and level. A push on any encoder of a column is mute, a hold of one second PFL. With
+      Shift held: 3 and 4 the previous and next output for send A, 7 and 8 for send B, 15 and 16
+      the previous and next page.
     """
 
 let e16BridgeCommandHelp = """
@@ -49,6 +56,8 @@ struct E16BridgeOptions {
     var home: Int?
     var panCenter: [Int] = []
     var panPause: Double?
+    var layout = E16Driver.Layout.sixteen
+    var sends: [Int?] = []
     var verbose = false
 }
 
@@ -76,6 +85,16 @@ func parseE16BridgeOptions(_ arguments: ArraySlice<String>) -> E16BridgeOptions 
             let units = value(argument).split(separator: ",").map { Int($0.trimmingCharacters(in: .whitespaces)) }
             guard !units.isEmpty, units.allSatisfy({ ($0 ?? -1) >= 0 }) else { fail("--pan-center needs numbers from 0, separated by commas.") }
             options.panCenter = units.compactMap { $0 }
+        case "--layout":
+            switch value(argument) {
+            case "16": options.layout = .sixteen
+            case "4": options.layout = .four
+            default: fail("--layout needs 16 or 4.")
+            }
+        case "--sends":
+            let outputs = value(argument).split(separator: ",").map { Int($0.trimmingCharacters(in: .whitespaces)) }
+            guard (1...2).contains(outputs.count), outputs.allSatisfy({ ($0 ?? 0) >= 1 }) else { fail("--sends needs one or two output numbers from 1, separated by a comma.") }
+            options.sends = outputs.map { $0.map { $0 - 1 } }
         case "--pan-pause":
             guard let seconds = Double(value(argument)), seconds >= 0, seconds.isFinite else { fail("--pan-pause needs seconds from 0.") }
             options.panPause = seconds
@@ -93,13 +112,14 @@ final class E16BridgeSession: @unchecked Sendable {
     private let lock = NSLock()
     private let start = Date()
     private var hub = SurfaceHub()
-    private var driver = E16Driver(name: "e16")
+    private var driver: E16Driver
     private var socket: UDPSocket?
     private var midi: MIDIConnection?
     private var wasConnected = false
 
     init(options: E16BridgeOptions) {
         self.options = options
+        driver = E16Driver(name: "e16", layout: options.layout, sendOutputs: options.sends)
         driver.panCenterTrial = options.panCenter
         if let pause = options.panPause { driver.panCenterPause = pause }
     }
@@ -223,11 +243,16 @@ final class E16BridgeSession: @unchecked Sendable {
         case "status":
             log("Connected: \(driver.isConnected); function: \(driver.function); title: \"\(driver.title(hub: hub))\"")
             log("Home submix: \(hub.homeSubmix.map { "output \($0 + 1)" } ?? "none yet"); send targets: \(hub.sendTargets.map { "output \($0 + 1)" })")
-            let id = driver.id(.main)
-            log("main: \(hub.mode(of: id).map(describe) ?? "none")")
-            for (index, strip) in (hub.strips(of: id) ?? []).enumerated() {
-                guard let info = strip.info else { continue }
-                log("  \(index + 1) \(info.name): knob \(info.knobLabel), switch \(info.switchLabel)")
+            if driver.layout == .four {
+                log("Send rows: \(driver.currentSendOutputs(hub: hub).map { $0.map { "output \($0 + 1)" } ?? "none" })")
+            }
+            for layer in driver.layers {
+                let id = driver.id(layer)
+                log("\(layer.rawValue): \(hub.mode(of: id).map(describe) ?? "none")")
+                for (index, strip) in (hub.strips(of: id) ?? []).enumerated() {
+                    guard let info = strip.info else { continue }
+                    log("  \(index + 1) \(info.name): knob \(info.knobLabel), switch \(info.switchLabel)")
+                }
             }
         default:
             print("Unknown command. Type `help`.")
