@@ -728,7 +728,8 @@ final class E16FourLayoutTests: XCTestCase {
         XCTAssertFalse(empty.pixel(margin - 1, y - 1), "no box without a name")
         let underline = E16Driver.screen(title: "", labels: Array(repeating: "", count: 12) + ["Vox", "", "", ""], underlined: [12])
         XCTAssertEqual(y + E16Font.glyphHeight + 1, E16Screen.height - 1, "the bottom row's underline on the last row")
-        XCTAssertTrue(underline.pixel(margin, E16Screen.height - 1), "the underline is drawn")
+        XCTAssertTrue(underline.pixel(margin - 1, E16Screen.height - 1), "the underline is drawn, as wide as the box")
+        XCTAssertTrue(underline.pixel(margin + E16Screen.width(of: "Vox"), E16Screen.height - 1))
     }
 
     func testSetOnlyMuteNameFlashes() {

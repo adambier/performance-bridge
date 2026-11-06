@@ -910,7 +910,9 @@ public struct E16Driver: Sendable {
             let x = (index % 4) * cell + (centered ? (cell - width) / 2 : margin), y = Self.labelTop + (index / 4) * 14
             screen.draw(label, x: x, y: y)
             guard !label.isEmpty else { continue }
-            if underlined.contains(index) { screen.line(y: y + E16Font.glyphHeight + 1, from: x, to: x + width - 1) }
+            // The underline as wide as the inverted box, one pixel past the letters each side,
+            // always, so it doesn't change length as a set-only mute flashes (Adam, 2026-11-05).
+            if underlined.contains(index) { screen.line(y: y + E16Font.glyphHeight + 1, from: x - 1, to: x + width) }
             if inverted.contains(index) {
                 // A box one pixel larger than the letters all round, its pixels flipped.
                 for px in (x - 1)...(x + width) {
