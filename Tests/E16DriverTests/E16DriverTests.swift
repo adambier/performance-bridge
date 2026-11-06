@@ -747,17 +747,13 @@ final class E16FourLayoutTests: XCTestCase {
         XCTAssertEqual(screens(driver.tick(hub: &hub, now: 3.05).midi), 0, "no flashing without name marks")
     }
 
-    func testPushAndTurnIsFine() {
+    func testPushAndTurnIsAPlainTurn() {
         var (driver, hub, _) = connectedFour()
         _ = driver.receive([0x90, 12, 0x7F], hub: &hub, now: 1)  // Keys's level, pushed
-        let fine = driver.receive([0xB0, 13, 0x04], hub: &hub, now: 1.1)  // +4, accelerated
-        let finePosition = 0.5 + E16Driver.levelStep * E16Driver.fineLevelScale
-        XCTAssertEqual(fine.core.messages.first?.arguments.first, .float(Float(finePosition)), "one unit, a quarter step")
-        XCTAssertTrue(fine.core.messages.allSatisfy { !$0.address.hasSuffix("mute") })
+        let turn = driver.receive([0xB0, 13, 0x04], hub: &hub, now: 1.1)
+        XCTAssertEqual(turn.core.messages.first?.arguments.first, .float(Float(0.5 + 4 * E16Driver.levelStep)), "the normal step")
         let release = driver.receive([0x80, 12, 0x00], hub: &hub, now: 1.2)
         XCTAssertFalse(release.core.messages.contains { $0.address.hasSuffix("mute") }, "the turn cancelled the push")
-        let normal = driver.receive([0xB0, 13, 0x04], hub: &hub, now: 2)
-        XCTAssertEqual(normal.core.messages.first?.arguments.first, .float(Float(finePosition + 4 * E16Driver.levelStep)), "released: the normal step")
     }
 
     func testShortLevels() {
