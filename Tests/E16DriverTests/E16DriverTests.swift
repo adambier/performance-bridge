@@ -553,11 +553,11 @@ final class E16DriverTests: XCTestCase {
         XCTAssertTrue(art[10].allSatisfy { $0 == "#" }, "the rule under the title")
         XCTAssertTrue(art[6].hasPrefix("...###."), "the title 3 px in, where the labels start (L's foot)")
         XCTAssertTrue(art[0].hasSuffix("###...."), "the tail ends 3 px from the right edge (the 3, 4 wide, its top row 3 wide)")
-        XCTAssertTrue(art[14].hasPrefix("....###."), "the first label (ADT3) at the same 3 px (A's top)")
-        XCTAssertTrue(art[14].dropFirst(32).hasPrefix("...####"), "the second column's label 3 px into its cell (P's top)")
-        XCTAssertFalse(art[7].contains("#") || art[8].contains("#") || art[9].contains("#") || art[11].contains("#") || art[12].contains("#") || art[13].contains("#"), "three clear lines above and below the rule")
-        XCTAssertTrue(art[20].contains("#") && !art[21].contains("#"), "the first row is 7 pixels tall")
-        XCTAssertTrue(!art[55].contains("#") && art[56].contains("#") && art[62].contains("#"), "the fourth row at 56, 14 pixels per row")
+        XCTAssertTrue(art[13].hasPrefix("....###."), "the first label (ADT3) at the same 3 px (A's top)")
+        XCTAssertTrue(art[13].dropFirst(32).hasPrefix("...####"), "the second column's label 3 px into its cell (P's top)")
+        XCTAssertFalse(art[7].contains("#") || art[8].contains("#") || art[9].contains("#") || art[11].contains("#") || art[12].contains("#"), "three clear lines above the rule, two below (the labels moved up one for the underline, 2026-11-05)")
+        XCTAssertTrue(art[19].contains("#") && !art[20].contains("#"), "the first row is 7 pixels tall")
+        XCTAssertTrue(!art[54].contains("#") && art[55].contains("#") && art[61].contains("#"), "the fourth row at 55, 14 pixels per row")
         XCTAssertTrue(E16Driver.screen(title: "LEVEL", labels: []).art.split(separator: "\n")[0].hasSuffix("........"), "no tail")
         XCTAssertEqual(E16Driver.ShiftButton.output(1).longLabel, "SEND>")
     }
@@ -720,12 +720,30 @@ final class E16FourLayoutTests: XCTestCase {
     func testNameMarks() {
         let plain = E16Driver.screen(title: "", labels: Array(repeating: "", count: 12) + ["Vox", "", "", ""])
         let marked = E16Driver.screen(title: "", labels: Array(repeating: "", count: 12) + ["Vox", "", "", ""], inverted: [12], underlined: [12])
-        let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2, y = 14 + 3 * 14
+        let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2, y = E16Driver.labelTop + 3 * 14
         XCTAssertFalse(plain.pixel(margin - 1, y - 1))
         XCTAssertTrue(marked.pixel(margin - 1, y - 1), "the box around the name")
         XCTAssertNotEqual(plain.pixel(margin, y), marked.pixel(margin, y), "the letters flipped")
         let empty = E16Driver.screen(title: "", labels: Array(repeating: "", count: 16), inverted: [12])
         XCTAssertFalse(empty.pixel(margin - 1, y - 1), "no box without a name")
+        let underline = E16Driver.screen(title: "", labels: Array(repeating: "", count: 12) + ["Vox", "", "", ""], underlined: [12])
+        XCTAssertEqual(y + E16Font.glyphHeight + 1, E16Screen.height - 1, "the bottom row's underline on the last row")
+        XCTAssertTrue(underline.pixel(margin, E16Screen.height - 1), "the underline is drawn")
+    }
+
+    func testSetOnlyMuteNameFlashes() {
+        var (driver, hub, _) = connectedFour()
+        driver.drawsScreen = true
+        _ = driver.take(hub.handle(.other(path: "globalmute", value: .number(0)), now: 0.05), hub: &hub, now: 0.05)
+        _ = driver.receive([0x90, 1, 0x7F, 0x80, 1, 0x00], hub: &hub, now: 0.1)  // Vox's mute, set only
+        let framebufferID: [UInt8] = Array(labelsID.prefix(7))
+        func screens(_ midi: [UInt8]) -> Int { midi.sysExMessages.filter { $0.starts(with: framebufferID) && !$0.starts(with: labelsID) && !$0.starts(with: ringsID) && !$0.starts(with: ledsID) }.count }
+        _ = driver.tick(hub: &hub, now: 1.2)  // the title overlay ends
+        XCTAssertEqual(screens(driver.tick(hub: &hub, now: 1.55).midi), 1, "the name drawn plain")
+        XCTAssertEqual(screens(driver.tick(hub: &hub, now: 2.05).midi), 1, "and inverted again")
+        driver.marksNames = false
+        _ = driver.tick(hub: &hub, now: 2.55)
+        XCTAssertEqual(screens(driver.tick(hub: &hub, now: 3.05).midi), 0, "no flashing without name marks")
     }
 
     func testShortLevels() {
@@ -734,7 +752,7 @@ final class E16FourLayoutTests: XCTestCase {
         var expected = E16Screen()
         let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2
         expected.line(y: 10, from: 0, to: E16Screen.width - 1)
-        expected.draw("-∞", x: margin, y: 14)
+        expected.draw("-∞", x: margin, y: E16Driver.labelTop)
         XCTAssertEqual(drawn, expected, "drawn with the infinity glyph")
         var infinity = E16Screen(), missing = E16Screen()
         infinity.draw("∞", x: 0, y: 0)

@@ -404,6 +404,7 @@ public struct E16Driver: Sendable {
             blinkLit = lit
             rotation = turn
             step.midi += drawRings(hub: hub)  // only the rings that change are sent
+            step.midi += drawLabels(hub: hub)  // a set-only mute's name flashing (`marksNames`)
         }
         return step
     }
@@ -858,7 +859,9 @@ public struct E16Driver: Sendable {
         if marksNames, !shiftHeld {
             for strip in 0..<columns {
                 let index = layout == .four ? 12 + strip : strip
-                if muteOn[strip] { inverted.insert(index) }
+                // A mute set while Mute Master is off (not silencing) flashes, in step with its
+                // ring (Adam, 2026-11-05).
+                if muteOn[strip], hub.mirror.muteMaster != false || blinkLit { inverted.insert(index) }
                 if pflOn[strip] { underlined.insert(index) }
             }
         }
@@ -871,6 +874,11 @@ public struct E16Driver: Sendable {
         sentLabels = bytes
         return bytes
     }
+
+    /// The top of the first row of labels: 13, so the last row's underline (`marksNames`), two
+    /// pixels under its letters, is on the screen's last row (it fell off at 14; Adam,
+    /// 2026-11-05).
+    public static let labelTop = 13
 
     /// The host-drawn screen, on a grid of four columns: the title in the first column and its
     /// tail ("PFL 2/3") ending at the last column's edge, a rule under them, and the sixteen
@@ -893,7 +901,7 @@ public struct E16Driver: Sendable {
         }
         screen.line(y: 10, from: 0, to: E16Screen.width - 1)
         for (index, label) in labels.prefix(stripCount).enumerated() {
-            let x = (index % 4) * cell + margin, y = 14 + (index / 4) * 14
+            let x = (index % 4) * cell + margin, y = Self.labelTop + (index / 4) * 14
             screen.draw(label, x: x, y: y)
             guard !label.isEmpty else { continue }
             let width = E16Screen.width(of: label)
