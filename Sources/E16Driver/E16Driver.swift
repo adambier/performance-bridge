@@ -120,6 +120,13 @@ public struct E16Driver: Sendable {
     /// The shortest time between two screens drawn for a meter's change alone: 25 a second
     /// (the device drew 60 a second smoothly, OXI-E16 test 8).
     public static let meterFrame = 1.0 / 25
+    /// How long a meter's peak pixel holds before it drops to the level: a starting value
+    /// (inferred, to tune on the device; `sbdev e16bridge --peak-hold`). TotalMix FX's own
+    /// "Peak Hold" for OSC holds the whole level, which made the bars slow (Adam, 2026-11-06), so
+    /// the driver holds the peak itself and TotalMix FX's option stays off.
+    public var peakHold = 2.0
+    /// Each channel's held peak, as a bar width, and when it was reached.
+    private var peaks: [ChannelRef: (width: Int, at: Double)] = [:]
     /// When the screen was last sent, by the driver's clock (`tick`'s `now`).
     private var screenSentAt = -Double.infinity
     private var clock = 0.0
@@ -281,7 +288,7 @@ public struct E16Driver: Sendable {
     private var sentLabels: [UInt8]?
     /// What the last screen showed (its title parts and labels), so the framebuffer is drawn and
     /// packed only when something on it changed, not on every tick (review of 2026-11-04).
-    private var shownScreen: (title: String, tail: String, labels: [String], drawn: Bool, marks: [Int], meters: [Int: [Int]])?
+    private var shownScreen: (title: String, tail: String, labels: [String], drawn: Bool, marks: [Int], meters: [Int: [Int]], peaks: [Int: [Int]])?
     private var sentRings: [RingLook?] = Array(repeating: nil, count: E16Driver.stripCount)
 
     /// How one encoder's ring is drawn: a RING message, then LED messages for any marks. (A
@@ -892,16 +899,23 @@ public struct E16Driver: Sendable {
                 if pflOn[strip] { pflMarked.insert(index) }
             }
         }
-        // The meters, as bar widths, under the names (`showsMeters`).
-        var meters: [Int: [Int]] = [:]
+        // The meters, as bar widths, under the names (`showsMeters`), and their held peaks.
+        var meters: [Int: [Int]] = [:], peakWidths: [Int: [Int]] = [:]
         if showsMeters, drawsScreen, !shiftHeld {
             for strip in 0..<columns {
                 guard let info = infos[strip] else { continue }
                 var refs = [info.channel]
                 if info.stereo { refs.append(ChannelRef(info.channel.bus, info.channel.channel + 1)) }
-                meters[layout == .four ? 12 + strip : strip] = refs.map {
+                let widths = refs.map {
                     let value = MeterScale.value(peakDB: hub.mirror.meters[$0] ?? -.infinity)
                     return Int((Double(value) / Double(MeterScale.fullScale) * Double(Self.labelMaxWidth)).rounded())
+                }
+                let index = layout == .four ? 12 + strip : strip
+                meters[index] = widths
+                peakWidths[index] = zip(refs, widths).map { ref, width in
+                    if let held = peaks[ref], held.width >= width, clock - held.at < peakHold { return held.width }
+                    peaks[ref] = (width, clock)
+                    return width
                 }
             }
         }
@@ -910,12 +924,12 @@ public struct E16Driver: Sendable {
         let key = marks + (centersLabels ? [-2] : [])
         if let shown = shownScreen, shown.title == parts.0, shown.tail == parts.1, shown.labels == labels, shown.drawn == drawsScreen, shown.marks == key {
             // Only the meters changed: at most `meterFrame` apart.
-            if shown.meters == meters || clock - screenSentAt < Self.meterFrame { return [] }
+            if (shown.meters == meters && shown.peaks == peakWidths) || clock - screenSentAt < Self.meterFrame { return [] }
         }
-        shownScreen = (parts.0, parts.1, labels, drawsScreen, key, meters)
+        shownScreen = (parts.0, parts.1, labels, drawsScreen, key, meters, peakWidths)
         screenSentAt = clock
         let bytes = drawsScreen ? E16Outgoing.framebuffer(Self.screen(title: parts.0, tail: parts.1, labels: labels, inverted: inverted, pflMarked: pflMarked,
-                                                                      centered: centersLabels, values: values, meters: meters))
+                                                                      centered: centersLabels, values: values, meters: meters, peaks: peakWidths))
             : E16Outgoing.labels(title: title(hub: hub), labels: labels)
         guard bytes != sentLabels else { return [] }
         sentLabels = bytes
@@ -939,7 +953,7 @@ public struct E16Driver: Sendable {
     /// mute) and `pflMarked` ones followed by a small square (a PFL); `meters` draws a bar of the
     /// given width under a name, a second one under it for a stereo channel's right side.
     public static func screen(title: String, tail: String = "", labels: [String], inverted: Set<Int> = [], pflMarked: Set<Int> = [],
-                              centered: Bool = false, values: Set<Int> = [], meters: [Int: [Int]] = [:]) -> E16Screen {
+                              centered: Bool = false, values: Set<Int> = [], meters: [Int: [Int]] = [:], peaks: [Int: [Int]] = [:]) -> E16Screen {
         // "-oo" (off) as "-∞": the font has no lowercase (Adam, 2026-11-05).
         let title = title.replacingOccurrences(of: "-oo", with: "-∞")
         let labels = labels.map { $0.replacingOccurrences(of: "-oo", with: "-∞") }
@@ -961,6 +975,11 @@ public struct E16Driver: Sendable {
             // in both layouts, so it is plainly that channel's).
             for (line, width) in (meters[index] ?? []).enumerated() where width > 0 {
                 screen.line(y: y + E16Font.glyphHeight + 2 + line, from: cellX + margin, to: cellX + margin + min(width, labelMaxWidth) - 1)
+            }
+            // A held peak: one pixel where the bar last reached, while it's past the bar (Adam,
+            // 2026-11-06: "a fast bar and just a pixel for peaks").
+            for (line, peak) in (peaks[index] ?? []).enumerated() where peak > (meters[index].map { $0.indices.contains(line) ? $0[line] : 0 } ?? 0) {
+                screen.set(cellX + margin + min(peak, labelMaxWidth) - 1, y + E16Font.glyphHeight + 2 + line)
             }
             if values.contains(index), drawValue(label, cellX: cellX, y: y, on: &screen) { continue }
             let width = E16Screen.width(of: label)

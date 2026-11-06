@@ -750,6 +750,22 @@ final class E16FourLayoutTests: XCTestCase {
         XCTAssertFalse(screen.pixel(32 + margin + 26, line))
         XCTAssertTrue(screen.pixel(32 + margin + 4, line + 1) && !screen.pixel(32 + margin + 5, line + 1), "a stereo channel's right side under its left")
         XCTAssertFalse(screen.pixel(margin, line + 1), "one line for a mono channel")
+        let held = E16Driver.screen(title: "", labels: labels, meters: [12: [5]], peaks: [12: [20]])
+        XCTAssertTrue(held.pixel(margin + 19, line) && !held.pixel(margin + 18, line) && !held.pixel(margin + 5, line), "one pixel at the peak")
+    }
+
+    func testPeakHoldsThenDrops() {
+        var (driver, hub, _) = connectedFour()
+        driver.drawsScreen = true
+        driver.showsMeters = true
+        driver.peakHold = 1
+        func line(_ midi: [UInt8]) -> Bool { !midi.isEmpty }
+        _ = hub.handle(.level(bus: .input, channel: 0, peakDB: -1), now: 1)
+        _ = driver.tick(hub: &hub, now: 1)
+        _ = hub.handle(.level(bus: .input, channel: 0, peakDB: -40), now: 1.1)
+        XCTAssertFalse(driver.tick(hub: &hub, now: 1.2).midi.isEmpty, "the bar falls, the peak stays: redrawn")
+        XCTAssertTrue(driver.tick(hub: &hub, now: 1.6).midi.filter { $0 == 0xF0 }.count <= 1, "held: nothing new, or a ring")
+        XCTAssertFalse(driver.tick(hub: &hub, now: 2.3).midi.isEmpty, "after the hold, the peak drops: redrawn")
     }
 
     func testValuesHoldTheirPlaces() {
