@@ -718,18 +718,67 @@ final class E16FourLayoutTests: XCTestCase {
     }
 
     func testNameMarks() {
-        let plain = E16Driver.screen(title: "", labels: Array(repeating: "", count: 12) + ["Vox", "", "", ""])
-        let marked = E16Driver.screen(title: "", labels: Array(repeating: "", count: 12) + ["Vox", "", "", ""], inverted: [12], underlined: [12])
+        let labels = Array(repeating: "", count: 12) + ["Vox", "", "", ""]
+        let plain = E16Driver.screen(title: "", labels: labels)
+        let marked = E16Driver.screen(title: "", labels: labels, inverted: [12], pflMarked: [12])
         let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2, y = E16Driver.labelTop + 3 * E16Driver.labelPitch
         XCTAssertFalse(plain.pixel(margin - 1, y - 1))
         XCTAssertTrue(marked.pixel(margin - 1, y - 1), "the box around the name")
         XCTAssertNotEqual(plain.pixel(margin, y), marked.pixel(margin, y), "the letters flipped")
         let empty = E16Driver.screen(title: "", labels: Array(repeating: "", count: 16), inverted: [12])
         XCTAssertFalse(empty.pixel(margin - 1, y - 1), "no box without a name")
-        let underline = E16Driver.screen(title: "", labels: Array(repeating: "", count: 12) + ["Vox", "", "", ""], underlined: [12])
-        XCTAssertLessThan(y + E16Font.glyphHeight + 1, E16Screen.height, "the bottom row's underline on the screen")
-        XCTAssertTrue(underline.pixel(margin - 1, y + E16Font.glyphHeight + 1), "the underline is drawn, as wide as the box")
-        XCTAssertTrue(underline.pixel(margin + E16Screen.width(of: "Vox"), y + E16Font.glyphHeight + 1))
+        let pfl = E16Driver.screen(title: "", labels: labels, pflMarked: [12])
+        let after = margin + E16Screen.width(of: "Vox") + 2
+        XCTAssertTrue(pfl.pixel(after, y + 2) && pfl.pixel(after + 2, y + 4), "a 3 x 3 square after the name")
+        XCTAssertFalse(pfl.pixel(after - 1, y + 3) || pfl.pixel(after + 3, y + 3) || pfl.pixel(after + 1, y + 1))
+        XCTAssertFalse((0..<E16Screen.width).contains { pfl.pixel($0, y + E16Font.glyphHeight + 1) }, "no underline")
+    }
+
+    func testMeters() {
+        let labels = Array(repeating: "", count: 12) + ["Vox", "P1/2", "", ""]
+        let screen = E16Driver.screen(title: "", labels: labels, centered: true, meters: [12: [13], 13: [26, 5]])
+        let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2, y = E16Driver.labelTop + 3 * E16Driver.labelPitch
+        let line = y + E16Font.glyphHeight + 2
+        XCTAssertEqual(line, 62)
+        XCTAssertTrue(screen.pixel(margin, line) && screen.pixel(margin + 12, line), "half a cell")
+        XCTAssertFalse(screen.pixel(margin + 13, line))
+        XCTAssertFalse(screen.pixel(margin, line - 1), "two pixels under the letters")
+        XCTAssertTrue(screen.pixel(32 + margin + 25, line), "full")
+        XCTAssertFalse(screen.pixel(32 + margin + 26, line))
+        XCTAssertTrue(screen.pixel(32 + margin + 4, line + 1) && !screen.pixel(32 + margin + 5, line + 1), "a stereo channel's right side under its left")
+        XCTAssertFalse(screen.pixel(margin, line + 1), "one line for a mono channel")
+    }
+
+    func testValuesHoldTheirPlaces() {
+        func columns(_ text: String) -> [Int] {
+            var screen = E16Screen()
+            XCTAssertTrue(E16Driver.drawValue(text, cellX: 0, y: 0, on: &screen))
+            return (0..<32).filter { x in (0..<7).contains { screen.pixel(x, $0) } }
+        }
+        let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2, right = margin + E16Driver.labelMaxWidth - 1
+        for text in ["-6.0", "-12.5", "+2.5", "0.0", "-41.1"] {
+            XCTAssertEqual(columns(text).last, right, "\(text): the tenths end at the right margin")
+            XCTAssertTrue(columns(text).contains(right - 5) && !columns(text).contains(right - 4) && !columns(text).contains(right - 6), "\(text): the point in its place")
+        }
+        XCTAssertEqual(columns("L24").last, right, "a pan's last digit at the right margin")
+        XCTAssertEqual(columns("-6.0").first, columns("-16.0").first.map { $0 + 5 }, "the sign moves a place when a digit is added")
+        XCTAssertEqual(columns("C"), columns("C"), "C is centered")
+        var screen = E16Screen()
+        XCTAssertFalse(E16Driver.drawValue("Keys", cellX: 0, y: 0, on: &screen), "not a number")
+    }
+
+    func testMetersFollowTotalMixFXAtMost25ASecond() {
+        var (driver, hub, _) = connectedFour()
+        driver.drawsScreen = true
+        driver.showsMeters = true
+        _ = driver.tick(hub: &hub, now: 1)
+        func screens(_ midi: [UInt8]) -> Int { midi.sysExMessages.filter { $0.starts(with: Array(labelsID.prefix(7))) && !$0.starts(with: labelsID) && !$0.starts(with: ringsID) && !$0.starts(with: ledsID) }.count }
+        _ = hub.handle(.level(bus: .input, channel: 0, peakDB: -6), now: 1.01)
+        XCTAssertEqual(screens(driver.tick(hub: &hub, now: 1.05).midi), 1, "a level change redraws")
+        _ = hub.handle(.level(bus: .input, channel: 0, peakDB: -3), now: 1.06)
+        XCTAssertEqual(screens(driver.tick(hub: &hub, now: 1.07).midi), 0, "not within 1/25 s")
+        XCTAssertEqual(screens(driver.tick(hub: &hub, now: 1.1).midi), 1, "then drawn")
+        XCTAssertEqual(screens(driver.tick(hub: &hub, now: 1.2).midi), 0, "nothing changed")
     }
 
     func testSetOnlyMuteNameFlashes() {

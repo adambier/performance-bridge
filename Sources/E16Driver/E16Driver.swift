@@ -106,12 +106,23 @@ public struct E16Driver: Sendable {
     /// name a stereo pair.
     public var drawsScreen = true
     /// Whether a muted channel's name is drawn inverted (a lit box, dark letters) and a PFL'd
-    /// one's underlined, on the host-drawn screen: a trial (Adam, 2026-11-05: "let's see it",
+    /// one followed by a small square, on the host-drawn screen: a trial (Adam, 2026-11-05: "let's see it",
     /// with a way to turn it off; `sbdev e16bridge --no-name-marks`).
     public var marksNames = true
     /// Whether the labels are centered in their cells rather than at the left (the title stays
-    /// at the left): a trial (Adam, 2026-11-05; `sbdev e16bridge --center`).
-    public var centersLabels = false
+    /// at the left; numbers have places of their own, `drawValue`): chosen by Adam, 2026-11-06
+    /// (`sbdev e16bridge --left` for the left).
+    public var centersLabels = true
+    /// Whether the host-drawn screen shows each channel's level as a bar under its name, from
+    /// TotalMix FX's level data ("Send Level Data"), two bars for a stereo channel: a trial
+    /// (Adam, 2026-11-06; `sbdev e16bridge --meters`).
+    public var showsMeters = false
+    /// The shortest time between two screens drawn for a meter's change alone: 25 a second
+    /// (the device drew 60 a second smoothly, OXI-E16 test 8).
+    public static let meterFrame = 1.0 / 25
+    /// When the screen was last sent, by the driver's clock (`tick`'s `now`).
+    private var screenSentAt = -Double.infinity
+    private var clock = 0.0
     /// The widest a label may be on the host-drawn screen, in pixels: a 32-pixel cell with at
     /// least 6 pixels between neighbors (Adam, 2026-11-04: 3 was too close).
     public static let labelMaxWidth = 26
@@ -269,7 +280,7 @@ public struct E16Driver: Sendable {
     private var sentLabels: [UInt8]?
     /// What the last screen showed (its title parts and labels), so the framebuffer is drawn and
     /// packed only when something on it changed, not on every tick (review of 2026-11-04).
-    private var shownScreen: (title: String, tail: String, labels: [String], drawn: Bool, marks: [Int])?
+    private var shownScreen: (title: String, tail: String, labels: [String], drawn: Bool, marks: [Int], meters: [Int: [Int]])?
     private var sentRings: [RingLook?] = Array(repeating: nil, count: E16Driver.stripCount)
 
     /// How one encoder's ring is drawn: a RING message, then LED messages for any marks. (A
@@ -372,6 +383,7 @@ public struct E16Driver: Sendable {
     /// held long enough for PFL (with its countdown), an overlay ending, and the marks' rotation and alternation.
     public mutating func tick(hub: inout SurfaceHub, now: Double) -> E16Step {
         var step = E16Step()
+        clock = now
         if !connected, let lastEnter, now - lastEnter >= Self.enterInterval {
             self.lastEnter = now
             step.midi += E16Outgoing.enterRemoteMode
@@ -408,6 +420,8 @@ public struct E16Driver: Sendable {
             rotation = turn
             step.midi += drawRings(hub: hub)  // only the rings that change are sent
             step.midi += drawLabels(hub: hub)  // a set-only mute's name flashing (`marksNames`)
+        } else if showsMeters {
+            step.midi += drawLabels(hub: hub)  // the meters, at most `meterFrame` apart
         }
         return step
     }
@@ -862,21 +876,40 @@ public struct E16Driver: Sendable {
         let parts = titleParts(hub: hub)
         // The names that show a switch (`marksNames`): the 16-channel layout's every label, the
         // 4-channel layout's bottom row.
-        var inverted = Set<Int>(), underlined = Set<Int>()
+        var inverted = Set<Int>(), pflMarked = Set<Int>()
         if marksNames, !shiftHeld {
             for strip in 0..<columns {
                 let index = layout == .four ? 12 + strip : strip
                 // A mute set while Mute Master is off (not silencing) flashes, in step with its
                 // ring (Adam, 2026-11-05).
                 if muteOn[strip], hub.mirror.muteMaster != false || blinkLit { inverted.insert(index) }
-                if pflOn[strip] { underlined.insert(index) }
+                if pflOn[strip] { pflMarked.insert(index) }
             }
         }
-        let marks = inverted.sorted() + [-1] + underlined.sorted()
+        // The meters, as bar widths, under the names (`showsMeters`).
+        var meters: [Int: [Int]] = [:]
+        if showsMeters, drawsScreen, !shiftHeld {
+            for strip in 0..<columns {
+                guard let info = infos[strip] else { continue }
+                var refs = [info.channel]
+                if info.stereo { refs.append(ChannelRef(info.channel.bus, info.channel.channel + 1)) }
+                meters[layout == .four ? 12 + strip : strip] = refs.map {
+                    let value = MeterScale.value(peakDB: hub.mirror.meters[$0] ?? -.infinity)
+                    return Int((Double(value) / Double(MeterScale.fullScale) * Double(Self.labelMaxWidth)).rounded())
+                }
+            }
+        }
+        let values: Set<Int> = layout == .four && !shiftHeld ? Set(0..<12) : []
+        let marks = inverted.sorted() + [-1] + pflMarked.sorted()
         let key = marks + (centersLabels ? [-2] : [])
-        if let shown = shownScreen, shown.title == parts.0, shown.tail == parts.1, shown.labels == labels, shown.drawn == drawsScreen, shown.marks == key { return [] }
-        shownScreen = (parts.0, parts.1, labels, drawsScreen, key)
-        let bytes = drawsScreen ? E16Outgoing.framebuffer(Self.screen(title: parts.0, tail: parts.1, labels: labels, inverted: inverted, underlined: underlined, centered: centersLabels))
+        if let shown = shownScreen, shown.title == parts.0, shown.tail == parts.1, shown.labels == labels, shown.drawn == drawsScreen, shown.marks == key {
+            // Only the meters changed: at most `meterFrame` apart.
+            if shown.meters == meters || clock - screenSentAt < Self.meterFrame { return [] }
+        }
+        shownScreen = (parts.0, parts.1, labels, drawsScreen, key, meters)
+        screenSentAt = clock
+        let bytes = drawsScreen ? E16Outgoing.framebuffer(Self.screen(title: parts.0, tail: parts.1, labels: labels, inverted: inverted, pflMarked: pflMarked,
+                                                                      centered: centersLabels, values: values, meters: meters))
             : E16Outgoing.labels(title: title(hub: hub), labels: labels)
         guard bytes != sentLabels else { return [] }
         sentLabels = bytes
@@ -886,17 +919,21 @@ public struct E16Driver: Sendable {
     /// The top of the first row of labels: three clear lines under the title's rule (at 13 the
     /// numbers crowded it; Adam, 2026-11-05).
     public static let labelTop = 14
-    /// The distance from one row of labels to the next: 13, so the last row's underline
-    /// (`marksNames`), two pixels under its letters, is on the screen (at 14 it fell off;
-    /// Adam, 2026-11-05).
+    /// The distance from one row of labels to the next: 13, so the last row's meter, two pixels
+    /// under its letters and two lines for a stereo channel, is on the screen (at 14 an
+    /// underline there fell off; Adam, 2026-11-05).
     public static let labelPitch = 13
 
     /// The host-drawn screen, on a grid of four columns: the title in the first column and its
     /// tail ("PFL 2/3") ending at the last column's edge, a rule under them, and the sixteen
-    /// labels in four rows 14 pixels apart, each at the left of its 32-pixel cell and no wider
-    /// than `labelMaxWidth`. Everything in a column starts on the same pixel, so the title
-    /// lines up with the labels (Adam, 2026-11-04).
-    public static func screen(title: String, tail: String = "", labels: [String], inverted: Set<Int> = [], underlined: Set<Int> = [], centered: Bool = false) -> E16Screen {
+    /// labels in four rows 13 pixels apart in their 32-pixel cells, no wider than
+    /// `labelMaxWidth`: at the left of the cell, lined up with the title (Adam, 2026-11-04), or
+    /// centered (`centered`; Adam, 2026-11-06). The cells in `values` hold numbers, drawn with
+    /// their digits in fixed places (`drawValue`). `inverted` names are drawn in a lit box (a
+    /// mute) and `pflMarked` ones followed by a small square (a PFL); `meters` draws a bar of the
+    /// given width under a name, a second one under it for a stereo channel's right side.
+    public static func screen(title: String, tail: String = "", labels: [String], inverted: Set<Int> = [], pflMarked: Set<Int> = [],
+                              centered: Bool = false, values: Set<Int> = [], meters: [Int: [Int]] = [:]) -> E16Screen {
         // "-oo" (off) as "-∞": the font has no lowercase (Adam, 2026-11-05).
         let title = title.replacingOccurrences(of: "-oo", with: "-∞")
         let labels = labels.map { $0.replacingOccurrences(of: "-oo", with: "-∞") }
@@ -912,13 +949,23 @@ public struct E16Driver: Sendable {
         }
         screen.line(y: 10, from: 0, to: E16Screen.width - 1)
         for (index, label) in labels.prefix(stripCount).enumerated() {
+            let cellX = (index % 4) * cell, y = Self.labelTop + (index / 4) * Self.labelPitch
+            // A meter: one pixel tall, two under the letters, from the cell's margin; a stereo
+            // channel's right side on the line under its left (Adam, 2026-11-06: below the name
+            // in both layouts, so it is plainly that channel's).
+            for (line, width) in (meters[index] ?? []).enumerated() where width > 0 {
+                screen.line(y: y + E16Font.glyphHeight + 2 + line, from: cellX + margin, to: cellX + margin + min(width, labelMaxWidth) - 1)
+            }
+            if values.contains(index), drawValue(label, cellX: cellX, y: y, on: &screen) { continue }
             let width = E16Screen.width(of: label)
-            let x = (index % 4) * cell + (centered ? (cell - width) / 2 : margin), y = Self.labelTop + (index / 4) * Self.labelPitch
+            let x = cellX + (centered ? (cell - width) / 2 : margin)
             screen.draw(label, x: x, y: y)
             guard !label.isEmpty else { continue }
-            // The underline as wide as the inverted box, one pixel past the letters each side,
-            // always, so it doesn't change length as a set-only mute flashes (Adam, 2026-11-05).
-            if underlined.contains(index) { screen.line(y: y + E16Font.glyphHeight + 1, from: x - 1, to: x + width) }
+            // PFL: a square after the name, in the cell's spare room (Adam, 2026-11-06: it
+            // replaced an underline, which met the meter).
+            if pflMarked.contains(index) {
+                for px in (x + width + 2)...(x + width + 4) { for py in (y + 2)...(y + 4) { screen.set(px, py) } }
+            }
             if inverted.contains(index) {
                 // A box one pixel larger than the letters all round, its pixels flipped.
                 for px in (x - 1)...(x + width) {
@@ -927,6 +974,44 @@ public struct E16Driver: Sendable {
             }
         }
         return screen
+    }
+
+    /// The width of a digit's place in `drawValue`: the widest digit.
+    static let digitSlot = 4
+
+    /// Draws a number in a cell with its digits in fixed places, so a value holds still while it
+    /// changes (Adam, 2026-11-06): a level's tenths digit ends at the cell's right margin and its
+    /// point stays put; a pan's last digit ends there; each digit sits at the right of a place
+    /// `digitSlot` wide (a "1" is narrower), and the sign ("-", "+", "L", "R") just before the
+    /// first digit's place. "C" is centered. Returns false for text it doesn't lay out this way.
+    static func drawValue(_ text: String, cellX: Int, y: Int, on screen: inout E16Screen) -> Bool {
+        guard !text.isEmpty else { return true }
+        let cell = E16Screen.width / 4
+        if text == "C" {
+            screen.draw(text, x: cellX + (cell - E16Screen.width(of: text)) / 2, y: y)
+            return true
+        }
+        var body = Substring(text)
+        var sign = ""
+        if let first = body.first, "+-LR".contains(first) { sign = String(first); body = body.dropFirst() }
+        let parts = body.split(separator: ".", omittingEmptySubsequences: false)
+        guard (1...2).contains(parts.count), parts.allSatisfy({ !$0.isEmpty && $0.allSatisfy(\.isNumber) }) else { return false }
+        let right = cellX + (cell - labelMaxWidth) / 2 + labelMaxWidth - 1
+        let gap = E16Font.gap
+        func place(_ digit: Character, endingAt end: Int) {
+            screen.draw(String(digit), x: end - E16Screen.width(of: String(digit)) + 1, y: y)
+        }
+        var end = right
+        if parts.count == 2 {
+            for digit in parts[1].reversed() { place(digit, endingAt: end); end -= digitSlot + gap }
+            // `end` is now the point's column: the tenths' place, then a gap, after it.
+            let point = E16Screen.width(of: ".")
+            screen.draw(".", x: end - point + 1, y: y)
+            end -= point + gap
+        }
+        for digit in parts[0].reversed() { place(digit, endingAt: end); end -= digitSlot + gap }
+        if !sign.isEmpty { screen.draw(sign, x: end + 1 - E16Screen.width(of: sign), y: y) }
+        return true
     }
 
     /// The title: an overlay while one shows; else the function ("LEVEL", "PAN", "> PHONES 1"),
