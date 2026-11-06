@@ -837,6 +837,13 @@ public struct E16Driver: Sendable {
                 }
                 return drawsScreen ? button.longLabel : button.label
             }
+            if layout == .four, index < 12 {
+                // The 4-channel layout names a channel once, at the bottom; the rows above show
+                // their values: send A's level, send B's, and the pan (Adam, 2026-11-05).
+                guard infos[column(index)] != nil, let value = knobValues[index] else { return "" }
+                let width = drawsScreen ? Self.labelMaxWidth : nil
+                return index >= 8 ? ValueText.pan(value * 2 - 1) : Self.shortLevel(value, width: width)
+            }
             let name = infos[column(index)]?.name ?? ""
             return drawsScreen ? Self.fit(name, width: Self.labelMaxWidth) : Self.fit(name, E16Outgoing.labelLength)
         }
@@ -915,6 +922,20 @@ public struct E16Driver: Sendable {
             guard targets.indices.contains(index) else { return "SEND" }
             return "> " + outputName(index, hub: hub).uppercased()
         }
+    }
+
+    /// A level as a label: its gain without " dB" ("-6.0", "+2.5", "0.0", "-oo"), or in whole
+    /// decibels ("-12") where the tenth doesn't fit: `width` pixels on the host-drawn screen, or
+    /// the firmware's four characters (`width` nil).
+    static func shortLevel(_ position: Double, width: Int?) -> String {
+        guard let gain = FaderCurve.gainDB(position: position) else { return "-oo" }
+        func text(_ format: String, _ value: Double) -> String {
+            let rounded = abs(value) < 0.05 ? 0 : value
+            return String(format: rounded > 0 ? "+" + format : format, rounded)
+        }
+        let tenth = text("%.1f", (gain * 10).rounded() / 10)
+        let fits = width.map { E16Screen.width(of: tenth) <= $0 } ?? (tenth.count <= E16Outgoing.labelLength)
+        return fits ? tenth : text("%.0f", gain.rounded())
     }
 
     /// A send target's name (an index into `SurfaceHub.sendTargets`): the app's label for it, or

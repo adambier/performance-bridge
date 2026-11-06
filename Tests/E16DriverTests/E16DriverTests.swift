@@ -681,9 +681,10 @@ final class E16FourLayoutTests: XCTestCase {
         XCTAssertEqual(driver.currentSendOutputs(hub: hub), [2, 4], "A and B take the first two outputs")
         XCTAssertEqual(midi.lastTitle, "A>PHO B>MON")
         let labels = midi.lastLabels ?? []
-        for row in 0..<4 {
-            XCTAssertEqual(Array(labels[(row * 4)..<(row * 4 + 4)]), ["Keys", "Vox", "Gtr", "P1/2"], "every row names its column")
-        }
+        let half = E16Driver.shortLevel(0.5, width: nil)
+        XCTAssertEqual(Array(labels[0..<8]), Array(repeating: half, count: 8), "send A's and B's levels")
+        XCTAssertEqual(Array(labels[8..<12]), ["C", "C", "C", "C"], "the pans")
+        XCTAssertEqual(Array(labels[12..<16]), ["Keys", "Vox", "Gtr", "P1/2"], "the names, once, at the bottom")
         let rings = midi.rings
         XCTAssertEqual(rings[12]?.r, 127, "level: Keys is red")
         XCTAssertEqual(rings[12]?.amount, E16DriverTests.half)
@@ -714,6 +715,17 @@ final class E16FourLayoutTests: XCTestCase {
         XCTAssertEqual(midi.rings[1]?.amount, 0, "send A dark")
         XCTAssertEqual(midi.rings[5]?.amount, 0, "send B dark")
         XCTAssertNil(midi.rings[9], "the pan unchanged: nothing sent")
+    }
+
+    func testShortLevels() {
+        XCTAssertEqual(E16Driver.shortLevel(0, width: nil), "-oo")
+        XCTAssertEqual(E16Driver.shortLevel(FaderCurve.unityPosition, width: nil), "0.0")
+        let low = E16Driver.shortLevel(0.3, width: nil)
+        XCTAssertLessThanOrEqual(low.count, 4, "fits the firmware's four characters: \(low)")
+        XCTAssertTrue(E16Screen.width(of: E16Driver.shortLevel(0.3, width: E16Driver.labelMaxWidth)) <= E16Driver.labelMaxWidth)
+        var (driver, hub, _) = connectedFour()
+        let turn = driver.receive([0xB0, 11, 0x0A], hub: &hub, now: 1)  // Gtr's pan, right
+        XCTAssertTrue(turn.midi.lastLabels?[10].hasPrefix("R") == true, "the pan's label follows the turn")
     }
 
     func testHoldIsPFLWithTheCountdownOnTheLevelRing() {
