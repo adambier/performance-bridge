@@ -887,17 +887,11 @@ public struct E16Driver: Sendable {
             if shiftHeld {
                 // An arrow that goes nowhere shows no label either (Adam, 2026-11-04).
                 guard let button = shiftButton(at: index), button.isMode || isAvailable(button, hub: hub) else { return "" }
-                if case .rowOutput(let row, let direction) = button, let next = nextSend(row: row, by: direction, hub: hub) {
-                    // The 4-channel layout's send arrows name the output they lead to (the plan,
-                    // 2026-11-05): "<Phn1", "Phn2>".
-                    let name = outputName(next, hub: hub)
-                    if drawsScreen {
-                        let room = 28 - E16Screen.width(of: "<")
-                        let short = shortOutputName(next, width: room, hub: hub)
-                        return direction < 0 ? "<" + short : short + ">"
-                    }
-                    let short = Self.fit(name, E16Outgoing.labelLength - 1)
-                    return direction < 0 ? "<" + short : short + ">"
+                if case .rowOutput(_, let direction) = button {
+                    // Plain arrows: the row's own label names the send's current output, and a
+                    // press shows the new one at once; naming the destination here was read as
+                    // the current output (Adam, 2026-11-06).
+                    return direction < 0 ? "<" : ">"
                 }
                 return drawsScreen ? button.longLabel : button.label
             }

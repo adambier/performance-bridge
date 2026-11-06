@@ -953,7 +953,7 @@ final class E16FourLayoutTests: XCTestCase {
     func testShiftPageStepsTheSendRows() {
         var (driver, hub, _) = connectedFour()
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
-        XCTAssertEqual(shift.midi.lastLabels, ["Phon", "", "", "Roo>", "Mon", "", "", "Roo>",
+        XCTAssertEqual(shift.midi.lastLabels, ["Phon", "", "", ">", "Mon", "", "", ">",
                                                "", "", "", "", "", "", "", ""],
                        "A's back arrow and B's go nowhere (B's would be A's output); one page")
         XCTAssertEqual(shift.midi.rings[3]?.g, 2, "an available arrow, dim deep green")
@@ -962,7 +962,7 @@ final class E16FourLayoutTests: XCTestCase {
         XCTAssertEqual(driver.currentSendOutputs(hub: hub), [6, 4], "A skips B's output")
         XCTAssertEqual(driver.sendOutputs, [6, 4])
         XCTAssertEqual(press.midi.lastTitle, "A>ROO B>MON")
-        XCTAssertEqual(press.midi.lastLabels?[2], "<Pho", "A's back arrow skips Mon, B's output")
+        XCTAssertEqual(press.midi.lastLabels?[2], "<", "A's back arrow, plain; it skips Mon, B's output")
         _ = driver.receive([0x90, 16, 0x00], hub: &hub, now: 3)
         XCTAssertEqual(driver.receive([0xB0, 1, 0x04], hub: &hub, now: 4).core.messages.map(\.address), ["/mix/in/0/6/faderlin"], "send A now to Room")
     }
