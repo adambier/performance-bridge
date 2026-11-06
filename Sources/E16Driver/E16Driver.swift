@@ -453,7 +453,11 @@ public struct E16Driver: Sendable {
             // Push-and-turn is the alternate function: pan, or level in PAN mode (Adam,
             // 2026-11-05). The 4-channel layout gives it no job: each row turns its own.
             if layout == .four {
-                turn(encoder, by: delta, layer: Self.fourRows[encoder / 4], hub: &hub, now: now, into: &step)
+                // Push-and-turn is a fine turn (Adam, 2026-11-05): one unit a message, whatever
+                // the device's acceleration, a quarter of a level's step.
+                let fine = pushTurning == encoder
+                turn(encoder, by: fine ? (delta > 0 ? 1 : delta < 0 ? -1 : 0) : delta, layer: Self.fourRows[encoder / 4],
+                     scale: fine ? Self.fineLevelScale : 1, hub: &hub, now: now, into: &step)
             } else {
                 turn(encoder, by: delta, layer: pushTurning == encoder ? .pfl : .main, hub: &hub, now: now, into: &step)
             }
@@ -529,7 +533,11 @@ public struct E16Driver: Sendable {
     // MARK: - Controls
 
     /// An encoder turned without Shift: moves its strip's knob by `delta` units.
-    private mutating func turn(_ encoder: Int, by delta: Int, layer: Layer = .main, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
+    /// The 4-channel layout's fine turn (push-and-turn): a level's or send's step scaled by this.
+    /// A pan's step is already TotalMix FX's smallest.
+    public static let fineLevelScale = 0.25
+
+    private mutating func turn(_ encoder: Int, by delta: Int, layer: Layer = .main, scale: Double = 1, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
         let strip = column(encoder)
         guard let strips = hub.strips(of: id(layer)), strips.indices.contains(strip),
               let target = strips[strip].knobTarget else { return }
@@ -541,7 +549,7 @@ public struct E16Driver: Sendable {
             stepSize = Self.panStep
         } else {
             current = stored ?? 0
-            stepSize = Self.levelStep
+            stepSize = Self.levelStep * scale
         }
         var position = min(max(current + Double(delta) * stepSize, 0), 1)
         if case .pan = target { position = centerStop(encoder, from: current, to: position, delta: delta, now: now) }
@@ -883,10 +891,13 @@ public struct E16Driver: Sendable {
         return bytes
     }
 
-    /// The top of the first row of labels: 13, so the last row's underline (`marksNames`), two
-    /// pixels under its letters, is on the screen's last row (it fell off at 14; Adam,
-    /// 2026-11-05).
-    public static let labelTop = 13
+    /// The top of the first row of labels: three clear lines under the title's rule (at 13 the
+    /// numbers crowded it; Adam, 2026-11-05).
+    public static let labelTop = 14
+    /// The distance from one row of labels to the next: 13, so the last row's underline
+    /// (`marksNames`), two pixels under its letters, is on the screen (at 14 it fell off;
+    /// Adam, 2026-11-05).
+    public static let labelPitch = 13
 
     /// The host-drawn screen, on a grid of four columns: the title in the first column and its
     /// tail ("PFL 2/3") ending at the last column's edge, a rule under them, and the sixteen
@@ -910,7 +921,7 @@ public struct E16Driver: Sendable {
         screen.line(y: 10, from: 0, to: E16Screen.width - 1)
         for (index, label) in labels.prefix(stripCount).enumerated() {
             let width = E16Screen.width(of: label)
-            let x = (index % 4) * cell + (centered ? (cell - width) / 2 : margin), y = Self.labelTop + (index / 4) * 14
+            let x = (index % 4) * cell + (centered ? (cell - width) / 2 : margin), y = Self.labelTop + (index / 4) * Self.labelPitch
             screen.draw(label, x: x, y: y)
             guard !label.isEmpty else { continue }
             // The underline as wide as the inverted box, one pixel past the letters each side,

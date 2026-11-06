@@ -553,11 +553,11 @@ final class E16DriverTests: XCTestCase {
         XCTAssertTrue(art[10].allSatisfy { $0 == "#" }, "the rule under the title")
         XCTAssertTrue(art[6].hasPrefix("...###."), "the title 3 px in, where the labels start (L's foot)")
         XCTAssertTrue(art[0].hasSuffix("###...."), "the tail ends 3 px from the right edge (the 3, 4 wide, its top row 3 wide)")
-        XCTAssertTrue(art[13].hasPrefix("....###."), "the first label (ADT3) at the same 3 px (A's top)")
-        XCTAssertTrue(art[13].dropFirst(32).hasPrefix("...####"), "the second column's label 3 px into its cell (P's top)")
-        XCTAssertFalse(art[7].contains("#") || art[8].contains("#") || art[9].contains("#") || art[11].contains("#") || art[12].contains("#"), "three clear lines above the rule, two below (the labels moved up one for the underline, 2026-11-05)")
-        XCTAssertTrue(art[19].contains("#") && !art[20].contains("#"), "the first row is 7 pixels tall")
-        XCTAssertTrue(!art[54].contains("#") && art[55].contains("#") && art[61].contains("#"), "the fourth row at 55, 14 pixels per row")
+        XCTAssertTrue(art[14].hasPrefix("....###."), "the first label (ADT3) at the same 3 px (A's top)")
+        XCTAssertTrue(art[14].dropFirst(32).hasPrefix("...####"), "the second column's label 3 px into its cell (P's top)")
+        XCTAssertFalse(art[7].contains("#") || art[8].contains("#") || art[9].contains("#") || art[11].contains("#") || art[12].contains("#") || art[13].contains("#"), "three clear lines above and below the rule")
+        XCTAssertTrue(art[20].contains("#") && !art[21].contains("#"), "the first row is 7 pixels tall")
+        XCTAssertTrue(!art[52].contains("#") && art[53].contains("#") && art[59].contains("#"), "the fourth row at 53, 13 pixels per row")
         XCTAssertTrue(E16Driver.screen(title: "LEVEL", labels: []).art.split(separator: "\n")[0].hasSuffix("........"), "no tail")
         XCTAssertEqual(E16Driver.ShiftButton.output(1).longLabel, "SEND>")
     }
@@ -720,16 +720,16 @@ final class E16FourLayoutTests: XCTestCase {
     func testNameMarks() {
         let plain = E16Driver.screen(title: "", labels: Array(repeating: "", count: 12) + ["Vox", "", "", ""])
         let marked = E16Driver.screen(title: "", labels: Array(repeating: "", count: 12) + ["Vox", "", "", ""], inverted: [12], underlined: [12])
-        let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2, y = E16Driver.labelTop + 3 * 14
+        let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2, y = E16Driver.labelTop + 3 * E16Driver.labelPitch
         XCTAssertFalse(plain.pixel(margin - 1, y - 1))
         XCTAssertTrue(marked.pixel(margin - 1, y - 1), "the box around the name")
         XCTAssertNotEqual(plain.pixel(margin, y), marked.pixel(margin, y), "the letters flipped")
         let empty = E16Driver.screen(title: "", labels: Array(repeating: "", count: 16), inverted: [12])
         XCTAssertFalse(empty.pixel(margin - 1, y - 1), "no box without a name")
         let underline = E16Driver.screen(title: "", labels: Array(repeating: "", count: 12) + ["Vox", "", "", ""], underlined: [12])
-        XCTAssertEqual(y + E16Font.glyphHeight + 1, E16Screen.height - 1, "the bottom row's underline on the last row")
-        XCTAssertTrue(underline.pixel(margin - 1, E16Screen.height - 1), "the underline is drawn, as wide as the box")
-        XCTAssertTrue(underline.pixel(margin + E16Screen.width(of: "Vox"), E16Screen.height - 1))
+        XCTAssertLessThan(y + E16Font.glyphHeight + 1, E16Screen.height, "the bottom row's underline on the screen")
+        XCTAssertTrue(underline.pixel(margin - 1, y + E16Font.glyphHeight + 1), "the underline is drawn, as wide as the box")
+        XCTAssertTrue(underline.pixel(margin + E16Screen.width(of: "Vox"), y + E16Font.glyphHeight + 1))
     }
 
     func testSetOnlyMuteNameFlashes() {
@@ -745,6 +745,19 @@ final class E16FourLayoutTests: XCTestCase {
         driver.marksNames = false
         _ = driver.tick(hub: &hub, now: 2.55)
         XCTAssertEqual(screens(driver.tick(hub: &hub, now: 3.05).midi), 0, "no flashing without name marks")
+    }
+
+    func testPushAndTurnIsFine() {
+        var (driver, hub, _) = connectedFour()
+        _ = driver.receive([0x90, 12, 0x7F], hub: &hub, now: 1)  // Keys's level, pushed
+        let fine = driver.receive([0xB0, 13, 0x04], hub: &hub, now: 1.1)  // +4, accelerated
+        let finePosition = 0.5 + E16Driver.levelStep * E16Driver.fineLevelScale
+        XCTAssertEqual(fine.core.messages.first?.arguments.first, .float(Float(finePosition)), "one unit, a quarter step")
+        XCTAssertTrue(fine.core.messages.allSatisfy { !$0.address.hasSuffix("mute") })
+        let release = driver.receive([0x80, 12, 0x00], hub: &hub, now: 1.2)
+        XCTAssertFalse(release.core.messages.contains { $0.address.hasSuffix("mute") }, "the turn cancelled the push")
+        let normal = driver.receive([0xB0, 13, 0x04], hub: &hub, now: 2)
+        XCTAssertEqual(normal.core.messages.first?.arguments.first, .float(Float(finePosition + 4 * E16Driver.levelStep)), "released: the normal step")
     }
 
     func testShortLevels() {
