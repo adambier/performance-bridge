@@ -1048,13 +1048,14 @@ public struct E16Driver: Sendable {
                 screen.set(cellX + margin + min(peak, labelMaxWidth) - 1, y + E16Font.glyphHeight + 2 + line)
             }
             if values.contains(index), drawValue(label, cellX: cellX, y: y, on: &screen) { continue }
-            if let word = pairWords[index] ?? pairWords[index - 1] {
+            if pairWords[index] != nil || pairWords[index - 1] != nil {
                 // An arrow of a pair, close beside its word: "< SEND >" (Adam, 2026-11-06: the
                 // arrows at the cells' margins left too much space).
                 let left = pairWords[index] != nil ? index : index - 1
-                let wordX = Self.pairWordX(word, left: left)
-                let x = left == index ? wordX - Self.pairGap - E16Screen.width(of: label)
-                    : wordX + E16Screen.width(of: word) + Self.pairGap
+                let field = pairWords.values.map { E16Screen.width(of: $0) }.max() ?? 0
+                let fieldX = Self.pairFieldX(field, left: left)
+                let x = left == index ? fieldX - Self.pairGap - E16Screen.width(of: label)
+                    : fieldX + field + Self.pairGap
                 screen.draw(label, x: x, y: y)
                 continue
             }
@@ -1085,18 +1086,20 @@ public struct E16Driver: Sendable {
         for (left, word) in pairWords {
             // Centered on the line between the pair's two cells.
             let y = Self.labelTop + (left / 4) * Self.labelPitch
-            screen.draw(word, x: Self.pairWordX(word, left: left), y: y)
+            let field = pairWords.values.map { E16Screen.width(of: $0) }.max() ?? 0
+            screen.draw(word, x: Self.pairFieldX(field, left: left) + (field - E16Screen.width(of: word)) / 2, y: y)
         }
         return screen
     }
 
-    /// Where a Shift-page pair's word starts: the group "< WORD >" is set so the ">" ends at the
-    /// right cell's margin, where the column's values end (Adam, 2026-11-06), and stays there
-    /// whether or not an arrow is shown.
-    static func pairWordX(_ word: String, left: Int) -> Int {
+    /// Where a Shift-page pair's word field starts. Every pair on a page shares one field, as wide
+    /// as the page's widest word, so all the "<" line up and all the ">" line up (Adam,
+    /// 2026-11-06); a shorter word is centered in it. The ">" ends at the right cell's margin,
+    /// where the column's values end, and the arrows stay put whether or not they're shown.
+    static func pairFieldX(_ field: Int, left: Int) -> Int {
         let cell = E16Screen.width / 4
         let rightEdge = (left % 4 + 2) * cell - (cell - labelMaxWidth) / 2 - 1
-        return rightEdge - E16Screen.width(of: ">") + 1 - pairGap - E16Screen.width(of: word)
+        return rightEdge - E16Screen.width(of: ">") + 1 - pairGap - field
     }
 
     /// The space between a Shift-page pair's word and its arrows: one of the font's word spaces,
