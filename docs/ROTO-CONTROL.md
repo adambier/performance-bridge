@@ -433,7 +433,8 @@ marked "seen".
   hardware meters[^totalmix-meters]:
   yellow from −5 dBFS (117 on a −65…0 dBFS scale) and red from −1 dBFS (125). With those
   thresholds, meter values 112, 120, and 126 showed green, a yellow end, and a red end, as expected
-  (seen).
+  (seen). Since 2026-11-06 the scale follows TotalMix FX's fader law (`MeterScale`;
+  docs/TOTALMIX-OSC.md), so the same levels are thresholds 103 and 122; not yet seen on the device.
 - **Track colors against TotalMix FX's** (run 8, seen): with the playback pairs in TotalMix FX's eight
   colors and each mapped to the table color nearest in hue, schemes 9 (blue) and 61 (green)
   matched TotalMix FX; 50 looked slate blue, 57 brown, 56 burgundy, 2 ochre, and 24 royal blue
