@@ -945,7 +945,7 @@ final class E16FourLayoutTests: XCTestCase {
         XCTAssertEqual(labels[4], "Mon", "send B's")
         XCTAssertEqual(labels[1], "")
         var screen = E16Screen()
-        screen = E16Driver.screen(title: "", labels: ["ADI 3/4"], centered: true, spans: [0])
+        screen = E16Driver.screen(title: "", labels: ["A: ADI 3/4"], centered: true, spans: [0])
         let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2
         XCTAssertTrue((E16Driver.labelTop..<E16Driver.labelTop + 7).contains { screen.pixel(margin, $0) }, "from the first cell's margin, not centered")
     }
