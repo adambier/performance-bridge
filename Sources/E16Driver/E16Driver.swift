@@ -131,14 +131,15 @@ public struct E16Driver: Sendable {
     /// of TotalMix FX's peaks in power. TotalMix FX draws its bar as RMS under a peak line, but
     /// OSC carries only the peaks (OXI-E16 doc; Adam, 2026-11-06: −1.7 dB sent against a −2.9 dB
     /// peak readout), so the bar is an RMS-like average of them, not true RMS; the held pixel is
-    /// the true peak. 0.1 s: 0.3 s moved slower than TotalMix FX's bar (Adam, 2026-11-06); a
-    /// starting value (`sbdev e16bridge --meter-average`).
-    public var meterAverage = 0.1
-    /// How far below the averaged peaks the bar sits, in dB: 3 dB makes a steady sine read its
-    /// true RMS, as TotalMix FX shows it with "RMS +3 dB" off. Music has more crest than a sine,
-    /// so its bar still sits nearer the peak than TotalMix FX's (Adam, 2026-11-06); a starting
-    /// value (`sbdev e16bridge --meter-offset`).
-    public var meterOffset = 3.0
+    /// the true peak. 0.03 s, tuned by eye against TotalMix FX's bar, which is "really snappy"
+    /// (Adam, 2026-11-06: 0.3 s and 0.1 s were slower; `sbdev e16bridge --meter-average`).
+    public var meterAverage = 0.03
+    /// How far below the averaged peaks the bar sits, in dB: 6, tuned by eye so music looks like
+    /// TotalMix FX's RMS bar (Adam, 2026-11-06). An approximation: an average of peaks reads
+    /// above true RMS by the music's crest, and TotalMix FX's "RMS +3dB" and Peak Hold time
+    /// can't be read over OSC (inferred), so the app keeps fixed values rather than settings of
+    /// its own (Adam's choice; `sbdev e16bridge --meter-offset`).
+    public var meterOffset = 6.0
     /// Each channel's averaged level, in power, and when it was last updated.
     private var averages: [ChannelRef: (power: Double, at: Double)] = [:]
     /// When the screen was last sent, by the driver's clock (`tick`'s `now`).

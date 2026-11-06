@@ -28,7 +28,7 @@ let e16BridgeUsage = """
           channel's level as a bar under its name (TotalMix FX's "Send Level Data" must be on,
           its "Peak Hold" off), with a pixel holding the peak for S seconds (--peak-hold; default 2);
           the bar averages the peaks with a time constant of S seconds (--meter-average; default
-          0.1) and sits DB below them (--meter-offset; default 3).
+          0.03) and sits DB below them (--meter-offset; default 6).
           --pan-center gives the pans' sticky center a different number of units per encoder, to
           compare them side by side: with 2,5,10, encoders 1, 4, 7… take 2, encoders 2, 5, 8…
           take 5, and encoders 3, 6, 9… take 10 (default: the driver's 4 on every encoder).
