@@ -136,6 +136,8 @@ The three rows of the mixer are spelled three ways (`TotalMixBus`).[^rme-doc]
 
 `color` is 0 for a hidden channel, and otherwise a color index from 1 (1 is the default color).[^rme-doc] TotalMix FX offers eight colors (Channel Layout, Color (Name)), and the index follows their order in that menu: 1 white, 2 grey, 3 orange, 4 red, 5 blue, 6 green, 7 yellow, 8 pink.[^test-7] The inference is that "hidden" means hidden from this OSC remote in Options → Channel Layout; SurfaceCore leaves such channels off the strips. Whether TotalMix FX sends a hidden channel's settings at all is untested.
 
+**A channel's mute silences its sends; its pan is per submix** (Adam, 2026-11-06, checked by ear with `sbdev e16bridge --layout 4`): with the Tonverk input heard only in the headphones (output "ADI-2 3/4") through a send, muting the channel (`/input/n/mute`, which has no submix in its address) silenced it there too. A channel's pan is set separately in each submix (`/mix/…/balpan` carries the output).
+
 **Mixer nodes** have the form `/mix/<in|pb>/<channel>/<output>/<parameter>`. A node is the send from an input or playback to an output, that is, its level in that output's submix.[^rme-doc] The parameters are:
 
 - `fader`, in dB, where −300 dB, the bottom of its range, means off (in fader groups);
