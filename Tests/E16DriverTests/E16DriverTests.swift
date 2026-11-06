@@ -754,6 +754,21 @@ final class E16FourLayoutTests: XCTestCase {
         XCTAssertTrue(held.pixel(margin + 19, line) && !held.pixel(margin + 18, line) && !held.pixel(margin + 5, line), "one pixel at the peak")
     }
 
+    func testBarAveragesThePeaks() {
+        var (driver, hub, _) = connectedFour()
+        driver.drawsScreen = true
+        driver.showsMeters = true
+        driver.meterAverage = 0.3
+        _ = driver.tick(hub: &hub, now: 1)
+        _ = hub.handle(.level(bus: .input, channel: 0, peakDB: -1), now: 1)
+        XCTAssertFalse(driver.tick(hub: &hub, now: 1.05).midi.isEmpty, "redrawn as the bar rises")
+        // After 0.05 s of a −1 dB peak from silence, the average is still well below it; after
+        // 2 s, it has caught up. (The bar's width is internal; this checks the arithmetic.)
+        let early = 1 - exp(-0.05 / 0.3), late = 1 - exp(-2.0 / 0.3)
+        XCTAssertLessThan(10 * log10(early * pow(10, -0.1)), -8, "the bar rises slowly")
+        XCTAssertGreaterThan(10 * log10(late * pow(10, -0.1)), -1.1, "and catches up")
+    }
+
     func testPeakHoldsThenDrops() {
         var (driver, hub, _) = connectedFour()
         driver.drawsScreen = true
@@ -790,6 +805,7 @@ final class E16FourLayoutTests: XCTestCase {
         var (driver, hub, _) = connectedFour()
         driver.drawsScreen = true
         driver.showsMeters = true
+        driver.meterAverage = 0  // the bar follows at once, so only the rate limit is at work
         _ = driver.tick(hub: &hub, now: 1)
         func screens(_ midi: [UInt8]) -> Int { midi.sysExMessages.filter { $0.starts(with: Array(labelsID.prefix(7))) && !$0.starts(with: labelsID) && !$0.starts(with: ringsID) && !$0.starts(with: ledsID) }.count }
         _ = hub.handle(.level(bus: .input, channel: 0, peakDB: -6), now: 1.01)

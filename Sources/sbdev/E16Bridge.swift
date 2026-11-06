@@ -13,7 +13,7 @@ import E16Driver
 let e16BridgeUsage = """
     Usage:
       sbdev e16bridge [--host H] [--in-port P] [--out-port P] [--port NAME] [--home N]
-                      [--layout 16|4] [--sends A,B] [--no-name-marks] [--left] [--meters] [--peak-hold S] [--pan-center A,B,C…] [--pan-pause S] [--verbose]
+                      [--layout 16|4] [--sends A,B] [--no-name-marks] [--left] [--meters] [--peak-hold S] [--meter-average S] [--pan-center A,B,C…] [--pan-pause S] [--verbose]
           Connects TotalMix FX and an OXI E16 (in its Remote Mode) through SurfaceCore and the E16
           driver, as the app does. Prints what is sent to TotalMix FX, with the time since
           starting; --verbose also prints every MIDI message to and from the device. Then reads
@@ -26,7 +26,8 @@ let e16BridgeUsage = """
           trial of inverted names for a mute and a square after the name for a PFL. --left puts
           the labels at the left of their cells (default: centered). --meters shows each
           channel's level as a bar under its name (TotalMix FX's "Send Level Data" must be on,
-          its "Peak Hold" off), with a pixel holding the peak for S seconds (--peak-hold; default 2).
+          its "Peak Hold" off), with a pixel holding the peak for S seconds (--peak-hold; default 2);
+          the bar averages the peaks with a time constant of S seconds (--meter-average; default 0.3).
           --pan-center gives the pans' sticky center a different number of units per encoder, to
           compare them side by side: with 2,5,10, encoders 1, 4, 7… take 2, encoders 2, 5, 8…
           take 5, and encoders 3, 6, 9… take 10 (default: the driver's 4 on every encoder).
@@ -68,6 +69,7 @@ struct E16BridgeOptions {
     var left = false
     var meters = false
     var peakHold: Double?
+    var meterAverage: Double?
     var verbose = false
 }
 
@@ -111,6 +113,9 @@ func parseE16BridgeOptions(_ arguments: ArraySlice<String>) -> E16BridgeOptions 
         case "--peak-hold":
             guard let seconds = Double(value(argument)), seconds >= 0, seconds.isFinite else { fail("--peak-hold needs seconds from 0.") }
             options.peakHold = seconds
+        case "--meter-average":
+            guard let seconds = Double(value(argument)), seconds >= 0, seconds.isFinite else { fail("--meter-average needs seconds from 0.") }
+            options.meterAverage = seconds
         case "--pan-pause":
             guard let seconds = Double(value(argument)), seconds >= 0, seconds.isFinite else { fail("--pan-pause needs seconds from 0.") }
             options.panPause = seconds
@@ -140,6 +145,7 @@ final class E16BridgeSession: @unchecked Sendable {
         driver.centersLabels = !options.left
         driver.showsMeters = options.meters
         if let hold = options.peakHold { driver.peakHold = hold }
+        if let average = options.meterAverage { driver.meterAverage = average }
         driver.panCenterTrial = options.panCenter
         if let pause = options.panPause { driver.panCenterPause = pause }
     }

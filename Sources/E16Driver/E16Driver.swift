@@ -127,6 +127,14 @@ public struct E16Driver: Sendable {
     public var peakHold = 2.0
     /// Each channel's held peak, as a bar width, and when it was reached.
     private var peaks: [ChannelRef: (width: Int, at: Double)] = [:]
+    /// How quickly a meter's bar follows the level: the time constant, in seconds, of an average
+    /// of TotalMix FX's peaks in power. TotalMix FX draws its bar as RMS under a peak line, but
+    /// OSC carries only the peaks (OXI-E16 doc; Adam, 2026-11-06: −1.7 dB sent against a −2.9 dB
+    /// peak readout), so the bar is an RMS-like average of them, not true RMS; the held pixel is
+    /// the true peak. 0.3 s is a starting value (`sbdev e16bridge --meter-average`).
+    public var meterAverage = 0.3
+    /// Each channel's averaged level, in power, and when it was last updated.
+    private var averages: [ChannelRef: (power: Double, at: Double)] = [:]
     /// When the screen was last sent, by the driver's clock (`tick`'s `now`).
     private var screenSentAt = -Double.infinity
     private var clock = 0.0
@@ -906,16 +914,25 @@ public struct E16Driver: Sendable {
                 guard let info = infos[strip] else { continue }
                 var refs = [info.channel]
                 if info.stereo { refs.append(ChannelRef(info.channel.bus, info.channel.channel + 1)) }
-                let widths = refs.map {
-                    let value = MeterScale.value(peakDB: hub.mirror.meters[$0] ?? -.infinity)
-                    return Int((Double(value) / Double(MeterScale.fullScale) * Double(Self.labelMaxWidth)).rounded())
+                func width(_ db: Double) -> Int {
+                    Int((Double(MeterScale.value(peakDB: db)) / Double(MeterScale.fullScale) * Double(Self.labelMaxWidth)).rounded())
                 }
                 let index = layout == .four ? 12 + strip : strip
-                meters[index] = widths
-                peakWidths[index] = zip(refs, widths).map { ref, width in
-                    if let held = peaks[ref], held.width >= width, clock - held.at < peakHold { return held.width }
-                    peaks[ref] = (width, clock)
-                    return width
+                meters[index] = refs.map { ref in
+                    let db = hub.mirror.meters[ref] ?? -.infinity
+                    let power = db.isFinite ? pow(10, db / 10) : 0
+                    var average = averages[ref] ?? (power, clock)
+                    let dt = max(clock - average.at, 0)
+                    average.power += (power - average.power) * (meterAverage > 0 ? 1 - exp(-dt / meterAverage) : 1)
+                    average.at = clock
+                    averages[ref] = average
+                    return average.power > 0 ? width(10 * log10(average.power)) : 0
+                }
+                peakWidths[index] = refs.map { ref in
+                    let now = width(hub.mirror.meters[ref] ?? -.infinity)
+                    if let held = peaks[ref], held.width >= now, clock - held.at < peakHold { return held.width }
+                    peaks[ref] = (now, clock)
+                    return now
                 }
             }
         }
