@@ -376,7 +376,7 @@ final class E16DriverTests: XCTestCase {
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(shift.midi.lastTitle, "LEVEL", "the title stays")
         XCTAssertEqual(shift.midi.lastLabels, ["LVL", "PAN", "SEND", "", "", "", "", "",
-                                               "Phon", "", "<SND", "SND>", "", "", "", ""],
+                                               "Phon", "", "<SND", "SND>", "4CH", "", "", ""],
                        "one page: no page arrows")
         let rings = shift.midi.rings
         XCTAssertEqual(rings[0]?.g, 127, "LEVEL, in use: white at the driver's brightness (1 in the tests)")
@@ -700,6 +700,38 @@ private func connectedFour() -> (driver: E16Driver, hub: SurfaceHub, midi: [UInt
 }
 
 final class E16FourLayoutTests: XCTestCase {
+    /// Encoder 13 on the Shift page switches layouts (Adam, 2026-11-06): to 4 channel strips at
+    /// the row holding the channel last turned, and back at the page holding the four.
+    func testLayoutSwitch() {
+        var hub = loadedHub()
+        for n in 4..<10 {
+            for (parameter, value) in [("stereo", TotalMixValue.number(0)), ("name", .text("In\(n)")), ("color", .number(1))] {
+                _ = hub.handle(.channel(bus: .input, channel: n, parameter: parameter, value: value), now: 0)
+            }
+        }
+        var driver = E16Driver(name: "e16")
+        driver.brightness = 1
+        driver.drawsScreen = false
+        _ = driver.start(hub: &hub, now: 0)
+        let first = driver.receive(ack, hub: &hub, now: 0).midi.lastLabels ?? []
+        XCTAssertEqual(first.count, 16)
+        _ = driver.receive([0xB0, 6, 0x01], hub: &hub, now: 1)  // turn the seventh channel
+        let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 2)
+        XCTAssertEqual(shift.midi.lastLabels?[12], "4CH", "labeled with the layout it goes to")
+        XCTAssertEqual(shift.midi.rings[12].map { [$0.r, $0.g, $0.b] }, [2, 1, 0], "yellow, available")
+        let press = driver.receive([0x90, 12, 0x7F], hub: &hub, now: 2.1)
+        XCTAssertEqual(driver.layout, .four)
+        XCTAssertEqual(press.midi.lastLabels?[12], "16CH", "Shift still held: the 4-channel Shift page")
+        _ = driver.receive([0x80, 12, 0x00], hub: &hub, now: 2.2)
+        let four = driver.receive([0x80, 16, 0x00], hub: &hub, now: 2.3).midi.lastLabels ?? []
+        XCTAssertEqual(Array(four[12..<16]), Array(first[4..<8]), "the row holding the channel turned")
+        XCTAssertFalse(driver.receive([0xB0, 13, 0x01], hub: &hub, now: 3).core.messages.isEmpty, "a level turns")
+        _ = driver.receive([0x90, 16, 0x7F, 0x90, 12, 0x7F, 0x80, 12, 0x00], hub: &hub, now: 4)
+        XCTAssertEqual(driver.layout, .sixteen)
+        let back = driver.receive([0x80, 16, 0x00], hub: &hub, now: 4.1).midi.lastLabels ?? []
+        XCTAssertEqual(Array(back[0..<8]), Array(first[0..<8]), "the page holding the four")
+    }
+
     func testColumnsAndRows() {
         let (driver, hub, midi) = connectedFour()
         XCTAssertEqual(hub.sendTargets, [2, 4, 6])
@@ -988,7 +1020,7 @@ final class E16FourLayoutTests: XCTestCase {
         var (driver, hub, _) = connectedFour()
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(shift.midi.lastLabels, ["Phon", "", "", ">", "Mon", "", "", ">",
-                                               "", "", "", "", "", "", "", ""],
+                                               "", "", "", "", "16CH", "", "", ""],
                        "A's back arrow and B's go nowhere (B's would be A's output); one page")
         XCTAssertEqual(shift.midi.rings[3]?.g, 2, "an available arrow, dim deep green")
         XCTAssertEqual(shift.midi.rings[2]?.amount, 0, "dark")

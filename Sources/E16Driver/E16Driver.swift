@@ -84,8 +84,8 @@ public struct E16Driver: Sendable {
         case four
     }
 
-    /// The layout this driver uses.
-    public let layout: Layout
+    /// The layout this driver uses; the Shift page's layout switch changes it (`switchLayout`).
+    public private(set) var layout: Layout
 
     /// The start of the hub surfaces' names; each layer adds its own (e.g., "e16.main").
     public let name: String
@@ -189,11 +189,14 @@ public struct E16Driver: Sendable {
         case page(Int)
         /// The 4-channel layout: a send row's (0 for A, 1 for B) previous output, or next.
         case rowOutput(row: Int, direction: Int)
+        /// Switches to the other layout (encoder 13 in both; Adam, 2026-11-06).
+        case switchLayout(to: Layout)
 
         /// The encoder each button is on: the modes on the first row, the output arrows at the
         /// end of the third, the page arrows at the end of the last (Adam, 2026-11-04).
         public static let layout: [Int: ShiftButton] = [
-            0: .level, 1: .pan, 2: .send, 10: .output(-1), 11: .output(1), 14: .page(-1), 15: .page(1),
+            0: .level, 1: .pan, 2: .send, 10: .output(-1), 11: .output(1), 12: .switchLayout(to: .four),
+            14: .page(-1), 15: .page(1),
         ]
 
         /// The 4-channel layout's: each send row's arrows at the end of its own row, the page
@@ -202,7 +205,7 @@ public struct E16Driver: Sendable {
         public static let fourLayout: [Int: ShiftButton] = [
             2: .rowOutput(row: 0, direction: -1), 3: .rowOutput(row: 0, direction: 1),
             6: .rowOutput(row: 1, direction: -1), 7: .rowOutput(row: 1, direction: 1),
-            14: .page(-1), 15: .page(1),
+            12: .switchLayout(to: .sixteen), 14: .page(-1), 15: .page(1),
         ]
 
         /// The label on the screen.
@@ -213,6 +216,7 @@ public struct E16Driver: Sendable {
             case .send: return "SEND"
             case .output(let d), .rowOutput(_, let d): return d < 0 ? "<SND" : "SND>"
             case .page(let d): return d < 0 ? "<PG" : "PG>"
+            case .switchLayout(let to): return to == .four ? "4CH" : "16CH"
             }
         }
 
@@ -225,13 +229,14 @@ public struct E16Driver: Sendable {
             case .send: return "SEND"
             case .output(let d), .rowOutput(_, let d): return d < 0 ? "<SEND" : "SEND>"
             case .page(let d): return d < 0 ? "<PAGE" : "PAGE>"
+            case .switchLayout(let to): return to == .four ? "4 CH" : "16 CH"
             }
         }
 
         /// Whether this is a mode button (else an arrow).
         public var isMode: Bool {
             switch self {
-            case .level, .pan, .send: return true
+            case .level, .pan, .send, .switchLayout: return true
             case .output, .page, .rowOutput: return false
             }
         }
@@ -305,6 +310,8 @@ public struct E16Driver: Sendable {
     private var page = (first: 0, count: 0)
     private var infos: [StripInfo?] = Array(repeating: nil, count: E16Driver.stripCount)
     private var knobValues: [Double?] = Array(repeating: nil, count: E16Driver.stripCount)
+    /// The channel (strip index, from the first) last turned or pushed, for the layout switch.
+    private var lastTouched: Int?
     /// The encoder being pushed and turned (push-and-turn), until it is released.
     private var pushTurning: Int?
     /// Units turned one way since push-and-turn began or last jumped (`jumpUnits`), signed.
@@ -486,6 +493,7 @@ public struct E16Driver: Sendable {
         switch event {
         case .turned(let encoder, let delta):
             guard (0..<Self.stripCount).contains(encoder), !shiftHeld else { return }
+            lastTouched = page.first + column(encoder)
             // A turn while the encoder is pushed cancels the push: no mute on release and no
             // PFL countdown (a push-and-turn held over a second would otherwise set PFL; test
             // 6, Adam, 2026-11-05). Push-and-turn is then just a turn until it is given a job.
@@ -520,6 +528,7 @@ public struct E16Driver: Sendable {
                 if let button = shiftButton(at: encoder) { press(button, hub: &hub, now: now, into: &step) }
                 step.midi += drawRing(encoder, hub: hub)
             } else {
+                lastTouched = page.first + column(encoder)
                 held = (encoder, now, false)
                 countdownShown = -1
                 if let other = pushTurning, other != encoder {
@@ -705,7 +714,41 @@ public struct E16Driver: Sendable {
             movePage(by: direction, hub: &hub, now: now, into: &step)
         case .rowOutput(let row, let direction):
             stepSend(row: row, by: direction, hub: &hub, now: now, into: &step)
+        case .switchLayout(let to):
+            switchLayout(to: to, hub: &hub, now: now, into: &step)
         }
+    }
+
+    /// Switches to the other layout (the plan, 2026-11-06): to the 4-channel layout at the row of
+    /// the page holding the channel last turned or pushed (else the page's first row); to the
+    /// 16-channel layout at the page holding the four. The layers leave the hub and the new
+    /// ones join it at that page, and the device is drawn afresh; Shift stays held.
+    public mutating func switchLayout(to new: Layout, hub: inout SurfaceHub, now: Double, into step: inout E16Step) {
+        guard new != layout else { return }
+        let first: Int
+        if new == .four {
+            if let touched = lastTouched, (page.first..<page.first + Self.stripCount).contains(touched) {
+                first = touched / 4 * 4
+            } else {
+                first = page.first
+            }
+        } else {
+            first = page.first / Self.stripCount * Self.stripCount
+        }
+        for layer in layers { hub.removeSurface(id(layer)) }
+        layout = new
+        page.first = first
+        for layer in layers {
+            _ = hub.addSurface(id(layer), capabilities: layerCapabilities, mode: mode(for: layer, first: first, hub: hub), now: now)
+        }
+        infos = Array(repeating: nil, count: Self.stripCount)
+        knobValues = Array(repeating: nil, count: Self.stripCount)
+        muteOn = Array(repeating: false, count: Self.stripCount)
+        pflOn = Array(repeating: false, count: Self.stripCount)
+        let (shift, pressed) = (shiftHeld, pressedButton)
+        connect(hub: &hub, now: now, into: &step)
+        (shiftHeld, pressedButton) = (shift, pressed)
+        step.midi += drawLabels(hub: hub) + drawRings(hub: hub)
     }
 
     /// The send target (an index into `SurfaceHub.sendTargets`) each send row of the 4-channel
@@ -769,6 +812,7 @@ public struct E16Driver: Sendable {
             return (0..<pageCount).contains(current + direction)
         case .rowOutput(let row, let direction):
             return nextSend(row: row, by: direction, hub: hub) != nil
+        case .switchLayout: return true
         }
     }
 
@@ -1478,6 +1522,7 @@ public struct E16Driver: Sendable {
             if case .send = function { inUse = true }
         case .output, .rowOutput: rgb = Self.buttonColors.send
         case .page: rgb = Self.buttonColors.page
+        case .switchLayout: rgb = Self.buttonColors.layout
         }
         guard inUse || isAvailable(button, hub: hub) else { return RingLook(ring: .off) }  // dark stays dark, pressed or not
         let top = Double(max(rgb.0, rgb.1, rgb.2))
@@ -1501,9 +1546,11 @@ public struct E16Driver: Sendable {
     /// blue for the page arrows. The page shows no channel colors, so they only need to differ
     /// from each other. Color is an extra cue: the buttons' positions and labels, and the ring
     /// fills, carry the meaning.
+    /// Yellow for the layout switch (Adam, 2026-11-06; to check at low brightness on the device).
     public static let buttonColors: (level: (UInt8, UInt8, UInt8), pan: (UInt8, UInt8, UInt8),
-                                     send: (UInt8, UInt8, UInt8), page: (UInt8, UInt8, UInt8))
-        = ((127, 127, 127), (127, 0, 100), (0, 60, 0), (0, 0, 127))
+                                     send: (UInt8, UInt8, UInt8), page: (UInt8, UInt8, UInt8),
+                                     layout: (UInt8, UInt8, UInt8))
+        = ((127, 127, 127), (127, 0, 100), (0, 60, 0), (0, 0, 127), (127, 85, 0))
 
     /// Orange, for a mute, as on the other surfaces.
     public static let muteRGB: (UInt8, UInt8, UInt8) = (127, 25, 0)

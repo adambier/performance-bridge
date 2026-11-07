@@ -528,6 +528,9 @@ final class BridgeModel: ObservableObject {
         engine.onLayoutChange = { layout in
             if let data = try? JSONEncoder().encode(layout) { UserDefaults.standard.set(data, forKey: Self.layoutKey) }
         }
+        engine.onE16LayoutChange = { four in
+            UserDefaults.standard.set(four, forKey: "e16FourChannelStrips")
+        }
         engine.onLaunchControlSendsChange = { layout, outputs in
             UserDefaults.standard.set(outputs.map { $0 ?? -1 }, forKey: Self.sendsKey(layout))
         }

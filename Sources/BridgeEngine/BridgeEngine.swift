@@ -264,6 +264,9 @@ public final class BridgeEngine: @unchecked Sendable {
     /// Called with the new layout whenever the app changes it (order, new-page option, or labels),
     /// so the app can save it. Set it before `start()`.
     public var onLayoutChange: (@Sendable (PerformanceLayout) -> Void)?
+    /// Called with whether the E16 now uses 4 channel strips whenever its Shift page switches
+    /// the layout, so the app can save it (`e16FourChannelStrips`). Called with the lock released.
+    public var onE16LayoutChange: (@Sendable (Bool) -> Void)?
 
     private let lock = NSLock()
     private let startDate = Date()
@@ -294,6 +297,9 @@ public final class BridgeEngine: @unchecked Sendable {
     /// Whether a Launch Control shows levels by brightness, kept like `sendRows`.
     private var levelBrightness: Bool
     private var e16Driver: E16Driver?
+    /// The E16's layout as last switched on the device (4 channel strips or not), kept for the
+    /// next connection; `nil` until then (`settings.e16FourChannelStrips`).
+    private var e16FourStrips: Bool?
     private var e16MIDI: MIDIConnection?
     private var e16Error: String?
     private var lastE16Try: Double?
@@ -565,7 +571,7 @@ public final class BridgeEngine: @unchecked Sendable {
         switch result {
         case .success(let connection) where running:
             e16MIDI = connection
-            var e16 = E16Driver(name: "e16", layout: settings.e16FourChannelStrips ? .four : .sixteen, sendOutputs: settings.e16Sends)
+            var e16 = E16Driver(name: "e16", layout: (e16FourStrips ?? settings.e16FourChannelStrips) ? .four : .sixteen, sendOutputs: settings.e16Sends)
             e16.brightness = e16Brightness
             e16.showsMeters = settings.e16Meters
             let started = e16.start(hub: &hub, now: now)
@@ -826,13 +832,20 @@ public final class BridgeEngine: @unchecked Sendable {
 
     private func fromE16(_ bytes: [UInt8]) {
         lock.lock()
+        var switched: Bool?
         if var e16 = e16Driver {
             let step = e16.receive(bytes, hub: &hub, now: now)
             e16Driver = e16
             sendToE16(step.midi)
             dispatch(step.core)
+            let four = e16.layout == .four
+            if four != (e16FourStrips ?? settings.e16FourChannelStrips) {
+                e16FourStrips = four
+                switched = four
+            }
         }
         lock.unlock()
+        if let switched { onE16LayoutChange?(switched) }
         publishStatusIfChanged()
     }
 
