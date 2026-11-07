@@ -153,8 +153,9 @@ always sources.
   there, however fast, and the rest of that turn is ignored (messages less than
   `panCenterPause`, 0.05 s, apart are one turn: a fast turn arrives as a burst of up to 8 units a
   message, and went straight through a count of units alone, Adam, 14:56); after a pause, the
-  pan moves only after `panCenterUnits` (4) units turned one way, a turn the other way starting
-  the count again. The encoders are endless and accelerated
+  pan moves only after `panCenterUnits` (2) units turned one way, a turn the other way starting
+  the count again, and the message that leaves center moves it one step, whatever units it
+  carries beyond the count. The encoders are endless and accelerated
   (1–8 units a message), so center is otherwise hard to land on; a double press to reset was
   considered and not taken (it would delay every mute, or mute and unmute). The 4 and the 0.25 s
   are starting values, to tune on the device (`sbdev e16bridge --pan-center`, `--pan-pause`).
@@ -163,7 +164,7 @@ always sources.
   pause does the catching, and the count only guards against a brush. 4 kept. The pause, tuned
   with `--pan-pause` (Adam, 2026-11-06): 0.25 s and 0.1 s still felt like a wait before C could
   be passed; at 0.05 s a brief stop lets the pan move on and fast turns still stop at C. 0.05 s
-  kept.
+  kept. The count, tuned blind at that pause (test 10, 2026-11-07): 2.
 - **Virtual detents: how hard they hold** (Adam, 2026-11-06; AGENTS.md has the general rule).
   A pan's sticky center and a push-and-turn stop are virtual detents: like a center-detented pot or
   a stepped switch, they hold the knob at a point worth landing on and ask a little extra to get
@@ -454,6 +455,42 @@ encoders quickly through 0 dB, up and down.
 - 0.05 s, the pan's center pause (`7381250`): too short; a jump "is much more drastic than pan".
 - 0.3 s: too long. 0.15 s: a bit too long. 0.05 s again: definitely too short. 0.075 s: best,
   and the default from `2b54723`.
-- Not yet checked: whether a push alone nudges the encoder a unit (`jumpUnits`), and the layout
-  switch (Shift + encoder 13) on the device.
+- Checked in test 10: a push alone can nudge an encoder one unit, and the layout buttons.
+
+### Test 10 (2026-11-07): the sticky center's count, push nudges, the layout buttons
+
+**Setup.** `sbdev e16bridge` on branch `e16-four` (`b42d9ae`, then `36a574e`), 16-channel
+layout, PAN mode, center pause 0.05 s. Each column of encoders took a different count
+(`--pan-center`) or way of leaving center (`--pan-leave`), and Adam was told which only after
+choosing. He tried top-row encoders 1–4: a slow leave one click at a time, a brush (as when
+reaching for a neighbor), setting L1 or R1 and back to C, and a fast turn through center from
+well off it.
+
+**Findings (Adam):**
+
+- Round 1, counts 2, 4, 0, 1 by column: 2 felt like slight resistance, 4 laggy, 0 like nothing,
+  1 slight resistance. Only 0 moved on a brush, and only on some tries. Setting L1/R1: 2 easy to
+  overshoot to 2 or 3; 4 good; 1 overshot clockwise only. All four were easy to bring back to C.
+  The fast turn stopped at C on 2, 4, and 0, not on 1 (once; as 0 stopped, more likely a pause
+  in the turn longer than 0.05 s than the count, an inference).
+- Round 2, counts 3, 4, 2, 3 (columns 1–3 tried): every column overshot setting L1/R1, the 3
+  least; it felt close to laggy.
+- Round 3, counts 3 and 2 side by side: neither moved on a brush; each overshot in one direction
+  only (3 counterclockwise, 2 clockwise). Too close to choose.
+- Adam: a count that asks more effort makes him turn harder, which brings in the device's
+  acceleration and carries the pan past its target. **2 chosen**, the smallest count no brush
+  moved.
+- How a pan leaves center, one step or the units beyond the count carried (count 2;
+  `--pan-leave 0,1,1,0`, then `1,0,0,1`): in each round one of the two Adam picked as
+  overshooting least moved one step and the other carried. No difference felt, so the overshoot
+  comes from the messages after the pan has left center (an inference). **One step kept**: it
+  can only remove a jump of 2 or 3 at the moment of leaving.
+- Push nudges (`--verbose`, filtered to the device's turn messages): about ten firm pushes,
+  without turning, over a few encoders gave one turn message of one unit and none larger.
+  `jumpUnits` stays at 2, one more than a nudge gives.
+- The layout buttons (Shift + encoder 13 or 14): labels "16 CH" and "4 CH" read clearly; the
+  layout in use is "way brighter". With channel 7 last turned, 16 to 4 went to page 2 (channels
+  5–8); 4 to 16 from there went to page 1. Adam had six channels visible (one page of 16, two of
+  4). Not checked: the yellow at low brightness (the test bridge has no brightness setting; in
+  the app).
 
