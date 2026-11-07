@@ -382,7 +382,8 @@ struct E16LayoutView: View {
                         Text("4 channel strips").tag(true)
                     }
                     .labelsHidden()
-                    .frame(width: 200)
+                    .fixedSize()
+                    .frame(width: 200, alignment: .leading)
                 }
                 if status.e16FourChannelStrips {
                     ForEach(0..<2, id: \.self) { row in
@@ -398,7 +399,7 @@ struct E16LayoutView: View {
                                 }
                             }
                             .labelsHidden()
-                            .frame(width: 200)
+                            .frame(width: 200, alignment: .leading)
                             .disabled(!live)
                         }
                     }
