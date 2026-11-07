@@ -617,6 +617,9 @@ final class E16DriverTests: XCTestCase {
         _ = driver.setBrightness(0.03, hub: hub)
         let low = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1.3)
         XCTAssertEqual(low.midi.rings[1]?.r, UInt8(E16Driver.inUseFloorDefault), "PAN, now in use, at 3%: the floor, not 4")
+        // It pulses down to the available level and back, a period after Shift went down.
+        XCTAssertEqual(driver.tick(hub: &hub, now: 1.3 + E16Driver.pulsePeriodDefault / 2).midi.rings[1]?.r, 2, "half a pulse: the available level")
+        XCTAssertEqual(driver.tick(hub: &hub, now: 1.3 + E16Driver.pulsePeriodDefault).midi.rings[1]?.r, UInt8(E16Driver.inUseFloorDefault), "a whole pulse: bright again")
     }
 
     func testTheHostDrawnScreen() {

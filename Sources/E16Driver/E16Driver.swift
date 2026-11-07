@@ -304,6 +304,8 @@ public struct E16Driver: Sendable {
     private var connected = false
     private var lastEnter: Double?
     private var shiftHeld = false
+    /// When Shift last went down, for the pulse of the Shift page's button in use.
+    private var shiftSince = 0.0
     private var blinkLit = true
     /// The position of the switches' marks, 0–15, advanced every `rotationStep`.
     private var rotation = 0
@@ -589,6 +591,7 @@ public struct E16Driver: Sendable {
             if layout == .four { step.midi += drawRing(switchEncoder(ofStrip: column(encoder)), hub: hub) }
         case .shift(let down):
             shiftHeld = down
+            if down { shiftSince = now; clock = now }  // the pulse starts at its bright end
             held = nil
             pressedButton = nil
             overlay = nil
@@ -1608,12 +1611,18 @@ public struct E16Driver: Sendable {
         if inUse {
             // At the brightness setting, but never below `inUseFloor`, so the button in use stays
             // clearly brighter than an available one however low the setting (Adam, 2026-11-07).
-            let lit = Self.scaled(rgb, brightness: brightness)
-            if Double(max(lit.0, lit.1, lit.2)) >= inUseFloor {
-                return RingLook(ring: E16Ring(red: lit.0, green: lit.1, blue: lit.2, amount: 1), exact: true)
+            // It pulses between that and an available button's level, starting bright when Shift
+            // goes down, so it reads by motion at any brightness (Adam, 2026-11-07); a
+            // `pulsePeriod` of 0 holds it steady.
+            var bright = Self.scaled(rgb, brightness: brightness)
+            if Double(max(bright.0, bright.1, bright.2)) < inUseFloor { bright = Self.atLevel(rgb, inUseFloor) }
+            guard pulsePeriod > 0 else {
+                return RingLook(ring: E16Ring(red: bright.0, green: bright.1, blue: bright.2, amount: 1), exact: true)
             }
-            let floor = Self.atLevel(rgb, inUseFloor)
-            return RingLook(ring: E16Ring(red: floor.0, green: floor.1, blue: floor.2, amount: 1), exact: true)
+            let dim = Self.availableColor(rgb)
+            let f = 0.5 * (1 + cos(2 * Double.pi * max(clock - shiftSince, 0) / pulsePeriod))
+            func mix(_ a: UInt8, _ b: UInt8) -> UInt8 { UInt8((Double(a) + f * (Double(b) - Double(a))).rounded()) }
+            return RingLook(ring: E16Ring(red: mix(dim.0, bright.0), green: mix(dim.1, bright.1), blue: mix(dim.2, bright.2), amount: 1), exact: true)
         }
         let dim = Self.availableColor(rgb)
         return RingLook(ring: E16Ring(red: dim.0, green: dim.1, blue: dim.2, amount: 1), exact: true)
@@ -1651,6 +1660,11 @@ public struct E16Driver: Sendable {
     public static let inUseFloorDefault = 8.0
     /// See `inUseFloorDefault`; settable for trying values on the device.
     public var inUseFloor = E16Driver.inUseFloorDefault
+    /// How long one pulse of a Shift-page button in use takes, in seconds (0: steady). A starting
+    /// value (an inference), to tune on the device (`sbdev e16bridge`'s `pulse`).
+    public static let pulsePeriodDefault = 1.0
+    /// See `pulsePeriodDefault`; settable for trying values on the device.
+    public var pulsePeriod = E16Driver.pulsePeriodDefault
 
     /// The largest part of an available button's color, 0–127: 2, the lowest value that read as
     /// lit on the device (Adam, 2026-11-04, from `sbdev e16 ramp`).

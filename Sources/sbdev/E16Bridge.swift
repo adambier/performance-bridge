@@ -60,8 +60,10 @@ let e16BridgeCommandHelp = """
                            last `peaks`, to compare with TotalMix FX's peak readouts
       status               the function, the home submix, the send targets, and the strips
       brightness N         the rings' brightness as the app's slider reads it, 1–100
-      floor N              the least a Shift-page button in use is lit (its color's largest part,
-                           0–127; the driver's default is 8)
+      floor N              the least a Shift-page button in use is lit at the top of its pulse
+                           (its color's largest part, 0–127; the driver's default is 8)
+      pulse S              how long one pulse of a Shift-page button in use takes, in seconds
+                           (0 holds it steady; the driver's default is 1)
       quit                 leave Remote Mode and stop
     """
 
@@ -326,6 +328,13 @@ final class E16BridgeSession: @unchecked Sendable {
             let bytes = driver.setBrightness(driver.brightness, hub: hub)  // redraws every ring
             try? midi?.send(bytes)
             log("In-use floor \(Int(level))")
+        case "pulse":
+            guard words.count == 2, let seconds = Double(words[1]), seconds >= 0, seconds.isFinite else {
+                print("pulse S, in seconds from 0")
+                return true
+            }
+            driver.pulsePeriod = seconds
+            log("Pulse \(seconds) s")
         case "status":
             log("Connected: \(driver.isConnected); function: \(driver.function); title: \"\(driver.title(hub: hub))\"")
             log("Home submix: \(hub.homeSubmix.map { "output \($0 + 1)" } ?? "none yet"); send targets: \(hub.sendTargets.map { "output \($0 + 1)" })")
