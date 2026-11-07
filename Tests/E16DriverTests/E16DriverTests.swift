@@ -395,7 +395,7 @@ final class E16DriverTests: XCTestCase {
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(shift.midi.lastTitle, "LEVEL", "the title stays")
         XCTAssertEqual(shift.midi.lastLabels, ["LVL", "PAN", "SEND", "", "", "", "", "",
-                                               "Phon", "", "<SND", "SND>", "4CH", "", "", ""],
+                                               "Phon", "", "<SND", "SND>", "16CH", "4CH", "", ""],
                        "one page: no page arrows")
         let rings = shift.midi.rings
         XCTAssertEqual(rings[0]?.g, 127, "LEVEL, in use: white at the driver's brightness (1 in the tests)")
@@ -722,8 +722,8 @@ final class E16FourLayoutTests: XCTestCase {
     /// Encoder 13 on the Shift page switches layouts (Adam, 2026-11-06): to 4 channel strips at
     /// the row holding the channel last turned, and back at the page holding the four.
     func testLayoutSwitch() {
-        XCTAssertTrue(E16Driver.shiftSpans(.four).isSuperset(of: [0, 4, 12]), "left-aligned under the send names")
-        XCTAssertTrue(E16Driver.shiftSpans(.sixteen).isSuperset(of: [8, 12]))
+        XCTAssertTrue(E16Driver.shiftSpans(.four).isSuperset(of: [0, 4, 12, 13]), "left-aligned under the send names")
+        XCTAssertTrue(E16Driver.shiftSpans(.sixteen).isSuperset(of: [8, 12, 13]))
         var hub = loadedHub()
         for n in 4..<10 {
             for (parameter, value) in [("stereo", TotalMixValue.number(0)), ("name", .text("In\(n)")), ("color", .number(1))] {
@@ -738,12 +738,15 @@ final class E16FourLayoutTests: XCTestCase {
         XCTAssertEqual(first.count, 16)
         _ = driver.receive([0xB0, 6, 0x01], hub: &hub, now: 1)  // turn the seventh channel
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 2)
-        XCTAssertEqual(shift.midi.lastLabels?[12], "4CH", "labeled with the layout it goes to")
-        XCTAssertEqual(shift.midi.rings[12].map { [$0.r, $0.g, $0.b] }, [2, 1, 0], "yellow, available")
-        let press = driver.receive([0x90, 12, 0x7F], hub: &hub, now: 2.1)
+        XCTAssertEqual(shift.midi.lastLabels.map { Array($0[12...13]) }, ["16CH", "4CH"], "a button for each layout")
+        XCTAssertEqual(shift.midi.rings[12].map { [$0.r, $0.g, $0.b] }, [127, 85, 0], "the layout in use, lit in full")
+        XCTAssertEqual(shift.midi.rings[13].map { [$0.r, $0.g, $0.b] }, [2, 1, 0], "the other, dim")
+        XCTAssertEqual(driver.receive([0x90, 12, 0x7F, 0x80, 12, 0x00], hub: &hub, now: 2.05).core.messages, [])
+        XCTAssertEqual(driver.layout, .sixteen, "the layout in use: nothing")
+        let press = driver.receive([0x90, 13, 0x7F], hub: &hub, now: 2.1)
         XCTAssertEqual(driver.layout, .four)
-        XCTAssertEqual(press.midi.lastLabels?[12], "16CH", "Shift still held: the 4-channel Shift page")
-        _ = driver.receive([0x80, 12, 0x00], hub: &hub, now: 2.2)
+        XCTAssertEqual(press.midi.rings[13].map { [$0.r, $0.g, $0.b] }, [127, 85, 0], "Shift still held: now 4 lit")
+        _ = driver.receive([0x80, 13, 0x00], hub: &hub, now: 2.2)
         let four = driver.receive([0x80, 16, 0x00], hub: &hub, now: 2.3).midi.lastLabels ?? []
         XCTAssertEqual(Array(four[12..<16]), Array(first[4..<8]), "the row holding the channel turned")
         XCTAssertFalse(driver.receive([0xB0, 13, 0x01], hub: &hub, now: 3).core.messages.isEmpty, "a level turns")
@@ -1041,7 +1044,7 @@ final class E16FourLayoutTests: XCTestCase {
         var (driver, hub, _) = connectedFour()
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(shift.midi.lastLabels, ["Phon", "", "", ">", "Mon", "", "", ">",
-                                               "", "", "", "", "16CH", "", "", ""],
+                                               "", "", "", "", "16CH", "4CH", "", ""],
                        "A's back arrow and B's go nowhere (B's would be A's output); one page")
         XCTAssertEqual(shift.midi.rings[3]?.g, 2, "an available arrow, dim deep green")
         XCTAssertEqual(shift.midi.rings[2]?.amount, 0, "dark")

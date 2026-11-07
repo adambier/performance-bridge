@@ -189,14 +189,16 @@ public struct E16Driver: Sendable {
         case page(Int)
         /// The 4-channel layout: a send row's (0 for A, 1 for B) previous output, or next.
         case rowOutput(row: Int, direction: Int)
-        /// Switches to the other layout (encoder 13 in both; Adam, 2026-11-06).
+        /// Selects a layout, as the mode buttons select a mode: encoders 13 (16 channels) and 14
+        /// (4 channel strips) in both layouts, the current one lit in full (Adam, 2026-11-06: one
+        /// button named for the other layout read as the layout in use).
         case switchLayout(to: Layout)
 
         /// The encoder each button is on: the modes on the first row, the output arrows at the
         /// end of the third, the page arrows at the end of the last (Adam, 2026-11-04).
         public static let layout: [Int: ShiftButton] = [
-            0: .level, 1: .pan, 2: .send, 10: .output(-1), 11: .output(1), 12: .switchLayout(to: .four),
-            14: .page(-1), 15: .page(1),
+            0: .level, 1: .pan, 2: .send, 10: .output(-1), 11: .output(1),
+            12: .switchLayout(to: .sixteen), 13: .switchLayout(to: .four), 14: .page(-1), 15: .page(1),
         ]
 
         /// The 4-channel layout's: each send row's arrows at the end of its own row, the page
@@ -205,7 +207,7 @@ public struct E16Driver: Sendable {
         public static let fourLayout: [Int: ShiftButton] = [
             2: .rowOutput(row: 0, direction: -1), 3: .rowOutput(row: 0, direction: 1),
             6: .rowOutput(row: 1, direction: -1), 7: .rowOutput(row: 1, direction: 1),
-            12: .switchLayout(to: .sixteen), 14: .page(-1), 15: .page(1),
+            12: .switchLayout(to: .sixteen), 13: .switchLayout(to: .four), 14: .page(-1), 15: .page(1),
         ]
 
         /// The label on the screen.
@@ -1198,9 +1200,9 @@ public struct E16Driver: Sendable {
     }
 
     /// The Shift page's cells whose labels start at the cell's margin, left-aligned (and may run
-    /// into the next cell): the send rows' current outputs, and the layout switch under them,
-    /// which lines up with them (Adam, 2026-11-06).
-    static func shiftSpans(_ layout: Layout) -> Set<Int> { layout == .four ? [0, 4, 12] : [8, 12] }
+    /// into the next cell): the send rows' current outputs, and the layout buttons under them,
+    /// which line up with them (Adam, 2026-11-06).
+    static func shiftSpans(_ layout: Layout) -> Set<Int> { layout == .four ? [0, 4, 12, 13] : [8, 12, 13] }
 
     /// Where a Shift-page pair's word field starts. Every pair on a page shares one field, as wide
     /// as the page's widest word, so all the "<" line up and all the ">" line up (Adam,
@@ -1550,7 +1552,7 @@ public struct E16Driver: Sendable {
             if case .send = function { inUse = true }
         case .output, .rowOutput: rgb = Self.buttonColors.send
         case .page: rgb = Self.buttonColors.page
-        case .switchLayout: rgb = Self.buttonColors.layout
+        case .switchLayout(let to): rgb = Self.buttonColors.layout; inUse = to == layout
         }
         guard inUse || isAvailable(button, hub: hub) else { return RingLook(ring: .off) }  // dark stays dark, pressed or not
         let top = Double(max(rgb.0, rgb.1, rgb.2))
