@@ -721,6 +721,27 @@ private func connectedFour() -> (driver: E16Driver, hub: SurfaceHub, midi: [UInt
 final class E16FourLayoutTests: XCTestCase {
     /// Encoder 13 on the Shift page switches layouts (Adam, 2026-11-06): to 4 channel strips at
     /// the row holding the channel last turned, and back at the page holding the four.
+    /// A press that reaches the last page keeps its flash until release (Adam, 2026-11-06).
+    func testAnArrowReachingTheEndFlashesUntilRelease() {
+        var hub = fourHub()
+        for n in 4..<8 {
+            for (parameter, value) in [("stereo", TotalMixValue.number(0)), ("name", .text("In\(n)")), ("color", .number(1))] {
+                _ = hub.handle(.channel(bus: .input, channel: n, parameter: parameter, value: value), now: 0)
+            }
+        }
+        var driver = E16Driver(name: "e16", layout: .four)
+        driver.brightness = 1
+        _ = driver.start(hub: &hub, now: 0)
+        _ = driver.receive(ack, hub: &hub, now: 0)
+        _ = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
+        let down = driver.receive([0x90, 15, 0x7F], hub: &hub, now: 2)  // to the last page
+        XCTAssertEqual(down.midi.rings[15].map { [$0.r, $0.g, $0.b] }, [0, 0, 127], "the flash")
+        let up = driver.receive([0x80, 15, 0x00], hub: &hub, now: 2.2)
+        XCTAssertEqual(up.midi.rings[15]?.amount, 0, "then dark: nowhere further")
+        let again = driver.receive([0x90, 15, 0x7F], hub: &hub, now: 3)
+        XCTAssertNil(again.midi.rings[15], "an unavailable arrow stays dark when pressed")
+    }
+
     func testLayoutSwitch() {
         XCTAssertTrue(E16Driver.shiftSpans(.four).isSuperset(of: [0, 4, 12, 13]), "left-aligned under the send names")
         XCTAssertTrue(E16Driver.shiftSpans(.sixteen).isSuperset(of: [8, 12, 13]))

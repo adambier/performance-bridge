@@ -314,6 +314,10 @@ public struct E16Driver: Sendable {
     /// The Shift-page button held down, if any: its ring is full bright while it is (Adam,
     /// 2026-11-04).
     private var pressedButton: Int?
+    /// Whether the pressed Shift-page button could do something when pressed: it stays lit until
+    /// released even if the press made it unavailable (an arrow reaching the last page; Adam,
+    /// 2026-11-06: the flash was lost).
+    private var pressedWasAvailable = false
     /// The countdown step last drawn for a held push.
     private var countdownShown = -1
     private var page = (first: 0, count: 0)
@@ -549,6 +553,7 @@ public struct E16Driver: Sendable {
             guard (0..<Self.stripCount).contains(encoder) else { return }
             if shiftHeld {
                 pressedButton = encoder
+                pressedWasAvailable = shiftButton(at: encoder).map { isAvailable($0, hub: hub) } ?? false
                 if let button = shiftButton(at: encoder) { press(button, hub: &hub, now: now, into: &step) }
                 step.midi += drawRing(encoder, hub: hub)
             } else {
@@ -1554,7 +1559,8 @@ public struct E16Driver: Sendable {
         case .page: rgb = Self.buttonColors.page
         case .switchLayout(let to): rgb = Self.buttonColors.layout; inUse = to == layout
         }
-        guard inUse || isAvailable(button, hub: hub) else { return RingLook(ring: .off) }  // dark stays dark, pressed or not
+        // Dark stays dark, pressed or not; a press that worked keeps its flash until release.
+        guard inUse || isAvailable(button, hub: hub) || (pressedButton == index && pressedWasAvailable) else { return RingLook(ring: .off) }
         let top = Double(max(rgb.0, rgb.1, rgb.2))
         if pressedButton == index {
             // The color with its largest part at 127, whatever the brightness: the deep green's
