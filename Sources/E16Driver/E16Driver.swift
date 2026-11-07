@@ -1614,7 +1614,7 @@ public struct E16Driver: Sendable {
             // It pulses between that and an available button's level, starting bright when Shift
             // goes down, so it reads by motion at any brightness (Adam, 2026-11-07); a
             // `pulsePeriod` of 0 holds it steady.
-            var bright = Self.scaled(rgb, brightness: brightness)
+            var bright = Self.scaled(rgb, brightness: brightness * (pulsePeriod > 0 ? pulseTop : 1))
             if Double(max(bright.0, bright.1, bright.2)) < inUseFloor { bright = Self.atLevel(rgb, inUseFloor) }
             guard pulsePeriod > 0 else {
                 return RingLook(ring: E16Ring(red: bright.0, green: bright.1, blue: bright.2, amount: 1), exact: true)
@@ -1665,6 +1665,12 @@ public struct E16Driver: Sendable {
     public static let pulsePeriodDefault = 1.0
     /// See `pulsePeriodDefault`; settable for trying values on the device.
     public var pulsePeriod = E16Driver.pulsePeriodDefault
+    /// The top of the pulse as a share of the brightness setting (still never below
+    /// `inUseFloor`): at 1 the button in use peaks at the setting, as it was lit steady before.
+    /// A trial (`sbdev e16bridge`'s `top`; Adam, 2026-11-07: at brightness 55 "quite bright").
+    public static let pulseTopDefault = 1.0
+    /// See `pulseTopDefault`; settable for trying values on the device.
+    public var pulseTop = E16Driver.pulseTopDefault
 
     /// The largest part of an available button's color, 0–127: 2, the lowest value that read as
     /// lit on the device (Adam, 2026-11-04, from `sbdev e16 ramp`).
