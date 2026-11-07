@@ -34,9 +34,11 @@ app's own Setup Guide (in its menu) checks each step as it goes.
   - **Melbourne Instruments' Roto-Control**, in its MIX mode: eight motorized knobs for level, pan,
     or a send; switches for mute and PFL; and each channel's name, TotalMix FX color, and meter. Tested
     on the device (`docs/ROTO-CONTROL.md`).
-  - **OXI Instruments' E16**, in its Remote Mode (firmware 1.3.0 or later): sixteen push encoders
-    for level, pan, or a send; mute on a press and PFL on a hold; and each channel's name on the
-    screen, with its TotalMix FX color and level on its encoder's ring. Tested on the device
+  - **OXI Instruments' E16**, in its Remote Mode (firmware 1.3.0 or later): sixteen push encoders,
+    as sixteen channels (level, pan, or a send each) or four channel strips (two sends, pan, and
+    level); mute on a press, PFL on a hold, and a jump to 0 dB, −∞, or +6 dB (or a pan's center or
+    ends) on a push and turn; and each channel's name and value on the screen, with an optional
+    meter, and its TotalMix FX color and level on its encoder's ring. Tested on the device
     (`docs/OXI-E16.md`).
   - **Novation's Launch Control XL 3**, in its DAW mode: faders for level, two encoder rows for
     sends and one for pan, PFL and mute buttons, and the screen. Tested on the device
@@ -46,7 +48,7 @@ app's own Setup Guide (in its menu) checks each step as it goes.
     but not yet on a Launch Control 3 (`docs/LAUNCH-CONTROL-3.md`).
 
 The app has a menu with the connection states, a Setup Guide, and Settings for TotalMix FX's host and
-ports, the hardware controller, a Launch Control's send rows, the E16's ring brightness, and the
+ports, the hardware controller, a Launch Control's send rows, the E16's layout, send rows, meters, and ring brightness, and the
 order and labels of the channels. Everything TotalMix FX can configure itself (e.g., names, colors, and which channels
 each OSC Controller sees) is set in TotalMix FX and read from it.
 

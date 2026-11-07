@@ -108,10 +108,11 @@ public enum SetupChecklist {
                                        : ""))
         }
 
-        let metersSetup = "For meters on the Roto-Control: in TotalMix FX, Options → Mixer Settings… (F3) → OSC, check “Send Level Data” for Performance Bridge’s OSC Controller.\n\nTotalMix FX sends levels only when they change, so play something to see them."
-        // Meters show only on the Roto-Control: the Launch Controls have none, so the step is left
-        // out for them (Adam, 2026-11-02).
-        if status.rotoEnabled {
+        let metersSetup = "For meters: in TotalMix FX, Options → Mixer Settings… (F3) → OSC, check “Send Level Data” and uncheck “Peak Hold” for Performance Bridge’s OSC Controller.\n\nTotalMix FX sends levels only when they change, so play something to see them."
+        // Meters show on the Roto-Control, and on the E16 when its meters are on (from 1.2.0); the
+        // Launch Controls have none, so the step is left out for them (Adam, 2026-11-02).
+        // "Peak Hold" off: the drivers hold peaks themselves (`MeterScale`).
+        if status.rotoEnabled || (status.e16Enabled && status.e16Meters) {
             steps.append(status.levelsSeen
                 ? SetupStep(id: "meters", title: "Meter levels are arriving", state: .done,
                             detail: "TotalMix FX is sending meter levels.", instructions: metersSetup)
