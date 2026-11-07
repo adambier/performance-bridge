@@ -446,7 +446,12 @@ marked "seen".
   yellow from −5 dBFS (117 on a −65…0 dBFS scale) and red from −1 dBFS (125). With those
   thresholds, meter values 112, 120, and 126 showed green, a yellow end, and a red end, as expected
   (seen). Since 2026-11-06 the scale follows TotalMix FX's fader law (`MeterScale`;
-  docs/TOTALMIX-OSC.md), so the same levels are thresholds 103 and 122; not yet seen on the device.
+  docs/TOTALMIX-OSC.md), so the same levels are thresholds 103 and 122. Seen 2026-11-07 (Adam,
+  branch `e16-four`, music through one channel): the meter rose and fell about as high as TotalMix
+  FX's for the same channel and turned yellow at the top; red not seen (not pushed toward 0 dBFS).
+  The Roto-Control is sent the peak level and draws its bar from it, so its bar sits nearer its
+  peak dot than TotalMix FX's, whose bar is an average; the E16's meters are drawn like TotalMix
+  FX's (an average bar and a held peak), a difference noted for the 1.2.0 UI review.
 - **Track colors against TotalMix FX's** (run 8, seen): with the playback pairs in TotalMix FX's eight
   colors and each mapped to the table color nearest in hue, schemes 9 (blue) and 61 (green)
   matched TotalMix FX; 50 looked slate blue, 57 brown, 56 burgundy, 2 ochre, and 24 royal blue
