@@ -31,8 +31,9 @@ reasoning that has not been checked, the text says so in words ("inference", "un
 [^test-6]: [Test 6](#test-6-2026-11-05-push-and-turn) (2026-11-05), section 7; firmware 1.3.0.
 [^test-7]: [Test 7](#test-7-2026-11-05-111-on-the-device) (2026-11-05), section 7; firmware 1.3.0.
 [^test-8]: [Test 8](#test-8-2026-11-06-the-screens-rate) (2026-11-06), section 7; firmware 1.3.0.
+[^test-9]: [Test 9](#test-9-2026-11-06-push-and-turn-jumps) (2026-11-06), section 7; firmware 1.3.0.
 
-**Status (2026-11-06).** Eight tests have been run, all on Adam's E16 with firmware 1.3.0 (section
+**Status (2026-11-06).** Nine tests have been run, all on Adam's E16 with firmware 1.3.0 (section
 7). Section 6 lists what is still open.
 
 ## 1. Sources
@@ -134,11 +135,20 @@ always sources.
   a 0.25 s tap window; the title says "NAME -> PFL" while the countdown runs and "NAME PFL ON" (or
   OFF) while the encoder stays held. One push at a time: a second push while one is held replaces
   it (a design choice; two-finger mutes would need a hold per encoder).
-- **Push and turn** (1.1.1; Adam, 2026-11-05): pan in LEVEL and SEND modes, the level in PAN
-  mode (both in Main Out), while the encoder is held; the ring shows that value and the title its number, and on release the ring goes back to
-  the mode's. A turn while pushed, before PFL has switched (1 s), cancels the push: no mute on
-  release, and no PFL however long it is then held; a turn after PFL has switched is an ordinary
-  turn of the mode's function.[^test-6]
+- **Push and turn** (from 1.2.0, branch `e16-four`; Adam, 2026-11-06): a jump to the next stop
+  the way the encoder turns, the same on every encoder in both layouts (`E16Driver.jumpStops`):
+  for a level or a send, −∞, 0 dB, and +6 dB; for a pan, hard left, center, and hard right (the
+  two ends and the middle). Turning toward no further stop does nothing. A jump takes two units
+  turned one way (`jumpUnits`; a turn the other way starts the count again), so a push that
+  nudges the knob a unit doesn't jump (inferred; not yet checked on the device). **Each stop is
+  sticky**, as a pan's center is: after a jump the turn must pause `jumpPause`, 0.075 s, before
+  it jumps again, every message meanwhile restarting the pause, so a fast turn from above 0 dB
+  stops at 0 dB rather than going on to −∞. The title shows the value, as a turn does. In 1.1.1
+  push and turn was pan in LEVEL and SEND modes and the level in PAN mode; it was replaced so
+  that every encoder works the same in both layouts (Adam doesn't pan live, and the layout switch
+  puts a channel's pan one press away). A turn while pushed, before PFL has switched (1 s),
+  cancels the push: no mute on release, and no PFL however long it is then held; a turn after
+  PFL has switched is an ordinary turn of the mode's function.[^test-6][^test-9]
 - **A pan's sticky center** (Adam, 2026-11-05): a turn that reaches or crosses center stops
   there, however fast, and the rest of that turn is ignored (messages less than
   `panCenterPause`, 0.05 s, apart are one turn: a fast turn arrives as a burst of up to 8 units a
@@ -154,6 +164,18 @@ always sources.
   with `--pan-pause` (Adam, 2026-11-06): 0.25 s and 0.1 s still felt like a wait before C could
   be passed; at 0.05 s a brief stop lets the pan move on and fast turns still stop at C. 0.05 s
   kept.
+- **How long a sticky point holds** (Adam, 2026-11-06; AGENTS.md has the general rule). A sticky
+  point holds a turn until the turn pauses, and the pause sets the balance between going on easily
+  on purpose and going past by accident. Two things set it: what going past costs, and whether
+  going on is part of the same move. At a pan's center going past costs little (a pan slightly
+  off center, turned back as easily), and going a little past center and on, carefully, is the
+  normal move, so the pause is short (0.05 s) and doesn't slow the user down. A push-and-turn
+  jump is big: going past 0 dB lands on −∞ or +6 dB, and going on is a separate, deliberate move,
+  so a longer pause (0.075 s) costs the user less and is worth it. Too long feels like a dead knob
+  (0.3 s for a jump; 0.25 s and 0.1 s at a pan's center). Why a pause this short still catches a
+  fast turn (inferred): an unbroken turn's messages come 4–5 ms apart, so any pause stops it;
+  what gets past is a turn made in strokes, the hand's brief break between strokes being longer
+  than the pause, so the pause decides how long a hesitation counts as the end of a move.
 - **Shift** makes the encoders buttons: 1 LEVEL (white), 2 PAN (magenta), 3 SEND (deep green; back
   to the last output used), 11 and 12 the previous and next send output (deep green; outside SEND
   mode either arrow enters it at the last output used),[^test-4] 15 and 16 the previous and next
@@ -394,3 +416,18 @@ occasional maximum near 10 ms in run 1 didn't recur in run 2.
 
 **Findings (Adam):** at every rate, the bars and the counter moved smoothly, the top row of rings
 stayed smooth, and turns moved their rings at once.
+
+### Test 9 (2026-11-06): push-and-turn jumps
+
+**Setup.** `sbdev e16bridge --layout 4 --meters` on branch `e16-four`, from `3bd4bd8` (stops at
+−∞, 0 dB, and +6 dB) with `--jump-pause S` to try the pause after a jump; Adam turned pushed
+encoders quickly through 0 dB, up and down.
+
+**Findings (Adam):**
+
+- 0.05 s, the pan's center pause (`7381250`): too short; a jump "is much more drastic than pan".
+- 0.3 s: too long. 0.15 s: a bit too long. 0.05 s again: definitely too short. 0.075 s: best,
+  and the default from `2b54723`.
+- Not yet checked: whether a push alone nudges the encoder a unit (`jumpUnits`), and the layout
+  switch (Shift + encoder 13) on the device.
+

@@ -111,6 +111,15 @@ The exception (Adam, 2026-10-31): a separate app setting for something TotalMix 
 acceptable when there is a strong case for the surface behaving differently from TotalMix FX at the
 same time. The case is made, and recorded, before the setting is added.
 
+Design rule for sticky points on encoders (Adam, 2026-11-06): a sticky point (a pan's center, a
+push-and-turn stop) holds a turn until the turn pauses, and the pause sets the balance between going
+on easily on purpose and going past by accident. Choose it by what going past costs and by whether
+going on is part of the same move: cheap to pass and part of the move (a pan just past center,
+then turned on carefully) means a short pause that doesn't slow the user down; costly to pass and a
+separate move (a jump to −∞ or +6 dB) means a longer pause, which then costs the user less. Too long
+feels like a dead knob. Start there, tune on the device with a trial flag, and record the tuning
+(`docs/OXI-E16.md`, section 5: 0.05 s at a pan's center, 0.075 s between jumps).
+
 Recorded exceptions:
 - **Labels** (Adam, 2026-11-01). The app can give any channel a label of its own, shown only on
   the hardware controllers; a channel without one shows TotalMix FX's name. The case: TotalMix FX's names
