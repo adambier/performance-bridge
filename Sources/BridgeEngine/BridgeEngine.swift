@@ -107,6 +107,15 @@ public struct BridgeSettings: Equatable, Sendable {
     /// How bright the E16's rings are (`E16Driver.brightness`, kept within the range below); a must-have setting, since
     /// how bright is right depends on the room and is the user's call (Adam, 2026-11-04).
     public var e16Brightness = E16Driver.defaultBrightness
+    /// The E16's layout: 4 channel strips rather than 16 channels (Adam, 2026-11-05/06; set from
+    /// Terminal until Settings has the choice: `defaults write org.biers.performancebridge
+    /// e16FourChannelStrips -bool true`).
+    public var e16FourChannelStrips = false
+    /// Whether the E16 shows meters under the names (`E16Driver.showsMeters`; `e16Meters`).
+    public var e16Meters = false
+    /// The 4-channel layout's send rows' outputs (A, B), 0-based (`E16Driver.sendOutputs`;
+    /// `e16Sends`, -1 for none). A choice made on the device isn't saved yet (phase 2).
+    public var e16Sends: [Int?] = []
     /// How often the engine tries again to open TotalMix FX's port or the Roto-Control's MIDI ports
     /// while either is not open, in seconds.
     public var retryInterval: Double = 3
@@ -556,8 +565,9 @@ public final class BridgeEngine: @unchecked Sendable {
         switch result {
         case .success(let connection) where running:
             e16MIDI = connection
-            var e16 = E16Driver(name: "e16")
+            var e16 = E16Driver(name: "e16", layout: settings.e16FourChannelStrips ? .four : .sixteen, sendOutputs: settings.e16Sends)
             e16.brightness = e16Brightness
+            e16.showsMeters = settings.e16Meters
             let started = e16.start(hub: &hub, now: now)
             sendToE16(started.midi)
             e16Driver = e16

@@ -494,6 +494,14 @@ final class BridgeModel: ObservableObject {
         if let brightness = UserDefaults.standard.object(forKey: e16BrightnessKey) as? Double {
             settings.e16Brightness = min(max(brightness, 0), 1)
         }
+        // The E16's layout, meters, and send rows: set from Terminal for now (`defaults write
+        // org.biers.performancebridge e16FourChannelStrips -bool true`, `e16Meters -bool true`,
+        // `e16Sends -array 2 4`); Settings gets them in phase 2.
+        settings.e16FourChannelStrips = UserDefaults.standard.bool(forKey: "e16FourChannelStrips")
+        settings.e16Meters = UserDefaults.standard.bool(forKey: "e16Meters")
+        if let saved = UserDefaults.standard.array(forKey: "e16Sends") as? [Int] {
+            settings.e16Sends = saved.map { $0 < 0 ? nil : $0 }
+        }
         // Both layouts' send rows, so either can be set in Settings with no device connected.
         for layout in LaunchControlModel.allCases {
             if let saved = UserDefaults.standard.array(forKey: sendsKey(layout)) as? [Int] {
