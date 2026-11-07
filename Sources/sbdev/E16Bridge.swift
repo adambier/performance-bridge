@@ -59,6 +59,9 @@ let e16BridgeCommandHelp = """
       peaks                the highest level TotalMix FX sent for each channel on the page since the
                            last `peaks`, to compare with TotalMix FX's peak readouts
       status               the function, the home submix, the send targets, and the strips
+      brightness N         the rings' brightness as the app's slider reads it, 1–100
+      floor N              the least a Shift-page button in use is lit (its color's largest part,
+                           0–127; the driver's default is 8)
       quit                 leave Remote Mode and stop
     """
 
@@ -305,6 +308,24 @@ final class E16BridgeSession: @unchecked Sendable {
             dispatch(hub.setLayout(layout, now: now))
         case "sendall":
             dispatch(hub.connect(now: now))
+        case "brightness":
+            guard words.count == 2, let shown = Double(words[1]), (1...100).contains(shown) else {
+                print("brightness N, from 1 to 100")
+                return true
+            }
+            // The app's slider: 1–100 for 3%–80% of the LEDs' output (BridgeEngine's range).
+            let bytes = driver.setBrightness(0.03 + (shown - 1) / 99 * 0.77, hub: hub)
+            try? midi?.send(bytes)
+            log("Brightness \(Int(shown))")
+        case "floor":
+            guard words.count == 2, let level = Double(words[1]), (0...127).contains(level) else {
+                print("floor N, from 0 to 127")
+                return true
+            }
+            driver.inUseFloor = level
+            let bytes = driver.setBrightness(driver.brightness, hub: hub)  // redraws every ring
+            try? midi?.send(bytes)
+            log("In-use floor \(Int(level))")
         case "status":
             log("Connected: \(driver.isConnected); function: \(driver.function); title: \"\(driver.title(hub: hub))\"")
             log("Home submix: \(hub.homeSubmix.map { "output \($0 + 1)" } ?? "none yet"); send targets: \(hub.sendTargets.map { "output \($0 + 1)" })")

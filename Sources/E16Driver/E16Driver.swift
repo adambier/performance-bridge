@@ -1605,10 +1605,52 @@ public struct E16Driver: Sendable {
             func full(_ v: UInt8) -> UInt8 { v == 0 ? 0 : UInt8(min((Double(v) / top * 127).rounded(), 127)) }
             return RingLook(ring: E16Ring(red: full(rgb.0), green: full(rgb.1), blue: full(rgb.2), amount: 1), exact: true)
         }
-        if inUse { return RingLook(ring: E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: 1)) }
-        func part(_ v: UInt8) -> UInt8 { v == 0 ? 0 : UInt8(max((Double(v) / top * Self.availableLevel).rounded(), 1)) }
-        return RingLook(ring: E16Ring(red: part(rgb.0), green: part(rgb.1), blue: part(rgb.2), amount: 1), exact: true)
+        if inUse {
+            // At the brightness setting, but never below `inUseFloor`, so the button in use stays
+            // clearly brighter than an available one however low the setting (Adam, 2026-11-07).
+            let lit = Self.scaled(rgb, brightness: brightness)
+            if Double(max(lit.0, lit.1, lit.2)) >= inUseFloor {
+                return RingLook(ring: E16Ring(red: lit.0, green: lit.1, blue: lit.2, amount: 1), exact: true)
+            }
+            let floor = Self.atLevel(rgb, inUseFloor)
+            return RingLook(ring: E16Ring(red: floor.0, green: floor.1, blue: floor.2, amount: 1), exact: true)
+        }
+        let dim = Self.availableColor(rgb)
+        return RingLook(ring: E16Ring(red: dim.0, green: dim.1, blue: dim.2, amount: 1), exact: true)
     }
+
+    /// A color with its largest part at `level` (0–127), each other part in proportion, rounded,
+    /// and never below 1 where the color has some.
+    static func atLevel(_ rgb: (UInt8, UInt8, UInt8), _ level: Double) -> (UInt8, UInt8, UInt8) {
+        let top = Double(max(rgb.0, rgb.1, rgb.2))
+        guard top > 0 else { return (0, 0, 0) }
+        func part(_ v: UInt8) -> UInt8 { v == 0 ? 0 : UInt8(min(max((Double(v) / top * level).rounded(), 1), 127)) }
+        return (part(rgb.0), part(rgb.1), part(rgb.2))
+    }
+
+    /// An available button's color: the lowest level from `availableLevel` at which no part
+    /// rounds down by more than 0.1 of its share of the largest, so a dim yellow stays yellow
+    /// (3, 2, 0) rather than rounding to orange (2, 1, 0) (Adam, 2026-11-07). A part rounding up
+    /// (magenta's 2, 0, 2, accepted on the device on 2026-11-04) doesn't lift it.
+    public static func availableColor(_ rgb: (UInt8, UInt8, UInt8)) -> (UInt8, UInt8, UInt8) {
+        let top = Double(max(rgb.0, rgb.1, rgb.2))
+        guard top > 0 else { return (0, 0, 0) }
+        var level = availableLevel
+        while level < 8 {
+            let c = atLevel(rgb, level)
+            let fits = zip([c.0, c.1, c.2], [rgb.0, rgb.1, rgb.2]).allSatisfy { Double($0) / level >= Double($1) / top - 0.1 }
+            if fits { return c }
+            level += 1
+        }
+        return atLevel(rgb, level)
+    }
+
+    /// The least a Shift-page button in use is lit, as the largest part of its color (0–127),
+    /// whatever the brightness setting: about three times an available button's level. A
+    /// starting value (an inference), to tune on the device (`sbdev e16bridge`'s `floor`).
+    public static let inUseFloorDefault = 8.0
+    /// See `inUseFloorDefault`; settable for trying values on the device.
+    public var inUseFloor = E16Driver.inUseFloorDefault
 
     /// The largest part of an available button's color, 0–127: 2, the lowest value that read as
     /// lit on the device (Adam, 2026-11-04, from `sbdev e16 ramp`).

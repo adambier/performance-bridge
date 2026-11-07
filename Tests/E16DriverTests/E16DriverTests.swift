@@ -612,6 +612,11 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(shift.midi.rings[1]?.r, 2, "available: 2, whatever the brightness")
         let down = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 1.1)
         XCTAssertEqual(down.midi.rings[1]?.r, 127, "pressed: 127, whatever the brightness")
+        // The button in use never below `inUseFloor` (Adam, 2026-11-07), and it follows the setting.
+        _ = driver.receive([0x80, 1, 0x00, 0x80, 16, 0x00], hub: &hub, now: 1.2)
+        _ = driver.setBrightness(0.03, hub: hub)
+        let low = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1.3)
+        XCTAssertEqual(low.midi.rings[1]?.r, UInt8(E16Driver.inUseFloorDefault), "PAN, now in use, at 3%: the floor, not 4")
     }
 
     func testTheHostDrawnScreen() {
@@ -793,7 +798,7 @@ final class E16FourLayoutTests: XCTestCase {
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 2)
         XCTAssertEqual(shift.midi.lastLabels.map { Array($0[12...13]) }, ["16CH", "4CH"], "a button for each layout")
         XCTAssertEqual(shift.midi.rings[12].map { [$0.r, $0.g, $0.b] }, [127, 85, 0], "the layout in use, lit in full")
-        XCTAssertEqual(shift.midi.rings[13].map { [$0.r, $0.g, $0.b] }, [2, 1, 0], "the other, dim")
+        XCTAssertEqual(shift.midi.rings[13].map { [$0.r, $0.g, $0.b] }, [3, 2, 0], "the other, dim, and still yellow (2, 1, 0 read as orange)")
         XCTAssertEqual(driver.receive([0x90, 12, 0x7F, 0x80, 12, 0x00], hub: &hub, now: 2.05).core.messages, [])
         XCTAssertEqual(driver.layout, .sixteen, "the layout in use: nothing")
         let press = driver.receive([0x90, 13, 0x7F], hub: &hub, now: 2.1)
