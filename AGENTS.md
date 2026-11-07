@@ -111,8 +111,8 @@ The exception (Adam, 2026-10-31): a separate app setting for something TotalMix 
 acceptable when there is a strong case for the surface behaving differently from TotalMix FX at the
 same time. The case is made, and recorded, before the setting is added.
 
-Design rule for sticky points on encoders (Adam, 2026-11-06): a sticky point (a pan's center, a
-push-and-turn stop) holds a turn until the turn pauses, and the pause sets the balance between going
+Design rule for virtual detents on encoders (Adam, 2026-11-06): a virtual detent (a pan's sticky
+center, a push-and-turn stop) holds a turn until the turn pauses, and the pause sets the balance between going
 on easily on purpose and going past by accident. Choose it by what going past costs and by whether
 going on is part of the same move: cheap to pass and part of the move (a pan just past center,
 then turned on carefully) means a short pause that doesn't slow the user down; costly to pass and a
@@ -120,7 +120,11 @@ separate move (a jump to −∞ or +6 dB) means a longer pause, which then costs
 past should feel like two movements in the second case and one in the first. Too long feels like a
 dead knob, worst for a slow, careful turn, since every message restarts the pause and a slow turn's
 messages can keep it from ever ending. Aim for water (Adam): a wall when hit fast, little
-resistance to slow movement. Start there, tune on the device with a trial flag, and record the tuning
+resistance to slow movement. The pause is the detent's strength (getting past means stopping and
+going again, a small re-commitment); a count of units turned before it lets go is only a guard
+against a brush, felt as slack rather than resistance, so keep it the smallest that does that job.
+Where a surface has real detents (the Roto-Control's 0 dB indent), put the virtual ones at the same
+points. Start there, tune on the device with a trial flag, and record the tuning
 (`docs/OXI-E16.md`, section 5: 0.05 s at a pan's center, 0.075 s between jumps).
 
 Recorded exceptions:

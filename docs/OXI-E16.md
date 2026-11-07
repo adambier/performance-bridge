@@ -164,8 +164,11 @@ always sources.
   with `--pan-pause` (Adam, 2026-11-06): 0.25 s and 0.1 s still felt like a wait before C could
   be passed; at 0.05 s a brief stop lets the pan move on and fast turns still stop at C. 0.05 s
   kept.
-- **How long a sticky point holds** (Adam, 2026-11-06; AGENTS.md has the general rule). A sticky
-  point holds a turn until the turn pauses, and the pause sets the balance between going on easily
+- **Virtual detents: how hard they hold** (Adam, 2026-11-06; AGENTS.md has the general rule).
+  A pan's sticky center and a push-and-turn stop are virtual detents: like a center-detented pot or
+  a stepped switch, they hold the knob at a point worth landing on and ask a little extra to get
+  past. An endless encoder can't push back, so the extra is asked in time, not force. A virtual
+  detent holds a turn until the turn pauses, and the pause sets the balance between going on easily
   on purpose and going past by accident. Two things set it: what going past costs, and whether
   going on is part of the same move. At a pan's center going past costs little (a pan slightly
   off center, turned back as easily), and going a little past center and on, carefully, is the
@@ -186,6 +189,16 @@ always sources.
   point's resistance grows with the turn's speed; the pause sets the speed below which a turn
   passes freely (lower for a jump's longer pause), and the count of units (4 at a pan's center, 2
   for a jump) adds a small resistance at any speed.
+  **The pause is the detent's strength; the count is only a guard** (Adam, 22:13). Getting past
+  means stopping and going again: a small re-commitment, the virtual equivalent of pushing past a
+  physical detent, and a longer pause asks for a more deliberate one. The count is different: the
+  knob turns and nothing happens, which feels like slack, not resistance (2, 5, and 10 felt the
+  same, 2026-11-05). It matters for a slow turn, whose messages come further apart than the pause
+  and so meet only the count; slow movement should meet little, so the count should be the
+  smallest that still stops a brush. Unlike a physical detent, which a fast spin's momentum can
+  carry past while a slow turn clicks to a stop, a virtual one holds a fast turn and lets a slow
+  one through: the water model, and the better behavior for catching a fling without getting in
+  the way of a careful move.
 - **Shift** makes the encoders buttons: 1 LEVEL (white), 2 PAN (magenta), 3 SEND (deep green; back
   to the last output used), 11 and 12 the previous and next send output (deep green; outside SEND
   mode either arrow enters it at the last output used),[^test-4] 15 and 16 the previous and next
@@ -236,6 +249,9 @@ always sources.
 
 ## 6. Open questions
 
+- A virtual detent gives no click to the fingers; landing on one shows only on the ring and in the
+  title. Whether landing should also give a small visual click (e.g., a brief ring flash) so it's
+  known without reading the screen: an idea for the UI review, untested (Adam, 2026-11-06).
 - Bluetooth MIDI: untested.
 - The device's System settings in Remote Mode: whether Brightness (Low, Med, High) scales the
   host's ring colors, whether Auto Turn Off and the Screensaver still fire, and whether Animations
