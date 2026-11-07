@@ -172,10 +172,16 @@ always sources.
   normal move, so the pause is short (0.05 s) and doesn't slow the user down. A push-and-turn
   jump is big: going past 0 dB lands on −∞ or +6 dB, and going on is a separate, deliberate move,
   so a longer pause (0.075 s) costs the user less and is worth it. Too long feels like a dead knob
-  (0.3 s for a jump; 0.25 s and 0.1 s at a pan's center). Why a pause this short still catches a
-  fast turn (inferred): an unbroken turn's messages come 4–5 ms apart, so any pause stops it;
-  what gets past is a turn made in strokes, the hand's brief break between strokes being longer
-  than the pause, so the pause decides how long a hesitation counts as the end of a move.
+  (0.3 s for a jump; 0.25 s and 0.1 s at a pan's center). In Adam's words: jumping past should
+  feel like two movements, and moving a little past like one; and when moving a little past he is
+  already turning slowly so as not to overshoot, so a long pause feels even more unresponsive.
+  Why, given how the pause works (inferred, not measured): every message restarts the pause, so a
+  slow turn whose messages come further apart than the pause passes as one move, while one whose
+  messages come closer together is held for as long as it keeps turning. A short pause lets a
+  careful, slow turn through; a long one holds exactly the slow turn that wants to pass. And an
+  unbroken fast turn's messages come 4–5 ms apart, so any pause stops it; what gets past is a turn
+  made in strokes, the hand's brief break between strokes being longer than the pause. So the
+  pause decides how long a hesitation counts as the end of a move.
 - **Shift** makes the encoders buttons: 1 LEVEL (white), 2 PAN (magenta), 3 SEND (deep green; back
   to the last output used), 11 and 12 the previous and next send output (deep green; outside SEND
   mode either arrow enters it at the last output used),[^test-4] 15 and 16 the previous and next
