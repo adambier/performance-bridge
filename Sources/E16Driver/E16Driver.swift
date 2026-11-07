@@ -279,6 +279,12 @@ public struct E16Driver: Sendable {
     public static let panCenterPauseDefault = 0.05
     /// `panCenterPauseDefault`, settable for trying values (`sbdev e16bridge --pan-pause`).
     public var panCenterPause = E16Driver.panCenterPauseDefault
+    /// How long push-and-turn must pause after a jump before it jumps again (`jumpPausedAt`):
+    /// longer than a pan's center, since a jump is more drastic (Adam, 2026-11-06, on the
+    /// device: 0.05 s was too short). 0.3 s is a starting value (inferred), to tune.
+    public static let jumpPauseDefault = 0.3
+    /// `jumpPauseDefault`, settable for trying values (`sbdev e16bridge --jump-pause`).
+    public var jumpPause = E16Driver.jumpPauseDefault
     /// For trying amounts side by side (`sbdev e16bridge --pan-center`): encoder n's pan takes
     /// the (n mod count)th of these instead of `panCenterUnits`. Empty in the app.
     public var panCenterTrial: [Int] = []
@@ -317,7 +323,7 @@ public struct E16Driver: Sendable {
     /// Units turned one way since push-and-turn began or last jumped (`jumpUnits`), signed.
     private var jumpTurned = 0
     /// When push-and-turn last jumped, or last turned while paused after a jump: the turn must
-    /// stop for `panCenterPause` before it jumps again, as at a pan's center.
+    /// stop for `jumpPause` before it jumps again, as at a pan's center.
     private var jumpPausedAt: Double?
     private var muteOn: [Bool] = Array(repeating: false, count: E16Driver.stripCount)
     private var pflOn: [Bool] = Array(repeating: false, count: E16Driver.stripCount)
@@ -518,10 +524,10 @@ public struct E16Driver: Sendable {
             // nudges the knob a unit doesn't jump; a turn back starts the count again.
             if pushTurning == encoder {
                 // Each stop is sticky, as a pan's center is (Adam, 2026-11-06): after a jump, the
-                // turn must pause `panCenterPause` (every message meanwhile restarts it), so a
-                // fast turn from above 0 dB stops at 0 dB rather than going on to off.
+                // turn must pause `jumpPause` (every message meanwhile restarts it), so a fast
+                // turn from above 0 dB stops at 0 dB rather than going on to off.
                 if let paused = jumpPausedAt {
-                    guard now - paused >= panCenterPause else {
+                    guard now - paused >= jumpPause else {
                         jumpPausedAt = now
                         return
                     }

@@ -13,7 +13,7 @@ import E16Driver
 let e16BridgeUsage = """
     Usage:
       sbdev e16bridge [--host H] [--in-port P] [--out-port P] [--port NAME] [--home N]
-                      [--layout 16|4] [--sends A,B] [--no-name-marks] [--left] [--meters] [--peak-hold S] [--meter-average S] [--meter-offset DB] [--pan-center A,B,C…] [--pan-pause S] [--verbose]
+                      [--layout 16|4] [--sends A,B] [--no-name-marks] [--left] [--meters] [--peak-hold S] [--meter-average S] [--meter-offset DB] [--pan-center A,B,C…] [--pan-pause S] [--jump-pause S] [--verbose]
           Connects TotalMix FX and an OXI E16 (in its Remote Mode) through SurfaceCore and the E16
           driver, as the app does. Prints what is sent to TotalMix FX, with the time since
           starting; --verbose also prints every MIDI message to and from the device. Then reads
@@ -34,6 +34,8 @@ let e16BridgeUsage = """
           take 5, and encoders 3, 6, 9… take 10 (default: the driver's 4 on every encoder).
           --pan-pause is how long, in seconds, a turn that stopped at center must pause before
           turning moves on (default 0.05).
+          --jump-pause is how long, in seconds, push-and-turn must pause after a jump before it
+          jumps again (default 0.3).
           Stop sbdev monitor, the other bridges, and the app first: they need the same ports.
 
       On the device: turn is level, pan, or a send, by the mode; push and release is mute; a hold of
@@ -64,6 +66,7 @@ struct E16BridgeOptions {
     var home: Int?
     var panCenter: [Int] = []
     var panPause: Double?
+    var jumpPause: Double?
     var layout = E16Driver.Layout.sixteen
     var sends: [Int?] = []
     var nameMarks = true
@@ -124,6 +127,9 @@ func parseE16BridgeOptions(_ arguments: ArraySlice<String>) -> E16BridgeOptions 
         case "--pan-pause":
             guard let seconds = Double(value(argument)), seconds >= 0, seconds.isFinite else { fail("--pan-pause needs seconds from 0.") }
             options.panPause = seconds
+        case "--jump-pause":
+            guard let seconds = Double(value(argument)), seconds >= 0, seconds.isFinite else { fail("--jump-pause needs seconds from 0.") }
+            options.jumpPause = seconds
         case "--verbose": options.verbose = true
         case "-h", "--help": print(e16BridgeUsage); exit(0)
         default: fail("Unknown option \(argument).\n\n\(e16BridgeUsage)")
@@ -154,6 +160,7 @@ final class E16BridgeSession: @unchecked Sendable {
         if let offset = options.meterOffset { driver.meterOffset = offset }
         driver.panCenterTrial = options.panCenter
         if let pause = options.panPause { driver.panCenterPause = pause }
+        if let pause = options.jumpPause { driver.jumpPause = pause }
     }
 
     private var now: Double { Date().timeIntervalSince(start) }
