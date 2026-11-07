@@ -887,10 +887,11 @@ public struct E16Driver: Sendable {
 
     private var isPan: Bool { if case .pan = function { return true } else { return false } }
 
-    /// Push-and-turn's stops (Adam, 2026-11-06): for a level or a send, off (−∞) and 0 dB (no
-    /// +6 dB: a one-step 6 dB jump is risky); for a pan, hard left, center, and hard right. As
+    /// Push-and-turn's stops (Adam, 2026-11-06): the two ends and the middle. For a level or a
+    /// send, off (−∞), 0 dB, and +6 dB (the fader's top; added at 21:16, since the sticky pause
+    /// keeps a fast turn from passing 0 dB); for a pan, hard left, center, and hard right. As
     /// knob positions, a pan's from 0 (left) to 1 (right).
-    static func jumpStops(pan: Bool) -> [Double] { pan ? [0, 0.5, 1] : [0, FaderCurve.unityPosition] }
+    static func jumpStops(pan: Bool) -> [Double] { pan ? [0, 0.5, 1] : [0, FaderCurve.unityPosition, 1] }
 
     /// The first of `stops` (ascending) past `current` the way `direction` points; a stop within
     /// `tolerance` of `current` counts as where the knob is.
