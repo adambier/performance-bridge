@@ -103,6 +103,32 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertFalse(fromSaved.status.e16Found)
     }
 
+    /// The E16's layout, meters, and send rows: held with no device, reported, and the layout
+    /// passed on for saving when it changes (phase 2).
+    func testE16ChoicesAreHeldWithoutADevice() {
+        final class Saved: @unchecked Sendable { var layouts: [Bool] = []; var sends: [[Int?]] = [] }
+        let saved = Saved()
+        let engine = BridgeEngine(settings: BridgeSettings())
+        engine.onE16LayoutChange = { saved.layouts.append($0) }
+        engine.onE16SendsChange = { saved.sends.append($0) }
+        XCTAssertFalse(engine.status.e16FourChannelStrips, "16 channels unless saved otherwise")
+        XCTAssertFalse(engine.status.e16Meters)
+        engine.setE16Layout(fourChannelStrips: true)
+        engine.setE16Layout(fourChannelStrips: true)
+        XCTAssertTrue(engine.status.e16FourChannelStrips)
+        XCTAssertEqual(saved.layouts, [true], "passed on once, when it changes")
+        engine.setE16Meters(true)
+        XCTAssertTrue(engine.status.e16Meters)
+        engine.setE16Send(row: 0, to: 4)
+        XCTAssertTrue(saved.sends.isEmpty, "not a send target (TotalMix FX hasn't answered): refused")
+        var fromSaved = BridgeSettings()
+        fromSaved.e16FourChannelStrips = true
+        fromSaved.e16Meters = true
+        let restored = BridgeEngine(settings: fromSaved)
+        XCTAssertTrue(restored.status.e16FourChannelStrips, "a saved setting is taken up")
+        XCTAssertTrue(restored.status.e16Meters)
+    }
+
     func testMonitoringChoicesInOutputOrderWithNamesAndRoles() {
         var mirror = MixerMirror()
         let events: [TotalMixEvent] = [

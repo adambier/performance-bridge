@@ -788,6 +788,35 @@ public struct E16Driver: Sendable {
         step.midi += drawLabels(hub: hub) + drawRings(hub: hub)
     }
 
+    /// Sets the layout from the app: on a connected device as the Shift page's layout buttons do
+    /// (`switchLayout`); otherwise the layers are swapped in the hub, at the page holding the
+    /// current one, and the device is drawn in the new layout when it answers.
+    public mutating func setLayout(_ new: Layout, hub: inout SurfaceHub, now: Double) -> E16Step {
+        var step = E16Step()
+        guard new != layout else { return step }
+        if connected {
+            switchLayout(to: new, hub: &hub, now: now, into: &step)
+            return step
+        }
+        let first = new == .four ? page.first : page.first / Self.stripCount * Self.stripCount
+        for layer in layers { hub.removeSurface(id(layer)) }
+        layout = new
+        page.first = first
+        for layer in layers {
+            _ = hub.addSurface(id(layer), capabilities: layerCapabilities, mode: mode(for: layer, first: first, hub: hub), now: now)
+        }
+        return step
+    }
+
+    /// Turns the meters under the names on or off from the app (`showsMeters`), redrawing the
+    /// screen on a connected device.
+    public mutating func setShowsMeters(_ on: Bool, hub: SurfaceHub) -> [UInt8] {
+        guard on != showsMeters else { return [] }
+        showsMeters = on
+        guard connected else { return [] }
+        return drawLabels(hub: hub)
+    }
+
     /// The send target (an index into `SurfaceHub.sendTargets`) each send row of the 4-channel
     /// layout uses now (A, B); `nil` for a row with no output left.
     public func sendIndices(hub: SurfaceHub) -> [Int?] { sendRows.indices(targets: hub.sendTargets) }

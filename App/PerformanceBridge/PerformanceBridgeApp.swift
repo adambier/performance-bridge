@@ -306,6 +306,15 @@ final class BridgeModel: ObservableObject {
         engine.setE16Brightness(value)
     }
 
+    /// Whether the E16 shows meters under the names (off by default).
+    nonisolated private static let e16MetersKey = "e16Meters"
+
+    /// Turns the E16's meters on or off: at once, and saved.
+    func setE16Meters(_ on: Bool) {
+        UserDefaults.standard.set(on, forKey: Self.e16MetersKey)
+        engine.setE16Meters(on)
+    }
+
     /// The key for one layout's send rows: the XL 3 has two and the Launch Control 3 one (its top
     /// row, pan or a send), so they are kept apart (review of 2026-11-02). The XL 3's are under the
     /// key earlier builds used for both.
@@ -494,11 +503,9 @@ final class BridgeModel: ObservableObject {
         if let brightness = UserDefaults.standard.object(forKey: e16BrightnessKey) as? Double {
             settings.e16Brightness = min(max(brightness, 0), 1)
         }
-        // The E16's layout, meters, and send rows: set from Terminal for now (`defaults write
-        // org.biers.performancebridge e16FourChannelStrips -bool true`, `e16Meters -bool true`,
-        // `e16Sends -array 2 4`); Settings gets them in phase 2.
+        // The E16's layout, meters, and send rows, as chosen in Settings or on the E16's Shift page.
         settings.e16FourChannelStrips = UserDefaults.standard.bool(forKey: "e16FourChannelStrips")
-        settings.e16Meters = UserDefaults.standard.bool(forKey: "e16Meters")
+        settings.e16Meters = UserDefaults.standard.bool(forKey: e16MetersKey)
         if let saved = UserDefaults.standard.array(forKey: "e16Sends") as? [Int] {
             settings.e16Sends = saved.map { $0 < 0 ? nil : $0 }
         }
@@ -530,6 +537,9 @@ final class BridgeModel: ObservableObject {
         }
         engine.onE16LayoutChange = { four in
             UserDefaults.standard.set(four, forKey: "e16FourChannelStrips")
+        }
+        engine.onE16SendsChange = { outputs in
+            UserDefaults.standard.set(outputs.map { $0 ?? -1 }, forKey: "e16Sends")
         }
         engine.onLaunchControlSendsChange = { layout, outputs in
             UserDefaults.standard.set(outputs.map { $0 ?? -1 }, forKey: Self.sendsKey(layout))

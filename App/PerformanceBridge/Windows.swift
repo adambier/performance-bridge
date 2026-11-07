@@ -230,6 +230,8 @@ struct SettingsView: View {
                     .padding(.top, 6)
             }
             if edited.controller == .e16 {
+                E16LayoutView(model: model)
+                    .padding(.top, 6)
                 E16BrightnessView(model: model)
                     .padding(.top, 6)
             }
@@ -352,6 +354,95 @@ struct SettingsView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
+    }
+}
+
+/// The E16's layout, its send rows, and its meters, below the box in the Connections tab while
+/// the E16 is chosen. Each takes effect at once, connected or not, and follows a change made on
+/// the device (its Shift page's layout buttons and send arrows), like the Launch Control's send
+/// rows. The send rows show only for 4 channel strips, the layout that uses them. The wording and
+/// arrangement are for the UI review (phase 2).
+struct E16LayoutView: View {
+    @ObservedObject var model: BridgeModel
+
+    var body: some View {
+        let status = model.status
+        let live = !status.sendTargets.isEmpty
+        VStack(alignment: .leading, spacing: 8) {
+            Text("E16 Layout")
+                .font(.headline)
+            Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 10, verticalSpacing: 8) {
+                GridRow {
+                    Text("Layout")
+                        .frame(width: 110, alignment: .trailing)
+                    Picker("Layout", selection: Binding(
+                        get: { model.status.e16FourChannelStrips },
+                        set: { model.engine.setE16Layout(fourChannelStrips: $0) })) {
+                        Text("16 channels").tag(false)
+                        Text("4 channel strips").tag(true)
+                    }
+                    .labelsHidden()
+                    .frame(width: 200)
+                }
+                if status.e16FourChannelStrips {
+                    ForEach(0..<2, id: \.self) { row in
+                        GridRow {
+                            Text(row == 0 ? "Send A" : "Send B")
+                                .frame(width: 110, alignment: .trailing)
+                            Picker(row == 0 ? "Send A" : "Send B", selection: selection(row)) {
+                                if selection(row).wrappedValue == nil {
+                                    Text("None").tag(Int?.none)
+                                }
+                                ForEach(choices(row), id: \.output) { choice in
+                                    Text(choice.name).tag(Int?.some(choice.output))
+                                }
+                            }
+                            .labelsHidden()
+                            .frame(width: 200)
+                            .disabled(!live)
+                        }
+                    }
+                }
+            }
+            VStack(alignment: .leading, spacing: 10) {
+                Text(status.e16FourChannelStrips
+                     ? "Each column is one channel: send A on the top row, send B on the second, pan on the third, and the level on the bottom."
+                     : "Each encoder is one channel; Shift + encoder 1, 2, or 3 on the E16 chooses level, pan, or a send.")
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("Switch the layout on the E16 too: hold Shift and press encoder 13 (16 channels) or 14 (4 channel strips).")
+                    .fixedSize(horizontal: false, vertical: true)
+                if status.e16FourChannelStrips {
+                    Text(live
+                         ? "On the E16, hold Shift and press encoders 3 and 4 to step send A, or 7 and 8 to step send B. The two rows never feed the same output."
+                         : "The outputs come from TotalMix FX. Open it to choose them here.")
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .font(.callout)
+            .foregroundStyle(.secondary)
+
+            Toggle("Show meters under the channel names", isOn: Binding(
+                get: { model.status.e16Meters },
+                set: { model.setE16Meters($0) }))
+                .padding(.top, 6)
+            Text("Meters need levels from TotalMix FX: in Options → Mixer Settings… (F3) → OSC, check “Send Level Data” and uncheck “Peak Hold” for Performance Bridge’s OSC Controller.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    /// The outputs a send row can feed: every send target except the other row's.
+    private func choices(_ row: Int) -> [HomeChoice] {
+        let sends = model.status.e16Sends
+        let others = Set(sends.indices.filter { $0 != row }.compactMap { sends[$0] })
+        return model.status.sendTargets.filter { !others.contains($0.output) }
+    }
+
+    private func selection(_ row: Int) -> Binding<Int?> {
+        Binding(
+            get: { model.status.e16Sends.indices.contains(row) ? model.status.e16Sends[row] : nil },
+            set: { output in if let output { model.engine.setE16Send(row: row, to: output) } })
     }
 }
 

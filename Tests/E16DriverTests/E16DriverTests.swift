@@ -464,6 +464,30 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(step.midi.rings[0]?.bipolar, true)
     }
 
+    /// The layout and meters set from the app (phase 2): a connected device switches as with its
+    /// Shift page's buttons; one not yet connected has its layers swapped in the hub.
+    func testLayoutAndMetersFromTheApp() {
+        var (driver, hub, _) = connected()
+        let step = driver.setLayout(.four, hub: &hub, now: 5)
+        XCTAssertEqual(driver.layout, .four)
+        XCTAssertFalse(step.midi.isEmpty, "a connected device is drawn afresh")
+        XCTAssertNotNil(hub.mode(of: driver.id(.sendA)))
+        XCTAssertNil(hub.mode(of: driver.id(.main)))
+        XCTAssertTrue(driver.setLayout(.four, hub: &hub, now: 6).midi.isEmpty, "the layout in use: nothing")
+        XCTAssertFalse(driver.showsMeters)
+        _ = driver.setShowsMeters(true, hub: hub)
+        XCTAssertTrue(driver.showsMeters)
+        XCTAssertTrue(driver.setShowsMeters(true, hub: hub).isEmpty, "no change, nothing sent")
+
+        var waiting = SurfaceHub()
+        var other = E16Driver(name: "e16")
+        _ = other.start(hub: &waiting, now: 0)
+        XCTAssertTrue(other.setLayout(.four, hub: &waiting, now: 1).midi.isEmpty, "nothing to draw until the device answers")
+        XCTAssertEqual(other.layout, .four)
+        XCTAssertNotNil(waiting.mode(of: other.id(.level)))
+        XCTAssertNil(waiting.mode(of: other.id(.main)))
+    }
+
     func testPanCenterIsSticky() {
         var (driver, hub, _) = connected()
         _ = driver.receive([0x90, 16, 0x7F, 0x90, 1, 0x7F, 0x80, 1, 0x00, 0x90, 16, 0x00], hub: &hub, now: 1)  // PAN
