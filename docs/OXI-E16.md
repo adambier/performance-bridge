@@ -559,7 +559,11 @@ well off it.
   brighter than needed.
 - Adam's idea: the button in use pulses between the available level and its own. At brightness 1,
   with the floor of 8 at its bright end: "very obvious". Period: 1 s a little fast, 1.5 s too slow,
-  1.25 s tried, 1 s kept. At brightness 55: "probably fine". Kept at every brightness, one rule.
+  1.25 s tried, 1 s kept. At brightness 55: "probably fine", then "quite bright"; a pulse
+  peaking at half the setting (`sbdev`'s `top 0.5`) seemed better, but would leave the main
+  page's rings twice as bright as the button in use, and if 55 is too bright for the room the
+  slider fixes both. Kept peaking at the setting (`pulseTop` 1), at every brightness, one rule.
+  The floor of 8 also kept: 6 was less clear at brightness 1.
 - The app's Settings (Connections, with the E16 chosen): the layout menu switched the device at
   once; Send A chosen in Settings moved the top row, and stepped on the device (Shift + 4) moved
   the menu; the meters toggle took effect at once. The notes first shown under the layout menu
