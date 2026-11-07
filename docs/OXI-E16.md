@@ -32,6 +32,8 @@ reasoning that has not been checked, the text says so in words ("inference", "un
 [^test-7]: [Test 7](#test-7-2026-11-05-111-on-the-device) (2026-11-05), section 7; firmware 1.3.0.
 [^test-8]: [Test 8](#test-8-2026-11-06-the-screens-rate) (2026-11-06), section 7; firmware 1.3.0.
 [^test-9]: [Test 9](#test-9-2026-11-06-push-and-turn-jumps) (2026-11-06), section 7; firmware 1.3.0.
+[^test-10]: [Test 10](#test-10-2026-11-07-the-sticky-centers-count-push-nudges-the-layout-buttons) (2026-11-07), section 7; firmware 1.3.0.
+[^test-11]: [Test 11](#test-11-2026-11-07-the-shift-pages-lighting-at-low-brightness-settings) (2026-11-07), section 7; firmware 1.3.0.
 
 **Status (2026-11-06).** Nine tests have been run, all on Adam's E16 with firmware 1.3.0 (section
 7). Section 6 lists what is still open.
@@ -125,8 +127,20 @@ What the device sends, all on MIDI channel 1:[^sheet] [^test-1]
 
 ## 5. The layout Performance Bridge uses
 
-The layout was decided with Adam on 2026-11-04, in tests 2 and 3. Each page has sixteen strips,
-always sources.
+The layout was decided with Adam on 2026-11-04, in tests 2 and 3; from 1.2.0 (branch `e16-four`,
+Adam, 2026-11-05/06) there are two, chosen in Settings or on the Shift page:
+
+- **16 channels** (`E16Driver.Layout.sixteen`; 1.1.x's only layout): sixteen channels a page, one
+  encoder each, always sources; the turn is the level, the pan, or a send, by the mode.
+- **4 channel strips** (`.four`): four channels a page, one column each: the top row turns send A,
+  the second send B, the third the pan, and the bottom row the level. Send A and B are outputs
+  chosen in Settings or on the Shift page (`SendRows`, in SurfaceCore), never the same output, and
+  kept across launches. A push of any encoder in a column is that channel's mute or PFL, shown on
+  its level ring; the pan ring is unchanged and the send rings go dark while it is muted (a mute
+  silences the channel's sends too, `docs/TOTALMIX-OSC.md`). Send rings take their output's color
+  (the channel's, for a white output).
+
+Everything below applies to both unless it says otherwise.
 
 - **Turn**: the strip's level in the home submix, its pan, or its send to one output, by the mode.
   The device's 1–8 steps are scaled by `E16Driver.levelStep` (0.0025 of the fader's travel per
@@ -140,7 +154,8 @@ always sources.
   for a level or a send, −∞, 0 dB, and +6 dB; for a pan, hard left, center, and hard right (the
   two ends and the middle). Turning toward no further stop does nothing. A jump takes two units
   turned one way (`jumpUnits`; a turn the other way starts the count again), so a push that
-  nudges the knob a unit doesn't jump (inferred; not yet checked on the device). **Each stop is
+  nudges the knob a unit doesn't jump (test 10: about ten firm pushes gave one turn message of
+  one unit, none larger). **Each stop is
   sticky**, as a pan's center is: after a jump the turn must pause `jumpPause`, 0.075 s, before
   it jumps again, every message meanwhile restarting the pause, so a fast turn from above 0 dB
   stops at 0 dB rather than going on to −∞. The title shows the value, as a turn does. In 1.1.1
@@ -157,14 +172,17 @@ always sources.
   the count again, and the message that leaves center moves it one step, whatever units it
   carries beyond the count. The encoders are endless and accelerated
   (1–8 units a message), so center is otherwise hard to land on; a double press to reset was
-  considered and not taken (it would delay every mute, or mute and unmute). The 4 and the 0.25 s
-  are starting values, to tune on the device (`sbdev e16bridge --pan-center`, `--pan-pause`).
+  considered and not taken (it would delay every mute, or mute and unmute). The count and the
+  pause were tuned on the device (`sbdev e16bridge --pan-center`, `--pan-pause`, `--pan-leave`).
   Seen (Adam, 2026-11-05, 16:02, `--pan-center 2,5,10` with the 0.25 s pause): fast turns from
   well off center stopped at C on all three encoders, and the three amounts felt the same; the
-  pause does the catching, and the count only guards against a brush. 4 kept. The pause, tuned
+  pause does the catching, and the count only guards against a brush. 4 kept then. The pause, tuned
   with `--pan-pause` (Adam, 2026-11-06): 0.25 s and 0.1 s still felt like a wait before C could
   be passed; at 0.05 s a brief stop lets the pan move on and fast turns still stop at C. 0.05 s
-  kept. The count, tuned blind at that pause (test 10, 2026-11-07): 2.
+  kept. The count, tuned blind at that pause (test 10, 2026-11-07): 2, the smallest no brush
+  moved; a count that asks more effort makes the hand turn harder, which brings in the device's
+  acceleration and carries the pan past L1 or R1. Leaving center by one step rather than by the
+  units beyond the count made no difference felt, and was kept.[^test-10]
 - **Virtual detents: how hard they hold** (Adam, 2026-11-06; AGENTS.md has the general rule).
   A pan's sticky center and a push-and-turn stop are virtual detents: like a center-detented pot or
   a stepped switch, they hold the knob at a point worth landing on and ask a little extra to get
@@ -188,8 +206,8 @@ always sources.
   pause decides how long a hesitation counts as the end of a move. Adam's image: like water,
   which feels like a wall when hit fast and gives little resistance to slow movement. A sticky
   point's resistance grows with the turn's speed; the pause sets the speed below which a turn
-  passes freely (lower for a jump's longer pause), and the count of units (4 at a pan's center, 2
-  for a jump) adds a small resistance at any speed.
+  passes freely (lower for a jump's longer pause), and the count of units (2 at a pan's center
+  and for a jump) adds a small resistance at any speed.
   **The pause is the detent's strength; the count is only a guard** (Adam, 22:13). Getting past
   means stopping and going again: a small re-commitment, the virtual equivalent of pushing past a
   physical detent, and a longer pause asks for a more deliberate one. The count is different: the
@@ -200,12 +218,25 @@ always sources.
   carry past while a slow turn clicks to a stop, a virtual one holds a fast turn and lets a slow
   one through: the water model, and the better behavior for catching a fling without getting in
   the way of a careful move.
-- **Shift** makes the encoders buttons: 1 LEVEL (white), 2 PAN (magenta), 3 SEND (deep green; back
-  to the last output used), 11 and 12 the previous and next send output (deep green; outside SEND
-  mode either arrow enters it at the last output used),[^test-4] 15 and 16 the previous and next
-  page (blue). While Shift is held the screen names them (blank where an arrow goes nowhere) and the
-  rings show them at four levels: off (nothing there, or nowhere to go), 2 of 127 (available), the
-  brightness setting (in use), and the button's color with its largest part at 127 (pressed).
+- **Shift** makes the encoders buttons. In 16 channels: 1 LEVEL (white), 2 PAN (magenta), 3 SEND
+  (deep green; back to the last output used), 11 and 12 the previous and next send output (deep
+  green; outside SEND mode either arrow enters it at the last output used),[^test-4] with that
+  output's name across 9–10. In 4 channel strips: 3 and 4 the previous and next output for send A,
+  7 and 8 for send B (each skipping the other's output), with the current outputs' names across 1–2
+  ("A: ADI 3/4") and 5–6 ("B: ADT 1/2"). In both: 13 and 14 the layout (yellow; "16 CH" and "4 CH"),
+  15 and 16 the previous and next page (blue). Back and forward are always the right two columns
+  of a row, labeled as a pair, "< SEND >" or "< PAGE >": the word between the arrows, one word space
+  each side, the ">" ending at the cell's right margin, and every arrow on a page lined up; a
+  missing arrow leaves the rest in place, and with no arrow the word isn't shown. The layout
+  buttons work like the mode buttons; switching to 4 channel strips lands on the row holding the
+  channel last turned or pushed, and back to 16 channels on the page holding those four
+  (test 10). While Shift is held the screen names the buttons and the rings show them: off
+  (nothing there, or nowhere to go); available, at the lowest level that keeps the color's
+  proportions (`availableColor`: 2 of 127 for most; yellow 3, 2, 0, since 2, 1, 0 read as orange,
+  the mute color); **in use, pulsing once a second** between that level and the brightness setting
+  (never below 8, `inUseFloor`), starting bright when Shift goes down; and pressed, the button's
+  color with its largest part at 127. The pulse replaced a steady in-use level, which at the
+  lowest brightness setting was barely brighter than an available button.[^test-11]
 - **How this compares with the factory firmware's Shift** (the manual, sections 1.5–1.6 and 2.6,
   and the "hold" menu;[^manual] checked in the review of 2026-11-04). The firmware's *hold* of
   Shift opens a momentary menu whose commands sit on the knobs until Shift is released, and
@@ -247,6 +278,23 @@ always sources.
   pair of three-digit numbers, which no form fits, is cut from the end ("100/10").
   The firmware's own LABELS layout, with four-character labels (e.g., "P1/2"), is kept as a
   fallback.
+  **From 1.2.0:** labels are 5×7 values and names at rows 14, 27, 40, and 53, three clear lines
+  above and below the title's rule. In 4 channel strips each column shows, top to bottom, send A's
+  level, send B's level, the pan, and the name; values sit in fixed digit places, blank at rest
+  (an off send, a centered pan), "-∞" for off. The title names send A at the left and send B
+  ending at the third column's margin ("A>ADI3/4 … B>ADT1/2"); in 16 channels SEND mode it reads
+  ">ADI3/4". A turn shows the channel, the output for a send, and the value ("KEYS>ADI2
+  -6.0 dB"). Names are centered and shortened as a set (`fitSet`): each takes its longest form
+  that fits, and two names that would come out the same take distinct forms ("ADI-2 3/4" and
+  "ADAT 3/4" become "AI3/4" and "AT3/4"). A mute inverts the name in a lit box (flashing while
+  Mute Master is off) and a PFL adds a 3×3 square after it; a PFL on another page shows as "■" and
+  its page in the title's tail (1.1.x never showed one).
+- **Meters** (from 1.2.0, a Settings choice, off by default): a 1-pixel bar under each name, two
+  blank lines below it, 26 pixels at full scale on TotalMix FX's fader law (`MeterScale`, shared
+  with the Roto-Control); a stereo channel's right side on the line below its left. The bar is an
+  RMS-like average of the peaks TotalMix FX sends (over 0.03 s, 6 dB under them), and one pixel
+  holds the true peak for 2 s. At most 25 redraws a second (test 8). They need TotalMix FX's OSC
+  "Send Level Data" on and its "Peak Hold" off (`docs/TOTALMIX-OSC.md`).
 
 ## 6. Open questions
 
@@ -266,8 +314,8 @@ always sources.
   inversion is unexplained. Watch for it when the driver uses LED messages in 1.1.1.
 - Whether the driver needs an acceleration curve of its own. For now it multiplies the device's
   1–8 steps by a fixed step.
-- A 4-channel "strip" layout (four channels across, LEVEL on the fourth row, rows 1–3 each
-  assignable to PAN or one send): an idea for after 1.1.0 (Adam, 2026-11-04).
+- In 16 channels, whether a meter ties clearly enough to its own name: it sits only slightly
+  nearer it than the next row's (for the 1.2.0 UI review).
 
 ## 7. Tests
 
@@ -493,4 +541,28 @@ well off it.
   5–8); 4 to 16 from there went to page 1. Adam had six channels visible (one page of 16, two of
   4). Not checked: the yellow at low brightness (the test bridge has no brightness setting; in
   the app).
+
+### Test 11 (2026-11-07): the Shift page's lighting at low brightness; Settings
+
+**Setup.** `sbdev e16bridge` on branch `e16-four` (`b4b32ca`, then `48bd69f`), with the typed
+`brightness`, `floor`, and `pulse` commands (typed before holding Shift), then the app built from
+`d1857d4`.
+
+**Findings (Adam):**
+
+- At brightness 1 (3%) the layout button not in use was orange and the one in use yellow, and
+  which was brighter was hard to tell: an available button is drawn at 2 of 127 whatever the
+  setting, where yellow can only round to 2, 1, 0, while the one in use follows the setting down
+  to about 4, 3, 0. Drawing yellow's available level at 3, 2, 0 kept both yellow.
+- A floor for the button in use, steady: 6 too close to the available ones; 8 enough for the
+  layout buttons; for LEVEL, PAN, and SEND, 16 visible but too little contrast and 32 clear but
+  brighter than needed.
+- Adam's idea: the button in use pulses between the available level and its own. At brightness 1,
+  with the floor of 8 at its bright end: "very obvious". Period: 1 s a little fast, 1.5 s too slow,
+  1.25 s tried, 1 s kept. At brightness 55: "probably fine". Kept at every brightness, one rule.
+- The app's Settings (Connections, with the E16 chosen): the layout menu switched the device at
+  once; Send A chosen in Settings moved the top row, and stepped on the device (Shift + 4) moved
+  the menu; the meters toggle took effect at once. The notes first shown under the layout menu
+  (what each layout does, the Shift page's controls) were "too long and confusing" and cut, the
+  Controls Guide giving them.
 
