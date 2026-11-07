@@ -274,7 +274,7 @@ public struct E16Driver: Sendable {
     public static let rotationStep: Double = 0.15
     /// How many units of turning, one way, a pan at center takes before it moves (`centerStop`):
     /// a starting value, to tune on the device.
-    public static let panCenterUnits = 4
+    public static let panCenterUnits = 2
     /// How long a turn must pause, after it has stopped at center, before turning moves the pan
     /// on (`centerStop`): 0.05 s, tuned on the device (Adam, 2026-11-06: 0.25 s and 0.1 s felt
     /// like a wait; a fast turn's messages come 4–5 ms apart, so 0.05 s still catches it).
@@ -291,6 +291,10 @@ public struct E16Driver: Sendable {
     /// For trying amounts side by side (`sbdev e16bridge --pan-center`): encoder n's pan takes
     /// the (n mod count)th of these instead of `panCenterUnits`. Empty in the app.
     public var panCenterTrial: [Int] = []
+    /// For comparing how a pan leaves center (`sbdev e16bridge --pan-leave`, test 10): encoder
+    /// n takes the (n mod count)th of these; true moves one step, false carries the units beyond
+    /// the count, as before 2026-11-07. Empty in the app: one step.
+    public var panLeaveTrial: [Bool] = []
     /// How near center (in the 0…1 pan) counts as center: well under one of TotalMix FX's 200
     /// pan steps (0.005).
     static let panCenterTolerance = 0.001
@@ -672,7 +676,9 @@ public struct E16Driver: Sendable {
     /// `panCenterPause` apart count as the same turn (a fast turn arrived as a burst of messages
     /// of up to 8 units each and went straight through a count of units: Adam, 14:56). After a
     /// pause, the pan stays until `panCenterUnits` units have been turned one way (a turn the
-    /// other way starts the count again), and the units beyond move it on. The device's turns are
+    /// other way starts the count again); the message that leaves center moves it one step,
+    /// whatever units it carries beyond the count, so L1 and R1 are easy to land on (test 10:
+    /// the device's acceleration made a leave overshoot to 2 or 3, Adam, 2026-11-07). The device's turns are
     /// accelerated (1–8 units a message) and endless, so center is otherwise hard to land on.
     private mutating func centerStop(_ encoder: Int, from current: Double, to proposed: Double, delta: Int, now: Double) -> Double {
         guard delta != 0 else { return proposed }
@@ -699,7 +705,9 @@ public struct E16Driver: Sendable {
             return 0.5
         }
         panCenterHold[encoder] = nil
-        return min(max(0.5 + Double(direction * (hold.units - units)) * Self.panStep, 0), 1)
+        let oneStep = panLeaveTrial.isEmpty ? true : panLeaveTrial[encoder % panLeaveTrial.count]
+        let steps = oneStep ? 1 : hold.units - units
+        return min(max(0.5 + Double(direction * steps) * Self.panStep, 0), 1)
     }
 
     /// A short push released: toggles the strip's mute and says so on the screen.

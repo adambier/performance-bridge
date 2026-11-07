@@ -13,7 +13,7 @@ import E16Driver
 let e16BridgeUsage = """
     Usage:
       sbdev e16bridge [--host H] [--in-port P] [--out-port P] [--port NAME] [--home N]
-                      [--layout 16|4] [--sends A,B] [--no-name-marks] [--left] [--meters] [--peak-hold S] [--meter-average S] [--meter-offset DB] [--pan-center A,B,C…] [--pan-pause S] [--jump-pause S] [--verbose]
+                      [--layout 16|4] [--sends A,B] [--no-name-marks] [--left] [--meters] [--peak-hold S] [--meter-average S] [--meter-offset DB] [--pan-center A,B,C…] [--pan-leave 1,0…] [--pan-pause S] [--jump-pause S] [--verbose]
           Connects TotalMix FX and an OXI E16 (in its Remote Mode) through SurfaceCore and the E16
           driver, as the app does. Prints what is sent to TotalMix FX, with the time since
           starting; --verbose also prints every MIDI message to and from the device. Then reads
@@ -31,7 +31,9 @@ let e16BridgeUsage = """
           0.03) and sits DB below them (--meter-offset; default 6).
           --pan-center gives the pans' sticky center a different number of units per encoder, to
           compare them side by side: with 2,5,10, encoders 1, 4, 7… take 2, encoders 2, 5, 8…
-          take 5, and encoders 3, 6, 9… take 10 (default: the driver's 4 on every encoder).
+          take 5, and encoders 3, 6, 9… take 10 (default: the driver's 2 on every encoder).
+          --pan-leave, the same way, sets how a pan leaves center per encoder: 1 moves it one step
+          (the driver's way), 0 carries the units beyond the count.
           --pan-pause is how long, in seconds, a turn that stopped at center must pause before
           turning moves on (default 0.05).
           --jump-pause is how long, in seconds, push-and-turn must pause after a jump before it
@@ -65,6 +67,7 @@ struct E16BridgeOptions {
     var portName = "OXI E16 Port 1"
     var home: Int?
     var panCenter: [Int] = []
+    var panLeave: [Bool] = []
     var panPause: Double?
     var jumpPause: Double?
     var layout = E16Driver.Layout.sixteen
@@ -102,6 +105,10 @@ func parseE16BridgeOptions(_ arguments: ArraySlice<String>) -> E16BridgeOptions 
             let units = value(argument).split(separator: ",").map { Int($0.trimmingCharacters(in: .whitespaces)) }
             guard !units.isEmpty, units.allSatisfy({ ($0 ?? -1) >= 0 }) else { fail("--pan-center needs numbers from 0, separated by commas.") }
             options.panCenter = units.compactMap { $0 }
+        case "--pan-leave":
+            let ways = value(argument).split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+            guard !ways.isEmpty, ways.allSatisfy({ $0 == "0" || $0 == "1" }) else { fail("--pan-leave needs 1s and 0s, separated by commas.") }
+            options.panLeave = ways.map { $0 == "1" }
         case "--layout":
             switch value(argument) {
             case "16": options.layout = .sixteen
@@ -159,6 +166,7 @@ final class E16BridgeSession: @unchecked Sendable {
         if let average = options.meterAverage { driver.meterAverage = average }
         if let offset = options.meterOffset { driver.meterOffset = offset }
         driver.panCenterTrial = options.panCenter
+        driver.panLeaveTrial = options.panLeave
         if let pause = options.panPause { driver.panCenterPause = pause }
         if let pause = options.jumpPause { driver.jumpPause = pause }
     }

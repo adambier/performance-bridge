@@ -457,10 +457,10 @@ final class E16DriverTests: XCTestCase {
         var (driver, hub, _) = connected()
         _ = driver.receive([0x90, 16, 0x7F, 0x90, 1, 0x7F, 0x80, 1, 0x00, 0x90, 16, 0x00], hub: &hub, now: 1)
         XCTAssertEqual(driver.function, .pan)
-        let step = driver.receive([0xB0, 1, UInt8(E16Driver.panCenterUnits + 2)], hub: &hub, now: 2)  // two units past center
+        let step = driver.receive([0xB0, 1, UInt8(E16Driver.panCenterUnits + 2)], hub: &hub, now: 2)  // leaves center: one step
         XCTAssertEqual(step.core.messages.map(\.address), ["/mix/in/0/0/balpan"])
-        XCTAssertEqual(step.core.messages.first?.arguments.first, .float(Float(2 * E16Driver.panStep * 2)))
-        XCTAssertEqual(step.midi.lastTitle, "Keys R2")
+        XCTAssertEqual(step.core.messages.first?.arguments.first, .float(Float(2 * E16Driver.panStep)))  // R1, on TotalMix FX's −1…1
+        XCTAssertEqual(step.midi.lastTitle, "Keys R1")
         XCTAssertEqual(step.midi.rings[0]?.bipolar, true)
     }
 
@@ -483,7 +483,8 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(turn(units - 1), "Keys R1", "\(units + 1) units that way, in all")
         XCTAssertEqual(turn(8), "Keys R9")
         XCTAssertEqual(turn(-20), "Keys C", "crossing from the right stops at center too")
-        XCTAssertEqual(turn(-(units + 3)), "Keys L3")
+        XCTAssertEqual(turn(-(units + 3)), "Keys L1", "the units beyond the count don't carry: one step")
+        XCTAssertEqual(turn(-2), "Keys L3", "away from center, every unit counts")
         // A fast turn is a burst of messages: the rest of the burst is ignored at center, and
         // the count starts only after a pause (Adam, 14:56: a fast turn went straight through).
         _ = turn(-22)
@@ -495,9 +496,16 @@ final class E16DriverTests: XCTestCase {
         // Amounts side by side, for trying them: encoder 2 (index 1) takes the second.
         driver.panCenterTrial = [0, 8]
         XCTAssertEqual(turn(-8), "Keys C", "crossing still stops at center")
-        XCTAssertEqual(turn(-2), "Keys L2", "encoder 1 takes 0: no units held")
+        XCTAssertEqual(turn(-2), "Keys L1", "encoder 1 takes 0: no units held, and one step")
         XCTAssertTrue(turn(8, encoder: 2).hasSuffix(" C"), "encoder 2 held for 8 units")
         XCTAssertTrue(turn(1, encoder: 2).hasSuffix(" R1"))
+        // How a pan leaves center, side by side: encoder 2 carries the units beyond the count.
+        driver.panCenterTrial = []
+        driver.panLeaveTrial = [true, false]
+        _ = turn(-8, encoder: 2)
+        XCTAssertTrue(turn(units + 3, encoder: 2).hasSuffix(" R3"), "carried: 3 units past the count")
+        XCTAssertEqual(turn(8), "Keys C", "from L1, back to center")
+        XCTAssertEqual(turn(units + 3), "Keys R1", "encoder 1: one step")
         // A level has no sticky point.
         _ = driver.receive([0x90, 16, 0x7F, 0x90, 0, 0x7F, 0x80, 0, 0x00, 0x90, 16, 0x00], hub: &hub, now: clock + 1)  // LEVEL
         let level = driver.receive([0xB0, 1, 0x01], hub: &hub, now: clock + 1.1)
