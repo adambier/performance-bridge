@@ -35,7 +35,7 @@ let e16BridgeUsage = """
           --pan-pause is how long, in seconds, a turn that stopped at center must pause before
           turning moves on (default 0.05).
           --jump-pause is how long, in seconds, push-and-turn must pause after a jump before it
-          jumps again (default 0.3).
+          jumps again (default 0.1).
           Stop sbdev monitor, the other bridges, and the app first: they need the same ports.
 
       On the device: turn is level, pan, or a send, by the mode; push and release is mute; a hold of

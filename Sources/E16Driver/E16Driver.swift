@@ -280,9 +280,9 @@ public struct E16Driver: Sendable {
     /// `panCenterPauseDefault`, settable for trying values (`sbdev e16bridge --pan-pause`).
     public var panCenterPause = E16Driver.panCenterPauseDefault
     /// How long push-and-turn must pause after a jump before it jumps again (`jumpPausedAt`):
-    /// longer than a pan's center, since a jump is more drastic (Adam, 2026-11-06, on the
-    /// device: 0.05 s was too short). 0.3 s is a starting value (inferred), to tune.
-    public static let jumpPauseDefault = 0.3
+    /// longer than a pan's center, since a jump is more drastic. 0.1 s, tuned on the device
+    /// (Adam, 2026-11-06: 0.05 s definitely too short; 0.3 s too long; 0.15 s a bit long).
+    public static let jumpPauseDefault = 0.1
     /// `jumpPauseDefault`, settable for trying values (`sbdev e16bridge --jump-pause`).
     public var jumpPause = E16Driver.jumpPauseDefault
     /// For trying amounts side by side (`sbdev e16bridge --pan-center`): encoder n's pan takes
