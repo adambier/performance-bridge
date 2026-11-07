@@ -119,7 +119,8 @@ then turned on carefully) means a short pause that doesn't slow the user down; c
 separate move (a jump to −∞ or +6 dB) means a longer pause, which then costs the user less: going
 past should feel like two movements in the second case and one in the first. Too long feels like a
 dead knob, worst for a slow, careful turn, since every message restarts the pause and a slow turn's
-messages can keep it from ever ending. Start there, tune on the device with a trial flag, and record the tuning
+messages can keep it from ever ending. Aim for water (Adam): a wall when hit fast, little
+resistance to slow movement. Start there, tune on the device with a trial flag, and record the tuning
 (`docs/OXI-E16.md`, section 5: 0.05 s at a pan's center, 0.075 s between jumps).
 
 Recorded exceptions:

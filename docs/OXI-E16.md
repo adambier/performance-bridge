@@ -181,7 +181,11 @@ always sources.
   careful, slow turn through; a long one holds exactly the slow turn that wants to pass. And an
   unbroken fast turn's messages come 4–5 ms apart, so any pause stops it; what gets past is a turn
   made in strokes, the hand's brief break between strokes being longer than the pause. So the
-  pause decides how long a hesitation counts as the end of a move.
+  pause decides how long a hesitation counts as the end of a move. Adam's image: like water,
+  which feels like a wall when hit fast and gives little resistance to slow movement. A sticky
+  point's resistance grows with the turn's speed; the pause sets the speed below which a turn
+  passes freely (lower for a jump's longer pause), and the count of units (4 at a pan's center, 2
+  for a jump) adds a small resistance at any speed.
 - **Shift** makes the encoders buttons: 1 LEVEL (white), 2 PAN (magenta), 3 SEND (deep green; back
   to the last output used), 11 and 12 the previous and next send output (deep green; outside SEND
   mode either arrow enters it at the last output used),[^test-4] 15 and 16 the previous and next
