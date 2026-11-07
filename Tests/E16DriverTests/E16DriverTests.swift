@@ -722,6 +722,8 @@ final class E16FourLayoutTests: XCTestCase {
     /// Encoder 13 on the Shift page switches layouts (Adam, 2026-11-06): to 4 channel strips at
     /// the row holding the channel last turned, and back at the page holding the four.
     func testLayoutSwitch() {
+        XCTAssertTrue(E16Driver.shiftSpans(.four).isSuperset(of: [0, 4, 12]), "left-aligned under the send names")
+        XCTAssertTrue(E16Driver.shiftSpans(.sixteen).isSuperset(of: [8, 12]))
         var hub = loadedHub()
         for n in 4..<10 {
             for (parameter, value) in [("stereo", TotalMixValue.number(0)), ("name", .text("In\(n)")), ("color", .number(1))] {

@@ -1084,7 +1084,7 @@ public struct E16Driver: Sendable {
         }
         shownScreen = (parts.0, parts.1, labels, drawsScreen, key, meters, peakWidths)
         screenSentAt = clock
-        let spans: Set<Int> = !shiftHeld ? [] : layout == .four ? [0, 4] : [8]
+        let spans: Set<Int> = shiftHeld ? Self.shiftSpans(layout) : []
         // The word between each pair of arrows on the Shift page, keyed by the pair's left cell.
         var pairWords: [Int: String] = [:]
         if shiftHeld, drawsScreen {
@@ -1196,6 +1196,11 @@ public struct E16Driver: Sendable {
         }
         return screen
     }
+
+    /// The Shift page's cells whose labels start at the cell's margin, left-aligned (and may run
+    /// into the next cell): the send rows' current outputs, and the layout switch under them,
+    /// which lines up with them (Adam, 2026-11-06).
+    static func shiftSpans(_ layout: Layout) -> Set<Int> { layout == .four ? [0, 4, 12] : [8, 12] }
 
     /// Where a Shift-page pair's word field starts. Every pair on a page shares one field, as wide
     /// as the page's widest word, so all the "<" line up and all the ">" line up (Adam,
