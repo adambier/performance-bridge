@@ -341,6 +341,24 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(left.core.messages.first?.arguments.first, .float(-1), "hard left")
     }
 
+    /// Each stop is sticky: after a jump the turn must pause, as at a pan's center (Adam,
+    /// 2026-11-06), so a fast turn from above 0 dB stops at 0 dB.
+    func testJumpsPauseAtEachStop() {
+        var (driver, hub, _) = connected()
+        let pause = E16Driver.panCenterPauseDefault
+        _ = driver.receive([0xB0, 2, 0x3F, 0xB0, 2, 0x3F, 0xB0, 2, 0x3F], hub: &hub, now: 0.5)  // Vox above 0 dB
+        _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 1)
+        let down = driver.receive([0xB0, 2, 0x7E], hub: &hub, now: 1.1)
+        XCTAssertEqual(down.core.messages.first?.arguments.first, .float(Float(FaderCurve.unityPosition)), "to 0 dB first")
+        var t = 1.1
+        for _ in 0..<20 {  // a fast turn keeps coming, 5 ms apart
+            t += 0.005
+            XCTAssertEqual(driver.receive([0xB0, 2, 0x7E], hub: &hub, now: t).core.messages, [], "held at 0 dB")
+        }
+        let on = driver.receive([0xB0, 2, 0x7E], hub: &hub, now: t + pause + 0.01)
+        XCTAssertEqual(on.core.messages.first?.arguments.first, .float(0), "after a pause, on to off")
+    }
+
     func testJumpStops() {
         let unity = FaderCurve.unityPosition
         let stops = E16Driver.jumpStops(pan: false)

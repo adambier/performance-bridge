@@ -316,6 +316,9 @@ public struct E16Driver: Sendable {
     private var pushTurning: Int?
     /// Units turned one way since push-and-turn began or last jumped (`jumpUnits`), signed.
     private var jumpTurned = 0
+    /// When push-and-turn last jumped, or last turned while paused after a jump: the turn must
+    /// stop for `panCenterPause` before it jumps again, as at a pan's center.
+    private var jumpPausedAt: Double?
     private var muteOn: [Bool] = Array(repeating: false, count: E16Driver.stripCount)
     private var pflOn: [Bool] = Array(repeating: false, count: E16Driver.stripCount)
     private var sentLabels: [UInt8]?
@@ -501,6 +504,7 @@ public struct E16Driver: Sendable {
                 self.held = nil
                 pushTurning = encoder
                 jumpTurned = 0
+                jumpPausedAt = nil
                 if countdownShown >= 0 {
                     countdownShown = -1
                     overlay = nil
@@ -513,10 +517,21 @@ public struct E16Driver: Sendable {
             // 1.1.1's pan, or level in PAN mode). It takes `jumpUnits` one way, so a push that
             // nudges the knob a unit doesn't jump; a turn back starts the count again.
             if pushTurning == encoder {
+                // Each stop is sticky, as a pan's center is (Adam, 2026-11-06): after a jump, the
+                // turn must pause `panCenterPause` (every message meanwhile restarts it), so a
+                // fast turn from above 0 dB stops at 0 dB rather than going on to off.
+                if let paused = jumpPausedAt {
+                    guard now - paused >= panCenterPause else {
+                        jumpPausedAt = now
+                        return
+                    }
+                    jumpPausedAt = nil
+                }
                 jumpTurned = (jumpTurned != 0 && (jumpTurned > 0) != (delta > 0)) ? delta : jumpTurned + delta
                 guard abs(jumpTurned) >= Self.jumpUnits else { return }
                 let direction = jumpTurned > 0 ? 1 : -1
                 jumpTurned = 0
+                jumpPausedAt = now
                 turn(encoder, by: direction, jump: true, layer: layer, hub: &hub, now: now, into: &step)
             } else {
                 turn(encoder, by: delta, layer: layer, hub: &hub, now: now, into: &step)
