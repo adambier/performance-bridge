@@ -404,22 +404,15 @@ struct E16LayoutView: View {
                     }
                 }
             }
-            VStack(alignment: .leading, spacing: 10) {
-                Text(status.e16FourChannelStrips
-                     ? "Each column is one channel: send A on the top row, send B on the second, pan on the third, and the level on the bottom."
-                     : "Each encoder is one channel; Shift + encoder 1, 2, or 3 on the E16 chooses level, pan, or a send.")
+            // Only what Settings can't do without: why the menus are greyed out. What the layouts
+            // and the Shift page do is in the Controls Guide (Adam, 2026-11-07: longer notes here
+            // were too long and confusing).
+            if status.e16FourChannelStrips && !live {
+                Text("The outputs come from TotalMix FX. Open it to choose them here.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                Text("Switch the layout on the E16 too: hold Shift and press encoder 13 (16 channels) or 14 (4 channel strips).")
-                    .fixedSize(horizontal: false, vertical: true)
-                if status.e16FourChannelStrips {
-                    Text(live
-                         ? "On the E16, hold Shift and press encoders 3 and 4 to step send A, or 7 and 8 to step send B. The two rows never feed the same output."
-                         : "The outputs come from TotalMix FX. Open it to choose them here.")
-                        .fixedSize(horizontal: false, vertical: true)
-                }
             }
-            .font(.callout)
-            .foregroundStyle(.secondary)
 
             Toggle("Show meters under the channel names", isOn: Binding(
                 get: { model.status.e16Meters },
