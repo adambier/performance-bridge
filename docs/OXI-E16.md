@@ -290,7 +290,8 @@ Everything below applies to both unless it says otherwise.
   ending at the third column's margin ("A>ADI3/4 … B>ADT1/2"); in 16 channels SEND mode it reads
   ">ADI-2 3/4" (the full name where it fits). A turn shows the channel, the output for a send, and the value ("KEYS>ADI3/4
   -6.0 dB", with a lowercase d drawn for the unit); in channel strips only a main-level turn does, since a send's or pan's
-  value shows in its own cell (Adam, 2026-11-07). An output's name is the full name where it fits and otherwise one short form, the
+  value shows in its own cell (Adam, 2026-11-07). A trial that put the level over its column, points aligned with the values below,
+  had to drop "dB" (no room after a value in the right column); Adam kept "KEYS -6.0 dB". An output's name is the full name where it fits and otherwise one short form, the
   same everywhere; a channel's in the title is its full name or its label's form. A mute
   turned off shows "MUTE OFF" whatever Mute Master says, one turned on while it is off
   "MUTE SET". Names are centered and shortened as a set (`fitSet`): each takes its longest form
