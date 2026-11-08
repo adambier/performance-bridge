@@ -329,7 +329,7 @@ struct SettingsView: View {
             return "Connect the E16 by USB. It needs firmware 1.3.0 or later."
         }
         let model = edited.controller.launchControl ?? .xl3
-        return "Connect the \(model.name) by USB. With more than one connected, Performance Bridge uses the one with the lowest device ID."
+        return "Connect the \(model.name) by USB."
     }
 
     /// A row label, right-aligned in its column, in the width all rows share.

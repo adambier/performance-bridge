@@ -99,7 +99,7 @@ public enum SetupChecklist {
         if status.channelCount > 0 {
             steps.append(SetupStep(id: "channels", title: "TotalMix FX has sent its channels", state: .done,
                                    detail: "Performance Bridge has detected \(status.channelCount) TotalMix FX channels. Channels hidden from its OSC Controller aren’t detected.",
-                                   instructions: "After hiding or showing a channel in TotalMix FX, Performance Bridge picks up the change within half a minute, or at once with Update Hidden Channels from its menu."))
+                                   instructions: "After hiding or showing a channel in TotalMix FX, Performance Bridge picks up the change when you switch away from TotalMix FX or within half a minute, or at once with Update Hidden Channels from its menu."))
         } else {
             steps.append(SetupStep(id: "channels", title: "TotalMix FX hasn’t sent its channels yet",
                                    state: .waiting,
@@ -181,7 +181,7 @@ public enum SetupChecklist {
         let colorTip = status.launchControlName == nil && !status.e16Enabled ? ""
             : " Give each output a send feeds (e.g., each headphone output) a color of its own: a send’s lights take its output’s color, so the color shows which output it feeds."
         steps.append(SetupStep(id: "hide", title: "Hide channels in TotalMix FX", state: .instruction,
-                               detail: "Hide and show channels in TotalMix FX: choose Options → Channel Layout…, select the channel’s row (on the Inputs, Playbacks, or Outputs tab), and under “Hide Channel in”, check or uncheck the box for Performance Bridge’s OSC Controller. Or right-click the channel and choose Change Channel Layout.\n\nPerformance Bridge picks up the change within half a minute, or at once with Update Hidden Channels from its menu.\n\nChannel colors can be set in the same window." + colorTip))
+                               detail: "Hide and show channels in TotalMix FX: choose Options → Channel Layout…, select the channel’s row (on the Inputs, Playbacks, or Outputs tab), and under “Hide Channel in”, check or uncheck the box for Performance Bridge’s OSC Controller. Or right-click the channel and choose Change Channel Layout.\n\nPerformance Bridge picks up the change when you switch away from TotalMix FX or within half a minute, or at once with Update Hidden Channels from its menu.\n\nChannel colors can be set in the same window." + colorTip))
         steps.append(SetupStep(id: "order", title: "Set the order of the channels", state: .optional,
                                detail: "Set the order of the channels, and give them short labels for the hardware controllers, on the Channel Layout tab of Performance Bridge’s Settings."))
         return steps
