@@ -231,7 +231,7 @@ public struct E16Driver: Sendable {
             case .send: return "SEND"
             case .output(let d), .rowOutput(_, let d): return d < 0 ? "<SEND" : "SEND>"
             case .page(let d): return d < 0 ? "<PAGE" : "PAGE>"
-            case .switchLayout(let to): return to == .four ? "STRIP" : "16CH"
+            case .switchLayout(let to): return to == .four ? "STRIP" : "16 CH"
             }
         }
 
@@ -1106,18 +1106,25 @@ public struct E16Driver: Sendable {
                 let index = layout == .four ? 12 + strip : strip
                 // A mute set while Mute Master is off (not silencing) flashes, in step with its
                 // ring (Adam, 2026-11-05).
-                // Its off phase is the box's outline, so the name never looks unmuted (review of
-                // 2026-11-07, Adam's choice).
-                if muteOn[strip] {
-                    if hub.mirror.muteMaster != false || blinkLit { inverted.insert(index) } else { outlined.insert(index) }
-                }
+                // A mute is an outline around the name, flashing while Mute Master is off;
+                // inversion means "selected", on the Shift page (Adam, 2026-11-07).
+                if muteOn[strip], hub.mirror.muteMaster != false || blinkLit { outlined.insert(index) }
                 if pflOn[strip] { pflMarked.insert(index) }
             }
         }
-        // On the Shift page the layout in use is inverted, the one state the screen shows nowhere
-        // else (the title names the mode); the modes aren't, so each state shows once (Adam,
-        // 2026-11-07, a trial).
-        if shiftHeld, drawsScreen { inverted.insert(layout == .sixteen ? 12 : 13) }
+        // On the Shift page inversion marks what's selected: the layout in use, and in 16
+        // channels the mode; the title then shows only the page (Adam, 2026-11-07). Inversion
+        // means only this; a mute is an outline.
+        if shiftHeld, drawsScreen {
+            inverted.insert(layout == .sixteen ? 12 : 13)
+            if layout == .sixteen {
+                switch function {
+                case .level: inverted.insert(0)
+                case .pan: inverted.insert(1)
+                case .send: inverted.insert(2)
+                }
+            }
+        }
         // The meters, as bar widths, under the names (`showsMeters`), and their held peaks.
         var meters: [Int: [Int]] = [:], peakWidths: [Int: [Int]] = [:]
         if showsMeters, drawsScreen, !shiftHeld {
@@ -1154,7 +1161,7 @@ public struct E16Driver: Sendable {
             }
         }
         let values: Set<Int> = layout == .four && !shiftHeld ? Set(0..<12) : []
-        let marks = inverted.sorted() + [-1] + pflMarked.sorted()
+        let marks = inverted.sorted() + [-1] + pflMarked.sorted() + [-3] + outlined.sorted()
         let key = marks + (centersLabels ? [-2] : [])
         if let shown = shownScreen, shown.title == parts.0, shown.tail == parts.1, shown.labels == labels, shown.drawn == drawsScreen, shown.marks == key {
             // Only the meters changed: at most `meterFrame` apart.
@@ -1170,7 +1177,7 @@ public struct E16Driver: Sendable {
             for (left, word) in pairs where !labels[left].isEmpty || !labels[left + 1].isEmpty { pairWords[left] = word }
         }
         let drawn = Self.screen(title: parts.0, tail: parts.1, labels: labels, inverted: inverted, outlined: outlined, pflMarked: pflMarked,
-                                centered: centersLabels && !shiftHeld, values: values, meters: meters, peaks: peakWidths, spans: spans,
+                                centered: centersLabels, values: values, meters: meters, peaks: peakWidths, spans: spans,
                                 rightAligned: shiftHeld ? Self.shiftRightAligned : [], pairWords: pairWords)
         lastScreenForTests = drawn
         let bytes = drawsScreen ? E16Outgoing.framebuffer(drawn)
@@ -1297,10 +1304,9 @@ public struct E16Driver: Sendable {
 
     /// The Shift page's cells whose labels start at the cell's margin, left-aligned (and may run
     /// into the next cell): the send rows' current outputs (Adam, 2026-11-06).
-    /// On the Shift page every other label starts at its cell's margin too (the screen isn't
-    /// centered while Shift is held), so the modes, the layout buttons, and the send names share
-    /// one left edge per column; centered, "16CH" under "LEVEL" looked off (Adam, 2026-11-07),
-    /// and left-aligned "16CH" and "STRIP" sit further apart.
+    /// The other Shift-page labels are centered, as the names are: "16 CH" (24 pixels) under
+    /// "LEVEL" (25) lines up, and the layout in use is inverted, so "16 CH" and "STRIP" don't
+    /// read as one phrase (Adam, 2026-11-07).
     static func shiftSpans(_ layout: Layout) -> Set<Int> { layout == .four ? [0, 4] : [8] }
 
     /// The Shift page's cells whose labels end at the cell's right edge: none now. "16 CH" and
@@ -1406,6 +1412,10 @@ public struct E16Driver: Sendable {
             else if !pflRefs.isSubset(of: shown) { tail.append("■") }
         }
         if pageCount > 1 { tail.append("\(page.first / columns + 1)/\(pageCount)") }
+        // On the host-drawn Shift page the title keeps only its tail (the page, and a PFL elsewhere):
+        // the mode and the layout show inverted below, and the send rows name their outputs
+        // (Adam, 2026-11-07).
+        if shiftHeld, drawsScreen { return ("", tail.joined(separator: " ")) }
         return (functionName(hub: hub), tail.joined(separator: " "))
     }
 

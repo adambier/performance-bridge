@@ -1010,7 +1010,7 @@ final class E16FourLayoutTests: XCTestCase {
         func screens(_ midi: [UInt8]) -> Int { midi.sysExMessages.filter { $0.starts(with: framebufferID) && !$0.starts(with: labelsID) && !$0.starts(with: ringsID) && !$0.starts(with: ledsID) }.count }
         _ = driver.tick(hub: &hub, now: 1.2)  // the title overlay ends
         XCTAssertEqual(screens(driver.tick(hub: &hub, now: 1.55).midi), 1, "the name drawn plain")
-        XCTAssertEqual(screens(driver.tick(hub: &hub, now: 2.05).midi), 1, "and inverted again")
+        XCTAssertEqual(screens(driver.tick(hub: &hub, now: 2.05).midi), 1, "and outlined again")
         driver.marksNames = false
         _ = driver.tick(hub: &hub, now: 2.55)
         XCTAssertEqual(screens(driver.tick(hub: &hub, now: 3.05).midi), 0, "no flashing without name marks")

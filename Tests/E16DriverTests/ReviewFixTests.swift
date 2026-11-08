@@ -152,7 +152,7 @@ final class ReviewFixTests: XCTestCase {
         XCTAssertEqual(plain.pixel(16, y + 3), outline.pixel(16, y + 3), "the name itself unchanged")
     }
 
-    /// On the Shift page the layout in use is inverted; the mode isn't.
+    /// On the Shift page what's selected is inverted: the layout in use and, in 16 channels, the mode.
     func testShiftPageInvertsTheLayoutInUse() {
         var hub = reviewHub()
         var driver = E16Driver(name: "e16")
@@ -161,9 +161,10 @@ final class ReviewFixTests: XCTestCase {
         _ = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 0.5)  // Shift down
         let y = E16Driver.labelTop + 3 * E16Driver.labelPitch
         let screen = driver.lastScreenForTests
-        XCTAssertTrue(screen?.pixel(2, y) == true, "16CH's box is lit at its edge")
-        XCTAssertFalse(screen?.pixel(34, y) == true, "STRIP isn't inverted")
-        XCTAssertFalse(screen?.pixel(2, E16Driver.labelTop) == true, "LEVEL isn't inverted")
+        XCTAssertTrue(screen?.pixel(3, y) == true, "16 CH's box is lit at its edge")
+        XCTAssertFalse(screen?.pixel(33, y) == true, "STRIP isn't inverted")
+        XCTAssertTrue(screen?.pixel(2, E16Driver.labelTop) == true, "LEVEL, the mode in use, is inverted")
+        XCTAssertFalse(screen?.pixel(38, E16Driver.labelTop) == true, "PAN isn't")
     }
 }
 

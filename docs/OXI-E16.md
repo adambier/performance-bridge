@@ -223,10 +223,11 @@ Everything below applies to both unless it says otherwise.
   green; outside SEND mode either arrow enters it at the last output used),[^test-4] with that
   output's name across 9–10. In channel strips: 3 and 4 the previous and next output for send A,
   7 and 8 for send B (each skipping the other's output), with the current outputs' names across 1–2
-  ("A: ADI-2 3/4") and 5–6 ("B: ADAT 1/2"). In both: 13 and 14 the layout (yellow; "16CH" and "STRIP"; "STRIP" is 27 pixels, one over the labels' 26; "16 CH" with a
-  space read with "STRIP" as one phrase, Adam, 2026-11-07). Every Shift-page label starts at its
-  cell's margin, so each column has one left edge (centered, "16CH" under "LEVEL" looked off). The layout in use is inverted on the screen (a trial), the one state
-  the screen shows nowhere else; the mode isn't, since the title names it,
+  ("A: ADI-2 3/4") and 5–6 ("B: ADAT 1/2"). In both: 13 and 14 the layout (yellow; "16 CH" and "STRIP"; "STRIP" is 27 pixels, one over the labels' 26; "16 CH" with a
+  space read with "STRIP" as one phrase, Adam, 2026-11-07). The labels are centered, "16 CH" (24
+  pixels) under "LEVEL" (25). On the screen the layout in use and, in 16 channels, the mode are
+  inverted, and the Shift page's title shows only the page (and a PFL elsewhere): the send
+  rows name their outputs (Adam, 2026-11-07),
   15 and 16 the previous and next page (blue). Back and forward are always the right two columns
   of a row, labeled as a pair, "< SEND >" or "< PAGE >": the word between the arrows, one word space
   each side, the ">" ending at the cell's right margin, and every arrow on a page lined up; a
@@ -294,8 +295,8 @@ Everything below applies to both unless it says otherwise.
   "MUTE SET". Names are centered and shortened as a set (`fitSet`): each takes its longest form
   that fits, and two names ending in a number or a pair that would come out the same take
   distinct forms ("ADI-2 3/4" and "ADAT 3/4" become "AI3/4" and "AT3/4"); other names are cut
-  from the end and can still come out the same. A mute inverts the name in a lit box (while Mute Master
-  is off, flashing to an outline one pixel clear of the letters, so the name never looks unmuted) and a PFL adds a 3×3 square after it (the two centered together); a PFL on a channel not on
+  from the end and can still come out the same. A mute draws an outline one pixel clear of the name (flashing while Mute
+  Master is off); inversion is kept for "selected", on the Shift page (Adam, 2026-11-07) and a PFL adds a 3×3 square after it (the two centered together); a PFL on a channel not on
   this page shows as "■" before the page in the title's tail (1.1.x never showed one).
 - **Meters** (from 1.2.0, a Settings choice, off by default): a 1-pixel bar under each name, two
   blank lines below it, 26 pixels at full scale on TotalMix FX's fader law (`MeterScale`, shared
