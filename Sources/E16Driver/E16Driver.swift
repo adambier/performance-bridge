@@ -1747,8 +1747,8 @@ public struct E16Driver: Sendable {
             guard pulsePeriod > 0 else {
                 return RingLook(ring: E16Ring(red: bright.0, green: bright.1, blue: bright.2, amount: 1), exact: true)
             }
-            // The trough stops `pulseTroughRaise` above an available button's level, so the
-            // button in use is never as dim as an available one (review of 2026-11-07, a trial).
+            // The trough reaches an available button's level (`pulseTroughRaise` above it, 0): the
+            // motion marks the button in use (Adam, 2026-11-07, after trying 2 above).
             let available = Self.availableColor(rgb)
             let dim = Self.atLevel(rgb, Double(max(available.0, available.1, available.2)) + pulseTroughRaise)
             let f = 0.5 * (1 + cos(2 * Double.pi * max(clock - shiftSince, 0) / pulsePeriod))
@@ -1797,8 +1797,10 @@ public struct E16Driver: Sendable {
     /// See `pulsePeriodDefault`; settable for trying values on the device.
     public var pulsePeriod = E16Driver.pulsePeriodDefault
     /// How far above an available button's level the pulse's trough stops (its color's largest
-    /// part, 0–127): a trial (review of 2026-11-07; `sbdev e16bridge`'s `trough`).
-    public static let pulseTroughRaiseDefault = 2.0
+    /// part, 0–127): 0, the full depth; the review of 2026-11-07 suggested 2 so the trough never
+    /// matches an available button, but the pulsing already tells them apart (Adam, 2026-11-07).
+    /// `sbdev e16bridge`'s `trough` tries other values.
+    public static let pulseTroughRaiseDefault = 0.0
     /// See `pulseTroughRaiseDefault`; settable for trying values on the device.
     public var pulseTroughRaise = E16Driver.pulseTroughRaiseDefault
     /// The top of the pulse as a share of the brightness setting (still never below

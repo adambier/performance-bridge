@@ -237,8 +237,9 @@ Everything below applies to both unless it says otherwise.
   (test 10). While Shift is held the screen names the buttons and the rings show them: off
   (nothing there, or nowhere to go); available, at the lowest level that keeps the color's
   proportions (`availableColor`: 2 of 127 for most; yellow 3, 2, 0, since 2, 1, 0 read as orange,
-  the mute color); **in use, pulsing once a second** between just above that level (2 higher,
-  `pulseTroughRaise`, a trial from the review of 2026-11-07) and the brightness setting (never
+  the mute color); **in use, pulsing once a second** between that level (the review of 2026-11-07
+  suggested stopping 2 above it, `pulseTroughRaise`; tried, it depended on the color, and the pulsing
+  already marks the button: Adam, 2026-11-07) and the brightness setting (never
   below 8, `inUseFloor`), starting bright when Shift goes down; and pressed, the button's
   color with its largest part at 127. The pulse replaced a steady in-use level, which at the
   lowest brightness setting was barely brighter than an available button.[^test-11]
