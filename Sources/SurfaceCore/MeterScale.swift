@@ -38,8 +38,9 @@ public enum MeterScale {
 
 /// Text for a knob's value, short enough for a surface's display. The format is this project's own.
 public enum ValueText {
-    /// A fader position as a gain: "-6.0 dB", "+2.5 dB", "0.0 dB", or "-oo" for off, as TotalMix FX
-    /// shows it (Adam, 2026-11-01).
+    /// A fader position as a gain: "-6.0 dB", "+2.5 dB", "0.0 dB", or "-oo" for off. TotalMix FX
+    /// shows the number with no unit and off as "-oo" (Adam, 2026-11-01 and 2026-11-07); the
+    /// controllers' displays add "dB" (the E16 to "-oo" as well).
     public static func level(position: Double) -> String {
         guard let gain = FaderCurve.gainDB(position: position) else { return "-oo" }
         let rounded = (gain * 10).rounded() / 10
