@@ -182,3 +182,9 @@ final class LowercaseDTests: XCTestCase {
 func squeezed(_ text: String?) -> String? {
     text.map { $0.split(separator: " ", omittingEmptySubsequences: true).joined(separator: " ") }
 }
+
+final class TitleInfinityTests: XCTestCase {
+    func testOffAtTheTitlesRightIsTheInfinitySign() {
+        XCTAssertEqual(E16Driver.screen(title: "Vox", tail: "-oo dB", labels: []), E16Driver.screen(title: "Vox", tail: "-∞ dB", labels: []))
+    }
+}

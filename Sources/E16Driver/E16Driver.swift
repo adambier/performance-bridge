@@ -1228,6 +1228,7 @@ public struct E16Driver: Sendable {
                               pairWords: [Int: String] = [:]) -> E16Screen {
         // "-oo" (off) as "-∞": the font has no lowercase (Adam, 2026-11-05).
         let title = title.replacingOccurrences(of: "-oo", with: "-∞")
+        let tail = tail.replacingOccurrences(of: "-oo", with: "-∞")  // a turn's value
         let labels = labels.map { $0.replacingOccurrences(of: "-oo", with: "-∞") }
         var screen = E16Screen()
         let cell = E16Screen.width / 4
