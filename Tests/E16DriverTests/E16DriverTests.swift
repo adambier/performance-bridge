@@ -880,10 +880,14 @@ final class E16FourLayoutTests: XCTestCase {
         _ = driver.receive([0xB0, 13, 0x04], hub: &hub, now: 2)  // Keys's level (column 1, the first)
         let title = driver.title(hub: hub)
         XCTAssertFalse(title.contains(">"), "a level turn shows no output")
-        XCTAssertFalse(title.uppercased().contains("DB"), "only the value, as below: \(title)")
-        // The value sits over its column, digit for digit with a value drawn in that column below.
+        XCTAssertFalse(title.uppercased().contains("DB"), "no unit, as below: \(title)")
+        XCTAssertTrue(title.uppercased().hasSuffix(" KEYS"), title)
+        // The value sits over its column, digit for digit with a value drawn in that column
+        // below, and the name follows in the next column.
+        let value = String(title.split(separator: " ")[0])
         var expected = E16Screen()
-        _ = E16Driver.drawValue(title, cellX: 0, y: 0, on: &expected)
+        _ = E16Driver.drawValue(value, cellX: 0, y: 0, on: &expected)
+        expected.draw("Keys", x: 32 + (32 - E16Driver.labelMaxWidth) / 2, y: 0)
         let drawn = try! XCTUnwrap(driver.lastScreenForTests)
         for x in 0..<E16Screen.width { for y in 0..<8 { XCTAssertEqual(drawn.pixel(x, y), expected.pixel(x, y), "title pixel \(x),\(y)") } }
     }
