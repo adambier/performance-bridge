@@ -32,6 +32,14 @@ struct LayoutView: View {
         view == .outputs ? items.filter { !monitoring.contains($0.channel.channel) } : items
     }
 
+    /// The list's height for its rows (24 points each, group titles a little more), between 120
+    /// and 440 points.
+    private var listHeight: CGFloat {
+        let rows = view == .outputs ? monitoringItems.count + otherItems.count : otherItems.count
+        let titles = view == .outputs ? 2 : 0
+        return min(max(CGFloat(rows) * 28 + CGFloat(titles) * 30 + 16, 120), 440)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Picker("Show", selection: $view) {
@@ -40,7 +48,11 @@ struct LayoutView: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
-            .onChange(of: view) { _ in reload() }
+            .onChange(of: view) { _ in
+                reload()
+                // The list's height changes with the view: fit the window after layout.
+                DispatchQueue.main.async { Windows.fitToContent("settings") }
+            }
 
             // Above the list, as an instruction rather than a heading (Adam, 2026-10-31).
             // The hardware controllers show only the sources; the outputs' order is the order the
@@ -72,7 +84,9 @@ struct LayoutView: View {
                         .onMove { move($0, $1, monitoring: false) }
                 }
             }
-            .frame(minHeight: 260)
+            // As tall as its rows, up to a maximum past which it scrolls, so the window fits the
+            // list rather than a fixed height (Adam, 2026-11-07: a lot of blank space).
+            .frame(height: listHeight)
 
             HStack {
                 if view == .sources {
@@ -109,7 +123,9 @@ struct LayoutView: View {
             .fixedSize(horizontal: false, vertical: true)
         }
         .padding(20)
-        .frame(height: 720)
+        .fixedSize(horizontal: false, vertical: true)
+        // Channels arrive after a refresh: fit the window to the list again.
+        .onChange(of: items.count) { _ in DispatchQueue.main.async { Windows.fitToContent("settings") } }
         .onAppear {
             // A visit here usually follows changes in TotalMix FX's own Channel Layout window,
             // which TotalMix FX doesn't announce over OSC: refresh the channels first.

@@ -231,12 +231,14 @@ struct SettingsView: View {
                 GroupBox {
                     LaunchControlSendRowsView(model: model, chosen: chosen)
                         .padding(8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
             if edited.controller == .e16 {
                 GroupBox {
                     E16SettingsView(model: model)
                         .padding(8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
         }
@@ -371,6 +373,10 @@ struct SettingsView: View {
 struct E16SettingsView: View {
     @ObservedObject var model: BridgeModel
 
+    /// Every row as tall as a menu row, so checkbox and slider rows aren't crowded against the
+    /// menus (Adam, 2026-11-07).
+    static let rowHeight: CGFloat = 24
+
     /// The slider reads 1–100 for the engine's usable range (`BridgeEngine.e16MinimumBrightness`
     /// to `e16MaximumBrightness`, 3%–80% of the LEDs' full output; Adam, 2026-11-04).
     static let shownRange = 1.0...100.0
@@ -442,6 +448,7 @@ struct E16SettingsView: View {
                     Toggle("Show under the channel names", isOn: Binding(
                         get: { model.status.e16Meters },
                         set: { model.setE16Meters($0) }))
+                        .frame(minHeight: Self.rowHeight)
                 }
                 GridRow {
                     label("Ring brightness")
@@ -454,6 +461,7 @@ struct E16SettingsView: View {
                             .monospacedDigit()
                             .frame(width: 32, alignment: .trailing)
                     }
+                    .frame(minHeight: Self.rowHeight)
                 }
             }
         }
@@ -543,6 +551,7 @@ struct LaunchControlSendRowsView: View {
                     Toggle("Show by brightness", isOn: Binding(
                         get: { model.status.launchControlLevelBrightness },
                         set: { model.setLevelBrightness($0) }))
+                        .frame(minHeight: E16SettingsView.rowHeight)
                 }
             }
         }
