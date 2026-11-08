@@ -99,19 +99,21 @@ public enum SetupChecklist {
         if status.channelCount > 0 {
             steps.append(SetupStep(id: "channels", title: "TotalMix FX has sent its channels", state: .done,
                                    detail: "Performance Bridge has detected \(status.channelCount) TotalMix FX channels. Channels hidden from its OSC Controller aren’t detected.",
-                                   instructions: "After hiding or showing a channel in TotalMix FX, choose Refresh Channels from TotalMix FX from Performance Bridge’s menu, since TotalMix FX doesn’t announce the change."))
+                                   instructions: "After hiding or showing a channel in TotalMix FX, Performance Bridge picks up the change when you switch away from TotalMix FX or within half a minute, or at once with Update Hidden Channels from its menu."))
         } else {
             steps.append(SetupStep(id: "channels", title: "TotalMix FX hasn’t sent its channels yet",
                                    state: .waiting,
                                    detail: status.totalMixAnswering
-                                       ? "TotalMix FX answered with its status only. Performance Bridge keeps asking.\n\nIf this doesn’t change, choose Refresh Channels from TotalMix FX from the menu."
+                                       ? "TotalMix FX answered with its status only. Performance Bridge keeps asking."
                                        : ""))
         }
 
-        let metersSetup = "For meters on the Roto-Control: in TotalMix FX, Options → Mixer Settings… (F3) → OSC, check “Send Level Data” for Performance Bridge’s OSC Controller.\n\nTotalMix FX sends levels only when they change, so play something to see them."
-        // Meters show only on the Roto-Control: the Launch Controls have none, so the step is left
-        // out for them (Adam, 2026-11-02).
-        if status.rotoEnabled {
+        let metersSetup = "For meters: in TotalMix FX, Options → Mixer Settings… (F3) → OSC, check “Send Level Data” for Performance Bridge’s OSC Controller, and leave “Peak Hold” unchecked.\n\nTotalMix FX sends levels only when they change, so play something to see them."
+        // Meters show on the Roto-Control, and on the E16 when its meters are on (from 1.2.0); the
+        // Launch Controls have none, so the step is left out for them (Adam, 2026-11-02).
+        // "Peak Hold" off: with it on, the levels sent held at their peaks and the E16's meters moved
+        // slowly (Adam, 2026-11-06; docs/TOTALMIX-OSC.md).
+        if status.rotoEnabled || (status.e16Enabled && status.e16Meters) {
             steps.append(status.levelsSeen
                 ? SetupStep(id: "meters", title: "Meter levels are arriving", state: .done,
                             detail: "TotalMix FX is sending meter levels.", instructions: metersSetup)
@@ -168,16 +170,18 @@ public enum SetupChecklist {
         // Neither Live mode nor "Cue/PFL to" can be read over OSC (docs/TOTALMIX-OSC.md, tests 6
         // and 21), so they are notes.
         steps.append(SetupStep(id: "livemode", title: "Turn on Live mode for PFL", state: .instruction,
-                               detail: "The hardware controllers’ PFL buttons have been seen to do nothing visible unless TotalMix FX is in Live mode, which Performance Bridge can’t check. With Live mode on, the channels’ buttons read PFL instead of S.\n\nIn TotalMix FX’s Control Strip, click “options” and, under “solo/pfl mode”, choose “live”."))
+                               detail: "PFL from a hardware controller has been observed to do nothing visible unless TotalMix FX is in Live mode, which Performance Bridge can’t check. With Live mode on, the channels’ buttons read PFL instead of S.\n\nIn TotalMix FX’s Control Strip, click “options” and, under “solo/pfl mode”, choose “live”."))
         steps.append(SetupStep(id: "cue", title: "Send PFL to your headphones", state: .instruction,
                                detail: "TotalMix FX sends PFL to Main by default, so PFL from a hardware controller replaces what Main Out plays: on stage, the audience hears only the channel being checked. Performance Bridge can’t check this setting.\n\nIn TotalMix FX’s Control Room section, click “assign”, then “Cue/PFL to”, and choose a headphone output (e.g., “Phones 1”)."))
 
         // The color tip is only for a Launch Control, so it shows only once one is chosen (Adam,
         // 2026-11-02).
-        let colorTip = status.launchControlName == nil ? ""
-            : " Give each output the send rows feed (e.g., each headphone output) a color of its own: a send row lights in its output’s color, so the color shows which output it feeds."
+        // For the controllers whose send lights take their output's color: the Launch Controls and
+        // the E16 (review of 2026-11-07, Adam's choice).
+        let colorTip = status.launchControlName == nil && !status.e16Enabled ? ""
+            : " Give each output a send feeds (e.g., each headphone output) a color of its own: a send’s lights take its output’s color, so the color shows which output it feeds."
         steps.append(SetupStep(id: "hide", title: "Hide channels in TotalMix FX", state: .instruction,
-                               detail: "Hide and show channels in TotalMix FX: choose Options → Channel Layout…, select the channel’s row (on the Inputs, Playbacks, or Outputs tab), and under “Hide Channel in”, check or uncheck the box for Performance Bridge’s OSC Controller. Or right-click the channel and choose Change Channel Layout.\n\nThen choose Refresh Channels from TotalMix FX from Performance Bridge’s menu, since TotalMix FX doesn’t announce the change.\n\nChannel colors can be set in the same window." + colorTip))
+                               detail: "Hide and show channels in TotalMix FX: choose Options → Channel Layout…, select the channel’s row (on the Inputs, Playbacks, or Outputs tab), and under “Hide Channel in”, check or uncheck the box for Performance Bridge’s OSC Controller. Or right-click the channel and choose Change Channel Layout.\n\nPerformance Bridge picks up the change when you switch away from TotalMix FX or within half a minute, or at once with Update Hidden Channels from its menu.\n\nChannel colors can be set in the same window." + colorTip))
         steps.append(SetupStep(id: "order", title: "Set the order of the channels", state: .optional,
                                detail: "Set the order of the channels, and give them short labels for the hardware controllers, on the Channel Layout tab of Performance Bridge’s Settings."))
         return steps

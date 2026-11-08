@@ -39,6 +39,14 @@ let e16Usage = """
                                       Remote Mode
       sbdev e16 ramp [--port N]       enters Remote Mode and shows white rings at 16 brightness
                                       values from 1 to 127, labeled; leaves Remote Mode on Control-C
+      sbdev e16 screenrate [--port N]
+                                      the screen-rate probe, for meters on the screen: redraws the
+                                      whole screen (moving meter bars and a frame counter) at 0, 5,
+                                      10, 20, 30, 45, then 60 frames per second, one rate per
+                                      Return, while the top row of rings sweeps at 60 fps and a
+                                      turn in rows 2–4 moves its ring; prints what was sent at
+                                      each rate and how long sending took; Control-C leaves
+                                      Remote Mode
       sbdev e16 demo [--port N] [--rate HZ]
                                       enters Remote Mode, shows 16 named channels with colored rings,
                                       and reacts: a turn moves its ring, a push toggles its color,
@@ -183,6 +191,9 @@ func e16(_ arguments: ArraySlice<String>) -> Never {
 
     case "demo":
         e16Demo(session, rate: rate)
+
+    case "screenrate":
+        e16ScreenRate(session)
 
     case "ramp":
         installExitOnInterrupt()
@@ -418,4 +429,110 @@ private func e16Demo(_ session: E16Session, rate: Double) -> Never {
         }
     }
     while true { Thread.sleep(forTimeInterval: 60) }
+}
+
+/// The screen-rate probe (Adam, 2026-11-06: meters on the screen). Whole framebuffers at rising
+/// rates, with rings sent at 60 fps beside them and turns echoed, to see whether the device keeps
+/// up and whether the screen delays the rings. The tool can only time its own sending; what the
+/// device drew is for the eye.
+private func e16ScreenRate(_ session: E16Session) -> Never {
+    installExitOnInterrupt()
+    guard session.enter() else { exit(1) }
+    let rates: [Double] = [0, 5, 10, 20, 30, 45, 60]
+    let names = ["Keys", "Vox", "Gtr", "P1/2"]
+    let state = ScreenRateState()
+    let lock = state.lock
+
+    @Sendable func screen(_ t: Double, frame: Int, rate: Double) -> E16Screen {
+        var screen = E16Screen()
+        _ = screen.draw(String(format: "SCREEN %.0f/S", rate), x: 0, y: 0)
+        let counter = "#\(frame % 1000)"
+        _ = screen.draw(counter, x: E16Screen.width - E16Screen.width(of: counter), y: 0)
+        screen.line(y: 10, from: 0, to: E16Screen.width - 1)
+        for column in 0..<4 {
+            // A meter bar at the column's right edge, two pixels wide, up to 48 tall.
+            let level = 0.5 + 0.5 * sin(t * 3 + Double(column) * 1.3)
+            let height = Int((level * 48).rounded())
+            for y in (63 - height)...63 where height > 0 {
+                screen.set(column * 32 + 29, y); screen.set(column * 32 + 30, y)
+            }
+            _ = screen.draw(names[column], x: column * 32 + 2, y: 53)
+        }
+        return screen
+    }
+
+    session.onEvents { events in
+        for case .turned(let i, let delta) in events where i >= 4 {
+            lock.lock()
+            state.amounts[i] = max(0, min(1, state.amounts[i] + Double(delta) / 100))
+            let ring = E16Ring(red: 0, green: 110, blue: 0, amount: state.amounts[i])
+            lock.unlock()
+            session.send(E16Outgoing.rings([(encoder: i, ring: ring)]))
+        }
+    }
+    session.send(E16Outgoing.rings((4..<16).map { (encoder: $0, ring: E16Ring(red: 0, green: 110, blue: 0, amount: 0.5)) }))
+
+    Thread.detachNewThread {
+        let start = Date()
+        var nextRing = 0.0, nextFrame = 0.0, frame = 0
+        while true {
+            let t = Date().timeIntervalSince(start)
+            if t >= nextRing {
+                let sweep = t.truncatingRemainder(dividingBy: 1)
+                session.send(E16Outgoing.rings((0..<4).map { (encoder: $0, ring: E16Ring(red: 0, green: 40, blue: 127, amount: sweep)) }))
+                nextRing = t + 1.0 / 60
+            }
+            lock.lock(); let current = state.rate; lock.unlock()
+            if current > 0, t >= nextFrame {
+                frame += 1
+                let bytes = E16Outgoing.framebuffer(screen(t, frame: frame, rate: current))
+                let before = Date()
+                session.send(bytes)
+                let took = Date().timeIntervalSince(before)
+                lock.lock(); state.frames += 1; state.sendTime += took; state.maxSend = max(state.maxSend, took); lock.unlock()
+                nextFrame = max(nextFrame + 1 / current, t)
+            }
+            Thread.sleep(forTimeInterval: 0.001)
+        }
+    }
+
+    print("""
+
+        On the device: the top row of rings sweeps blue at 60 frames per second; turning an
+        encoder in rows 2–4 moves its green ring. Each step redraws the whole screen at a higher
+        rate. At each step, look at: the screen's four bars and the counter at its top right
+        (smooth or jerky, steady or stalling), the top row of rings (still smooth?), and a turn
+        (does its ring follow at once?). The Mac terminal window shows what was sent.
+        """)
+    for (n, next) in rates.enumerated() {
+        lock.lock()
+        state.rate = next; state.frames = 0; state.sendTime = 0; state.maxSend = 0; state.stageStart = Date()
+        lock.unlock()
+        print(next == 0
+              ? "\nStep \(n + 1): the screen still (rings only), for comparison. Press Return for the next step."
+              : String(format: "\nStep %d: the screen at %.0f frames per second. Press Return for the next step.", n + 1, next))
+        flushOutput()
+        _ = readLine()
+        lock.lock()
+        let seconds = Date().timeIntervalSince(state.stageStart)
+        let frames = state.frames
+        if next > 0, frames > 0 {
+            print(String(format: "  Sent %d screens in %.1f s (%.1f per second); sending took %.2f ms on average, %.2f ms at most; %d bytes each.",
+                         frames, seconds, Double(frames) / seconds, state.sendTime / Double(frames) * 1000, state.maxSend * 1000,
+                         E16Outgoing.framebuffer(E16Screen()).count))
+        }
+        lock.unlock()
+        flushOutput()
+    }
+    print("\nDone. Leaving Remote Mode.")
+    session.exit(); Thread.sleep(forTimeInterval: 0.2)
+    exit(0)
+}
+
+/// The screen-rate probe's shared state, guarded by `lock`.
+private final class ScreenRateState: @unchecked Sendable {
+    let lock = NSLock()
+    var rate = 0.0
+    var amounts = Array(repeating: 0.5, count: 16)
+    var frames = 0, sendTime = 0.0, maxSend = 0.0, stageStart = Date()
 }

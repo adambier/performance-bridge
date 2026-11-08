@@ -5,9 +5,11 @@ import TotalMixOSC
 
 /// The scale from TotalMix FX's peak levels to a surface's meters (0…127).
 ///
-/// TotalMix FX sends peak levels in dB (`/level/…`, docs/TOTALMIX-OSC.md). The scale is linear in dB
-/// over −65…0 dBFS, the range of TotalMix FX's own meters (docs/TOTALMIX-OSC.md), with the top value
-/// reserved for full scale. The color thresholds borrow RME's own meter steps (the M-32 AD Pro's
+/// TotalMix FX sends peak levels in dB (`/level/…`, docs/TOTALMIX-OSC.md). The scale is TotalMix
+/// FX's fader law (`FaderCurve`) from −65 dBFS up to 0 dBFS, the range of its own meters, so a level
+/// sits where TotalMix FX's channel strip marks it (its −6, −10, −20, and −40 marks follow the fader
+/// law, Adam's screenshot of 2026-11-06; an evenly spaced scale read high) and a meter matches a
+/// level ring, which fills at 0 dB on the same law. The top value is reserved for full scale. The color thresholds borrow RME's own meter steps (the M-32 AD Pro's
 /// front-panel meter: yellow from −5 dBFS, orange from −4, red from −1, flashing at 0;
 /// docs/TOTALMIX-OSC.md) as closely as a surface with two thresholds can: yellow from −5 dBFS and
 /// red from −1 dBFS.
@@ -20,24 +22,25 @@ public enum MeterScale {
     public static let warningDB: Double = -5
     /// The level from which a meter shows red, in dBFS, as RME's M-32 AD Pro's meter does.
     public static let redDB: Double = -1
-    /// The meter value from which a surface should color its meter yellow (−5 dBFS: 117).
+    /// The meter value from which a surface should color its meter yellow (−5 dBFS: 103).
     public static var warning: Int { value(peakDB: warningDB) }
-    /// The meter value from which a surface should color its meter red (−1 dBFS: 125).
+    /// The meter value from which a surface should color its meter red (−1 dBFS: 122).
     public static var red: Int { value(peakDB: redDB) }
 
     /// The meter value for a peak level in dB.
     public static func value(peakDB: Double) -> Int {
         guard peakDB.isFinite else { return peakDB > 0 ? fullScale : 0 }
         if peakDB >= 0 { return fullScale }
-        let scaled = (peakDB - floorDB) / -floorDB * Double(fullScale)
+        let scaled = FaderCurve.position(gainDB: peakDB) / FaderCurve.unityPosition * Double(fullScale)
         return min(max(Int(scaled.rounded(.down)), 0), fullScale - 1)
     }
 }
 
 /// Text for a knob's value, short enough for a surface's display. The format is this project's own.
 public enum ValueText {
-    /// A fader position as a gain: "-6.0 dB", "+2.5 dB", "0.0 dB", or "-oo" for off, as TotalMix FX
-    /// shows it (Adam, 2026-11-01).
+    /// A fader position as a gain: "-6.0 dB", "+2.5 dB", "0.0 dB", or "-oo" for off. TotalMix FX
+    /// shows the number with no unit and off as "-oo" (Adam, 2026-11-01 and 2026-11-07); the
+    /// controllers' displays add "dB" (the E16 to "-oo" as well).
     public static func level(position: Double) -> String {
         guard let gain = FaderCurve.gainDB(position: position) else { return "-oo" }
         let rounded = (gain * 10).rounded() / 10

@@ -103,6 +103,32 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertFalse(fromSaved.status.e16Found)
     }
 
+    /// The E16's layout, meters, and send rows: held with no device, reported, and the layout
+    /// passed on for saving when it changes (phase 2).
+    func testE16ChoicesAreHeldWithoutADevice() {
+        final class Saved: @unchecked Sendable { var layouts: [Bool] = []; var sends: [[Int?]] = [] }
+        let saved = Saved()
+        let engine = BridgeEngine(settings: BridgeSettings())
+        engine.onE16LayoutChange = { saved.layouts.append($0) }
+        engine.onE16SendsChange = { saved.sends.append($0) }
+        XCTAssertFalse(engine.status.e16FourChannelStrips, "16 channels unless saved otherwise")
+        XCTAssertFalse(engine.status.e16Meters)
+        engine.setE16Layout(fourChannelStrips: true)
+        engine.setE16Layout(fourChannelStrips: true)
+        XCTAssertTrue(engine.status.e16FourChannelStrips)
+        XCTAssertEqual(saved.layouts, [true], "passed on once, when it changes")
+        engine.setE16Meters(true)
+        XCTAssertTrue(engine.status.e16Meters)
+        engine.setE16Send(row: 0, to: 4)
+        XCTAssertTrue(saved.sends.isEmpty, "not a send target (TotalMix FX hasn't answered): refused")
+        var fromSaved = BridgeSettings()
+        fromSaved.e16FourChannelStrips = true
+        fromSaved.e16Meters = true
+        let restored = BridgeEngine(settings: fromSaved)
+        XCTAssertTrue(restored.status.e16FourChannelStrips, "a saved setting is taken up")
+        XCTAssertTrue(restored.status.e16Meters)
+    }
+
     func testMonitoringChoicesInOutputOrderWithNamesAndRoles() {
         var mirror = MixerMirror()
         let events: [TotalMixEvent] = [
@@ -280,7 +306,7 @@ final class BridgeEngineTests: XCTestCase {
         let steps = SetupChecklist.steps(status: status, settings: BridgeSettings())
         let channels = try XCTUnwrap(steps.first { $0.id == "channels" })
         XCTAssertEqual(channels.state, .waiting)
-        XCTAssertTrue(channels.detail.contains("Refresh Channels from TotalMix FX"), channels.detail)
+        XCTAssertTrue(channels.detail.contains("keeps asking"), channels.detail)
     }
 
     func testTheEngineCountsChannelsAndSeesLevels() throws {
@@ -481,11 +507,15 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertEqual(SetupChecklist.startIndex(of: skipping), ids.firstIndex(of: "channels"),
                        "the first step not done: TotalMix FX answered, but no channels yet")
         XCTAssertFalse(skipping.contains { $0.state == .done && $0.detail.isEmpty }, "a done page says what was checked")
-        XCTAssertFalse(steps.first { $0.id == "hide" }!.detail.contains("send row"),
-                       "no Launch Control tip before a Launch Control is chosen")
+        XCTAssertFalse(steps.first { $0.id == "hide" }!.detail.contains("a send feeds"),
+                       "no color tip before a Launch Control or the E16 is chosen")
+        var withE16 = status
+        withE16.e16Enabled = true
+        XCTAssertTrue(SetupChecklist.steps(status: withE16, settings: BridgeSettings()).first { $0.id == "hide" }!.detail.contains("a send feeds"),
+                      "the E16's send lights take their output's color too")
         status.launchControlName = "Launch Control XL 3"
         let withLaunchControl = SetupChecklist.steps(status: status, settings: BridgeSettings())
-        XCTAssertTrue(withLaunchControl.first { $0.id == "hide" }!.detail.contains("send row"))
+        XCTAssertTrue(withLaunchControl.first { $0.id == "hide" }!.detail.contains("a send feeds"))
         var launchControlOnly = status
         launchControlOnly.rotoEnabled = false
         XCTAssertNil(SetupChecklist.steps(status: launchControlOnly, settings: BridgeSettings()).first { $0.id == "meters" },

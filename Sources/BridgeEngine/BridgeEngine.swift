@@ -107,6 +107,14 @@ public struct BridgeSettings: Equatable, Sendable {
     /// How bright the E16's rings are (`E16Driver.brightness`, kept within the range below); a must-have setting, since
     /// how bright is right depends on the room and is the user's call (Adam, 2026-11-04).
     public var e16Brightness = E16Driver.defaultBrightness
+    /// The E16's layout: channel strips rather than 16 channels (Adam, 2026-11-05/06), as saved
+    /// by the app (`e16FourChannelStrips`), from Settings or the E16's Shift page.
+    public var e16FourChannelStrips = false
+    /// Whether the E16 shows meters under the names (`E16Driver.showsMeters`; `e16Meters`).
+    public var e16Meters = false
+    /// The 4-channel layout's send rows' outputs (A, B), 0-based (`E16Driver.sendOutputs`;
+    /// `e16Sends`; the app saves `nil` as -1), as saved by the app, from Settings or the E16's Shift page.
+    public var e16Sends: [Int?] = []
     /// How often the engine tries again to open TotalMix FX's port or the Roto-Control's MIDI ports
     /// while either is not open, in seconds.
     public var retryInterval: Double = 3
@@ -190,6 +198,13 @@ public struct BridgeStatus: Equatable, Sendable {
     public var e16Connected = false
     /// How bright the E16’s rings are (`BridgeEngine.e16MinimumBrightness`…`e16MaximumBrightness`).
     public var e16Brightness = E16Driver.defaultBrightness
+    /// Whether the E16 uses channel strips rather than 16 channels, connected or not.
+    public var e16FourChannelStrips = false
+    /// Whether the E16 shows meters under the names.
+    public var e16Meters = false
+    /// The output each of the 4-channel layout's send rows (A, B) feeds now, whether or not the
+    /// E16 is connected, from the send targets TotalMix FX has shown; `nil` for none.
+    public var e16Sends: [Int?] = []
     /// The outputs the send controls step through, in order (`SurfaceHub.sendTargets`), with their
     /// names as the strips show them, for choosing a send row's output.
     public var sendTargets: [HomeChoice] = []
@@ -255,6 +270,14 @@ public final class BridgeEngine: @unchecked Sendable {
     /// Called with the new layout whenever the app changes it (order, new-page option, or labels),
     /// so the app can save it. Set it before `start()`.
     public var onLayoutChange: (@Sendable (PerformanceLayout) -> Void)?
+    /// Called with whether the E16 now uses channel strips whenever the layout changes, on the
+    /// device's Shift page or in the app, so the app can save it (`e16FourChannelStrips`). Called
+    /// with the lock released.
+    public var onE16LayoutChange: (@Sendable (Bool) -> Void)?
+    /// Called with the E16's send rows' choices (`SendRows.choices`, A and B) whenever the user
+    /// changes them, on the device or in the app, so the app can save them (`e16Sends`). Called
+    /// with the lock released.
+    public var onE16SendsChange: (@Sendable ([Int?]) -> Void)?
 
     private let lock = NSLock()
     private let startDate = Date()
@@ -285,6 +308,14 @@ public final class BridgeEngine: @unchecked Sendable {
     /// Whether a Launch Control shows levels by brightness, kept like `sendRows`.
     private var levelBrightness: Bool
     private var e16Driver: E16Driver?
+    /// The E16's layout (channel strips or 16 channels), as saved, then as switched on the device or in
+    /// the app; kept across a reconnection and while no device is connected.
+    private var e16FourStrips: Bool
+    /// The E16's send rows (A, B), kept like `e16FourStrips`; a connected driver's are the ones in
+    /// use (`E16Driver.sendRows`), copied here as they change.
+    private var e16SendRows: SendRows
+    /// Whether the E16 shows meters, kept like `e16FourStrips`.
+    private var e16MetersOn: Bool
     private var e16MIDI: MIDIConnection?
     private var e16Error: String?
     private var lastE16Try: Double?
@@ -306,9 +337,23 @@ public final class BridgeEngine: @unchecked Sendable {
         self.sendRows = rows
         self.levelBrightness = settings.launchControlLevelBrightness
         self.e16Brightness = Self.clampedBrightness(settings.e16Brightness)
+        self.e16FourStrips = settings.e16FourChannelStrips
+        self.e16SendRows = SendRows(rowCount: 2, fillsEmptyRows: true, choices: settings.e16Sends)
+        self.e16MetersOn = settings.e16Meters
     }
 
     private var now: Double { Date().timeIntervalSince(startDate) }
+
+    /// When a hardware controller last sent a control message (a turn, a press, a touch), for the
+    /// quiet the automatic refresh waits for: channel messages only, since a Launch Control
+    /// answers its presence query every 5 s while idle (Tier 1 review, 2026-11-07).
+    private var lastSurfaceInput = -Double.infinity
+    /// When the channels were last refreshed automatically.
+    private var lastAutoRefresh = 0.0
+    /// How often the channels are refreshed automatically, in seconds, and how long no control
+    /// must have moved first. Starting values (inferences): a refresh is one `/sendall`, about 960
+    /// messages answered within 0.2 s (docs/TOTALMIX-OSC.md, tests 1 and 2).
+    static let autoRefreshInterval = 30.0, autoRefreshQuiet = 5.0
 
     /// Starts the engine: opens TotalMix FX's port and the Roto-Control's MIDI ports, asks TotalMix FX
     /// for its state, and starts the Roto-Control's handshake and the clock. Neither side has to be
@@ -556,8 +601,9 @@ public final class BridgeEngine: @unchecked Sendable {
         switch result {
         case .success(let connection) where running:
             e16MIDI = connection
-            var e16 = E16Driver(name: "e16")
+            var e16 = E16Driver(name: "e16", layout: e16FourStrips ? .four : .sixteen, sendOutputs: e16SendRows.choices)
             e16.brightness = e16Brightness
+            e16.showsMeters = e16MetersOn
             let started = e16.start(hub: &hub, now: now)
             sendToE16(started.midi)
             e16Driver = e16
@@ -722,6 +768,58 @@ public final class BridgeEngine: @unchecked Sendable {
         publishStatusIfChanged()
     }
 
+    /// Sets the E16's layout from the app, as its Shift page's layout buttons do: at once on a
+    /// connected device, and kept for the next one otherwise.
+    public func setE16Layout(fourChannelStrips four: Bool) {
+        lock.lock()
+        guard four != e16FourStrips else { lock.unlock(); return }
+        e16FourStrips = four
+        if var e16 = e16Driver {
+            let step = e16.setLayout(four ? .four : .sixteen, hub: &hub, now: now)
+            e16Driver = e16
+            sendToE16(step.midi)
+            dispatch(step.core)
+        }
+        lock.unlock()
+        onE16LayoutChange?(four)
+        publishStatusIfChanged()
+    }
+
+    /// Sets a send row's output (0 for A, 1 for B) of the E16's 4-channel layout from the app, as
+    /// the Shift page's arrows do: at once on a connected device, and kept otherwise. Does nothing
+    /// for an output the other row feeds or that isn't a send target.
+    public func setE16Send(row: Int, to output: Int) {
+        lock.lock()
+        let before = e16SendRows
+        if var e16 = e16Driver {
+            let step = e16.setSendOutput(row: row, to: output, hub: &hub, now: now)
+            e16Driver = e16
+            sendToE16(step.midi)
+            dispatch(step.core)
+            e16SendRows = e16.sendRows
+        } else {
+            _ = e16SendRows.set(row: row, to: output, targets: hub.sendTargets)
+        }
+        let changed = e16SendRows != before ? e16SendRows.choices : nil
+        lock.unlock()
+        if let changed { onE16SendsChange?(changed) }
+        publishStatusIfChanged()
+    }
+
+    /// Turns the E16's meters on or off from the app: at once on a connected device, and kept for
+    /// the next one otherwise.
+    public func setE16Meters(_ on: Bool) {
+        lock.lock()
+        e16MetersOn = on
+        if var e16 = e16Driver {
+            let bytes = e16.setShowsMeters(on, hub: hub)
+            e16Driver = e16
+            sendToE16(bytes)
+        }
+        lock.unlock()
+        publishStatusIfChanged()
+    }
+
     /// The lowest brightness the engine accepts, and the highest: the usable range on the
     /// device, found by Adam with a 0–100% slider and `sbdev e16 colors` (2026-11-04): 3% is the
     /// driver's floor (`E16Driver.dimFloor`, a color's largest part at 4), where every color was
@@ -765,7 +863,18 @@ public final class BridgeEngine: @unchecked Sendable {
     /// TotalMix FX since the last refresh leave or join the surfaces.
     public func refresh() {
         lock.lock()
+        lastAutoRefresh = now
         dispatch(hub.refreshChannels(now: now))
+        lock.unlock()
+    }
+
+    /// A refresh unless one is in progress: for the switch away from TotalMix FX.
+    public func refreshIfIdle() {
+        lock.lock()
+        if !hub.isRefreshing {
+            lastAutoRefresh = now
+            dispatch(hub.refreshChannels(now: now))
+        }
         lock.unlock()
     }
 
@@ -786,6 +895,7 @@ public final class BridgeEngine: @unchecked Sendable {
 
     private func fromRoto(_ bytes: [UInt8]) {
         lock.lock()
+        if bytes.contains(where: { (0x80...0xEF).contains($0) }) { lastSurfaceInput = now }
         let step = driver.receive(bytes, hub: &hub, now: now)
         sendToRoto(step.midi)
         dispatch(step.core)
@@ -795,6 +905,7 @@ public final class BridgeEngine: @unchecked Sendable {
 
     private func fromLaunchControl(_ bytes: [UInt8]) {
         lock.lock()
+        if bytes.contains(where: { (0x80...0xEF).contains($0) }) { lastSurfaceInput = now }
         var changed: (LaunchControlModel, [Int?])?
         var showTotalMix = false
         if var lc = lcDriver {
@@ -816,13 +927,27 @@ public final class BridgeEngine: @unchecked Sendable {
 
     private func fromE16(_ bytes: [UInt8]) {
         lock.lock()
+        if bytes.contains(where: { (0x80...0xEF).contains($0) }) { lastSurfaceInput = now }
+        var switched: Bool?
+        var sends: [Int?]?
         if var e16 = e16Driver {
             let step = e16.receive(bytes, hub: &hub, now: now)
             e16Driver = e16
             sendToE16(step.midi)
             dispatch(step.core)
+            let four = e16.layout == .four
+            if four != e16FourStrips {
+                e16FourStrips = four
+                switched = four
+            }
+            if e16.sendRows != e16SendRows {
+                e16SendRows = e16.sendRows
+                sends = e16SendRows.choices
+            }
         }
         lock.unlock()
+        if let switched { onE16LayoutChange?(switched) }
+        if let sends { onE16SendsChange?(sends) }
         publishStatusIfChanged()
     }
 
@@ -840,6 +965,14 @@ public final class BridgeEngine: @unchecked Sendable {
         let answering = lastFromTotalMix.map { now - $0 < Self.totalMixTimeout } ?? false
         if totalMixWasAnswering, !answering { dispatch(hub.refreshChannels(now: now)) }
         totalMixWasAnswering = answering
+        // Channels hidden or shown in TotalMix FX, which it doesn't announce: refreshed now and
+        // then, while no control has moved for a while, so an answer never lands mid-gesture
+        // (Adam, 2026-11-07, for 1.2.0; names and colors TotalMix FX announces itself).
+        if answering, !hub.isRefreshing, now - lastAutoRefresh >= Self.autoRefreshInterval,
+           now - lastSurfaceInput >= Self.autoRefreshQuiet {
+            lastAutoRefresh = now
+            dispatch(hub.refreshChannels(now: now))
+        }
         dispatch(hub.tick(now: now))
         sendToRoto(driver.tick(now: now, hub: hub))
         if var lc = lcDriver {
@@ -920,6 +1053,9 @@ public final class BridgeEngine: @unchecked Sendable {
         status.e16Found = e16MIDI != nil
         status.e16Connected = e16Driver?.isConnected ?? false
         status.e16Brightness = e16Brightness
+        status.e16FourChannelStrips = e16FourStrips
+        status.e16Meters = e16MetersOn
+        status.e16Sends = (e16Driver?.sendRows ?? e16SendRows).outputs(targets: hub.sendTargets)
         status.sendTargets = hub.sendTargets.map { output in
             let ref = ChannelRef(.output, output)
             let name = hub.layout.label(for: ref) ?? hub.mirror.channels[ref]?.name ?? "Output \(output + 1)"

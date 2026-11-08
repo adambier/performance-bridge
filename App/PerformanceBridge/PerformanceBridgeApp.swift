@@ -306,6 +306,15 @@ final class BridgeModel: ObservableObject {
         engine.setE16Brightness(value)
     }
 
+    /// Whether the E16 shows meters under the names (off by default).
+    nonisolated private static let e16MetersKey = "e16Meters"
+
+    /// Turns the E16's meters on or off: at once, and saved.
+    func setE16Meters(_ on: Bool) {
+        UserDefaults.standard.set(on, forKey: Self.e16MetersKey)
+        engine.setE16Meters(on)
+    }
+
     /// The key for one layout's send rows: the XL 3 has two and the Launch Control 3 one (its top
     /// row, pan or a send), so they are kept apart (review of 2026-11-02). The XL 3's are under the
     /// key earlier builds used for both.
@@ -494,6 +503,12 @@ final class BridgeModel: ObservableObject {
         if let brightness = UserDefaults.standard.object(forKey: e16BrightnessKey) as? Double {
             settings.e16Brightness = min(max(brightness, 0), 1)
         }
+        // The E16's layout, meters, and send rows, as chosen in Settings or on the E16's Shift page.
+        settings.e16FourChannelStrips = UserDefaults.standard.bool(forKey: "e16FourChannelStrips")
+        settings.e16Meters = UserDefaults.standard.bool(forKey: e16MetersKey)
+        if let saved = UserDefaults.standard.array(forKey: "e16Sends") as? [Int] {
+            settings.e16Sends = saved.map { $0 < 0 ? nil : $0 }
+        }
         // Both layouts' send rows, so either can be set in Settings with no device connected.
         for layout in LaunchControlModel.allCases {
             if let saved = UserDefaults.standard.array(forKey: sendsKey(layout)) as? [Int] {
@@ -517,8 +532,22 @@ final class BridgeModel: ObservableObject {
 
     private func start() {
         let engine = self.engine
+        // Switching away from TotalMix FX on this Mac often follows hiding or showing a channel
+        // there: refresh the channels then (Adam, 2026-11-07). Matched by the app's name, since
+        // its bundle ID isn't documented here (an inference that the name starts "TotalMix").
+        NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didDeactivateApplicationNotification, object: nil, queue: .main) { note in
+            let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication
+            if app?.localizedName?.hasPrefix("TotalMix") == true { engine.refreshIfIdle() }
+        }
         engine.onLayoutChange = { layout in
             if let data = try? JSONEncoder().encode(layout) { UserDefaults.standard.set(data, forKey: Self.layoutKey) }
+        }
+        engine.onE16LayoutChange = { four in
+            UserDefaults.standard.set(four, forKey: "e16FourChannelStrips")
+        }
+        engine.onE16SendsChange = { outputs in
+            UserDefaults.standard.set(outputs.map { $0 ?? -1 }, forKey: "e16Sends")
         }
         engine.onLaunchControlSendsChange = { layout, outputs in
             UserDefaults.standard.set(outputs.map { $0 ?? -1 }, forKey: Self.sendsKey(layout))
@@ -612,7 +641,10 @@ struct MenuContent: View {
         // then the rarely used items in the order of a Mac app menu: the Setup Guide (mostly at
         // first launch, Adam, 2026-10-31), About and Check for Updates, Settings, Quit. Labels in
         // title-style capitalization, with an ellipsis where a window asks for more.
-        Button("Refresh Channels from TotalMix FX") { model.engine.refresh() }
+        // Hiding or showing a channel is the one change TotalMix FX doesn't announce; the app
+        // also checks for it on its own (BridgeEngine's automatic refresh), so this is for an
+        // immediate update (Adam, 2026-11-07: "Refresh Channels from TotalMix FX" was unclear).
+        Button("Update Hidden Channels") { model.engine.refresh() }
         Divider()
         Button("Setup Guide…") { model.showSetup() }
         Button("Controls Guide…") {

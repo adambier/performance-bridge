@@ -167,6 +167,14 @@ struct SettingsWindowView: View {
             // The Connections tab grows or shrinks with the chosen controller's settings.
             DispatchQueue.main.async { Windows.fitToContent("settings") }
         }
+        // Rows that come and go with the E16's layout and with TotalMix FX's outputs (Tier 1
+        // review, 2026-11-07: the window grew but never shrank back).
+        .onChange(of: model.status.e16FourChannelStrips) { _ in
+            DispatchQueue.main.async { Windows.fitToContent("settings") }
+        }
+        .onChange(of: model.status.sendTargets.isEmpty) { _ in
+            DispatchQueue.main.async { Windows.fitToContent("settings") }
+        }
         .onChange(of: tab) { tab in
             show(tab)
             // After SwiftUI has laid out the new tab.
@@ -225,13 +233,21 @@ struct SettingsView: View {
                     .padding(8)
             }
 
+            // The chosen controller's own settings, which take effect at once, in a box of their
+            // own so their columns line up with the box above (UI review of 2026-11-07).
             if let chosen = edited.controller.launchControl {
-                LaunchControlSendRowsView(model: model, chosen: chosen)
-                    .padding(.top, 6)
+                GroupBox {
+                    LaunchControlSendRowsView(model: model, chosen: chosen)
+                        .padding(8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
             if edited.controller == .e16 {
-                E16BrightnessView(model: model)
-                    .padding(.top, 6)
+                GroupBox {
+                    E16SettingsView(model: model)
+                        .padding(8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
         }
         .padding(20)
@@ -254,7 +270,7 @@ struct SettingsView: View {
                 portRow("Port (incoming)", value: $edited.incomingPort, override: model.portOverrides.incoming)
                 portRow("Port (outgoing)", value: $edited.outgoingPort, override: model.portOverrides.outgoing)
             }
-            note("The computer that runs TotalMix FX and the ports of the OSC Controller set up for Performance Bridge. Use the same ports as TotalMix FX: Options → Mixer Settings… → OSC, with “Compatibility (Mode)” set to “Global OSC”.")
+            note("Use the ports set in TotalMix FX: Options → Mixer Settings… → OSC, with “Compatibility (Mode)” set to “Global OSC”.")
 
             Divider()
                 .padding(.vertical, 4)
@@ -304,14 +320,16 @@ struct SettingsView: View {
 
     /// The note under the hardware controller's menu.
     private var controllerNote: String {
+        // Only what the user needs to do or know before connecting; how the app finds the port
+        // is in the Setup Guide, where it matters if it fails (UI review of 2026-11-07).
         if edited.controller == .roto {
-            return "Connect the Roto-Control by USB. Performance Bridge finds it by the name of its MIDI port."
+            return "Connect the Roto-Control by USB."
         }
         if edited.controller == .e16 {
-            return "Connect the E16 by USB. Performance Bridge finds its first MIDI port (“OXI E16 Port 1”) by name and puts the E16 in Remote Mode, which needs firmware 1.3.0 or later."
+            return "Connect the E16 by USB. It needs firmware 1.3.0 or later."
         }
         let model = edited.controller.launchControl ?? .xl3
-        return "Connect the \(model.name) by USB. Performance Bridge finds its DAW port (“\(model.portPrefix) 1 DAW”) by name; with more than one connected, it uses the one with the lowest device ID."
+        return "Connect the \(model.name) by USB."
     }
 
     /// A row label, right-aligned in its column, in the width all rows share.
@@ -355,11 +373,17 @@ struct SettingsView: View {
     }
 }
 
-/// The E16's ring brightness, at the bottom of the Connections tab while the E16 is chosen: a
-/// must-have (Adam, 2026-11-04; how bright is right is the user's call). It takes effect
-/// at once on a connected E16 and is kept otherwise, like the Launch Control's send rows.
-struct E16BrightnessView: View {
+/// The E16's settings, in a box of their own below the Connections tab's box while the E16 is
+/// chosen: its layout, its send rows (only for channel strips, the layout that uses them), its
+/// meters, and its rings' brightness. Each takes effect at once, connected or not; the layout and
+/// sends also follow a change made on the device. Text is only what Settings can't do without:
+/// what the layouts and the Shift page do is in the Controls Guide (Adam, 2026-11-07).
+struct E16SettingsView: View {
     @ObservedObject var model: BridgeModel
+
+    /// Every row as tall as a menu row, so checkbox and slider rows aren't crowded against the
+    /// menus (Adam, 2026-11-07).
+    static let rowHeight: CGFloat = 24
 
     /// The slider reads 1–100 for the engine's usable range (`BridgeEngine.e16MinimumBrightness`
     /// to `e16MaximumBrightness`, 3%–80% of the LEDs' full output; Adam, 2026-11-04).
@@ -382,27 +406,92 @@ struct E16BrightnessView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("E16 Rings")
+        let status = model.status
+        let live = !status.sendTargets.isEmpty
+        VStack(alignment: .leading, spacing: 12) {
+            Text("OXI E16")
                 .font(.headline)
             Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 10, verticalSpacing: 8) {
                 GridRow {
-                    Text("Brightness")
-                        .frame(width: 110, alignment: .trailing)
-                    Slider(value: Binding(
-                        get: { Self.shown(model.status.e16Brightness) },
-                        set: { model.setE16Brightness(Self.brightness(shown: $0)) }), in: Self.shownRange)
-                        .frame(width: 200)
-                    Text("\(Int(Self.shown(model.status.e16Brightness).rounded()))")
-                        .monospacedDigit()
-                        .frame(width: 40, alignment: .trailing)
+                    label("Layout")
+                    Picker("Layout", selection: Binding(
+                        get: { model.status.e16FourChannelStrips },
+                        set: { model.engine.setE16Layout(fourChannelStrips: $0) })) {
+                        Text("16 channels").tag(false)
+                        Text("Channel strips").tag(true)
+                    }
+                    .labelsHidden()
+                    .frame(width: 200, alignment: .leading)
+                }
+                if status.e16FourChannelStrips {
+                    ForEach(0..<2, id: \.self) { row in
+                        GridRow {
+                            label(row == 0 ? "Send A" : "Send B")
+                            Picker(row == 0 ? "Send A" : "Send B", selection: selection(row)) {
+                                if selection(row).wrappedValue == nil {
+                                    Text("None").tag(Int?.none)
+                                }
+                                ForEach(choices(row), id: \.output) { choice in
+                                    Text(choice.name).tag(Int?.some(choice.output))
+                                }
+                            }
+                            .labelsHidden()
+                            .frame(width: 200, alignment: .leading)
+                            .disabled(!live)
+                        }
+                    }
+                    if !live {
+                        GridRow {
+                            Color.clear
+                                .gridCellUnsizedAxes([.horizontal, .vertical])
+                            Text("The outputs come from TotalMix FX. Open it to choose them here.")
+                                .font(.callout)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+                GridRow {
+                    label("Meters")
+                    Toggle("Show under the channel names", isOn: Binding(
+                        get: { model.status.e16Meters },
+                        set: { model.setE16Meters($0) }))
+                        .frame(minHeight: Self.rowHeight)
+                }
+                GridRow {
+                    label("Ring brightness")
+                    HStack {
+                        Slider(value: Binding(
+                            get: { Self.shown(model.status.e16Brightness) },
+                            set: { model.setE16Brightness(Self.brightness(shown: $0)) }), in: Self.shownRange)
+                            .frame(width: 200)
+                        Text("\(Int(Self.shown(model.status.e16Brightness).rounded()))")
+                            .monospacedDigit()
+                            .frame(width: 32, alignment: .trailing)
+                    }
+                    .frame(minHeight: Self.rowHeight)
                 }
             }
-            Text("Sets how bright full-brightness E16 encoder rings are.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
         }
+    }
+
+    /// A row label, right-aligned in its column, in the width every Settings row shares.
+    private func label(_ text: String) -> some View {
+        Text(text)
+            .frame(width: 110, alignment: .trailing)
+    }
+
+    /// The outputs a send row can feed: every send target except the other row's.
+    private func choices(_ row: Int) -> [HomeChoice] {
+        let sends = model.status.e16Sends
+        let others = Set(sends.indices.filter { $0 != row }.compactMap { sends[$0] })
+        return model.status.sendTargets.filter { !others.contains($0.output) }
+    }
+
+    private func selection(_ row: Int) -> Binding<Int?> {
+        Binding(
+            get: { model.status.e16Sends.indices.contains(row) ? model.status.e16Sends[row] : nil },
+            set: { output in if let output { model.engine.setE16Send(row: row, to: output) } })
     }
 }
 
@@ -419,11 +508,11 @@ struct LaunchControlSendRowsView: View {
     var body: some View {
         let status = model.status
         let live = !status.sendTargets.isEmpty
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 12) {
             // A heading of its own, so the menus can list plain output names (Adam, 2026-11-01). On
             // the Launch Control 3 the row can be Pan, so it is named for the row (UI review of
             // 2026-11-02).
-            Text(chosen == .lc3 ? "Top Encoder Row" : "Sends")
+            Text(chosen.name)
                 .font(.headline)
             Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 10, verticalSpacing: 8) {
                 ForEach(0..<rowCount, id: \.self) { row in
@@ -437,58 +526,50 @@ struct LaunchControlSendRowsView: View {
                                 // An XL 3 row with no output left to feed (review of 2026-11-02).
                                 Text("None").tag(Int?.none)
                             }
-                            // On the Launch Control 3 the row is pan or a send, so the sends carry
-                            // the "> " that marks a send (Adam, 2026-11-02); the XL 3's rows are
-                            // always sends, under the "Sends" heading (Adam, 2026-11-01).
+                            // Each output carries the "> " that marks a send (Adam, 2026-11-02 for
+                            // the Launch Control 3, where a row can also be pan; 2026-11-07 for the
+                            // XL 3, since the box is headed by the model, not "Sends").
                             ForEach(choices(row), id: \.output) { choice in
                                 Text(choiceTitle(choice.name))
                                     .tag(Int?.some(choice.output))
                             }
                         }
                         .labelsHidden()
+                        .frame(width: 200, alignment: .leading)
                         .disabled(!live)
                     }
                 }
+                // Only what Settings can't do without: why the menus are greyed out. What Page,
+                // the colors, and the brightness setting do is in the Controls Guide (UI review
+                // of 2026-11-07, as for the E16).
+                if !live {
+                    GridRow {
+                        Color.clear
+                            .gridCellUnsizedAxes([.horizontal, .vertical])
+                        Text("The outputs come from TotalMix FX. Open it to choose them here.")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                // Off by default (Adam, 2026-11-02); takes effect at once, like the send rows.
+                GridRow {
+                    Text("Levels")
+                        .frame(width: 110, alignment: .trailing)
+                    Toggle("Show by brightness", isOn: Binding(
+                        get: { model.status.launchControlLevelBrightness },
+                        set: { model.setLevelBrightness($0) }))
+                        .frame(minHeight: E16SettingsView.rowHeight)
+                }
             }
-            VStack(alignment: .leading, spacing: 10) {
-                Text(live
-                     ? "Changes here take effect at once."
-                     : "The outputs come from TotalMix FX. Open it to choose them here.")
-                    .fixedSize(horizontal: false, vertical: true)
-                Text(chosen == .lc3
-                     ? "Page ▲ and ▼ on the Launch Control also step the top row through Pan and the outputs."
-                     : "Page ▲ and ▼ on the Launch Control step the top row; Shift + Page steps the middle row. The two rows never feed the same output.")
-                    .fixedSize(horizontal: false, vertical: true)
-                Text(chosen == .lc3
-                     ? "As a send, the row lights in its output’s color from TotalMix FX, or teal for an output left white."
-                     : "Each row lights in its output’s color from TotalMix FX. An output left white shows teal on the top row and magenta on the middle row; give each headphone output its own color in TotalMix FX to tell them apart.")
-                    .fixedSize(horizontal: false, vertical: true)
-                Text("The outputs follow the order of the Outputs list on the Channel Layout tab.")
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .font(.callout)
-            .foregroundStyle(.secondary)
-
-            // Off by default (Adam, 2026-11-02); takes effect at once, like the send rows.
-            Toggle("Show levels by brightness", isOn: Binding(
-                get: { model.status.launchControlLevelBrightness },
-                set: { model.setLevelBrightness($0) }))
-                .padding(.top, 6)
-            Text(chosen == .lc3
-                 ? "The level and send encoders dim with their levels and go dark at −oo. Pan keeps full brightness."
-                 : "The send encoders dim with their levels and go dark at −oo. Pan keeps full brightness; the faders have no lights.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
     private var rowCount: Int { LaunchControlSendRows.rowCount(chosen) }
 
-    /// An output's title in a row's menu: "> Phones 1" on the Launch Control 3, where the row can
-    /// also be Pan; the plain name on the XL 3, under the "Sends" heading.
+    /// An output's title in a row's menu: "> Phones 1", a send to it, on both models.
     private func choiceTitle(_ name: String) -> String {
-        chosen == .lc3 ? LaunchControlDriver.sendLabel(name) : name
+        LaunchControlDriver.sendLabel(name)
     }
 
     /// The output each of the chosen model's rows feeds now, as the engine reports it.

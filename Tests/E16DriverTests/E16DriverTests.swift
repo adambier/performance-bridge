@@ -197,7 +197,7 @@ final class E16DriverTests: XCTestCase {
         let position = 0.5 + 4 * E16Driver.levelStep
         XCTAssertEqual(step.core.messages.first?.arguments.first, .float(Float(position)))
         XCTAssertEqual(step.midi.rings[1]?.amount, Int((E16Driver.levelAmount(position) * 16383).rounded()))
-        XCTAssertEqual(step.midi.lastTitle, "Vox " + ValueText.level(position: position))
+        XCTAssertEqual(squeezed(step.midi.lastTitle), "Vox " + ValueText.level(position: position))
         // The title goes back to the function after a second.
         XCTAssertEqual(driver.tick(hub: &hub, now: 1.5).midi, [])
         XCTAssertNil(driver.tick(hub: &hub, now: 1.5).midi.lastTitle)
@@ -207,8 +207,8 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(down.core.messages.first?.arguments.first, .float(Float(position - 8 * E16Driver.levelStep)))
         for _ in 0..<40 { _ = driver.receive([0xB0, 2, 0x78], hub: &hub, now: 3) }
         let bottom = driver.receive([0xB0, 2, 0x78], hub: &hub, now: 4)
-        XCTAssertEqual(bottom.core.messages.first?.arguments.first, .float(0))
-        XCTAssertEqual(driver.title(hub: hub), "Vox -oo")
+        XCTAssertTrue(bottom.core.messages.isEmpty, "at the bottom already: nothing more is sent (review, 2026-11-07)")
+        XCTAssertEqual(squeezed(driver.title(hub: hub)), "Vox -oo dB")
         XCTAssertEqual(driver.look(1, hub: hub).ring.amount, 1.0 / 16, "one LED at -oo")
     }
 
@@ -296,26 +296,31 @@ final class E16DriverTests: XCTestCase {
         XCTAssertNil(unmute.midi.leds[0], "no marks")
     }
 
-    /// Push-and-turn is pan (level in PAN mode), and cancels the push: no mute on release, no
-    /// PFL however long it is held (test 6; Adam, 2026-11-05).
-    func testPushAndTurnPansAndCancelsThePush() {
+    /// Push-and-turn jumps to the next stop the way it turns, after `jumpUnits` one way, and
+    /// cancels the push: no mute on release, no PFL however long it is held (test 6; Adam,
+    /// 2026-11-05 and 2026-11-06).
+    func testPushAndTurnJumpsAndCancelsThePush() {
         var (driver, hub, _) = connected()
+        let unity = Float(FaderCurve.unityPosition)
         _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 1)  // push Vox
-        let turn = driver.receive([0xB0, 2, UInt8(E16Driver.panCenterUnits + 1)], hub: &hub, now: 1.1)  // past the sticky center
-        XCTAssertEqual(turn.core.messages.map(\.address), ["/mix/in/2/0/balpan"], "pan, in LEVEL mode")
-        XCTAssertEqual(turn.midi.rings[1]?.bipolar, true, "the ring shows the pan")
-        XCTAssertEqual(turn.midi.rings[1].map { [$0.r, $0.g, $0.b] }, [127, 0, 0], "red off center, however little")
-        let shown = Double(turn.midi.rings[1]?.amount ?? 8192) / 16383
-        XCTAssertGreaterThanOrEqual(abs(shown - 0.5), E16Driver.panMinimumOffset - 0.001, "and at least one LED from the top")
+        XCTAssertEqual(driver.receive([0xB0, 2, 0x01], hub: &hub, now: 1.1).core.messages, [], "one unit: no jump")
+        XCTAssertEqual(driver.receive([0xB0, 2, 0x7F], hub: &hub, now: 1.15).core.messages, [], "a unit back starts again")
+        _ = driver.receive([0xB0, 2, 0x01], hub: &hub, now: 1.2)
+        let up = driver.receive([0xB0, 2, 0x01], hub: &hub, now: 1.25)
+        XCTAssertEqual(up.core.messages.map(\.address), ["/mix/in/2/0/faderlin"], "the level, in LEVEL mode")
+        XCTAssertEqual(up.core.messages.first?.arguments.first, .float(unity), "to 0 dB")
         XCTAssertTrue(driver.title(hub: hub).hasPrefix("Vox "), "and the title its value")
+        XCTAssertEqual(driver.receive([0xB0, 2, 0x02], hub: &hub, now: 1.3).core.messages, [], "held at 0 dB by the pause")
         XCTAssertEqual(driver.tick(hub: &hub, now: 1.5).midi, [], "no countdown")
         let late = driver.tick(hub: &hub, now: 2.2)
         XCTAssertFalse(late.core.messages.contains { $0.address.hasSuffix("/pfl") }, "no PFL after a second")
-        let up = driver.receive([0x80, 1, 0x00], hub: &hub, now: 2.3)
-        XCTAssertEqual(up.core.messages, [], "no mute on release")
-        XCTAssertEqual(up.midi.rings[1]?.bipolar, false, "the ring back to the level")
-        // A plain turn is the level again.
-        XCTAssertEqual(driver.receive([0xB0, 2, 0x01], hub: &hub, now: 2.5).core.messages.map(\.address), ["/mix/in/2/0/faderlin"])
+        let down = driver.receive([0xB0, 2, 0x7E], hub: &hub, now: 2.25)  // two units down at once
+        XCTAssertEqual(down.core.messages.first?.arguments.first, .float(0), "to off")
+        let release = driver.receive([0x80, 1, 0x00], hub: &hub, now: 2.3)
+        XCTAssertEqual(release.core.messages, [], "no mute on release")
+        // A plain turn is a plain turn again.
+        XCTAssertEqual(driver.receive([0xB0, 2, 0x01], hub: &hub, now: 2.5).core.messages.first?.arguments.first,
+                       .float(Float(E16Driver.levelStep)))
         // A turn after the countdown has begun cancels it.
         _ = driver.receive([0x90, 2, 0x7F], hub: &hub, now: 3)  // push Gtr
         _ = driver.tick(hub: &hub, now: 3.4)
@@ -323,11 +328,50 @@ final class E16DriverTests: XCTestCase {
         _ = driver.receive([0xB0, 3, 0x01], hub: &hub, now: 3.5)
         XCTAssertFalse(driver.title(hub: hub).contains("PFL"))
         XCTAssertEqual(driver.receive([0x80, 2, 0x00], hub: &hub, now: 4.5).core.messages, [])
-        // In PAN mode, push-and-turn is the level.
+        // In PAN mode, it jumps the pan: center, then hard right.
         _ = driver.receive([0x90, 16, 0x7F, 0x90, 1, 0x7F, 0x80, 1, 0x00, 0x90, 16, 0x00], hub: &hub, now: 5)  // Shift + 2
         XCTAssertEqual(driver.function, .pan)
         _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 6)
-        XCTAssertEqual(driver.receive([0xB0, 2, 0x01], hub: &hub, now: 6.1).core.messages.map(\.address), ["/mix/in/2/0/faderlin"])
+        let right = driver.receive([0xB0, 2, 0x02], hub: &hub, now: 6.1)
+        XCTAssertEqual(right.core.messages.map(\.address), ["/mix/in/2/0/balpan"])
+        XCTAssertEqual(right.core.messages.first?.arguments.first, .float(1), "hard right")
+        let center = driver.receive([0xB0, 2, 0x7E], hub: &hub, now: 6.5)
+        XCTAssertEqual(center.core.messages.first?.arguments.first, .float(0), "back to center")
+        let left = driver.receive([0xB0, 2, 0x7E], hub: &hub, now: 6.9)
+        XCTAssertEqual(left.core.messages.first?.arguments.first, .float(-1), "hard left")
+    }
+
+    /// Each stop is sticky: after a jump the turn must pause, as at a pan's center (Adam,
+    /// 2026-11-06), so a fast turn from above 0 dB stops at 0 dB.
+    func testJumpsPauseAtEachStop() {
+        var (driver, hub, _) = connected()
+        let pause = E16Driver.jumpPauseDefault
+        _ = driver.receive([0xB0, 2, 0x3F, 0xB0, 2, 0x3F, 0xB0, 2, 0x3F], hub: &hub, now: 0.5)  // Vox above 0 dB
+        _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 1)
+        let down = driver.receive([0xB0, 2, 0x7E], hub: &hub, now: 1.1)
+        XCTAssertEqual(down.core.messages.first?.arguments.first, .float(Float(FaderCurve.unityPosition)), "to 0 dB first")
+        var t = 1.1
+        for _ in 0..<100 {  // a fast turn keeps coming, 5 ms apart, for longer than the pause
+            t += 0.005
+            XCTAssertEqual(driver.receive([0xB0, 2, 0x7E], hub: &hub, now: t).core.messages, [], "held at 0 dB")
+        }
+        let on = driver.receive([0xB0, 2, 0x7E], hub: &hub, now: t + pause + 0.01)
+        XCTAssertEqual(on.core.messages.first?.arguments.first, .float(0), "after a pause, on to off")
+    }
+
+    func testJumpStops() {
+        let unity = FaderCurve.unityPosition
+        let stops = E16Driver.jumpStops(pan: false)
+        XCTAssertEqual(E16Driver.nextStop(from: 0.3, direction: 1, stops: stops, tolerance: 0.001), unity)
+        XCTAssertEqual(E16Driver.nextStop(from: 0.3, direction: -1, stops: stops, tolerance: 0.001), 0)
+        XCTAssertEqual(E16Driver.nextStop(from: 0.95, direction: -1, stops: stops, tolerance: 0.001), unity, "above 0 dB: down to 0 dB first")
+        XCTAssertEqual(E16Driver.nextStop(from: 0.95, direction: 1, stops: stops, tolerance: 0.001), 1, "up to +6 dB")
+        XCTAssertEqual(E16Driver.nextStop(from: unity + 0.0005, direction: 1, stops: stops, tolerance: 0.001), 1, "at 0 dB, within the tolerance: on to +6 dB")
+        XCTAssertNil(E16Driver.nextStop(from: 1, direction: 1, stops: stops, tolerance: 0.001), "nothing past the top")
+        XCTAssertNil(E16Driver.nextStop(from: 0, direction: -1, stops: stops, tolerance: 0.001))
+        let pans = E16Driver.jumpStops(pan: true)
+        XCTAssertEqual(E16Driver.nextStop(from: 0.2, direction: 1, stops: pans, tolerance: 0.001), 0.5)
+        XCTAssertEqual(E16Driver.nextStop(from: 0.5, direction: 1, stops: pans, tolerance: 0.001), 1)
     }
 
     func testMuteAndPFLTogether() {
@@ -351,8 +395,8 @@ final class E16DriverTests: XCTestCase {
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(shift.midi.lastTitle, "LEVEL", "the title stays")
         XCTAssertEqual(shift.midi.lastLabels, ["LVL", "PAN", "SEND", "", "", "", "", "",
-                                               "", "", "<SND", "SND>", "", "", "", ""],
-                       "one page: no page arrows")
+                                               "Phon", "", "", "", "16CH", "STRP", "", ""],
+                       "one page: no page arrows; one send output: no send arrows, in any mode")
         let rings = shift.midi.rings
         XCTAssertEqual(rings[0]?.g, 127, "LEVEL, in use: white at the driver's brightness (1 in the tests)")
         XCTAssertEqual(rings[0]?.amount, 16383)
@@ -360,8 +404,8 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(rings[1]?.b, 2)
         XCTAssertEqual(rings[1]?.amount, 16383)
         XCTAssertEqual(rings[2]?.g, 2, "SEND: green at the available level")
-        XCTAssertEqual(rings[10]?.g, 2, "either arrow enters SEND mode at the last output used")
-        XCTAssertEqual(rings[11]?.g, 2)
+        XCTAssertNil(rings[10], "the arrows step from the output named beside them, in every mode: none before Phones")
+        XCTAssertNil(rings[11], "nor after it")
         XCTAssertEqual(rings[3]?.amount, 0, "a blank is dark")
         XCTAssertNil(rings[14], "no pages: an empty strip's ring was dark already")
         // A turn does nothing on the Shift page.
@@ -384,13 +428,13 @@ final class E16DriverTests: XCTestCase {
         _ = driver.receive([0x80, 2, 0x00], hub: &hub, now: 1.28)
         _ = driver.receive([0x90, 0, 0x7F, 0x80, 0, 0x00], hub: &hub, now: 1.29)  // back to LEVEL
         _ = driver.receive([0x90, 1, 0x7F, 0x80, 1, 0x00], hub: &hub, now: 1.295)  // and PAN, as before
-        // Next output: the only send, Phones; the arrow enters SEND mode.
-        let out = driver.receive([0x90, 11, 0x7F, 0x80, 11, 0x00], hub: &hub, now: 1.3)
+        // SEND: the only send, Phones.
+        let out = driver.receive([0x90, 2, 0x7F, 0x80, 2, 0x00], hub: &hub, now: 1.3)
         XCTAssertEqual(driver.function, .send(0))
         XCTAssertEqual(out.midi.lastTitle, "> PHONES")
         XCTAssertEqual(out.midi.rings[2]?.g, 60, "SEND in use")
-        XCTAssertEqual(out.midi.rings[11]?.amount, 0, "no next output: dark once released")
-        XCTAssertEqual(out.midi.rings[10]?.amount, 0, "no previous output either")
+        XCTAssertNil(out.midi.rings[11], "no next output: the arrow stays dark")
+        XCTAssertNil(out.midi.rings[10], "no previous output either")
         XCTAssertEqual(driver.receive([0x90, 11, 0x7F, 0x80, 11, 0x00], hub: &hub, now: 1.4).core.messages, [])
         XCTAssertEqual(driver.function, .send(0), "stays at the last output")
         // Release: the strips come back, in the send's color (white, Phones is white) and values.
@@ -413,11 +457,35 @@ final class E16DriverTests: XCTestCase {
         var (driver, hub, _) = connected()
         _ = driver.receive([0x90, 16, 0x7F, 0x90, 1, 0x7F, 0x80, 1, 0x00, 0x90, 16, 0x00], hub: &hub, now: 1)
         XCTAssertEqual(driver.function, .pan)
-        let step = driver.receive([0xB0, 1, UInt8(E16Driver.panCenterUnits + 2)], hub: &hub, now: 2)  // two units past center
+        let step = driver.receive([0xB0, 1, UInt8(E16Driver.panCenterUnits + 2)], hub: &hub, now: 2)  // leaves center: one step
         XCTAssertEqual(step.core.messages.map(\.address), ["/mix/in/0/0/balpan"])
-        XCTAssertEqual(step.core.messages.first?.arguments.first, .float(Float(2 * E16Driver.panStep * 2)))
-        XCTAssertEqual(step.midi.lastTitle, "Keys R2")
+        XCTAssertEqual(step.core.messages.first?.arguments.first, .float(Float(2 * E16Driver.panStep)))  // R1, on TotalMix FX's −1…1
+        XCTAssertEqual(squeezed(step.midi.lastTitle), "Keys R1")
         XCTAssertEqual(step.midi.rings[0]?.bipolar, true)
+    }
+
+    /// The layout and meters set from the app (phase 2): a connected device switches as with its
+    /// Shift page's buttons; one not yet connected has its layers swapped in the hub.
+    func testLayoutAndMetersFromTheApp() {
+        var (driver, hub, _) = connected()
+        let step = driver.setLayout(.four, hub: &hub, now: 5)
+        XCTAssertEqual(driver.layout, .four)
+        XCTAssertFalse(step.midi.isEmpty, "a connected device is drawn afresh")
+        XCTAssertNotNil(hub.mode(of: driver.id(.sendA)))
+        XCTAssertNil(hub.mode(of: driver.id(.main)))
+        XCTAssertTrue(driver.setLayout(.four, hub: &hub, now: 6).midi.isEmpty, "the layout in use: nothing")
+        XCTAssertFalse(driver.showsMeters)
+        _ = driver.setShowsMeters(true, hub: hub)
+        XCTAssertTrue(driver.showsMeters)
+        XCTAssertTrue(driver.setShowsMeters(true, hub: hub).isEmpty, "no change, nothing sent")
+
+        var waiting = SurfaceHub()
+        var other = E16Driver(name: "e16")
+        _ = other.start(hub: &waiting, now: 0)
+        XCTAssertTrue(other.setLayout(.four, hub: &waiting, now: 1).midi.isEmpty, "nothing to draw until the device answers")
+        XCTAssertEqual(other.layout, .four)
+        XCTAssertNotNil(waiting.mode(of: other.id(.level)))
+        XCTAssertNil(waiting.mode(of: other.id(.main)))
     }
 
     func testPanCenterIsSticky() {
@@ -431,29 +499,37 @@ final class E16DriverTests: XCTestCase {
             _ = driver.receive([0xB0, encoder, UInt8(delta < 0 ? 128 + delta : delta)], hub: &hub, now: clock)
             return driver.title(hub: hub)
         }
-        XCTAssertEqual(turn(units), "Keys C", "held at center for \(units) units")
-        XCTAssertEqual(turn(1), "Keys R1", "the next unit moves it")
-        XCTAssertEqual(turn(-8), "Keys C", "a fast turn back stops at center")
-        XCTAssertEqual(turn(-(units - 1)), "Keys C")
-        XCTAssertEqual(turn(2), "Keys C", "a turn the other way starts the count again")
-        XCTAssertEqual(turn(units - 1), "Keys R1", "\(units + 1) units that way, in all")
-        XCTAssertEqual(turn(8), "Keys R9")
-        XCTAssertEqual(turn(-20), "Keys C", "crossing from the right stops at center too")
-        XCTAssertEqual(turn(-(units + 3)), "Keys L3")
+        XCTAssertEqual(squeezed(turn(units)), "Keys C", "held at center for \(units) units")
+        XCTAssertEqual(squeezed(turn(1)), "Keys R1", "the next unit moves it")
+        XCTAssertEqual(squeezed(turn(-8)), "Keys C", "a fast turn back stops at center")
+        XCTAssertEqual(squeezed(turn(-(units - 1))), "Keys C")
+        XCTAssertEqual(squeezed(turn(2)), "Keys C", "a turn the other way starts the count again")
+        XCTAssertEqual(squeezed(turn(units - 1)), "Keys R1", "\(units + 1) units that way, in all")
+        XCTAssertEqual(squeezed(turn(8)), "Keys R9")
+        XCTAssertEqual(squeezed(turn(-20)), "Keys C", "crossing from the right stops at center too")
+        XCTAssertEqual(squeezed(turn(-(units + 3))), "Keys L1", "the units beyond the count don't carry: one step")
+        XCTAssertEqual(squeezed(turn(-2)), "Keys L3", "away from center, every unit counts")
         // A fast turn is a burst of messages: the rest of the burst is ignored at center, and
         // the count starts only after a pause (Adam, 14:56: a fast turn went straight through).
         _ = turn(-22)
-        XCTAssertEqual(driver.title(hub: hub), "Keys L25")
+        XCTAssertEqual(squeezed(driver.title(hub: hub)), "Keys L25")
         for _ in 0..<10 { _ = turn(8, gap: 0.02) }
-        XCTAssertEqual(driver.title(hub: hub), "Keys C", "a burst from L25 stops at center")
-        XCTAssertEqual(turn(8, gap: driver.panCenterPause - 0.01), "Keys C", "still the same turn")
-        XCTAssertEqual(turn(units + 1, gap: driver.panCenterPause + 0.01), "Keys R1", "after a pause, the count")
+        XCTAssertEqual(squeezed(driver.title(hub: hub)), "Keys C", "a burst from L25 stops at center")
+        XCTAssertEqual(squeezed(turn(8, gap: driver.panCenterPause - 0.01)), "Keys C", "still the same turn")
+        XCTAssertEqual(squeezed(turn(units + 1, gap: driver.panCenterPause + 0.01)), "Keys R1", "after a pause, the count")
         // Amounts side by side, for trying them: encoder 2 (index 1) takes the second.
         driver.panCenterTrial = [0, 8]
-        XCTAssertEqual(turn(-8), "Keys C", "crossing still stops at center")
-        XCTAssertEqual(turn(-2), "Keys L2", "encoder 1 takes 0: no units held")
+        XCTAssertEqual(squeezed(turn(-8)), "Keys C", "crossing still stops at center")
+        XCTAssertEqual(squeezed(turn(-2)), "Keys L1", "encoder 1 takes 0: no units held, and one step")
         XCTAssertTrue(turn(8, encoder: 2).hasSuffix(" C"), "encoder 2 held for 8 units")
         XCTAssertTrue(turn(1, encoder: 2).hasSuffix(" R1"))
+        // How a pan leaves center, side by side: encoder 2 carries the units beyond the count.
+        driver.panCenterTrial = []
+        driver.panLeaveTrial = [true, false]
+        _ = turn(-8, encoder: 2)
+        XCTAssertTrue(turn(units + 3, encoder: 2).hasSuffix(" R3"), "carried: 3 units past the count")
+        XCTAssertEqual(squeezed(turn(8)), "Keys C", "from L1, back to center")
+        XCTAssertEqual(squeezed(turn(units + 3)), "Keys R1", "encoder 1: one step")
         // A level has no sticky point.
         _ = driver.receive([0x90, 16, 0x7F, 0x90, 0, 0x7F, 0x80, 0, 0x00, 0x90, 16, 0x00], hub: &hub, now: clock + 1)  // LEVEL
         let level = driver.receive([0xB0, 1, 0x01], hub: &hub, now: clock + 1.1)
@@ -519,7 +595,7 @@ final class E16DriverTests: XCTestCase {
         XCTAssertNil(driver.tick(hub: &hub, now: 1.3).midi.rings[1], "still: a rotation step sends nothing")
         _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 2)
         let clear = driver.receive([0x80, 1, 0x00], hub: &hub, now: 2.1)
-        XCTAssertEqual(clear.midi.lastTitle, "Vox MUTE CLR")
+        XCTAssertEqual(clear.midi.lastTitle, "Vox MUTE OFF", "off is off, whatever Mute Master says")
         _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 3)
         XCTAssertEqual(driver.receive([0x80, 1, 0x00], hub: &hub, now: 3.1).midi.lastTitle, "Vox MUTE SET")
     }
@@ -536,6 +612,14 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(shift.midi.rings[1]?.r, 2, "available: 2, whatever the brightness")
         let down = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 1.1)
         XCTAssertEqual(down.midi.rings[1]?.r, 127, "pressed: 127, whatever the brightness")
+        // The button in use never below `inUseFloor` (Adam, 2026-11-07), and it follows the setting.
+        _ = driver.receive([0x80, 1, 0x00, 0x80, 16, 0x00], hub: &hub, now: 1.2)
+        _ = driver.setBrightness(0.03, hub: hub)
+        let low = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1.3)
+        XCTAssertEqual(low.midi.rings[1]?.r, UInt8(E16Driver.inUseFloorDefault), "PAN, now in use, at 3%: the floor, not 4")
+        // It pulses down to the available level and back, a period after Shift went down.
+        XCTAssertEqual(driver.tick(hub: &hub, now: 1.3 + E16Driver.pulsePeriodDefault / 2).midi.rings[1]?.r, UInt8(2 + E16Driver.pulseTroughRaiseDefault), "half a pulse: the trough, the available 2")
+        XCTAssertEqual(driver.tick(hub: &hub, now: 1.3 + E16Driver.pulsePeriodDefault).midi.rings[1]?.r, UInt8(E16Driver.inUseFloorDefault), "a whole pulse: bright again")
     }
 
     func testTheHostDrawnScreen() {
@@ -557,7 +641,7 @@ final class E16DriverTests: XCTestCase {
         XCTAssertTrue(art[14].dropFirst(32).hasPrefix("...####"), "the second column's label 3 px into its cell (P's top)")
         XCTAssertFalse(art[7].contains("#") || art[8].contains("#") || art[9].contains("#") || art[11].contains("#") || art[12].contains("#") || art[13].contains("#"), "three clear lines above and below the rule")
         XCTAssertTrue(art[20].contains("#") && !art[21].contains("#"), "the first row is 7 pixels tall")
-        XCTAssertTrue(!art[55].contains("#") && art[56].contains("#") && art[62].contains("#"), "the fourth row at 56, 14 pixels per row")
+        XCTAssertTrue(!art[52].contains("#") && art[53].contains("#") && art[59].contains("#"), "the fourth row at 53, 13 pixels per row")
         XCTAssertTrue(E16Driver.screen(title: "LEVEL", labels: []).art.split(separator: "\n")[0].hasSuffix("........"), "no tail")
         XCTAssertEqual(E16Driver.ShiftButton.output(1).longLabel, "SEND>")
     }
@@ -643,4 +727,396 @@ final class E16DriverTests: XCTestCase {
         XCTAssertLessThanOrEqual(E16Screen.width(of: "P11/12"), w)
     }
 
+}
+
+/// The 4-channel layout (Adam, 2026-11-05): `loadedHub()` with two more outputs, 4/5 ("Mon",
+/// blue) and 6/7 ("Room"), so the send targets are outputs 3/4, 5/6… as indices: Phones (2), Mon
+/// (4), and Room (6).
+private func fourHub() -> SurfaceHub {
+    var hub = loadedHub()
+    var events: [TotalMixEvent] = []
+    for (number, name, color) in [(4, "Mon", 5), (6, "Room", 1)] {
+        events.append(.channel(bus: .output, channel: number, parameter: "stereo", value: .number(1)))
+        events.append(.channel(bus: .output, channel: number, parameter: "name", value: .text(name)))
+        events.append(.channel(bus: .output, channel: number, parameter: "color", value: .number(Double(color))))
+        events.append(.channel(bus: .output, channel: number, parameter: "faderlin", value: .number(0.6)))
+        for (bus, channel) in [(TotalMixBus.input, 0), (.input, 2), (.input, 3), (.playback, 0)] {
+            events.append(.mix(bus: bus, channel: channel, output: number, parameter: "faderlin", value: .number(0.5)))
+        }
+    }
+    for event in events { _ = hub.handle(event, now: 0) }
+    return hub
+}
+
+private func connectedFour() -> (driver: E16Driver, hub: SurfaceHub, midi: [UInt8]) {
+    var hub = fourHub()
+    var driver = E16Driver(name: "e16", layout: .four)
+    driver.brightness = 1
+    driver.drawsScreen = false
+    let start = driver.start(hub: &hub, now: 0)
+    let answer = driver.receive(ack, hub: &hub, now: 0)
+    return (driver, hub, start.midi + answer.midi)
+}
+
+final class E16FourLayoutTests: XCTestCase {
+    /// Encoder 13 on the Shift page switches layouts (Adam, 2026-11-06): to 4 channel strips at
+    /// the row holding the channel last turned, and back at the page holding the four.
+    /// A press that reaches the last page keeps its flash until release (Adam, 2026-11-06).
+    func testAnArrowReachingTheEndFlashesUntilRelease() {
+        var hub = fourHub()
+        for n in 4..<8 {
+            for (parameter, value) in [("stereo", TotalMixValue.number(0)), ("name", .text("In\(n)")), ("color", .number(1))] {
+                _ = hub.handle(.channel(bus: .input, channel: n, parameter: parameter, value: value), now: 0)
+            }
+        }
+        var driver = E16Driver(name: "e16", layout: .four)
+        driver.brightness = 1
+        _ = driver.start(hub: &hub, now: 0)
+        _ = driver.receive(ack, hub: &hub, now: 0)
+        _ = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
+        let down = driver.receive([0x90, 15, 0x7F], hub: &hub, now: 2)  // to the last page
+        XCTAssertEqual(down.midi.rings[15].map { [$0.r, $0.g, $0.b] }, [0, 0, 127], "the flash")
+        let up = driver.receive([0x80, 15, 0x00], hub: &hub, now: 2.2)
+        XCTAssertEqual(up.midi.rings[15]?.amount, 0, "then dark: nowhere further")
+        let again = driver.receive([0x90, 15, 0x7F], hub: &hub, now: 3)
+        XCTAssertNil(again.midi.rings[15], "an unavailable arrow stays dark when pressed")
+    }
+
+    func testLayoutSwitch() {
+        XCTAssertEqual(E16Driver.shiftSpans(.four), [0, 4], "the send names left-aligned")
+        XCTAssertEqual(E16Driver.shiftSpans(.sixteen), [8], "the layout labels centered, like the modes")
+        var hub = loadedHub()
+        for n in 4..<10 {
+            for (parameter, value) in [("stereo", TotalMixValue.number(0)), ("name", .text("In\(n)")), ("color", .number(1))] {
+                _ = hub.handle(.channel(bus: .input, channel: n, parameter: parameter, value: value), now: 0)
+            }
+        }
+        var driver = E16Driver(name: "e16")
+        driver.brightness = 1
+        driver.drawsScreen = false
+        _ = driver.start(hub: &hub, now: 0)
+        let first = driver.receive(ack, hub: &hub, now: 0).midi.lastLabels ?? []
+        XCTAssertEqual(first.count, 16)
+        _ = driver.receive([0xB0, 6, 0x01], hub: &hub, now: 1)  // turn the seventh channel
+        let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 2)
+        XCTAssertEqual(shift.midi.lastLabels.map { Array($0[12...13]) }, ["16CH", "STRP"], "a button for each layout")
+        XCTAssertEqual(shift.midi.rings[12].map { [$0.r, $0.g, $0.b] }, [127, 85, 0], "the layout in use, lit in full")
+        XCTAssertEqual(shift.midi.rings[13].map { [$0.r, $0.g, $0.b] }, [3, 2, 0], "the other, dim, and still yellow (2, 1, 0 read as orange)")
+        XCTAssertEqual(driver.receive([0x90, 12, 0x7F, 0x80, 12, 0x00], hub: &hub, now: 2.05).core.messages, [])
+        XCTAssertEqual(driver.layout, .sixteen, "the layout in use: nothing")
+        let press = driver.receive([0x90, 13, 0x7F], hub: &hub, now: 2.1)
+        XCTAssertEqual(driver.layout, .four)
+        XCTAssertEqual(press.midi.rings[13].map { [$0.r, $0.g, $0.b] }, [127, 85, 0], "Shift still held: now 4 lit")
+        _ = driver.receive([0x80, 13, 0x00], hub: &hub, now: 2.2)
+        let four = driver.receive([0x80, 16, 0x00], hub: &hub, now: 2.3).midi.lastLabels ?? []
+        XCTAssertEqual(Array(four[12..<16]), Array(first[4..<8]), "the row holding the channel turned")
+        XCTAssertFalse(driver.receive([0xB0, 13, 0x01], hub: &hub, now: 3).core.messages.isEmpty, "a level turns")
+        _ = driver.receive([0x90, 16, 0x7F, 0x90, 12, 0x7F, 0x80, 12, 0x00], hub: &hub, now: 4)
+        XCTAssertEqual(driver.layout, .sixteen)
+        let back = driver.receive([0x80, 16, 0x00], hub: &hub, now: 4.1).midi.lastLabels ?? []
+        XCTAssertEqual(Array(back[0..<8]), Array(first[0..<8]), "the page holding the four")
+    }
+
+    func testColumnsAndRows() {
+        let (driver, hub, midi) = connectedFour()
+        XCTAssertEqual(hub.sendTargets, [2, 4, 6])
+        XCTAssertEqual(driver.currentSendOutputs(hub: hub), [2, 4], "A and B take the first two outputs")
+        XCTAssertEqual(midi.lastTitle, "A>PHO B>MON")
+        let labels = midi.lastLabels ?? []
+        let half = E16Driver.shortLevel(0.5, width: nil)
+        XCTAssertEqual(Array(labels[0..<8]), Array(repeating: half, count: 8), "send A's and B's levels")
+        XCTAssertEqual(Array(labels[8..<12]), ["", "", "", ""], "centered pans show nothing")
+        XCTAssertEqual(Array(labels[12..<16]), ["Keys", "Vox", "Gtr", "P1/2"], "the names, once, at the bottom")
+        let rings = midi.rings
+        XCTAssertEqual(rings[12]?.r, 127, "level: Keys is red")
+        XCTAssertEqual(rings[12]?.amount, E16DriverTests.half)
+        XCTAssertEqual(rings[8]?.bipolar, true, "pan")
+        XCTAssertEqual(rings[8]?.amount, 8192, "centered")
+        XCTAssertEqual(rings[0]?.r, 127, "send A to a white output: the channel's color")
+        XCTAssertEqual(rings[0]?.amount, E16DriverTests.half)
+        XCTAssertEqual(rings[4]?.b, 127, "send B to a blue output: its color")
+        XCTAssertEqual(rings[4]?.r, 0)
+    }
+
+    func testTitleGivesSendNamesTheRoomItHas() {
+        var (driver, hub, _) = connectedFour()
+        driver.drawsScreen = true
+        let name = driver.functionName(hub: hub)
+        XCTAssertTrue(name.hasPrefix("A>") && name.contains("\tB>MON"), name)
+        XCTAssertGreaterThan(name.count, "A>PHO\tB>MON".count, "more than three characters each where they fit: \(name)")
+        let parts = name.split(separator: "\t").map(String.init)
+        let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2
+        let screen = E16Driver.screen(title: name, tail: "■ 10/12", labels: [])
+        let bEnd = E16Screen.width * 3 / 4 - margin - 1
+        XCTAssertTrue((0..<7).contains { screen.pixel(bEnd, $0) } || (0..<7).contains { screen.pixel(bEnd - 1, $0) }, "send B ends at the third column's margin")
+        XCTAssertLessThan(margin + E16Screen.width(of: parts[0]) + 4, bEnd - E16Screen.width(of: parts[1]), "a clear gap between the names")
+        XCTAssertFalse(driver.title(hub: hub).isEmpty)
+        _ = hub
+    }
+
+    func testTitleShowsPFLOnlyWhenItIsOffThePage() {
+        var (driver, hub, _) = connectedFour()
+        driver.drawsScreen = true
+        _ = hub.handle(.channel(bus: .input, channel: 2, parameter: "pfl", value: .number(1)), now: 1)
+        XCTAssertFalse(driver.titleParts(hub: hub).1.contains("■"), "Vox is on this page: its name shows the square")
+        driver.marksNames = false
+        XCTAssertTrue(driver.titleParts(hub: hub).1.contains("■"), "without name marks, the title shows it")
+        driver.marksNames = true
+        _ = hub.handle(.channel(bus: .input, channel: 2, parameter: "pfl", value: .number(0)), now: 2)
+        _ = hub.handle(.channel(bus: .input, channel: 30, parameter: "pfl", value: .number(1)), now: 2)
+        XCTAssertTrue(driver.titleParts(hub: hub).1.contains("■"), "a PFL off the page shows in the title")
+        driver.drawsScreen = false
+        XCTAssertTrue(driver.titleParts(hub: hub).1.contains("PFL"), "the firmware's labels say PFL")
+    }
+
+    func testStripsShowOnlyTheMainLevelInTheTitle() {
+        var (driver, hub, _) = connectedFour()
+        driver.drawsScreen = true
+        let before = driver.title(hub: hub)
+        _ = driver.receive([0xB0, 1, 0x04], hub: &hub, now: 1)  // Keys's send A
+        XCTAssertEqual(driver.title(hub: hub), before, "a send's value shows in its own cell, not again in the title")
+        _ = driver.receive([0xB0, 9, 0x04], hub: &hub, now: 1.5)  // Keys's pan
+        XCTAssertEqual(driver.title(hub: hub), before, "nor a pan's")
+        _ = driver.receive([0xB0, 13, 0x04], hub: &hub, now: 2)  // Keys's level
+        let title = driver.title(hub: hub)
+        XCTAssertTrue(title.uppercased().hasPrefix("KEYS "), title)
+        XCTAssertFalse(title.contains(">"), "a level turn names only the channel")
+    }
+
+    func testEachRowTurnsItsOwnControl() {
+        var (driver, hub, _) = connectedFour()
+        XCTAssertEqual(driver.receive([0xB0, 1, 0x04], hub: &hub, now: 1).core.messages.map(\.address), ["/mix/in/0/2/faderlin"], "row 1: send A")
+        XCTAssertEqual(driver.receive([0xB0, 6, 0x04], hub: &hub, now: 2).core.messages.map(\.address), ["/mix/in/2/4/faderlin"], "row 2: send B")
+        XCTAssertEqual(driver.receive([0xB0, 11, 0x04], hub: &hub, now: 3).core.messages.first?.address.hasSuffix("balpan"), true, "row 3: pan")
+        XCTAssertEqual(driver.receive([0xB0, 16, 0x04], hub: &hub, now: 4).core.messages.map(\.address), ["/mix/pb/0/0/faderlin"], "row 4: level")
+    }
+
+    func testMuteFromAnyRowShowsOnTheLevelRingAndDarkensTheSends() {
+        var (driver, hub, _) = connectedFour()
+        let step = driver.receive([0x90, 5, 0x7F, 0x80, 5, 0x00], hub: &hub, now: 1)  // row 2, Vox
+        XCTAssertEqual(step.core.messages.map(\.address), ["/input/2/mute"])
+        let midi = step.midi + driver.tick(hub: &hub, now: 1.2).midi
+        XCTAssertEqual(midi.rings[13]?.amount, 0, "the level ring shows the marks")
+        XCTAssertEqual(midi.leds[13]?.count, 4)
+        XCTAssertEqual(midi.leds[13]?.first?.g, E16Driver.muteRGB.1, "orange")
+        XCTAssertEqual(midi.rings[1]?.amount, 0, "send A dark")
+        XCTAssertEqual(midi.rings[5]?.amount, 0, "send B dark")
+        XCTAssertNil(midi.rings[9], "the pan unchanged: nothing sent")
+    }
+
+    func testNameMarks() {
+        let labels = Array(repeating: "", count: 12) + ["Vox", "", "", ""]
+        let plain = E16Driver.screen(title: "", labels: labels)
+        let marked = E16Driver.screen(title: "", labels: labels, inverted: [12], pflMarked: [12])
+        let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2, y = E16Driver.labelTop + 3 * E16Driver.labelPitch
+        XCTAssertFalse(plain.pixel(margin - 1, y - 1))
+        XCTAssertTrue(marked.pixel(margin - 1, y - 1), "the box around the name")
+        XCTAssertNotEqual(plain.pixel(margin, y), marked.pixel(margin, y), "the letters flipped")
+        let empty = E16Driver.screen(title: "", labels: Array(repeating: "", count: 16), inverted: [12])
+        XCTAssertFalse(empty.pixel(margin - 1, y - 1), "no box without a name")
+        let pfl = E16Driver.screen(title: "", labels: labels, pflMarked: [12])
+        let after = margin + E16Screen.width(of: "Vox") + 2
+        XCTAssertTrue(pfl.pixel(after, y + 2) && pfl.pixel(after + 2, y + 4), "a 3 x 3 square after the name")
+        XCTAssertFalse(pfl.pixel(after - 1, y + 3) || pfl.pixel(after + 3, y + 3) || pfl.pixel(after + 1, y + 1))
+        XCTAssertFalse((0..<E16Screen.width).contains { pfl.pixel($0, y + E16Font.glyphHeight + 1) }, "no underline")
+        let both = E16Driver.screen(title: "", labels: labels, inverted: [12], pflMarked: [12])
+        XCTAssertTrue(both.pixel(after + 3, y - 1), "the box takes in the square")
+        XCTAssertFalse(both.pixel(after + 1, y + 3), "the square dark in the lit box")
+    }
+
+    func testMeters() {
+        let labels = Array(repeating: "", count: 12) + ["Vox", "P1/2", "", ""]
+        let screen = E16Driver.screen(title: "", labels: labels, centered: true, meters: [12: [13], 13: [26, 5]])
+        let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2, y = E16Driver.labelTop + 3 * E16Driver.labelPitch
+        let line = y + E16Driver.meterTop
+        XCTAssertEqual(line, 62, "two blank lines under the name")
+        XCTAssertTrue(screen.pixel(margin, line) && screen.pixel(margin + 12, line), "half a cell")
+        XCTAssertFalse(screen.pixel(margin + 13, line))
+        XCTAssertFalse(screen.pixel(margin, line - 1), "blank lines under the letters")
+        XCTAssertTrue(screen.pixel(32 + margin + 25, line), "full")
+        XCTAssertFalse(screen.pixel(32 + margin + 26, line))
+        XCTAssertTrue(screen.pixel(32 + margin + 4, line + 1) && !screen.pixel(32 + margin + 5, line + 1), "a stereo channel's right side under its left")
+        XCTAssertFalse(screen.pixel(margin, line + 1), "one line for a mono channel")
+        let held = E16Driver.screen(title: "", labels: labels, meters: [12: [5]], peaks: [12: [20]])
+        XCTAssertTrue(held.pixel(margin + 19, line) && !held.pixel(margin + 18, line) && !held.pixel(margin + 5, line), "one pixel at the peak")
+    }
+
+    func testBarAveragesThePeaks() {
+        var (driver, hub, _) = connectedFour()
+        driver.drawsScreen = true
+        driver.showsMeters = true
+        driver.meterAverage = 0.3
+        _ = driver.tick(hub: &hub, now: 1)
+        _ = hub.handle(.level(bus: .input, channel: 0, peakDB: -1), now: 1)
+        XCTAssertFalse(driver.tick(hub: &hub, now: 1.05).midi.isEmpty, "redrawn as the bar rises")
+        // After 0.05 s of a −1 dB peak from silence, the average is still well below it; after
+        // 2 s, it has caught up. (The bar's width is internal; this checks the arithmetic.)
+        let early = 1 - exp(-0.05 / 0.3), late = 1 - exp(-2.0 / 0.3)
+        XCTAssertLessThan(10 * log10(early * pow(10, -0.1)), -8, "the bar rises slowly")
+        XCTAssertGreaterThan(10 * log10(late * pow(10, -0.1)), -1.1, "and catches up")
+    }
+
+    func testPeakHoldsThenDrops() {
+        var (driver, hub, _) = connectedFour()
+        driver.drawsScreen = true
+        driver.showsMeters = true
+        driver.peakHold = 1
+        func line(_ midi: [UInt8]) -> Bool { !midi.isEmpty }
+        _ = hub.handle(.level(bus: .input, channel: 0, peakDB: -1), now: 1)
+        _ = driver.tick(hub: &hub, now: 1)
+        _ = hub.handle(.level(bus: .input, channel: 0, peakDB: -40), now: 1.1)
+        XCTAssertFalse(driver.tick(hub: &hub, now: 1.2).midi.isEmpty, "the bar falls, the peak stays: redrawn")
+        XCTAssertTrue(driver.tick(hub: &hub, now: 1.6).midi.filter { $0 == 0xF0 }.count <= 1, "held: nothing new, or a ring")
+        XCTAssertFalse(driver.tick(hub: &hub, now: 2.3).midi.isEmpty, "after the hold, the peak drops: redrawn")
+    }
+
+    func testValuesHoldTheirPlaces() {
+        func columns(_ text: String) -> [Int] {
+            var screen = E16Screen()
+            XCTAssertTrue(E16Driver.drawValue(text, cellX: 0, y: 0, on: &screen))
+            return (0..<32).filter { x in (0..<7).contains { screen.pixel(x, $0) } }
+        }
+        let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2, right = margin + E16Driver.labelMaxWidth - 1
+        for text in ["-6.0", "-12.5", "+2.5", "0.0", "-41.1"] {
+            XCTAssertEqual(columns(text).last, right, "\(text): the tenths end at the right margin")
+            XCTAssertTrue(columns(text).contains(right - 5) && !columns(text).contains(right - 4) && !columns(text).contains(right - 6), "\(text): the point in its place")
+        }
+        XCTAssertEqual(columns("L24").last, right, "a pan's last digit at the right margin")
+        XCTAssertEqual(columns("C").last, right, "C at the right margin too")
+        XCTAssertEqual(columns("-6.0").first, columns("-16.0").first.map { $0 + 5 }, "the sign moves a place when a digit is added")
+        var screen = E16Screen()
+        XCTAssertFalse(E16Driver.drawValue("Keys", cellX: 0, y: 0, on: &screen), "not a number")
+    }
+
+    func testMetersFollowTotalMixFXAtMost25ASecond() {
+        var (driver, hub, _) = connectedFour()
+        driver.drawsScreen = true
+        driver.showsMeters = true
+        driver.meterAverage = 0  // the bar follows at once, so only the rate limit is at work
+        _ = driver.tick(hub: &hub, now: 1)
+        func screens(_ midi: [UInt8]) -> Int { midi.sysExMessages.filter { $0.starts(with: Array(labelsID.prefix(7))) && !$0.starts(with: labelsID) && !$0.starts(with: ringsID) && !$0.starts(with: ledsID) }.count }
+        _ = hub.handle(.level(bus: .input, channel: 0, peakDB: -6), now: 1.01)
+        XCTAssertEqual(screens(driver.tick(hub: &hub, now: 1.05).midi), 1, "a level change redraws")
+        _ = hub.handle(.level(bus: .input, channel: 0, peakDB: -3), now: 1.06)
+        XCTAssertEqual(screens(driver.tick(hub: &hub, now: 1.07).midi), 0, "not within 1/25 s")
+        XCTAssertEqual(screens(driver.tick(hub: &hub, now: 1.1).midi), 1, "then drawn")
+        XCTAssertEqual(screens(driver.tick(hub: &hub, now: 1.2).midi), 0, "nothing changed")
+    }
+
+    func testSetOnlyMuteNameFlashes() {
+        var (driver, hub, _) = connectedFour()
+        driver.drawsScreen = true
+        _ = driver.take(hub.handle(.other(path: "globalmute", value: .number(0)), now: 0.05), hub: &hub, now: 0.05)
+        _ = driver.receive([0x90, 1, 0x7F, 0x80, 1, 0x00], hub: &hub, now: 0.1)  // Vox's mute, set only
+        let framebufferID: [UInt8] = Array(labelsID.prefix(7))
+        func screens(_ midi: [UInt8]) -> Int { midi.sysExMessages.filter { $0.starts(with: framebufferID) && !$0.starts(with: labelsID) && !$0.starts(with: ringsID) && !$0.starts(with: ledsID) }.count }
+        _ = driver.tick(hub: &hub, now: 1.2)  // the title overlay ends
+        XCTAssertEqual(screens(driver.tick(hub: &hub, now: 1.55).midi), 1, "the name drawn plain")
+        XCTAssertEqual(screens(driver.tick(hub: &hub, now: 2.05).midi), 1, "and struck again")
+        driver.marksNames = false
+        _ = driver.tick(hub: &hub, now: 2.55)
+        XCTAssertEqual(screens(driver.tick(hub: &hub, now: 3.05).midi), 0, "no flashing without name marks")
+    }
+
+    /// The 4-channel layout jumps the same way on every row (Adam, 2026-11-06).
+    func testFourPushAndTurnJumps() {
+        var (driver, hub, _) = connectedFour()
+        _ = driver.receive([0x90, 12, 0x7F], hub: &hub, now: 1)  // Keys's level, pushed
+        let turn = driver.receive([0xB0, 13, 0x04], hub: &hub, now: 1.1)
+        XCTAssertEqual(turn.core.messages.first?.arguments.first, .float(Float(FaderCurve.unityPosition)), "to 0 dB")
+        let release = driver.receive([0x80, 12, 0x00], hub: &hub, now: 1.2)
+        XCTAssertFalse(release.core.messages.contains { $0.address.hasSuffix("mute") }, "the turn cancelled the push")
+        _ = driver.receive([0x90, 8, 0x7F], hub: &hub, now: 2)  // Keys's pan, pushed
+        let pan = driver.receive([0xB0, 9, 0x7E], hub: &hub, now: 2.1)
+        XCTAssertTrue(pan.core.messages.first?.address.hasSuffix("balpan") ?? false)
+        XCTAssertEqual(pan.core.messages.first?.arguments.first, .float(-1), "hard left")
+        _ = driver.receive([0x80, 8, 0x00], hub: &hub, now: 2.2)
+        _ = driver.receive([0x90, 0, 0x7F], hub: &hub, now: 3)  // Keys's send A, pushed
+        let send = driver.receive([0xB0, 1, 0x02], hub: &hub, now: 3.1)
+        XCTAssertEqual(send.core.messages.first?.arguments.first, .float(Float(FaderCurve.unityPosition)), "a send to 0 dB")
+    }
+
+    func testShortLevels() {
+        XCTAssertEqual(E16Driver.shortLevel(0, width: nil), "-oo")
+        let drawn = E16Driver.screen(title: "", labels: ["-oo"])
+        var expected = E16Screen()
+        let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2
+        expected.line(y: 10, from: 0, to: E16Screen.width - 1)
+        expected.draw("-∞", x: margin, y: E16Driver.labelTop)
+        XCTAssertEqual(drawn, expected, "drawn with the infinity sign")
+        var dash = E16Screen(), missing = E16Screen()
+        dash.draw("∞", x: 0, y: 0)
+        missing.draw("\u{1F600}", x: 0, y: 0)
+        XCTAssertNotEqual(dash, missing, "a glyph of its own, not the box for a missing one")
+        let centered = E16Driver.screen(title: "", labels: ["Vox"], centered: true)
+        XCTAssertFalse(centered.pixel(margin, E16Driver.labelTop + 3), "not at the left")
+        let left = (32 - E16Screen.width(of: "Vox")) / 2
+        XCTAssertEqual(E16Driver.screen(title: "", labels: [""], centered: true), E16Driver.screen(title: "", labels: [""]))
+        var vox = E16Screen()
+        vox.line(y: 10, from: 0, to: E16Screen.width - 1)
+        vox.draw("Vox", x: left, y: E16Driver.labelTop)
+        XCTAssertEqual(centered, vox, "centered in its 32-pixel cell")
+        XCTAssertEqual(E16Driver.shortLevel(FaderCurve.unityPosition, width: nil), "0.0")
+        let low = E16Driver.shortLevel(0.3, width: nil)
+        XCTAssertLessThanOrEqual(low.count, 4, "fits the firmware's four characters: \(low)")
+        XCTAssertTrue(E16Screen.width(of: E16Driver.shortLevel(0.3, width: E16Driver.labelMaxWidth)) <= E16Driver.labelMaxWidth)
+        var (driver, hub, _) = connectedFour()
+        let off = driver.take(hub.handle(.mix(bus: .input, channel: 2, output: 2, parameter: "faderlin", value: .number(0)), now: 0.5), hub: &hub, now: 0.5)
+        XCTAssertEqual(off.midi.lastLabels?[1], "", "a send that is off shows nothing")
+        let turn = driver.receive([0xB0, 11, 0x0A], hub: &hub, now: 1)  // Gtr's pan, right
+        XCTAssertTrue(turn.midi.lastLabels?[10].hasPrefix("R") == true, "the pan's label follows the turn")
+    }
+
+    func testHoldIsPFLWithTheCountdownOnTheLevelRing() {
+        var (driver, hub, _) = connectedFour()
+        _ = driver.receive([0x90, 2, 0x7F], hub: &hub, now: 1)  // row 1, Gtr
+        let countdown = driver.tick(hub: &hub, now: 1.5).midi
+        XCTAssertEqual(countdown.rings[14]?.r, E16Driver.pflRGB.0, "the pink arc on Gtr's level ring")
+        XCTAssertEqual(countdown.rings[14]?.b, E16Driver.pflRGB.2)
+        XCTAssertNil(countdown.rings[2], "not on the encoder pushed")
+        let pfl = driver.tick(hub: &hub, now: 2.05)
+        XCTAssertEqual(pfl.core.messages.map(\.address), ["/input/3/pfl"])
+        let release = driver.receive([0x80, 2, 0x00], hub: &hub, now: 2.1).midi + driver.tick(hub: &hub, now: 2.3).midi
+        XCTAssertEqual(release.leds[14]?.count, 4, "PFL's marks on the level ring")
+        XCTAssertEqual(release.leds[14]?.first?.b, E16Driver.pflRGB.2)
+        XCTAssertNil(release.leds[2], "the send ring keeps its value")
+    }
+
+    func testNamesFitAsASet() {
+        let names = ["ADI-2 3/4", "ADAT 1/2", "ADAT 3/4"]
+        let arrows = E16Driver.fitSet(names, width: 28 - E16Screen.width(of: "<"))
+        XCTAssertEqual(Set(arrows.map { $0.uppercased() }).count, 3, "no two alike: \(arrows)")
+        let title = E16Driver.fitSet(names, width: 31)
+        XCTAssertEqual(title.map { $0.uppercased() }, ["ADI3/4", "ADT1/2", "ADT3/4"], "the model number goes first: \(title)")
+        XCTAssertEqual(E16Driver.fitSet(["Keys", "Keys"], width: 26), ["Keys", "Keys"], "the same name stays the same")
+    }
+
+    func testShiftRowsShowTheCurrentOutputs() {
+        var (driver, hub, _) = connectedFour()
+        let labels = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1).midi.lastLabels ?? []
+        XCTAssertEqual(labels[0], "Phon", "send A's output, in the firmware's four characters: \(labels)")
+        XCTAssertEqual(labels[4], "Mon", "send B's")
+        XCTAssertEqual(labels[1], "")
+        var screen = E16Screen()
+        screen = E16Driver.screen(title: "", labels: ["A: ADI 3/4"], centered: true, spans: [0])
+        let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2
+        XCTAssertTrue((E16Driver.labelTop..<E16Driver.labelTop + 7).contains { screen.pixel(margin, $0) }, "from the first cell's margin, not centered")
+    }
+
+    func testShiftPageStepsTheSendRows() {
+        var (driver, hub, _) = connectedFour()
+        let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
+        XCTAssertEqual(shift.midi.lastLabels, ["Phon", "", "", ">", "Mon", "", "", ">",
+                                               "", "", "", "", "16CH", "STRP", "", ""],
+                       "A's back arrow and B's go nowhere (B's would be A's output); one page")
+        XCTAssertEqual(shift.midi.rings[3]?.g, 2, "an available arrow, dim deep green")
+        XCTAssertEqual(shift.midi.rings[2]?.amount, 0, "dark")
+        let press = driver.receive([0x90, 3, 0x7F, 0x80, 3, 0x00], hub: &hub, now: 2)  // A forward
+        XCTAssertEqual(driver.currentSendOutputs(hub: hub), [6, 4], "A skips B's output")
+        XCTAssertEqual(driver.sendOutputs, [6, 4])
+        XCTAssertEqual(press.midi.lastTitle, "A>ROO B>MON")
+        XCTAssertEqual(press.midi.lastLabels?[2], "<", "A's back arrow, plain; it skips Mon, B's output")
+        _ = driver.receive([0x90, 16, 0x00], hub: &hub, now: 3)
+        XCTAssertEqual(driver.receive([0xB0, 1, 0x04], hub: &hub, now: 4).core.messages.map(\.address), ["/mix/in/0/6/faderlin"], "send A now to Room")
+    }
 }

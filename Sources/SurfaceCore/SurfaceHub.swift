@@ -107,6 +107,9 @@ public struct SurfaceHub: Sendable {
         return output
     }
 
+    /// Whether a refresh (`refreshChannels`) is waiting for TotalMix FX's answer.
+    public var isRefreshing: Bool { refreshSeen != nil }
+
     /// Asks TotalMix FX for everything again, and then forgets the channels its answer leaves out, so
     /// that channels hidden from or shown to this OSC remote in TotalMix FX since the last refresh
     /// leave or join the surfaces. TotalMix FX sends nothing when a channel is hidden or shown

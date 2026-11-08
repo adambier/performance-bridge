@@ -301,6 +301,18 @@ and step names.
 3. **The 0 dB indent.** Settled by tests 5 and 8: with `02`, level knobs at 13004 and send knobs none; with `01`, send knobs none either. Still open: whether `03` has one (not needed, since Performance Bridge claims `02`).
 4. **The hold rule.** Settled by tests 6, 8, and 9: a power cycle or a trip through PLUGIN mode clears it; a forced release doesn't; from 0 the knob lets go at the indent (13004), from 16383 at about 3,250–3,700.
 5. **The FX label.** Settled by test 7: it labels the send-mode switch, shown only while the host reports sends.
+6. **Virtual detents, for parity with the E16** (Adam, 2026-11-06; the rule is in AGENTS.md,
+   and the E16's tuning in `docs/OXI-E16.md`, section 5). The E16 holds a pan at center and a
+   push-and-turn at −∞, 0 dB, and +6 dB. The Roto-Control has a real 0 dB indent on level knobs
+   (claimed type `02`, bent to TotalMix FX's 0 dB) and none on send knobs (tests 5 and 8). Open:
+   whether its pan knobs have a center indent in MIX mode (to check on the device); the SysEx API
+   sets neither indents nor their strength in MIX mode (feature requests 1 and 2). A host-side
+   detent on this knob is a different thing from the E16's: the knob reports where it physically
+   is, so holding the value while the knob moves on leaves the two apart until the host moves the
+   knob back, which is what the "magnet" of 2026-10-30 did, and it felt like a delayed jump
+   (section 3). So: check the pan knobs; ask Melbourne Instruments for indents on send knobs
+   (and on pans, if missing); add a host-side detent only if a way is found that doesn't feel like
+   the magnet. The knobs don't push, so push-and-turn jumps have no counterpart.
 
 ## 9. Tests
 
@@ -433,7 +445,13 @@ marked "seen".
   hardware meters[^totalmix-meters]:
   yellow from −5 dBFS (117 on a −65…0 dBFS scale) and red from −1 dBFS (125). With those
   thresholds, meter values 112, 120, and 126 showed green, a yellow end, and a red end, as expected
-  (seen).
+  (seen). Since 2026-11-06 the scale follows TotalMix FX's fader law (`MeterScale`;
+  docs/TOTALMIX-OSC.md), so the same levels are thresholds 103 and 122. Seen 2026-11-07 (Adam,
+  branch `e16-four`, music through one channel): the meter rose and fell about as high as TotalMix
+  FX's for the same channel and turned yellow at the top; red not seen (not pushed toward 0 dBFS).
+  The Roto-Control is sent the peak level and draws its bar from it, so its bar sits nearer its
+  peak dot than TotalMix FX's, whose bar is an average; the E16's meters are drawn like TotalMix
+  FX's (an average bar and a held peak), a difference noted for the 1.2.0 UI review.
 - **Track colors against TotalMix FX's** (run 8, seen): with the playback pairs in TotalMix FX's eight
   colors and each mapped to the table color nearest in hue, schemes 9 (blue) and 61 (green)
   matched TotalMix FX; 50 looked slate blue, 57 brown, 56 burgundy, 2 ochre, and 24 royal blue
