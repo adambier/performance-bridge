@@ -526,9 +526,9 @@ struct LaunchControlSendRowsView: View {
                                 // An XL 3 row with no output left to feed (review of 2026-11-02).
                                 Text("None").tag(Int?.none)
                             }
-                            // On the Launch Control 3 the row is pan or a send, so the sends carry
-                            // the "> " that marks a send (Adam, 2026-11-02); the XL 3's rows are
-                            // always sends, under the "Sends" heading (Adam, 2026-11-01).
+                            // Each output carries the "> " that marks a send (Adam, 2026-11-02 for
+                            // the Launch Control 3, where a row can also be pan; 2026-11-07 for the
+                            // XL 3, since the box is headed by the model, not "Sends").
                             ForEach(choices(row), id: \.output) { choice in
                                 Text(choiceTitle(choice.name))
                                     .tag(Int?.some(choice.output))
@@ -567,10 +567,9 @@ struct LaunchControlSendRowsView: View {
 
     private var rowCount: Int { LaunchControlSendRows.rowCount(chosen) }
 
-    /// An output's title in a row's menu: "> Phones 1" on the Launch Control 3, where the row can
-    /// also be Pan; the plain name on the XL 3, under the "Sends" heading.
+    /// An output's title in a row's menu: "> Phones 1", a send to it, on both models.
     private func choiceTitle(_ name: String) -> String {
-        chosen == .lc3 ? LaunchControlDriver.sendLabel(name) : name
+        LaunchControlDriver.sendLabel(name)
     }
 
     /// The output each of the chosen model's rows feeds now, as the engine reports it.
