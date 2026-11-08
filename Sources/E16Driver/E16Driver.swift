@@ -314,6 +314,9 @@ public struct E16Driver: Sendable {
     /// When a turn that stopped at center last sent a message, by encoder (`centerStop`).
     private var panCenterArrival: [Int: Double] = [:]
     private var overlay: (text: String, until: Double)?
+    /// A channel-strip main level's overlay, drawn in the title over its own column, digit for
+    /// digit with the values below (Adam, 2026-11-07); it applies while `overlay` has its text.
+    private var titleValue: (text: String, column: Int)?
     /// The encoder held down, if any, since when, and whether the hold has already toggled PFL.
     /// Its overlay stays until it is released (Adam, 2026-11-04).
     private var held: (encoder: Int, since: Double, didPFL: Bool)?
@@ -670,7 +673,13 @@ public struct E16Driver: Sendable {
         step.midi += drawRing(encoder, hub: hub)
         // In channel strips a send's or pan's value already shows in its own cell, so only the
         // main level, whose row holds the name, shows in the title (Adam, 2026-11-07).
-        if let info = infos[strip], let moved, layout != .four || layer == .level {
+        if drawsScreen, layout == .four, layer == .level, infos[strip] != nil, let moved, !panning {
+            // Only the value, over its column: the column names the channel at its foot, and the
+            // values below show no unit either.
+            let text = Self.shortLevel(moved, width: Self.labelMaxWidth)
+            titleValue = (text, strip)
+            show(text, now: now, into: &step, hub: hub)
+        } else if let info = infos[strip], let moved, layout != .four || layer == .level {
             var text = panning ? ValueText.pan(moved) : ValueText.level(position: moved)
             // "dB" with a lowercase d where the host draws the screen, as TotalMix FX and the
             // Launch Controls show it (Adam, 2026-11-07).
@@ -1190,7 +1199,8 @@ public struct E16Driver: Sendable {
             let pairs: [(Int, String)] = layout == .four ? [(2, "SEND"), (6, "SEND"), (14, "PAGE")] : [(10, "SEND"), (14, "PAGE")]
             for (left, word) in pairs where !labels[left].isEmpty || !labels[left + 1].isEmpty { pairWords[left] = word }
         }
-        let drawn = Self.screen(title: parts.0, tail: parts.1, labels: labels, inverted: inverted, outlined: outlined, struck: struck, pflMarked: pflMarked,
+        let titleColumn = titleValue.flatMap { overlay?.text == $0.text ? $0.column : nil }
+        let drawn = Self.screen(title: parts.0, tail: parts.1, titleColumn: titleColumn, labels: labels, inverted: inverted, outlined: outlined, struck: struck, pflMarked: pflMarked,
                                 centered: centersLabels, values: values, meters: meters, peaks: peakWidths, spans: spans,
                                 rightAligned: shiftHeld ? Self.shiftRightAligned : [], pairWords: pairWords)
         lastScreenForTests = drawn
@@ -1217,7 +1227,7 @@ public struct E16Driver: Sendable {
     /// their digits in fixed places (`drawValue`). `inverted` names are drawn in a lit box (a
     /// mute) and `pflMarked` ones followed by a small square (a PFL); `meters` draws a bar of the
     /// given width under a name, a second one under it for a stereo channel's right side.
-    public static func screen(title: String, tail: String = "", labels: [String], inverted: Set<Int> = [], outlined: Set<Int> = [], struck: Set<Int> = [], pflMarked: Set<Int> = [],
+    public static func screen(title: String, tail: String = "", titleColumn: Int? = nil, labels: [String], inverted: Set<Int> = [], outlined: Set<Int> = [], struck: Set<Int> = [], pflMarked: Set<Int> = [],
                               centered: Bool = false, values: Set<Int> = [], meters: [Int: [Int]] = [:], peaks: [Int: [Int]] = [:], spans: Set<Int> = [], rightAligned: Set<Int> = [],
                               pairWords: [Int: String] = [:]) -> E16Screen {
         // "-oo" (off) as "-∞": the font has no lowercase (Adam, 2026-11-05).
@@ -1226,7 +1236,13 @@ public struct E16Driver: Sendable {
         var screen = E16Screen()
         let cell = E16Screen.width / 4
         let margin = (cell - labelMaxWidth) / 2
-        if let tab = title.firstIndex(of: "\t") {
+        if let column = titleColumn {
+            // A value over its column, in the same digit places as the values below; "-∞" at the
+            // column's right margin.
+            if !drawValue(title, cellX: column * cell, y: 0, on: &screen) {
+                screen.draw(title, x: column * cell + margin + labelMaxWidth - E16Screen.width(of: title), y: 0)
+            }
+        } else if let tab = title.firstIndex(of: "\t") {
             // Send B, after the break, ends at the third column's right margin.
             screen.draw(String(title[..<tab]), x: margin, y: 0)
             let rest = String(title[title.index(after: tab)...])

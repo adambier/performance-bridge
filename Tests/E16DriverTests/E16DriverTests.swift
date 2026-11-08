@@ -877,10 +877,15 @@ final class E16FourLayoutTests: XCTestCase {
         XCTAssertEqual(driver.title(hub: hub), before, "a send's value shows in its own cell, not again in the title")
         _ = driver.receive([0xB0, 9, 0x04], hub: &hub, now: 1.5)  // Keys's pan
         XCTAssertEqual(driver.title(hub: hub), before, "nor a pan's")
-        _ = driver.receive([0xB0, 13, 0x04], hub: &hub, now: 2)  // Keys's level
+        _ = driver.receive([0xB0, 13, 0x04], hub: &hub, now: 2)  // Keys's level (column 1, the first)
         let title = driver.title(hub: hub)
-        XCTAssertTrue(title.uppercased().hasPrefix("KEYS "), title)
-        XCTAssertFalse(title.contains(">"), "a level turn names only the channel")
+        XCTAssertFalse(title.contains(">"), "a level turn shows no output")
+        XCTAssertFalse(title.uppercased().contains("DB"), "only the value, as below: \(title)")
+        // The value sits over its column, digit for digit with a value drawn in that column below.
+        var expected = E16Screen()
+        _ = E16Driver.drawValue(title, cellX: 0, y: 0, on: &expected)
+        let drawn = try! XCTUnwrap(driver.lastScreenForTests)
+        for x in 0..<E16Screen.width { for y in 0..<8 { XCTAssertEqual(drawn.pixel(x, y), expected.pixel(x, y), "title pixel \(x),\(y)") } }
     }
 
     func testEachRowTurnsItsOwnControl() {

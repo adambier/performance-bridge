@@ -289,8 +289,8 @@ Everything below applies to both unless it says otherwise.
   (an off send, a centered pan), "-∞" for off. The title names send A at the left and send B
   ending at the third column's margin ("A>ADI3/4 … B>ADT1/2"); in 16 channels SEND mode it reads
   ">ADI-2 3/4" (the full name where it fits). A turn shows the channel, the output for a send, and the value ("KEYS>ADI3/4
-  -6.0 dB", with a lowercase d drawn for the unit); in channel strips only a main-level turn does, since a send's or pan's
-  value shows in its own cell (Adam, 2026-11-07). An output's name is the full name where it fits and otherwise one short form, the
+  -6.0 dB", with a lowercase d drawn for the unit); in channel strips only a main-level turn shows in the title, and only its value, over its column with the decimal point in line
+  with the values below (a send's or pan's value shows in its own cell; Adam, 2026-11-07). An output's name is the full name where it fits and otherwise one short form, the
   same everywhere; a channel's in the title is its full name or its label's form. A mute
   turned off shows "MUTE OFF" whatever Mute Master says, one turned on while it is off
   "MUTE SET". Names are centered and shortened as a set (`fitSet`): each takes its longest form
