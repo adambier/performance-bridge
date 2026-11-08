@@ -197,7 +197,7 @@ final class E16DriverTests: XCTestCase {
         let position = 0.5 + 4 * E16Driver.levelStep
         XCTAssertEqual(step.core.messages.first?.arguments.first, .float(Float(position)))
         XCTAssertEqual(step.midi.rings[1]?.amount, Int((E16Driver.levelAmount(position) * 16383).rounded()))
-        XCTAssertEqual(step.midi.lastTitle, "Vox " + ValueText.level(position: position))
+        XCTAssertEqual(squeezed(step.midi.lastTitle), "Vox " + ValueText.level(position: position))
         // The title goes back to the function after a second.
         XCTAssertEqual(driver.tick(hub: &hub, now: 1.5).midi, [])
         XCTAssertNil(driver.tick(hub: &hub, now: 1.5).midi.lastTitle)
@@ -208,7 +208,7 @@ final class E16DriverTests: XCTestCase {
         for _ in 0..<40 { _ = driver.receive([0xB0, 2, 0x78], hub: &hub, now: 3) }
         let bottom = driver.receive([0xB0, 2, 0x78], hub: &hub, now: 4)
         XCTAssertTrue(bottom.core.messages.isEmpty, "at the bottom already: nothing more is sent (review, 2026-11-07)")
-        XCTAssertEqual(driver.title(hub: hub), "Vox -oo")
+        XCTAssertEqual(squeezed(driver.title(hub: hub)), "Vox -oo dB")
         XCTAssertEqual(driver.look(1, hub: hub).ring.amount, 1.0 / 16, "one LED at -oo")
     }
 
@@ -460,7 +460,7 @@ final class E16DriverTests: XCTestCase {
         let step = driver.receive([0xB0, 1, UInt8(E16Driver.panCenterUnits + 2)], hub: &hub, now: 2)  // leaves center: one step
         XCTAssertEqual(step.core.messages.map(\.address), ["/mix/in/0/0/balpan"])
         XCTAssertEqual(step.core.messages.first?.arguments.first, .float(Float(2 * E16Driver.panStep)))  // R1, on TotalMix FX's −1…1
-        XCTAssertEqual(step.midi.lastTitle, "Keys R1")
+        XCTAssertEqual(squeezed(step.midi.lastTitle), "Keys R1")
         XCTAssertEqual(step.midi.rings[0]?.bipolar, true)
     }
 
@@ -499,28 +499,28 @@ final class E16DriverTests: XCTestCase {
             _ = driver.receive([0xB0, encoder, UInt8(delta < 0 ? 128 + delta : delta)], hub: &hub, now: clock)
             return driver.title(hub: hub)
         }
-        XCTAssertEqual(turn(units), "Keys C", "held at center for \(units) units")
-        XCTAssertEqual(turn(1), "Keys R1", "the next unit moves it")
-        XCTAssertEqual(turn(-8), "Keys C", "a fast turn back stops at center")
-        XCTAssertEqual(turn(-(units - 1)), "Keys C")
-        XCTAssertEqual(turn(2), "Keys C", "a turn the other way starts the count again")
-        XCTAssertEqual(turn(units - 1), "Keys R1", "\(units + 1) units that way, in all")
-        XCTAssertEqual(turn(8), "Keys R9")
-        XCTAssertEqual(turn(-20), "Keys C", "crossing from the right stops at center too")
-        XCTAssertEqual(turn(-(units + 3)), "Keys L1", "the units beyond the count don't carry: one step")
-        XCTAssertEqual(turn(-2), "Keys L3", "away from center, every unit counts")
+        XCTAssertEqual(squeezed(turn(units)), "Keys C", "held at center for \(units) units")
+        XCTAssertEqual(squeezed(turn(1)), "Keys R1", "the next unit moves it")
+        XCTAssertEqual(squeezed(turn(-8)), "Keys C", "a fast turn back stops at center")
+        XCTAssertEqual(squeezed(turn(-(units - 1))), "Keys C")
+        XCTAssertEqual(squeezed(turn(2)), "Keys C", "a turn the other way starts the count again")
+        XCTAssertEqual(squeezed(turn(units - 1)), "Keys R1", "\(units + 1) units that way, in all")
+        XCTAssertEqual(squeezed(turn(8)), "Keys R9")
+        XCTAssertEqual(squeezed(turn(-20)), "Keys C", "crossing from the right stops at center too")
+        XCTAssertEqual(squeezed(turn(-(units + 3))), "Keys L1", "the units beyond the count don't carry: one step")
+        XCTAssertEqual(squeezed(turn(-2)), "Keys L3", "away from center, every unit counts")
         // A fast turn is a burst of messages: the rest of the burst is ignored at center, and
         // the count starts only after a pause (Adam, 14:56: a fast turn went straight through).
         _ = turn(-22)
-        XCTAssertEqual(driver.title(hub: hub), "Keys L25")
+        XCTAssertEqual(squeezed(driver.title(hub: hub)), "Keys L25")
         for _ in 0..<10 { _ = turn(8, gap: 0.02) }
-        XCTAssertEqual(driver.title(hub: hub), "Keys C", "a burst from L25 stops at center")
-        XCTAssertEqual(turn(8, gap: driver.panCenterPause - 0.01), "Keys C", "still the same turn")
-        XCTAssertEqual(turn(units + 1, gap: driver.panCenterPause + 0.01), "Keys R1", "after a pause, the count")
+        XCTAssertEqual(squeezed(driver.title(hub: hub)), "Keys C", "a burst from L25 stops at center")
+        XCTAssertEqual(squeezed(turn(8, gap: driver.panCenterPause - 0.01)), "Keys C", "still the same turn")
+        XCTAssertEqual(squeezed(turn(units + 1, gap: driver.panCenterPause + 0.01)), "Keys R1", "after a pause, the count")
         // Amounts side by side, for trying them: encoder 2 (index 1) takes the second.
         driver.panCenterTrial = [0, 8]
-        XCTAssertEqual(turn(-8), "Keys C", "crossing still stops at center")
-        XCTAssertEqual(turn(-2), "Keys L1", "encoder 1 takes 0: no units held, and one step")
+        XCTAssertEqual(squeezed(turn(-8)), "Keys C", "crossing still stops at center")
+        XCTAssertEqual(squeezed(turn(-2)), "Keys L1", "encoder 1 takes 0: no units held, and one step")
         XCTAssertTrue(turn(8, encoder: 2).hasSuffix(" C"), "encoder 2 held for 8 units")
         XCTAssertTrue(turn(1, encoder: 2).hasSuffix(" R1"))
         // How a pan leaves center, side by side: encoder 2 carries the units beyond the count.
@@ -528,8 +528,8 @@ final class E16DriverTests: XCTestCase {
         driver.panLeaveTrial = [true, false]
         _ = turn(-8, encoder: 2)
         XCTAssertTrue(turn(units + 3, encoder: 2).hasSuffix(" R3"), "carried: 3 units past the count")
-        XCTAssertEqual(turn(8), "Keys C", "from L1, back to center")
-        XCTAssertEqual(turn(units + 3), "Keys R1", "encoder 1: one step")
+        XCTAssertEqual(squeezed(turn(8)), "Keys C", "from L1, back to center")
+        XCTAssertEqual(squeezed(turn(units + 3)), "Keys R1", "encoder 1: one step")
         // A level has no sticky point.
         _ = driver.receive([0x90, 16, 0x7F, 0x90, 0, 0x7F, 0x80, 0, 0x00, 0x90, 16, 0x00], hub: &hub, now: clock + 1)  // LEVEL
         let level = driver.receive([0xB0, 1, 0x01], hub: &hub, now: clock + 1.1)

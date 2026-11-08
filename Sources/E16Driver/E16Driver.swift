@@ -314,6 +314,9 @@ public struct E16Driver: Sendable {
     /// When a turn that stopped at center last sent a message, by encoder (`centerStop`).
     private var panCenterArrival: [Int: Double] = [:]
     private var overlay: (text: String, until: Double)?
+    /// A turn's overlay split in two: the channel (and a send's output) at the left and the value
+    /// at the right of the title (Adam, 2026-11-07); it applies while `overlay` has its text.
+    private var overlaySplit: (text: String, left: String, value: String)?
     /// The encoder held down, if any, since when, and whether the hold has already toggled PFL.
     /// Its overlay stays until it is released (Adam, 2026-11-04).
     private var held: (encoder: Int, since: Double, didPFL: Bool)?
@@ -672,6 +675,8 @@ public struct E16Driver: Sendable {
         // main level, whose row holds the name, shows in the title (Adam, 2026-11-07).
         if let info = infos[strip], let moved, layout != .four || layer == .level {
             var text = panning ? ValueText.pan(moved) : ValueText.level(position: moved)
+            // Off with its unit too, "-∞ dB", as every other level (Adam, 2026-11-07).
+            if text == "-oo" { text += " dB" }
             // "dB" with a lowercase d where the host draws the screen, as TotalMix FX and the
             // Launch Controls show it (Adam, 2026-11-07).
             if drawsScreen { text = text.replacingOccurrences(of: " dB", with: " " + String(Character(E16Font.lowercaseD)) + "B") }
@@ -681,6 +686,7 @@ public struct E16Driver: Sendable {
             if drawsScreen, case .strips(_, _, .send(let n), _)? = hub.mode(of: id(layer)), hub.sendTargets.indices.contains(n) {
                 who = channelForm(strip, info.name, chars: 8, room: 34) + ">" + outputForm(n, room: 34, hub: hub).uppercased()
             }
+            overlaySplit = (who + " " + text, who, text)
             show(who + " " + text, now: now, into: &step, hub: hub)
         } else {
             step.midi += drawLabels(hub: hub)  // the cell's value
@@ -1415,7 +1421,11 @@ public struct E16Driver: Sendable {
     /// right, the "PFL" marker and the page ("PFL 2/3"), or nothing (an overlay has the whole
     /// title). On the host-drawn screen they are left- and right-justified (Adam, 2026-11-04).
     public func titleParts(hub: SurfaceHub) -> (String, String) {
-        if let overlay { return (overlay.text, "") }
+        if let overlay {
+            // A turn's value at the right, where the page shows otherwise.
+            if let split = overlaySplit, split.text == overlay.text { return (split.left, split.value) }
+            return (overlay.text, "")
+        }
         var tail: [String] = []
         // PFL anywhere in the mixer, not only on this page (it read only this page's strips
         // before, so a PFL left on another page didn't show; found 2026-11-06). On the host-drawn

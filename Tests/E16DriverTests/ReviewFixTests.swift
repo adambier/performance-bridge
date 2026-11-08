@@ -89,7 +89,7 @@ final class ReviewFixTests: XCTestCase {
         for t in [3.0, 4.0] {
             let step = driver.receive([0xB0, 1, 0x01], hub: &hub, now: t)
             XCTAssertTrue(step.core.messages.isEmpty, "held at center: nothing sent to TotalMix FX")
-            XCTAssertEqual(driver.title(hub: hub), "In1 C", "the title still shows the pan")
+            XCTAssertEqual(squeezed(driver.title(hub: hub)), "In1 C", "the title still shows the pan")
         }
         let leave = driver.receive([0xB0, 1, 0x01], hub: &hub, now: 5)
         XCTAssertFalse(leave.core.messages.isEmpty, "leaving center is sent")
@@ -176,4 +176,9 @@ final class LowercaseDTests: XCTestCase {
         let unit = String(Character(E16Font.lowercaseD)) + "B"
         XCTAssertEqual(E16Screen.width(of: unit), E16Screen.width(of: "DB"), "same width as before")
     }
+}
+
+/// A title with its runs of spaces as one: a turn's value is right-aligned (Adam, 2026-11-07).
+func squeezed(_ text: String?) -> String? {
+    text.map { $0.split(separator: " ", omittingEmptySubsequences: true).joined(separator: " ") }
 }
