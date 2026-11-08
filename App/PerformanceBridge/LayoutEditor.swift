@@ -32,12 +32,12 @@ struct LayoutView: View {
         view == .outputs ? items.filter { !monitoring.contains($0.channel.channel) } : items
     }
 
-    /// The list's height for its rows (24 points each, group titles a little more), between 120
+    /// The list's height for its rows (24 points each, group titles 28), between 120
     /// and 440 points.
     private var listHeight: CGFloat {
         let rows = view == .outputs ? monitoringItems.count + otherItems.count : otherItems.count
         let titles = view == .outputs ? 2 : 0
-        return min(max(CGFloat(rows) * 28 + CGFloat(titles) * 30 + 16, 120), 440)
+        return min(max(CGFloat(rows) * 24 + CGFloat(titles) * 28 + 20, 120), 440)
     }
 
     var body: some View {

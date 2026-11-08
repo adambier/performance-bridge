@@ -223,8 +223,8 @@ Everything below applies to both unless it says otherwise.
   green; outside SEND mode either arrow enters it at the last output used),[^test-4] with that
   output's name across 9–10. In channel strips: 3 and 4 the previous and next output for send A,
   7 and 8 for send B (each skipping the other's output), with the current outputs' names across 1–2
-  ("A: ADI-2 3/4") and 5–6 ("B: ADAT 1/2"). In both: 13 and 14 the layout (yellow; "16 CH" and "STRIP" (27 pixels, one over the labels' 26, as it is centered in its cell), centered in their cells like the
-  mode labels),
+  ("A: ADI-2 3/4") and 5–6 ("B: ADAT 1/2"). In both: 13 and 14 the layout (yellow; "16 CH" and "STRIP" (27 pixels, one over the labels' 26): "16 CH" at its cell's left margin and "STRIP" ending at its
+  cell's right edge, about two spaces apart, so they don't read as one phrase (Adam, 2026-11-07)),
   15 and 16 the previous and next page (blue). Back and forward are always the right two columns
   of a row, labeled as a pair, "< SEND >" or "< PAGE >": the word between the arrows, one word space
   each side, the ">" ending at the cell's right margin, and every arrow on a page lined up; a
