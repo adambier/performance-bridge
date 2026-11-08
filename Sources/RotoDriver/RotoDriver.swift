@@ -354,6 +354,7 @@ public struct RotoDriver: Sendable {
             }
             var value = RotoFeedback.fraction(position)
             if isLevel(index, hub: hub) { value = Self.faderPosition(forKnob: value, indent: indent) }
+            if isPan(index, hub: hub) { value = Self.panInSteps(value) }
             take(hub.controlMoved(id, strip: index, to: value, now: now), hub: hub, now: now, into: &step)
         case .touch(let index, let touched):
             take(hub.touched(id, strip: index, touched, now: now), hub: hub, now: now, into: &step)
@@ -626,6 +627,22 @@ public struct RotoDriver: Sendable {
         guard let strips = hub.strips(of: id), strips.indices.contains(index),
               case .level? = strips[index].knobTarget else { return false }
         return true
+    }
+
+    /// Whether a strip's knob is a pan.
+    private func isPan(_ index: Int, hub: SurfaceHub) -> Bool {
+        guard let strips = hub.strips(of: id), strips.indices.contains(index),
+              case .pan? = strips[index].knobTarget else { return false }
+        return true
+    }
+
+    /// A pan knob's position (0…1) rounded to TotalMix FX's pan steps, hundredths of the way to
+    /// either side, so TotalMix FX shows what the knob's screen shows. The knob's 14 bits have no
+    /// exact middle: at its center stop TotalMix FX showed L01 while the screen said C (Adam,
+    /// 2026-11-07; that the stop reports 8191, just under the middle, is an inference).
+    static func panInSteps(_ position: Double) -> Double {
+        let pan = ((position * 2 - 1) * 100).rounded() / 100
+        return (pan + 1) / 2
     }
 
     private func channel(at index: Int, hub: SurfaceHub) -> ChannelRef? {

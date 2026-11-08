@@ -654,3 +654,24 @@ the first three.
 **Consequences.** The Controls Guide names the tape button and the (+) button, says Mute Master
 flashing as standing behavior, and points to the MENU screen for the current modes.
 
+### Test 13 (2026-11-07): knobs through a refresh of the channels, and the pan's center
+
+**Setup.** Adam's Roto-Control (firmware not rechecked since test 12's 3.3.0), in MIX mode, with the app (branch
+`e16-four`, 1.2.0). Not logged; seen by Adam. The Tier 1 review of 2026-11-07 asked whether the
+automatic refresh (a `/sendall` every 30 s while idle) moves a knob, since TotalMix FX answers with
+its own rounded positions (test 3 of `docs/TOTALMIX-OSC.md`: 0.5 came back as 0.499274).
+
+- **Run 1: a level.** Knob 1 turned to a spot between its marks and let go; then Update Hidden
+  Channels (the same refresh, at once). The knob didn't move (seen).
+- **Run 2: a pan.** With the knobs on pan (MENU screen), knob 2 turned a little off center and let
+  go; then Update Hidden Channels. The knob didn't move (seen).
+
+- **Run 3: the pan's center stop.** With the knobs on pan, a knob turned into its center stop
+  showed C on its screen but L01 in TotalMix FX (seen). The 14-bit range has no exact middle; that
+  the stop reports 8191, just under it, is an inference (not logged). With pans rounded to
+  TotalMix FX's hundredths before they're sent (`RotoDriver.panInSteps`), TotalMix FX showed C
+  (seen).
+
+**Consequences.** No knob movement from the refresh in runs 1 and 2. Pan knobs are rounded to
+TotalMix FX's pan steps from 1.2.0.
+
