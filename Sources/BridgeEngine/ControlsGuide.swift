@@ -158,32 +158,32 @@ public struct ControlsGuide: Equatable, Sendable {
         title: "OXI Instruments E16",
         image: "controller-oxi-e16",
         introduction: [
-            "The E16 has two layouts. In the **16-channel layout**, each encoder is one channel: the four rows of four are the channels in order, left to right and top to bottom. In the **4-channel layout**, each column is one channel: send A level on the top row, send B level on the second, pan on the third, and main level on the bottom. Each ring shows its value in its channel's TotalMix FX color; a send's ring takes its output's color (the channel's, for an output left white).",
+            "The E16 has two layouts. In the **16-channel layout**, each encoder is one channel: the four rows of four are the channels in order, left to right and top to bottom. In the **channel-strip layout**, each column is one channel: send A level on the top row, send B level on the second, pan on the third, and main level on the bottom. Each ring shows its value in its channel's TotalMix FX color; a send's ring takes its output's color (the channel's, for an output left white).",
         ],
         tables: [
             Table(controlHeading: "Control (each encoder)", actionHeading: "What it does for that encoder's channel", rows: [
-                Row("Turn", "In the 16-channel layout, level in Main Out, pan in Main Out, or a send, by the mode (**Shift**, below); in the 4-channel layout, the row's send A level, send B level, pan, or main level. A level or send fills its ring at 0 dB and above."),
-                Row("Push and release", "Mute on or off; in the 4-channel layout, any encoder of the channel's column, shown on its main level ring. A muted channel's ring goes dark with four orange lights turning around it; on the screen, its name is boxed. While TotalMix FX's Mute Master is off, a mute is only set and doesn't silence the channel: the four lights stand still and take turns with the level, half a second each, and the box flashes to an outline; with PFL also on, the lights turn with the pink ones and blink. The screen says \"MUTE ON\" or \"MUTE OFF\", with \"MUTE SET\" instead of \"MUTE ON\" while Mute Master is off."),
+                Row("Turn", "In the 16-channel layout, level in Main Out, pan in Main Out, or a send, by the mode (**Shift**, below); in the channel-strip layout, the row's send A level, send B level, pan, or main level. A level or send fills its ring at 0 dB and above."),
+                Row("Push and release", "Mute on or off; in the channel-strip layout, any encoder of the channel's column, shown on its main level ring. A muted channel's ring goes dark with four orange lights turning around it; on the screen, its name is boxed. While TotalMix FX's Mute Master is off, a mute is only set and doesn't silence the channel: the four lights stand still and take turns with the level, half a second each, and the box flashes to an outline; with PFL also on, the lights turn with the pink ones and blink. The screen says \"MUTE ON\" or \"MUTE OFF\", with \"MUTE SET\" instead of \"MUTE ON\" while Mute Master is off."),
                 Row("Hold for one second", "PFL on or off. After a quarter second, a pink arc counts down around the ring; when it closes, PFL switches. While PFL is on, the ring goes dark with four pink lights turning around it, as a mute's orange ones do, and a small square follows the channel's name; with both on, the orange and pink lights turn together. The screen says \"PFL ON\" or \"PFL OFF\" while the encoder is held."),
                 Row("Push and turn", "A jump to the next stop the way it turns: for a level or a send, −∞, 0 dB, or +6 dB; for a pan, hard left, center, or hard right. To jump on to the next stop, pause, then turn again. Start turning within a second of pushing: a push that turns neither mutes nor switches PFL."),
             ]),
             Table(controlHeading: "Hold Shift and press (16-channel layout)", actionHeading: "What it does", rows: [
                 Row("**1** LEVEL / **2** PAN / **3** SEND", "What a turn does: level (white), pan (magenta), or a send (green) to the last output used."),
                 Row("**11** / **12** < SEND >", "The previous or next output for the sends (green). In LEVEL or PAN mode, either arrow enters SEND mode at the last output used."),
-                Row("**13** 16 CH / **14** 4 CH", "The layout (yellow). 4 CH shows the four channels holding the one last turned or pushed."),
+                Row("**13** 16 CH / **14** STRIP", "The layout (yellow). STRIP shows the four channels holding the one last turned or pushed."),
                 Row("**15** / **16** < PAGE >", "The previous or next sixteen channels (blue)."),
             ]),
-            Table(controlHeading: "Hold Shift and press (4-channel layout)", actionHeading: "What it does", rows: [
+            Table(controlHeading: "Hold Shift and press (channel-strip layout)", actionHeading: "What it does", rows: [
                 Row("**3** / **4** < SEND >", "The previous or next output for send A, the top row (green). It skips send B's output."),
                 Row("**7** / **8** < SEND >", "The same for send B, the second row."),
-                Row("**13** 16 CH / **14** 4 CH", "The layout (yellow). 16 CH shows the sixteen channels holding these four."),
+                Row("**13** 16 CH / **14** STRIP", "The layout (yellow). 16 CH shows the sixteen channels holding these four."),
                 Row("**15** / **16** < PAGE >", "The previous or next four channels (blue)."),
             ]),
         ],
         notes: [
             "While Shift is held, the button in use pulses, the other buttons available are dim, and an arrow with nowhere to go is dark.",
             "A small square before the page number at the top right means a channel not on this page has PFL on.",
-            "A dark ring with no lights on it has no channel. In the 4-channel layout, a muted channel's send rings are dark too.",
+            "A dark ring with no lights on it has no channel. In the channel-strip layout, a muted channel's send rings are dark too.",
             "A pan shows as an arc from the top: in the channel's color at center and red as soon as it moves off center, however little. Turning a pan stops at center, however fast; to move past it, pause, then turn a little further.",
             "The layout, the sends, meters, and ring brightness can be set in **Settings… → Connections**; meters need TotalMix FX's **Send Level Data** on (Step 1).",
             "Levels and pans are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so TotalMix FX's window shows the levels and pans set here only while Main Out's output is selected in its bottom row.",

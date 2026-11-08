@@ -190,7 +190,7 @@ public struct E16Driver: Sendable {
         /// The 4-channel layout: a send row's (0 for A, 1 for B) previous output, or next.
         case rowOutput(row: Int, direction: Int)
         /// Selects a layout, as the mode buttons select a mode: encoders 13 (16 channels) and 14
-        /// (4 channels) in both layouts, the current one lit in full (Adam, 2026-11-06: one
+        /// (channel strips) in both layouts, the current one lit in full (Adam, 2026-11-06: one
         /// button named for the other layout read as the layout in use).
         case switchLayout(to: Layout)
 
@@ -218,7 +218,7 @@ public struct E16Driver: Sendable {
             case .send: return "SEND"
             case .output(let d), .rowOutput(_, let d): return d < 0 ? "<SND" : "SND>"
             case .page(let d): return d < 0 ? "<PG" : "PG>"
-            case .switchLayout(let to): return to == .four ? "4CH" : "16CH"
+            case .switchLayout(let to): return to == .four ? "STRP" : "16CH"
             }
         }
 
@@ -231,7 +231,7 @@ public struct E16Driver: Sendable {
             case .send: return "SEND"
             case .output(let d), .rowOutput(_, let d): return d < 0 ? "<SEND" : "SEND>"
             case .page(let d): return d < 0 ? "<PAGE" : "PAGE>"
-            case .switchLayout(let to): return to == .four ? "4 CH" : "16 CH"
+            case .switchLayout(let to): return to == .four ? "STRIP" : "16 CH"
             }
         }
 
@@ -1581,7 +1581,7 @@ public struct E16Driver: Sendable {
             let output = ChannelRef(.output, hub.sendTargets[n])
             if let color = hub.mirror.channels[output]?.color, color != 1, let sendRGB = Self.totalMixRGB[color] { rgb = sendRGB }
         }
-        // In 4 channels the bottom row is always the level, whatever the 16-channel mode
+        // In channel strips the bottom row is always the level, whatever the 16-channel mode
         // was (review of 2026-11-07: after PAN mode it was drawn as a pan).
         let level: E16Ring = isPan && layout == .sixteen
             ? Self.panRing(value, rgb)

@@ -366,7 +366,7 @@ struct SettingsView: View {
 }
 
 /// The E16's settings, in a box of their own below the Connections tab's box while the E16 is
-/// chosen: its layout, its send rows (only for the 4-channel layout, the one that uses them), its
+/// chosen: its layout, its send rows (only for channel strips, the layout that uses them), its
 /// meters, and its rings' brightness. Each takes effect at once, connected or not; the layout and
 /// sends also follow a change made on the device. Text is only what Settings can't do without:
 /// what the layouts and the Shift page do is in the Controls Guide (Adam, 2026-11-07).
@@ -410,7 +410,7 @@ struct E16SettingsView: View {
                         get: { model.status.e16FourChannelStrips },
                         set: { model.engine.setE16Layout(fourChannelStrips: $0) })) {
                         Text("16 channels").tag(false)
-                        Text("4 channels").tag(true)
+                        Text("Channel strips").tag(true)
                     }
                     .labelsHidden()
                     .frame(width: 200, alignment: .leading)

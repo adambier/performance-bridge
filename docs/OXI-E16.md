@@ -132,7 +132,7 @@ Adam, 2026-11-05/06) there are two, chosen in Settings or on the Shift page:
 
 - **16 channels** (`E16Driver.Layout.sixteen`; 1.1.x's only layout): sixteen channels a page, one
   encoder each, always sources; the turn is the level, the pan, or a send, by the mode.
-- **4 channels** (`.four`): four channels a page, one column each: the top row turns send A level,
+- **Channel strips** (`.four`): four channels a page, one column each: the top row turns send A level,
   the second send B level, the third the pan, and the bottom row the main level. Send A and B are outputs
   chosen in Settings or on the Shift page (`SendRows`, in SurfaceCore), never the same output, and
   kept across launches. A push of any encoder in a column is that channel's mute or PFL, shown on
@@ -221,15 +221,15 @@ Everything below applies to both unless it says otherwise.
 - **Shift** makes the encoders buttons. In 16 channels: 1 LEVEL (white), 2 PAN (magenta), 3 SEND
   (deep green; back to the last output used), 11 and 12 the previous and next send output (deep
   green; outside SEND mode either arrow enters it at the last output used),[^test-4] with that
-  output's name across 9–10. In 4 channels: 3 and 4 the previous and next output for send A,
+  output's name across 9–10. In channel strips: 3 and 4 the previous and next output for send A,
   7 and 8 for send B (each skipping the other's output), with the current outputs' names across 1–2
-  ("A: ADI-2 3/4") and 5–6 ("B: ADAT 1/2"). In both: 13 and 14 the layout (yellow; "16 CH" and "4 CH", centered in their cells like the
+  ("A: ADI-2 3/4") and 5–6 ("B: ADAT 1/2"). In both: 13 and 14 the layout (yellow; "16 CH" and "STRIP" (27 pixels, one over the labels' 26, as it is centered in its cell), centered in their cells like the
   mode labels),
   15 and 16 the previous and next page (blue). Back and forward are always the right two columns
   of a row, labeled as a pair, "< SEND >" or "< PAGE >": the word between the arrows, one word space
   each side, the ">" ending at the cell's right margin, and every arrow on a page lined up; a
   missing arrow leaves the rest in place, and with no arrow the word isn't shown. The layout
-  buttons work like the mode buttons; switching to 4 channels lands on the row holding the
+  buttons work like the mode buttons; switching to channel strips lands on the row holding the
   channel last turned or pushed, and back to 16 channels on the page holding those four
   (test 10). While Shift is held the screen names the buttons and the rings show them: off
   (nothing there, or nowhere to go); available, at the lowest level that keeps the color's
@@ -281,7 +281,7 @@ Everything below applies to both unless it says otherwise.
   The firmware's own LABELS layout, with four-character labels (e.g., "P1/2"), is kept as a
   fallback.
   **From 1.2.0:** labels are 5×7 values and names at rows 14, 27, 40, and 53, three clear lines
-  above and below the title's rule. In 4 channels each column shows, top to bottom, send A's
+  above and below the title's rule. In channel strips each column shows, top to bottom, send A's
   level, send B's level, the pan, and the name; values sit in fixed digit places, blank at rest
   (an off send, a centered pan), "-∞" for off. The title names send A at the left and send B
   ending at the third column's margin ("A>ADI3/4 … B>ADT1/2"); in 16 channels SEND mode it reads
@@ -297,7 +297,7 @@ Everything below applies to both unless it says otherwise.
   this page shows as "■" before the page in the title's tail (1.1.x never showed one).
 - **Meters** (from 1.2.0, a Settings choice, off by default): a 1-pixel bar under each name, two
   blank lines below it, 26 pixels at full scale on TotalMix FX's fader law (`MeterScale`, shared
-  with the Roto-Control); in 4 channels a stereo channel's right side on the line below its left, in 16 channels one
+  with the Roto-Control); in channel strips a stereo channel's right side on the line below its left, in 16 channels one
   line, the louder side (a trial from the review of 2026-11-07, so each meter sits nearer its own
   name than the next row's) (the right side read at the left channel + 1, as
   the Roto-Control's meters do; that TotalMix FX sends it there is inferred, not tested). The bar is an

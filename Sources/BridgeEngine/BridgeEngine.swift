@@ -107,7 +107,7 @@ public struct BridgeSettings: Equatable, Sendable {
     /// How bright the E16's rings are (`E16Driver.brightness`, kept within the range below); a must-have setting, since
     /// how bright is right depends on the room and is the user's call (Adam, 2026-11-04).
     public var e16Brightness = E16Driver.defaultBrightness
-    /// The E16's layout: 4 channels rather than 16 channels (Adam, 2026-11-05/06), as saved
+    /// The E16's layout: channel strips rather than 16 channels (Adam, 2026-11-05/06), as saved
     /// by the app (`e16FourChannelStrips`), from Settings or the E16's Shift page.
     public var e16FourChannelStrips = false
     /// Whether the E16 shows meters under the names (`E16Driver.showsMeters`; `e16Meters`).
@@ -198,7 +198,7 @@ public struct BridgeStatus: Equatable, Sendable {
     public var e16Connected = false
     /// How bright the E16’s rings are (`BridgeEngine.e16MinimumBrightness`…`e16MaximumBrightness`).
     public var e16Brightness = E16Driver.defaultBrightness
-    /// Whether the E16 uses 4 channels rather than 16 channels, connected or not.
+    /// Whether the E16 uses channel strips rather than 16 channels, connected or not.
     public var e16FourChannelStrips = false
     /// Whether the E16 shows meters under the names.
     public var e16Meters = false
@@ -270,7 +270,7 @@ public final class BridgeEngine: @unchecked Sendable {
     /// Called with the new layout whenever the app changes it (order, new-page option, or labels),
     /// so the app can save it. Set it before `start()`.
     public var onLayoutChange: (@Sendable (PerformanceLayout) -> Void)?
-    /// Called with whether the E16 now uses 4 channels whenever the layout changes, on the
+    /// Called with whether the E16 now uses channel strips whenever the layout changes, on the
     /// device's Shift page or in the app, so the app can save it (`e16FourChannelStrips`). Called
     /// with the lock released.
     public var onE16LayoutChange: (@Sendable (Bool) -> Void)?
@@ -308,7 +308,7 @@ public final class BridgeEngine: @unchecked Sendable {
     /// Whether a Launch Control shows levels by brightness, kept like `sendRows`.
     private var levelBrightness: Bool
     private var e16Driver: E16Driver?
-    /// The E16's layout (4 channels or 16), as saved, then as switched on the device or in
+    /// The E16's layout (channel strips or 16 channels), as saved, then as switched on the device or in
     /// the app; kept across a reconnection and while no device is connected.
     private var e16FourStrips: Bool
     /// The E16's send rows (A, B), kept like `e16FourStrips`; a connected driver's are the ones in

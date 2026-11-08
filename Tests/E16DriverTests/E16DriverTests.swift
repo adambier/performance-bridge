@@ -395,7 +395,7 @@ final class E16DriverTests: XCTestCase {
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(shift.midi.lastTitle, "LEVEL", "the title stays")
         XCTAssertEqual(shift.midi.lastLabels, ["LVL", "PAN", "SEND", "", "", "", "", "",
-                                               "Phon", "", "<SND", "SND>", "16CH", "4CH", "", ""],
+                                               "Phon", "", "<SND", "SND>", "16CH", "STRP", "", ""],
                        "one page: no page arrows")
         let rings = shift.midi.rings
         XCTAssertEqual(rings[0]?.g, 127, "LEVEL, in use: white at the driver's brightness (1 in the tests)")
@@ -799,7 +799,7 @@ final class E16FourLayoutTests: XCTestCase {
         XCTAssertEqual(first.count, 16)
         _ = driver.receive([0xB0, 6, 0x01], hub: &hub, now: 1)  // turn the seventh channel
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 2)
-        XCTAssertEqual(shift.midi.lastLabels.map { Array($0[12...13]) }, ["16CH", "4CH"], "a button for each layout")
+        XCTAssertEqual(shift.midi.lastLabels.map { Array($0[12...13]) }, ["16CH", "STRP"], "a button for each layout")
         XCTAssertEqual(shift.midi.rings[12].map { [$0.r, $0.g, $0.b] }, [127, 85, 0], "the layout in use, lit in full")
         XCTAssertEqual(shift.midi.rings[13].map { [$0.r, $0.g, $0.b] }, [3, 2, 0], "the other, dim, and still yellow (2, 1, 0 read as orange)")
         XCTAssertEqual(driver.receive([0x90, 12, 0x7F, 0x80, 12, 0x00], hub: &hub, now: 2.05).core.messages, [])
@@ -1105,7 +1105,7 @@ final class E16FourLayoutTests: XCTestCase {
         var (driver, hub, _) = connectedFour()
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(shift.midi.lastLabels, ["Phon", "", "", ">", "Mon", "", "", ">",
-                                               "", "", "", "", "16CH", "4CH", "", ""],
+                                               "", "", "", "", "16CH", "STRP", "", ""],
                        "A's back arrow and B's go nowhere (B's would be A's output); one page")
         XCTAssertEqual(shift.midi.rings[3]?.g, 2, "an available arrow, dim deep green")
         XCTAssertEqual(shift.midi.rings[2]?.amount, 0, "dark")
