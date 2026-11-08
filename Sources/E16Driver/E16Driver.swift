@@ -669,7 +669,10 @@ public struct E16Driver: Sendable {
         knobValues[encoder] = value
         step.midi += drawRing(encoder, hub: hub)
         if let info = infos[strip], let moved {
-            let text = panning ? ValueText.pan(moved) : ValueText.level(position: moved)
+            var text = panning ? ValueText.pan(moved) : ValueText.level(position: moved)
+            // "dB" with a lowercase d where the host draws the screen, as TotalMix FX and the
+            // Launch Controls show it (Adam, 2026-11-07).
+            if drawsScreen { text = text.replacingOccurrences(of: " dB", with: " " + String(Character(E16Font.lowercaseD)) + "B") }
             var who = channelForm(strip, info.name, chars: 8)
             // A send names its output too, "KEYS>ADI2 -6.0 dB", on the host-drawn screen, where
             // it fits (Adam, 2026-11-06: the title showed only the channel and the level).

@@ -108,7 +108,12 @@ public enum E16Font {
 
     static let box = E16Glyph(width: 5, rows: [0b11111, 0b10001, 0b10001, 0b10001, 0b10001, 0b10001, 0b11111])
 
+    /// A lowercase "d", for the unit "dB" only (Adam, 2026-11-07: the one wrong-case unit on the
+    /// device). Drawn text is uppercased, so it has a private-use scalar of its own.
+    public static let lowercaseD: Unicode.Scalar = "\u{E000}"
+
     static let glyphs: [Unicode.Scalar: E16Glyph] = [
+        lowercaseD: E16Glyph(width: 5, rows: [0b00001, 0b00001, 0b01101, 0b10011, 0b10001, 0b10011, 0b01101]),
         " ": E16Glyph(width: 3, rows: [0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000]),
         "A": E16Glyph(width: 5, rows: [0b01110, 0b10001, 0b10001, 0b11111, 0b10001, 0b10001, 0b10001]),
         "B": E16Glyph(width: 5, rows: [0b11110, 0b10001, 0b10001, 0b11110, 0b10001, 0b10001, 0b11110]),

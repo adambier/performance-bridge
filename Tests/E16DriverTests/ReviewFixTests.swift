@@ -168,3 +168,12 @@ final class ReviewFixTests: XCTestCase {
     }
 }
 
+
+final class LowercaseDTests: XCTestCase {
+    func testDBUnitHasLowercaseDGlyph() {
+        XCTAssertNotEqual(E16Font.glyph(E16Font.lowercaseD).rows, E16Font.glyph("D").rows, "its own shape")
+        XCTAssertNotEqual(E16Font.glyph(E16Font.lowercaseD).rows, E16Font.glyph("\u{2603}").rows, "not the missing-glyph box")
+        let unit = String(Character(E16Font.lowercaseD)) + "B"
+        XCTAssertEqual(E16Screen.width(of: unit), E16Screen.width(of: "DB"), "same width as before")
+    }
+}

@@ -65,7 +65,7 @@ Checked on screen with TotalMix FX "2.10 (1)" on a Mac (2026-10-31); the screens
    should be off with Global OSC; this submenu is inferred to be that setting, since TotalMix FX has no item by
    that name. The tests ran with it checked and Global OSC worked ([`docs/TOTALMIX-OSC.md`](TOTALMIX-OSC.md), section 1); a run
    with it unchecked hasn't been compared.
-9. **Mute and PFL.** The hardware controllers' mute and PFL buttons depend on three settings in TotalMix FX's
+9. **Mute and PFL.** Mute and PFL from a hardware controller depend on three settings in TotalMix FX's
    window, checked on screen:
 
    <img src="../App/PerformanceBridge/Resources/totalmix-control-strip.png" width="160" alt="TotalMix FX's Control Strip: the M, S, and F buttons, and the options panel with solo/pfl mode set to live">

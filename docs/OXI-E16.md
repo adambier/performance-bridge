@@ -302,9 +302,9 @@ Everything below applies to both unless it says otherwise.
 - **Meters** (from 1.2.0, a Settings choice, off by default): a 1-pixel bar under each name, two
   blank lines below it, 26 pixels at full scale on TotalMix FX's fader law (`MeterScale`, shared
   with the Roto-Control); in channel strips a stereo channel's right side on the line below its left, in 16 channels one
-  line, the louder side (a trial from the review of 2026-11-07, so each meter sits nearer its own
-  name than the next row's) (the right side read at the left channel + 1, as
-  the Roto-Control's meters do; that TotalMix FX sends it there is inferred, not tested). The bar is an
+  line, the louder side (from the review of 2026-11-07, so each meter sits nearer its own
+  name than the next row's; it read well on the device, Adam, 2026-11-07) (the right side read at the left channel + 1, as
+  the Roto-Control's meters do; confirmed on the device, Adam, 2026-11-07). The bar is an
   RMS-like average of the peaks TotalMix FX sends (over 0.03 s, 6 dB under them), and one pixel
   holds the true peak for 2 s. Redraws are capped at 25 a second (test 8 showed 60 is smooth). They need TotalMix FX's OSC
   "Send Level Data" on; with "Peak Hold" on they move slowly (`docs/TOTALMIX-OSC.md`).
@@ -327,8 +327,6 @@ Everything below applies to both unless it says otherwise.
   inversion is unexplained. Watch for it when the driver uses LED messages in 1.1.1.
 - Whether the driver needs an acceleration curve of its own. For now it multiplies the device's
   1–8 steps by a fixed step.
-- In 16 channels, whether one meter line per channel (the louder side; the 1.2.0 review's
-  trial) ties each meter clearly enough to its own name: to judge on the device.
 
 ## 7. Tests
 
