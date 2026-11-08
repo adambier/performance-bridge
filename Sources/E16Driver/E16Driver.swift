@@ -1164,7 +1164,7 @@ public struct E16Driver: Sendable {
             for (left, word) in pairs where !labels[left].isEmpty || !labels[left + 1].isEmpty { pairWords[left] = word }
         }
         let bytes = drawsScreen ? E16Outgoing.framebuffer(Self.screen(title: parts.0, tail: parts.1, labels: labels, inverted: inverted, outlined: outlined, pflMarked: pflMarked,
-                                                                      centered: centersLabels, values: values, meters: meters, peaks: peakWidths, spans: spans,
+                                                                      centered: centersLabels && !shiftHeld, values: values, meters: meters, peaks: peakWidths, spans: spans,
                                                                       rightAligned: shiftHeld ? Self.shiftRightAligned : [], pairWords: pairWords))
             : E16Outgoing.labels(title: title(hub: hub), labels: labels)
         guard bytes != sentLabels else { return [] }
@@ -1289,6 +1289,10 @@ public struct E16Driver: Sendable {
 
     /// The Shift page's cells whose labels start at the cell's margin, left-aligned (and may run
     /// into the next cell): the send rows' current outputs (Adam, 2026-11-06).
+    /// On the Shift page every other label starts at its cell's margin too (the screen isn't
+    /// centered while Shift is held), so the modes, the layout buttons, and the send names share
+    /// one left edge per column; centered, "16CH" under "LEVEL" looked off (Adam, 2026-11-07),
+    /// and left-aligned "16CH" and "STRIP" sit further apart.
     static func shiftSpans(_ layout: Layout) -> Set<Int> { layout == .four ? [0, 4] : [8] }
 
     /// The Shift page's cells whose labels end at the cell's right edge: none now. "16 CH" and
