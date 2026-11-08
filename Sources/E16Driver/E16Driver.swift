@@ -231,7 +231,7 @@ public struct E16Driver: Sendable {
             case .send: return "SEND"
             case .output(let d), .rowOutput(_, let d): return d < 0 ? "<SEND" : "SEND>"
             case .page(let d): return d < 0 ? "<PAGE" : "PAGE>"
-            case .switchLayout(let to): return to == .four ? "STRIP" : "16 CH"
+            case .switchLayout(let to): return to == .four ? "STRIP" : "16CH"
             }
         }
 
@@ -1269,9 +1269,13 @@ public struct E16Driver: Sendable {
                     for py in (y - 1)...(y + E16Font.glyphHeight) { screen.set(px, py, !screen.pixel(px, py)) }
                 }
             } else if outlined.contains(index) {
-                // The same box's outline: a mute's flash while Mute Master is off.
-                for px in (x - 1)...boxEnd { screen.set(px, y - 1); screen.set(px, y + E16Font.glyphHeight) }
-                for py in (y - 1)...(y + E16Font.glyphHeight) { screen.set(x - 1, py); screen.set(boxEnd, py) }
+                // An outline one pixel clear of the letters all round: a mute's flash while Mute
+                // Master is off (Adam, 2026-11-07: an outline on the box's own edge ran into the
+                // letters and made them hard to read).
+                let left = max(x - 2, cellX), right = min(boxEnd + 1, cellX + cell - 1)
+                let top = y - 2, bottom = y + E16Font.glyphHeight + 1
+                for px in left...right { screen.set(px, top); screen.set(px, bottom) }
+                for py in top...bottom { screen.set(left, py); screen.set(right, py) }
             }
         }
         for (left, word) in pairWords {
@@ -1284,14 +1288,14 @@ public struct E16Driver: Sendable {
     }
 
     /// The Shift page's cells whose labels start at the cell's margin, left-aligned (and may run
-    /// into the next cell): the send rows' current outputs (Adam, 2026-11-06), and "16 CH" (see
-    /// `shiftRightAligned`).
-    static func shiftSpans(_ layout: Layout) -> Set<Int> { layout == .four ? [0, 4, 12] : [8, 12] }
+    /// into the next cell): the send rows' current outputs (Adam, 2026-11-06).
+    static func shiftSpans(_ layout: Layout) -> Set<Int> { layout == .four ? [0, 4] : [8] }
 
-    /// The Shift page's cells whose labels end at the cell's right edge: "STRIP", so that with
-    /// "16 CH" at its own cell's left margin the two are about two spaces apart and don't read
-    /// as one phrase, "16 CH STRIP" (Adam, 2026-11-07).
-    static let shiftRightAligned: Set<Int> = [13]
+    /// The Shift page's cells whose labels end at the cell's right edge: none now. "16 CH" and
+    /// "STRIP" pushed apart this way still read nearly as one phrase and broke the column
+    /// alignment with LEVEL, PAN, and SEND; both are centered, and "16CH" has no inner space
+    /// (Adam, 2026-11-07).
+    static let shiftRightAligned: Set<Int> = []
 
     /// Where a Shift-page pair's word field starts. Every pair on a page shares one field, as wide
     /// as the page's widest word, so all the "<" line up and all the ">" line up (Adam,

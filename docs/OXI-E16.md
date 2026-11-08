@@ -223,8 +223,8 @@ Everything below applies to both unless it says otherwise.
   green; outside SEND mode either arrow enters it at the last output used),[^test-4] with that
   output's name across 9–10. In channel strips: 3 and 4 the previous and next output for send A,
   7 and 8 for send B (each skipping the other's output), with the current outputs' names across 1–2
-  ("A: ADI-2 3/4") and 5–6 ("B: ADAT 1/2"). In both: 13 and 14 the layout (yellow; "16 CH" and "STRIP" (27 pixels, one over the labels' 26): "16 CH" at its cell's left margin and "STRIP" ending at its
-  cell's right edge, about two spaces apart, so they don't read as one phrase (Adam, 2026-11-07)),
+  ("A: ADI-2 3/4") and 5–6 ("B: ADAT 1/2"). In both: 13 and 14 the layout (yellow; "16CH" and "STRIP", centered like the mode labels; "STRIP" is 27 pixels, one over the
+  labels' 26; "16 CH" with a space read with "STRIP" as one phrase, Adam, 2026-11-07),
   15 and 16 the previous and next page (blue). Back and forward are always the right two columns
   of a row, labeled as a pair, "< SEND >" or "< PAGE >": the word between the arrows, one word space
   each side, the ">" ending at the cell's right margin, and every arrow on a page lined up; a
@@ -293,7 +293,7 @@ Everything below applies to both unless it says otherwise.
   that fits, and two names ending in a number or a pair that would come out the same take
   distinct forms ("ADI-2 3/4" and "ADAT 3/4" become "AI3/4" and "AT3/4"); other names are cut
   from the end and can still come out the same. A mute inverts the name in a lit box (while Mute Master
-  is off, flashing to the box's outline, so the name never looks unmuted) and a PFL adds a 3×3 square after it (the two centered together); a PFL on a channel not on
+  is off, flashing to an outline one pixel clear of the letters, so the name never looks unmuted) and a PFL adds a 3×3 square after it (the two centered together); a PFL on a channel not on
   this page shows as "■" before the page in the title's tail (1.1.x never showed one).
 - **Meters** (from 1.2.0, a Settings choice, off by default): a 1-pixel bar under each name, two
   blank lines below it, 26 pixels at full scale on TotalMix FX's fader law (`MeterScale`, shared

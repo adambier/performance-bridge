@@ -170,13 +170,13 @@ public struct ControlsGuide: Equatable, Sendable {
             Table(controlHeading: "Hold Shift and press (16-channel layout)", actionHeading: "What it does", rows: [
                 Row("**1** LEVEL / **2** PAN / **3** SEND", "What a turn does: level (white), pan (magenta), or a send (green) to the last output used."),
                 Row("**11** / **12** < SEND >", "The previous or next output for the sends (green). In LEVEL or PAN mode, either arrow enters SEND mode at the last output used."),
-                Row("**13** 16 CH / **14** STRIP", "The layout (yellow). STRIP shows the four channels holding the one last turned or pushed."),
+                Row("**13** 16CH / **14** STRIP", "The layout (yellow). STRIP shows the four channels holding the one last turned or pushed."),
                 Row("**15** / **16** < PAGE >", "The previous or next sixteen channels (blue)."),
             ]),
             Table(controlHeading: "Hold Shift and press (channel-strip layout)", actionHeading: "What it does", rows: [
                 Row("**3** / **4** < SEND >", "The previous or next output for send A, the top row (green). It skips send B's output."),
                 Row("**7** / **8** < SEND >", "The same for send B, the second row."),
-                Row("**13** 16 CH / **14** STRIP", "The layout (yellow). 16 CH shows the sixteen channels holding these four."),
+                Row("**13** 16CH / **14** STRIP", "The layout (yellow). 16CH shows the sixteen channels holding these four."),
                 Row("**15** / **16** < PAGE >", "The previous or next four channels (blue)."),
             ]),
         ],

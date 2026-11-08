@@ -532,6 +532,14 @@ final class BridgeModel: ObservableObject {
 
     private func start() {
         let engine = self.engine
+        // Switching away from TotalMix FX on this Mac often follows hiding or showing a channel
+        // there: refresh the channels then (Adam, 2026-11-07). Matched by the app's name, since
+        // its bundle ID isn't documented here (an inference that the name starts "TotalMix").
+        NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didDeactivateApplicationNotification, object: nil, queue: .main) { note in
+            let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication
+            if app?.localizedName?.hasPrefix("TotalMix") == true { engine.refresh() }
+        }
         engine.onLayoutChange = { layout in
             if let data = try? JSONEncoder().encode(layout) { UserDefaults.standard.set(data, forKey: Self.layoutKey) }
         }
@@ -633,7 +641,10 @@ struct MenuContent: View {
         // then the rarely used items in the order of a Mac app menu: the Setup Guide (mostly at
         // first launch, Adam, 2026-10-31), About and Check for Updates, Settings, Quit. Labels in
         // title-style capitalization, with an ellipsis where a window asks for more.
-        Button("Refresh Channels from TotalMix FX") { model.engine.refresh() }
+        // Hiding or showing a channel is the one change TotalMix FX doesn't announce; the app
+        // also checks for it on its own (BridgeEngine's automatic refresh), so this is for an
+        // immediate update (Adam, 2026-11-07: "Refresh Channels from TotalMix FX" was unclear).
+        Button("Update Hidden Channels") { model.engine.refresh() }
         Divider()
         Button("Setup Guide…") { model.showSetup() }
         Button("Controls Guide…") {

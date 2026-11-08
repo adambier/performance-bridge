@@ -143,8 +143,12 @@ final class ReviewFixTests: XCTestCase {
         let plain = E16Driver.screen(title: "LEVEL", labels: ["VOX"], centered: true)
         let outline = E16Driver.screen(title: "LEVEL", labels: ["VOX"], outlined: [0], centered: true)
         let y = E16Driver.labelTop
-        let added = (0..<32).filter { x in outline.pixel(x, y - 1) && !plain.pixel(x, y - 1) }
+        let added = (0..<32).filter { x in outline.pixel(x, y - 2) && !plain.pixel(x, y - 2) }
         XCTAssertGreaterThan(added.count, 10, "a line over the name")
+        let x = (32 - E16Screen.width(of: "VOX")) / 2
+        XCTAssertFalse((x..<(x + E16Screen.width(of: "VOX"))).contains { outline.pixel($0, y - 1) },
+                       "one clear pixel between the outline and the letters")
+        XCTAssertFalse((y..<(y + 7)).contains { outline.pixel(x - 1, $0) }, "and at the side")
         XCTAssertEqual(plain.pixel(16, y + 3), outline.pixel(16, y + 3), "the name itself unchanged")
     }
 }

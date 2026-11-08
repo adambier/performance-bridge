@@ -783,9 +783,8 @@ final class E16FourLayoutTests: XCTestCase {
     }
 
     func testLayoutSwitch() {
-        XCTAssertEqual(E16Driver.shiftSpans(.four), [0, 4, 12], "the send names and \"16 CH\" left-aligned")
-        XCTAssertEqual(E16Driver.shiftSpans(.sixteen), [8, 12])
-        XCTAssertEqual(E16Driver.shiftRightAligned, [13], "\"STRIP\" right-aligned, apart from \"16 CH\"")
+        XCTAssertEqual(E16Driver.shiftSpans(.four), [0, 4], "the send names left-aligned")
+        XCTAssertEqual(E16Driver.shiftSpans(.sixteen), [8], "the layout labels centered, like the modes")
         var hub = loadedHub()
         for n in 4..<10 {
             for (parameter, value) in [("stereo", TotalMixValue.number(0)), ("name", .text("In\(n)")), ("color", .number(1))] {

@@ -103,9 +103,11 @@ not show it grayed out. Checked on screen (2026-10-31) unless marked otherwise.
 
    <img src="../App/PerformanceBridge/Resources/totalmix-channel-layout.png" width="560" alt="TotalMix FX's Channel Layout window, Inputs tab, with the Hide Channel in boxes">
 
-4. Then choose **Refresh Channels from TotalMix FX** in Performance Bridge's menu: TotalMix FX doesn't announce
-   hidden or shown channels over OSC ([`docs/TOTALMIX-OSC.md`](TOTALMIX-OSC.md), test 11). The app also refreshes by itself when
-   its Channel Layout tab opens and when TotalMix FX comes back after going quiet.
+4. Performance Bridge picks up the change within half a minute, or at once with **Update Hidden Channels** in its
+   menu. TotalMix FX doesn't announce hidden or shown channels over OSC ([`docs/TOTALMIX-OSC.md`](TOTALMIX-OSC.md), test 11),
+   so the app asks for all of its state again: every 30 seconds while no control on the hardware controller has
+   moved for 5 seconds, when you switch away from TotalMix FX on the same Mac, when its Channel Layout tab opens,
+   and when TotalMix FX comes back after going quiet.
 
 The Channel Layout window's **Remote Controller** column lists M1–M4 and O1–O4 for each channel when nothing is hidden; what it
 shows for a hidden channel has not been checked. Hiding has been observed not to renumber the other channels (one
@@ -264,14 +266,14 @@ The E16 has two layouts. In the **16-channel layout**, each encoder is one chann
 |---|---|
 | **1** LEVEL / **2** PAN / **3** SEND | What a turn does: level (white), pan (magenta), or a send (green) to the last output used. |
 | **11** / **12** < SEND > | The previous or next output for the sends (green). In LEVEL or PAN mode, either arrow enters SEND mode at the last output used. |
-| **13** 16 CH / **14** STRIP | The layout (yellow). STRIP shows the four channels holding the one last turned or pushed. |
+| **13** 16CH / **14** STRIP | The layout (yellow). STRIP shows the four channels holding the one last turned or pushed. |
 | **15** / **16** < PAGE > | The previous or next sixteen channels (blue). |
 
 | Hold Shift and press (channel-strip layout) | What it does |
 |---|---|
 | **3** / **4** < SEND > | The previous or next output for send A, the top row (green). It skips send B's output. |
 | **7** / **8** < SEND > | The same for send B, the second row. |
-| **13** 16 CH / **14** STRIP | The layout (yellow). 16 CH shows the sixteen channels holding these four. |
+| **13** 16CH / **14** STRIP | The layout (yellow). 16CH shows the sixteen channels holding these four. |
 | **15** / **16** < PAGE > | The previous or next four channels (blue). |
 
 - While Shift is held, the button in use pulses, the other buttons available are dim, and an arrow with nowhere to go is dark.
@@ -372,7 +374,7 @@ The photos of the hardware controllers in this step are Melbourne Instruments', 
 
 - **TotalMix FX: Port N in Use.** Another program has the port. Quit `sbdev` or any other OSC remote.
 - **TotalMix FX: No Answer.** Check that Global OSC is on and that the ports in Settings match TotalMix FX's
-  (Step 1). Then choose **Refresh Channels from TotalMix FX**.
+  (Step 1). Performance Bridge keeps asking.
 - **Roto-Control or Launch Control: Not Found.** Check the cable and that the model chosen in Settings is the
   one connected (Step 3).
 - **A channel is missing from the hardware controllers.** Check whether TotalMix FX hides it from the OSC Controller the app uses

@@ -344,6 +344,16 @@ public final class BridgeEngine: @unchecked Sendable {
 
     private var now: Double { Date().timeIntervalSince(startDate) }
 
+    /// When a hardware controller last sent anything (a turn, a press), for the quiet the automatic
+    /// refresh waits for.
+    private var lastSurfaceInput = -Double.infinity
+    /// When the channels were last refreshed automatically.
+    private var lastAutoRefresh = 0.0
+    /// How often the channels are refreshed automatically, in seconds, and how long no control
+    /// must have moved first. Starting values (inferences): a refresh is one `/sendall`, about 960
+    /// messages answered within 0.2 s (docs/TOTALMIX-OSC.md, tests 1 and 2).
+    static let autoRefreshInterval = 30.0, autoRefreshQuiet = 5.0
+
     /// Starts the engine: opens TotalMix FX's port and the Roto-Control's MIDI ports, asks TotalMix FX
     /// for its state, and starts the Roto-Control's handshake and the clock. Neither side has to be
     /// there: what can't be opened (for example, TotalMix FX's port while another program, such as
@@ -873,6 +883,7 @@ public final class BridgeEngine: @unchecked Sendable {
 
     private func fromRoto(_ bytes: [UInt8]) {
         lock.lock()
+        lastSurfaceInput = now
         let step = driver.receive(bytes, hub: &hub, now: now)
         sendToRoto(step.midi)
         dispatch(step.core)
@@ -882,6 +893,7 @@ public final class BridgeEngine: @unchecked Sendable {
 
     private func fromLaunchControl(_ bytes: [UInt8]) {
         lock.lock()
+        lastSurfaceInput = now
         var changed: (LaunchControlModel, [Int?])?
         var showTotalMix = false
         if var lc = lcDriver {
@@ -903,6 +915,7 @@ public final class BridgeEngine: @unchecked Sendable {
 
     private func fromE16(_ bytes: [UInt8]) {
         lock.lock()
+        lastSurfaceInput = now
         var switched: Bool?
         var sends: [Int?]?
         if var e16 = e16Driver {
@@ -940,6 +953,14 @@ public final class BridgeEngine: @unchecked Sendable {
         let answering = lastFromTotalMix.map { now - $0 < Self.totalMixTimeout } ?? false
         if totalMixWasAnswering, !answering { dispatch(hub.refreshChannels(now: now)) }
         totalMixWasAnswering = answering
+        // Channels hidden or shown in TotalMix FX, which it doesn't announce: refreshed now and
+        // then, while no control has moved for a while, so an answer never lands mid-gesture
+        // (Adam, 2026-11-07, for 1.2.0; names and colors TotalMix FX announces itself).
+        if answering, !hub.isRefreshing, now - lastAutoRefresh >= Self.autoRefreshInterval,
+           now - lastSurfaceInput >= Self.autoRefreshQuiet {
+            lastAutoRefresh = now
+            dispatch(hub.refreshChannels(now: now))
+        }
         dispatch(hub.tick(now: now))
         sendToRoto(driver.tick(now: now, hub: hub))
         if var lc = lcDriver {
