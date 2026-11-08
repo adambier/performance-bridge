@@ -869,16 +869,18 @@ final class E16FourLayoutTests: XCTestCase {
         XCTAssertTrue(driver.titleParts(hub: hub).1.contains("PFL"), "the firmware's labels say PFL")
     }
 
-    func testASendTurnNamesItsOutput() {
+    func testStripsShowOnlyTheMainLevelInTheTitle() {
         var (driver, hub, _) = connectedFour()
         driver.drawsScreen = true
+        let before = driver.title(hub: hub)
         _ = driver.receive([0xB0, 1, 0x04], hub: &hub, now: 1)  // Keys's send A
-        let title = driver.title(hub: hub)
-        XCTAssertTrue(title.hasPrefix("KEYS>") || title.hasPrefix("Keys>"), title)
-        let margin = (E16Screen.width / 4 - E16Driver.labelMaxWidth) / 2
-        XCTAssertLessThanOrEqual(E16Screen.width(of: title.replacingOccurrences(of: "-oo", with: "-∞")), E16Screen.width - 2 * margin, title)
+        XCTAssertEqual(driver.title(hub: hub), before, "a send's value shows in its own cell, not again in the title")
+        _ = driver.receive([0xB0, 9, 0x04], hub: &hub, now: 1.5)  // Keys's pan
+        XCTAssertEqual(driver.title(hub: hub), before, "nor a pan's")
         _ = driver.receive([0xB0, 13, 0x04], hub: &hub, now: 2)  // Keys's level
-        XCTAssertFalse(driver.title(hub: hub).contains(">"), "a level turn names only the channel")
+        let title = driver.title(hub: hub)
+        XCTAssertTrue(title.uppercased().hasPrefix("KEYS "), title)
+        XCTAssertFalse(title.contains(">"), "a level turn names only the channel")
     }
 
     func testEachRowTurnsItsOwnControl() {

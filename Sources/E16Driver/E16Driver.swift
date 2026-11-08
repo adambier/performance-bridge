@@ -668,7 +668,9 @@ public struct E16Driver: Sendable {
         let value = panning ? moved.map { ($0 + 1) / 2 } : moved
         knobValues[encoder] = value
         step.midi += drawRing(encoder, hub: hub)
-        if let info = infos[strip], let moved {
+        // In channel strips a send's or pan's value already shows in its own cell, so only the
+        // main level, whose row holds the name, shows in the title (Adam, 2026-11-07).
+        if let info = infos[strip], let moved, layout != .four || layer == .level {
             var text = panning ? ValueText.pan(moved) : ValueText.level(position: moved)
             // "dB" with a lowercase d where the host draws the screen, as TotalMix FX and the
             // Launch Controls show it (Adam, 2026-11-07).
@@ -680,6 +682,8 @@ public struct E16Driver: Sendable {
                 who = channelForm(strip, info.name, chars: 8, room: 34) + ">" + outputForm(n, room: 34, hub: hub).uppercased()
             }
             show(who + " " + text, now: now, into: &step, hub: hub)
+        } else {
+            step.midi += drawLabels(hub: hub)  // the cell's value
         }
     }
 
