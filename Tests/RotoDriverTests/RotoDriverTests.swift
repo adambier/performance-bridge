@@ -487,7 +487,7 @@ final class RotoDriverTests: XCTestCase {
         XCTAssertTrue(step.midi.contains(RotoFeedback.knob(1, position: RotoFeedback.position(0.5))), "center pan is the center")
         let turn = driver.receive(knobCCs(1, 12288), hub: &hub, now: 2)
         guard case .float(let sent)? = turn.core.messages.first?.arguments.first else { return XCTFail("no message") }
-        XCTAssertEqual(Double(sent), RotoFeedback.fraction(12288) * 2 - 1, accuracy: 1e-6)
+        XCTAssertEqual(Double(sent), 0.5, accuracy: 1e-6, "not bent, only rounded to TotalMix FX's hundredths (R50)")
     }
 
     func testTurningWorksAfterTheBridgeMovesTheKnobFar() {
