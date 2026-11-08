@@ -355,7 +355,7 @@ after 40 ms. They included `faderlin` 0.386085 (−20.00 dB), the value the last
 - Showing it again printed nothing.
 - Moving the ADI-2 fader then printed `mix input 1 → output 13 faderlin` messages every 20 ms, so the monitor was receiving.
 
-**Consequence.** TotalMix FX doesn't announce a channel hidden from or shown to an OSC remote. The app learns of it only by asking for the whole state again (`/sendall`) and comparing: a hidden channel is left out of the answer,[^test-8] and a shown one is in it. So the app refreshes its channels on request ("Refresh Channels from TotalMix FX"), when its Channel Layout tab opens, and when TotalMix FX comes back after going quiet.
+**Consequence.** TotalMix FX doesn't announce a channel hidden from or shown to an OSC remote. The app learns of it only by asking for the whole state again (`/sendall`) and comparing: a hidden channel is left out of the answer,[^test-8] and a shown one is in it. So the app refreshes its channels on request ("Update Hidden Channels"; "Refresh Channels from TotalMix FX" before 1.2.0), every 30 s while no hardware control has moved for 5 s, when the user switches away from TotalMix FX on the same Mac, when its Channel Layout tab opens, and when TotalMix FX comes back after going quiet.
 
 ### Test 12 (2026-11-01): two interfaces at once
 

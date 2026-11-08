@@ -167,6 +167,14 @@ struct SettingsWindowView: View {
             // The Connections tab grows or shrinks with the chosen controller's settings.
             DispatchQueue.main.async { Windows.fitToContent("settings") }
         }
+        // Rows that come and go with the E16's layout and with TotalMix FX's outputs (Tier 1
+        // review, 2026-11-07: the window grew but never shrank back).
+        .onChange(of: model.status.e16FourChannelStrips) { _ in
+            DispatchQueue.main.async { Windows.fitToContent("settings") }
+        }
+        .onChange(of: model.status.sendTargets.isEmpty) { _ in
+            DispatchQueue.main.async { Windows.fitToContent("settings") }
+        }
         .onChange(of: tab) { tab in
             show(tab)
             // After SwiftUI has laid out the new tab.

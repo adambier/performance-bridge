@@ -1116,7 +1116,7 @@ public struct E16Driver: Sendable {
         let parts = titleParts(hub: hub)
         // The names that show a switch (`marksNames`): the 16-channel layout's every label, the
         // 4-channel layout's bottom row.
-        var inverted = Set<Int>(), outlined = Set<Int>(), struck = Set<Int>(), pflMarked = Set<Int>()
+        var inverted = Set<Int>(), struck = Set<Int>(), pflMarked = Set<Int>()
         if marksNames, !shiftHeld {
             for strip in 0..<columns {
                 let index = layout == .four ? 12 + strip : strip
@@ -1131,7 +1131,7 @@ public struct E16Driver: Sendable {
         }
         // On the Shift page inversion marks what's selected: the layout in use, and in 16
         // channels the mode; the title then shows only the page (Adam, 2026-11-07). Inversion
-        // means only this; a mute is an outline.
+        // means only this; a mute is struck through.
         if shiftHeld, drawsScreen {
             inverted.insert(layout == .sixteen ? 12 : 13)
             if layout == .sixteen {
@@ -1170,7 +1170,7 @@ public struct E16Driver: Sendable {
                     return now
                 }
                 // In 16 channels a stereo channel shows one line, its louder side, so every meter
-                // sits nearer its own name than the next row's (review of 2026-11-07, a trial).
+                // sits nearer its own name than the next row's (review of 2026-11-07; read well on the device, Adam, 2026-11-07).
                 if layout == .sixteen, (meters[index]?.count ?? 0) > 1 {
                     meters[index] = [meters[index]?.max() ?? 0]
                     peakWidths[index] = [peakWidths[index]?.max() ?? 0]
@@ -1180,7 +1180,6 @@ public struct E16Driver: Sendable {
         let values: Set<Int> = layout == .four && !shiftHeld ? Set(0..<12) : []
         var marks: [Int] = inverted.sorted()
         marks += [-1] + pflMarked.sorted()
-        marks += [-3] + outlined.sorted()
         marks += [-4] + struck.sorted()
         let key = marks + (centersLabels ? [-2] : [])
         if let shown = shownScreen, shown.title == parts.0, shown.tail == parts.1, shown.labels == labels, shown.drawn == drawsScreen, shown.marks == key {
@@ -1196,9 +1195,9 @@ public struct E16Driver: Sendable {
             let pairs: [(Int, String)] = layout == .four ? [(2, "SEND"), (6, "SEND"), (14, "PAGE")] : [(10, "SEND"), (14, "PAGE")]
             for (left, word) in pairs where !labels[left].isEmpty || !labels[left + 1].isEmpty { pairWords[left] = word }
         }
-        let drawn = Self.screen(title: parts.0, tail: parts.1, labels: labels, inverted: inverted, outlined: outlined, struck: struck, pflMarked: pflMarked,
+        let drawn = Self.screen(title: parts.0, tail: parts.1, labels: labels, inverted: inverted, struck: struck, pflMarked: pflMarked,
                                 centered: centersLabels, values: values, meters: meters, peaks: peakWidths, spans: spans,
-                                rightAligned: shiftHeld ? Self.shiftRightAligned : [], pairWords: pairWords)
+                                pairWords: pairWords)
         lastScreenForTests = drawn
         let bytes = drawsScreen ? E16Outgoing.framebuffer(drawn)
             : E16Outgoing.labels(title: title(hub: hub), labels: labels)
@@ -1220,11 +1219,12 @@ public struct E16Driver: Sendable {
     /// labels in four rows 13 pixels apart in their 32-pixel cells, no wider than
     /// `labelMaxWidth`: at the left of the cell, lined up with the title (Adam, 2026-11-04), or
     /// centered (`centered`; Adam, 2026-11-06). The cells in `values` hold numbers, drawn with
-    /// their digits in fixed places (`drawValue`). `inverted` names are drawn in a lit box (a
-    /// mute) and `pflMarked` ones followed by a small square (a PFL); `meters` draws a bar of the
+    /// their digits in fixed places (`drawValue`). `inverted` names (selected, on the Shift
+    /// page) are drawn in a lit box, `struck` ones (a mute) with a line through them, and
+    /// `pflMarked` ones followed by a small square (a PFL); `meters` draws a bar of the
     /// given width under a name, a second one under it for a stereo channel's right side.
-    public static func screen(title: String, tail: String = "", labels: [String], inverted: Set<Int> = [], outlined: Set<Int> = [], struck: Set<Int> = [], pflMarked: Set<Int> = [],
-                              centered: Bool = false, values: Set<Int> = [], meters: [Int: [Int]] = [:], peaks: [Int: [Int]] = [:], spans: Set<Int> = [], rightAligned: Set<Int> = [],
+    public static func screen(title: String, tail: String = "", labels: [String], inverted: Set<Int> = [], struck: Set<Int> = [], pflMarked: Set<Int> = [],
+                              centered: Bool = false, values: Set<Int> = [], meters: [Int: [Int]] = [:], peaks: [Int: [Int]] = [:], spans: Set<Int> = [],
                               pairWords: [Int: String] = [:]) -> E16Screen {
         // "-oo" (off) as "-∞": the font has no lowercase (Adam, 2026-11-05).
         let title = title.replacingOccurrences(of: "-oo", with: "-∞")
@@ -1278,11 +1278,6 @@ public struct E16Driver: Sendable {
                 screen.draw(label, x: cellX + margin, y: y)
                 continue
             }
-            if rightAligned.contains(index) {
-                // A label ending at its cell's right edge.
-                screen.draw(label, x: max(cellX + cell - E16Screen.width(of: label), cellX), y: y)
-                continue
-            }
             let width = E16Screen.width(of: label)
             // A name with PFL's square is centered with it, as one, so the square (and a box
             // around both) stays in the cell however wide the name (review of 2026-11-07: on a
@@ -1307,14 +1302,6 @@ public struct E16Driver: Sendable {
             } else if struck.contains(index) {
                 // A line through the middle of the letters, a pixel past them each side.
                 for px in max(x - 1, cellX)...min(x + width, cellX + cell - 1) { screen.set(px, y + E16Font.glyphHeight / 2) }
-            } else if outlined.contains(index) {
-                // An outline one pixel clear of the letters all round: a mute's flash while Mute
-                // Master is off (Adam, 2026-11-07: an outline on the box's own edge ran into the
-                // letters and made them hard to read).
-                let left = max(x - 2, cellX), right = min(boxEnd + 1, cellX + cell - 1)
-                let top = y - 2, bottom = y + E16Font.glyphHeight + 1
-                for px in left...right { screen.set(px, top); screen.set(px, bottom) }
-                for py in top...bottom { screen.set(left, py); screen.set(right, py) }
             }
         }
         for (left, word) in pairWords {
@@ -1333,11 +1320,6 @@ public struct E16Driver: Sendable {
     /// read as one phrase (Adam, 2026-11-07).
     static func shiftSpans(_ layout: Layout) -> Set<Int> { layout == .four ? [0, 4] : [8] }
 
-    /// The Shift page's cells whose labels end at the cell's right edge: none now. "16 CH" and
-    /// "STRIP" pushed apart this way still read nearly as one phrase and broke the column
-    /// alignment with LEVEL, PAN, and SEND; both are centered, and "16CH" has no inner space
-    /// (Adam, 2026-11-07).
-    static let shiftRightAligned: Set<Int> = []
 
     /// Where a Shift-page pair's word field starts. Every pair on a page shares one field, as wide
     /// as the page's widest word, so all the "<" line up and all the ">" line up (Adam,

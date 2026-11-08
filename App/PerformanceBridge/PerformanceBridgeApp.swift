@@ -538,7 +538,7 @@ final class BridgeModel: ObservableObject {
         NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didDeactivateApplicationNotification, object: nil, queue: .main) { note in
             let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication
-            if app?.localizedName?.hasPrefix("TotalMix") == true { engine.refresh() }
+            if app?.localizedName?.hasPrefix("TotalMix") == true { engine.refreshIfIdle() }
         }
         engine.onLayoutChange = { layout in
             if let data = try? JSONEncoder().encode(layout) { UserDefaults.standard.set(data, forKey: Self.layoutKey) }

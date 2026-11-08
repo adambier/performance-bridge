@@ -66,7 +66,7 @@ let e16BridgeCommandHelp = """
       pulse S              how long one pulse of a Shift-page button in use takes, in seconds
                            (0 holds it steady; the driver's default is 1)
       trough N             how far above the dim level the pulse's trough stops (the driver's
-                           default is 2)
+                           default is 0)
       top F                the top of that pulse as a share of the brightness, 0–1 (never below
                            the floor; the driver's default is 1)
       quit                 leave Remote Mode and stop

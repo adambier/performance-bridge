@@ -344,8 +344,9 @@ public final class BridgeEngine: @unchecked Sendable {
 
     private var now: Double { Date().timeIntervalSince(startDate) }
 
-    /// When a hardware controller last sent anything (a turn, a press), for the quiet the automatic
-    /// refresh waits for.
+    /// When a hardware controller last sent a control message (a turn, a press, a touch), for the
+    /// quiet the automatic refresh waits for: channel messages only, since a Launch Control
+    /// answers its presence query every 5 s while idle (Tier 1 review, 2026-11-07).
     private var lastSurfaceInput = -Double.infinity
     /// When the channels were last refreshed automatically.
     private var lastAutoRefresh = 0.0
@@ -862,7 +863,18 @@ public final class BridgeEngine: @unchecked Sendable {
     /// TotalMix FX since the last refresh leave or join the surfaces.
     public func refresh() {
         lock.lock()
+        lastAutoRefresh = now
         dispatch(hub.refreshChannels(now: now))
+        lock.unlock()
+    }
+
+    /// A refresh unless one is in progress: for the switch away from TotalMix FX.
+    public func refreshIfIdle() {
+        lock.lock()
+        if !hub.isRefreshing {
+            lastAutoRefresh = now
+            dispatch(hub.refreshChannels(now: now))
+        }
         lock.unlock()
     }
 
@@ -883,7 +895,7 @@ public final class BridgeEngine: @unchecked Sendable {
 
     private func fromRoto(_ bytes: [UInt8]) {
         lock.lock()
-        lastSurfaceInput = now
+        if bytes.contains(where: { (0x80...0xEF).contains($0) }) { lastSurfaceInput = now }
         let step = driver.receive(bytes, hub: &hub, now: now)
         sendToRoto(step.midi)
         dispatch(step.core)
@@ -893,7 +905,7 @@ public final class BridgeEngine: @unchecked Sendable {
 
     private func fromLaunchControl(_ bytes: [UInt8]) {
         lock.lock()
-        lastSurfaceInput = now
+        if bytes.contains(where: { (0x80...0xEF).contains($0) }) { lastSurfaceInput = now }
         var changed: (LaunchControlModel, [Int?])?
         var showTotalMix = false
         if var lc = lcDriver {
@@ -915,7 +927,7 @@ public final class BridgeEngine: @unchecked Sendable {
 
     private func fromE16(_ bytes: [UInt8]) {
         lock.lock()
-        lastSurfaceInput = now
+        if bytes.contains(where: { (0x80...0xEF).contains($0) }) { lastSurfaceInput = now }
         var switched: Bool?
         var sends: [Int?]?
         if var e16 = e16Driver {

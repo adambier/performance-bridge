@@ -111,7 +111,7 @@ struct LayoutView: View {
                 // In callout size, for legibility (Adam, 2026-10-31).
                 // Only what this tab can't show (Adam, 2026-11-07: the colors, label-clearing, and
                 // longer playback notes were cut; how to hide channels is in the Setup Guide).
-                Text("Channels hidden from Performance Bridge’s OSC Controller in TotalMix FX aren’t shown (Setup Guide).")
+                Text("Channels hidden from Performance Bridge’s OSC Controller in TotalMix FX aren’t listed. The Setup Guide says how to hide and show them.")
                 if view == .sources {
                     Text("A software playback without a label shows as \u{201C}PB 1/2\u{201D} and so on.")
                 }

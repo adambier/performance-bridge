@@ -200,7 +200,7 @@ Choose **Settings…** from the menu and open the **Channel Layout** tab.
 - Set channel colors in TotalMix FX's own Channel Layout window (Step 2). With a Launch Control or the E16, give each output a
   send feeds (e.g., each headphone output) a color of its own: a send's lights take its output's color, so the color
   shows which output it feeds.
-- The notes at the bottom repeat the rule for channels hidden in TotalMix FX, where colors are set, what labels do, and how playbacks are named.
+- The notes at the bottom say that channels hidden in TotalMix FX aren't listed and, on Sources, how playbacks without a label are named.
 
 ## Step 6: Use the hardware controllers
 
@@ -315,7 +315,7 @@ The E16 has two layouts. In the **16-channel layout**, each encoder is one chann
 - After each Page press the screen names the row and its new output, and each send row's lights take the color
   of the output it feeds: its color in TotalMix FX, or, for an output left white, teal (a blue-green) for the
   top row and magenta for the middle row.
-- With **Show levels by brightness** on (Settings… → Connections), the send encoders dim with their level and
+- With **Levels: Show by brightness** on (Settings… → Connections), the send encoders dim with their level and
   are dark at −oo.
 - Page and Track are lit where they can move and dark at the ends. While Shift is held, Page lights for the
   middle row.

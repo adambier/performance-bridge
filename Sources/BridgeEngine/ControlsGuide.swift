@@ -91,7 +91,7 @@ public struct ControlsGuide: Equatable, Sendable {
             "The screen shows the channels on the page, counted in the order of **Settings… → Channel Layout** with a stereo pair counting once, and where each send row goes (e.g., \"Inputs 1-7\", \"Top > Phones 1\", \"Mid > Phones 2\").",
             "Moving a control shows its channel, what it does, and its value.",
             "After each Page press the screen names the row and its new output, and each send row's lights take the color of the output it feeds: its color in TotalMix FX, or, for an output left white, teal (a blue-green) for the top row and magenta for the middle row.",
-            "With **Show levels by brightness** on (Settings… → Connections), the send encoders dim with their level and are dark at −oo.",
+            "With **Levels: Show by brightness** on (Settings… → Connections), the send encoders dim with their level and are dark at −oo.",
             "Page and Track are lit where they can move and dark at the ends. While Shift is held, Page lights for the middle row.",
             "Each row's output is remembered when Performance Bridge restarts. It can also be chosen in Settings, at the bottom of the Connections tab, with the Launch Control connected or not; the change takes effect at once.",
             "Press **Track <** and **Track >** together to go back to the first eight channels.",
