@@ -654,7 +654,11 @@ public struct E16Driver: Sendable {
         } else if case .pan = target {
             position = centerStop(encoder, from: current, to: position, delta: delta, now: now)
         }
-        take(hub.controlMoved(id(layer), strip: strip, to: position, now: now), hub: hub, into: &step)
+        // A turn held at a pan's center (or past an end) moves nothing: send nothing to TotalMix
+        // FX for it (review of 2026-11-07: every held message sent the same pan again).
+        if position != current {
+            take(hub.controlMoved(id(layer), strip: strip, to: position, now: now), hub: hub, into: &step)
+        }
         // The hub doesn't send a surface its own move back: draw the ring from the mirror, and
         // show the value in the title.
         let moved = hub.mirror.value(of: target)
@@ -781,10 +785,7 @@ public struct E16Driver: Sendable {
         for layer in layers {
             _ = hub.addSurface(id(layer), capabilities: layerCapabilities, mode: mode(for: layer, first: first, hub: hub), now: now)
         }
-        infos = Array(repeating: nil, count: Self.stripCount)
-        knobValues = Array(repeating: nil, count: Self.stripCount)
-        muteOn = Array(repeating: false, count: Self.stripCount)
-        pflOn = Array(repeating: false, count: Self.stripCount)
+        resetStrips()
         let (shift, pressed) = (shiftHeld, pressedButton)
         connect(hub: &hub, now: now, into: &step)
         (shiftHeld, pressedButton) = (shift, pressed)
@@ -805,10 +806,22 @@ public struct E16Driver: Sendable {
         for layer in layers { hub.removeSurface(id(layer)) }
         layout = new
         page.first = first
+        lastTouched = nil
+        // The strips' caches start afresh and fill from the new layers (review of 2026-11-07:
+        // the old layout's channels stayed in them until the device answered).
+        resetStrips()
         for layer in layers {
-            _ = hub.addSurface(id(layer), capabilities: layerCapabilities, mode: mode(for: layer, first: first, hub: hub), now: now)
+            take(hub.addSurface(id(layer), capabilities: layerCapabilities, mode: mode(for: layer, first: first, hub: hub), now: now), hub: hub, into: &step)
         }
         return step
+    }
+
+    /// Empties the per-strip caches, for a new layout.
+    private mutating func resetStrips() {
+        infos = Array(repeating: nil, count: Self.stripCount)
+        knobValues = Array(repeating: nil, count: Self.stripCount)
+        muteOn = Array(repeating: false, count: Self.stripCount)
+        pflOn = Array(repeating: false, count: Self.stripCount)
     }
 
     /// Turns the meters under the names on or off from the app (`showsMeters`), redrawing the
@@ -1217,7 +1230,11 @@ public struct E16Driver: Sendable {
                 continue
             }
             let width = E16Screen.width(of: label)
-            let x = cellX + (centered ? (cell - width) / 2 : margin)
+            // A name with PFL's square is centered with it, as one, so the square (and a box
+            // around both) stays in the cell however wide the name (review of 2026-11-07: on a
+            // full-width name it ran into the next name, or off the screen in column 4).
+            let marked = pflMarked.contains(index) ? 5 : 0
+            let x = cellX + (centered ? max((cell - width - marked) / 2, 0) : margin)
             screen.draw(label, x: x, y: y)
             guard !label.isEmpty else { continue }
             // PFL: a square after the name, in the cell's spare room (Adam, 2026-11-06: it
@@ -1519,7 +1536,9 @@ public struct E16Driver: Sendable {
             let output = ChannelRef(.output, hub.sendTargets[n])
             if let color = hub.mirror.channels[output]?.color, color != 1, let sendRGB = Self.totalMixRGB[color] { rgb = sendRGB }
         }
-        let level: E16Ring = isPan
+        // In 4 channel strips the bottom row is always the level, whatever the 16-channel mode
+        // was (review of 2026-11-07: after PAN mode it was drawn as a pan).
+        let level: E16Ring = isPan && layout == .sixteen
             ? Self.panRing(value, rgb)
             : E16Ring(red: rgb.0, green: rgb.1, blue: rgb.2, amount: Self.levelAmount(value))
         // A switch that is on is four marks a quarter ring apart turning on a dark ring: orange

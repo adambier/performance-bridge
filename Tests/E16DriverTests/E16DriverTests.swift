@@ -207,7 +207,7 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(down.core.messages.first?.arguments.first, .float(Float(position - 8 * E16Driver.levelStep)))
         for _ in 0..<40 { _ = driver.receive([0xB0, 2, 0x78], hub: &hub, now: 3) }
         let bottom = driver.receive([0xB0, 2, 0x78], hub: &hub, now: 4)
-        XCTAssertEqual(bottom.core.messages.first?.arguments.first, .float(0))
+        XCTAssertTrue(bottom.core.messages.isEmpty, "at the bottom already: nothing more is sent (review, 2026-11-07)")
         XCTAssertEqual(driver.title(hub: hub), "Vox -oo")
         XCTAssertEqual(driver.look(1, hub: hub).ring.amount, 1.0 / 16, "one LED at -oo")
     }
