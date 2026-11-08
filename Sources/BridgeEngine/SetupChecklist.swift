@@ -176,8 +176,10 @@ public enum SetupChecklist {
 
         // The color tip is only for a Launch Control, so it shows only once one is chosen (Adam,
         // 2026-11-02).
-        let colorTip = status.launchControlName == nil ? ""
-            : " Give each output the send rows feed (e.g., each headphone output) a color of its own: a send row lights in its output’s color, so the color shows which output it feeds."
+        // For the controllers whose send lights take their output's color: the Launch Controls and
+        // the E16 (review of 2026-11-07, Adam's choice).
+        let colorTip = status.launchControlName == nil && !status.e16Enabled ? ""
+            : " Give each output a send feeds (e.g., each headphone output) a color of its own: a send’s lights take its output’s color, so the color shows which output it feeds."
         steps.append(SetupStep(id: "hide", title: "Hide channels in TotalMix FX", state: .instruction,
                                detail: "Hide and show channels in TotalMix FX: choose Options → Channel Layout…, select the channel’s row (on the Inputs, Playbacks, or Outputs tab), and under “Hide Channel in”, check or uncheck the box for Performance Bridge’s OSC Controller. Or right-click the channel and choose Change Channel Layout.\n\nThen choose Refresh Channels from TotalMix FX from Performance Bridge’s menu, since TotalMix FX doesn’t announce the change.\n\nChannel colors can be set in the same window." + colorTip))
         steps.append(SetupStep(id: "order", title: "Set the order of the channels", state: .optional,

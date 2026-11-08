@@ -190,7 +190,7 @@ public struct E16Driver: Sendable {
         /// The 4-channel layout: a send row's (0 for A, 1 for B) previous output, or next.
         case rowOutput(row: Int, direction: Int)
         /// Selects a layout, as the mode buttons select a mode: encoders 13 (16 channels) and 14
-        /// (4 channel strips) in both layouts, the current one lit in full (Adam, 2026-11-06: one
+        /// (4 channels) in both layouts, the current one lit in full (Adam, 2026-11-06: one
         /// button named for the other layout read as the layout in use).
         case switchLayout(to: Layout)
 
@@ -465,7 +465,7 @@ public struct E16Driver: Sendable {
                     let first = countdownShown < 0
                     countdownShown = stepIndex
                     if first, let info = infos[column(held.encoder)] {
-                        overlay = (Self.fit(info.name, 7) + (pflOn[held.encoder] ? " -> PFL OFF" : " -> PFL"), .infinity)
+                        overlay = (channelForm(column(held.encoder), info.name, chars: 7) + (pflOn[held.encoder] ? " -> PFL OFF" : " -> PFL"), .infinity)
                         step.midi += drawLabels(hub: hub)
                     }
                     step.midi += drawRing(switchEncoder(ofStrip: column(held.encoder)), hub: hub)
@@ -668,11 +668,11 @@ public struct E16Driver: Sendable {
         step.midi += drawRing(encoder, hub: hub)
         if let info = infos[strip], let moved {
             let text = panning ? ValueText.pan(moved) : ValueText.level(position: moved)
-            var who = Self.fit(info.name, 8)
+            var who = channelForm(strip, info.name, chars: 8)
             // A send names its output too, "KEYS>ADI2 -6.0 dB", on the host-drawn screen, where
             // it fits (Adam, 2026-11-06: the title showed only the channel and the level).
             if drawsScreen, case .strips(_, _, .send(let n), _)? = hub.mode(of: id(layer)), hub.sendTargets.indices.contains(n) {
-                who = Self.fit(info.name, width: 34) + ">" + shortOutputName(n, width: 34, hub: hub).uppercased()
+                who = channelForm(strip, info.name, chars: 8, room: 34) + ">" + outputForm(n, room: 34, hub: hub).uppercased()
             }
             show(who + " " + text, now: now, into: &step, hub: hub)
         }
@@ -725,8 +725,10 @@ public struct E16Driver: Sendable {
         // While Mute Master is off a mute is "set", TotalMix FX's own notion, and does nothing in
         // the audio; the ring's blink says so continuously, so the title says what the press did.
         let on = muteOn[strip]
-        let result = hub.mirror.muteMaster == false ? (on ? " MUTE SET" : " MUTE CLR") : (on ? " MUTE ON" : " MUTE OFF")
-        show(Self.fit(info.name, 7) + result, now: now, into: &step, hub: hub)
+        // A mute turned off is off, whatever Mute Master says (review of 2026-11-07: "MUTE CLR"
+        // was a third word for it); one turned on while Mute Master is off is only "set".
+        let result = on ? (hub.mirror.muteMaster == false ? " MUTE SET" : " MUTE ON") : " MUTE OFF"
+        show(channelForm(strip, info.name, chars: 7) + result, now: now, into: &step, hub: hub)
     }
 
     /// A push held `pflHold`: toggles the strip's PFL and says so on the screen.
@@ -734,7 +736,7 @@ public struct E16Driver: Sendable {
         let strip = column(encoder)
         take(hub.switchPressed(id(pflLayer), strip: strip, now: now), hub: hub, into: &step)
         guard let info = infos[strip] else { return }
-        show(Self.fit(info.name, 7) + " PFL" + (pflOn[strip] ? " ON" : " OFF"), now: now, into: &step, hub: hub)
+        show(channelForm(strip, info.name, chars: 7) + " PFL" + (pflOn[strip] ? " ON" : " OFF"), now: now, into: &step, hub: hub)
     }
 
     /// A button on the Shift page pressed.
@@ -1046,7 +1048,7 @@ public struct E16Driver: Sendable {
                 // "PAGE" (Adam, 2026-11-06; "SEND A"/"SEND B" on the arrows was tried).
                 let prefix = row == 0 ? "A: " : "B: "
                 if !drawsScreen { return Self.fit(outputName(current, hub: hub), E16Outgoing.labelLength) }
-                return prefix + shortOutputName(current, width: Self.spanWidth - E16Screen.width(of: prefix), hub: hub)
+                return prefix + outputForm(current, room: Self.spanWidth - E16Screen.width(of: prefix), hub: hub)
             }
             if shiftHeld, layout == .sixteen, index == 8, !hub.sendTargets.isEmpty {
                 // The 16-channel Shift page: the send output across encoders 9–10, beside
@@ -1055,7 +1057,7 @@ public struct E16Driver: Sendable {
                 let current: Int = { if case .send(let n) = function { return n } else { return min(lastSend, hub.sendTargets.count - 1) } }()
                 if !drawsScreen { return Self.fit(outputName(current, hub: hub), E16Outgoing.labelLength) }
                 // The plain name: a ">" in front read as one more arrow beside "< SEND >".
-                return shortOutputName(current, width: Self.spanWidth, hub: hub)
+                return outputForm(current, room: Self.spanWidth, hub: hub)
             }
             if shiftHeld {
                 // An arrow that goes nowhere shows no label either (Adam, 2026-11-04).
@@ -1096,13 +1098,17 @@ public struct E16Driver: Sendable {
         let parts = titleParts(hub: hub)
         // The names that show a switch (`marksNames`): the 16-channel layout's every label, the
         // 4-channel layout's bottom row.
-        var inverted = Set<Int>(), pflMarked = Set<Int>()
+        var inverted = Set<Int>(), outlined = Set<Int>(), pflMarked = Set<Int>()
         if marksNames, !shiftHeld {
             for strip in 0..<columns {
                 let index = layout == .four ? 12 + strip : strip
                 // A mute set while Mute Master is off (not silencing) flashes, in step with its
                 // ring (Adam, 2026-11-05).
-                if muteOn[strip], hub.mirror.muteMaster != false || blinkLit { inverted.insert(index) }
+                // Its off phase is the box's outline, so the name never looks unmuted (review of
+                // 2026-11-07, Adam's choice).
+                if muteOn[strip] {
+                    if hub.mirror.muteMaster != false || blinkLit { inverted.insert(index) } else { outlined.insert(index) }
+                }
                 if pflOn[strip] { pflMarked.insert(index) }
             }
         }
@@ -1133,6 +1139,12 @@ public struct E16Driver: Sendable {
                     peaks[ref] = (now, clock)
                     return now
                 }
+                // In 16 channels a stereo channel shows one line, its louder side, so every meter
+                // sits nearer its own name than the next row's (review of 2026-11-07, a trial).
+                if layout == .sixteen, (meters[index]?.count ?? 0) > 1 {
+                    meters[index] = [meters[index]?.max() ?? 0]
+                    peakWidths[index] = [peakWidths[index]?.max() ?? 0]
+                }
             }
         }
         let values: Set<Int> = layout == .four && !shiftHeld ? Set(0..<12) : []
@@ -1151,7 +1163,7 @@ public struct E16Driver: Sendable {
             let pairs: [(Int, String)] = layout == .four ? [(2, "SEND"), (6, "SEND"), (14, "PAGE")] : [(10, "SEND"), (14, "PAGE")]
             for (left, word) in pairs where !labels[left].isEmpty || !labels[left + 1].isEmpty { pairWords[left] = word }
         }
-        let bytes = drawsScreen ? E16Outgoing.framebuffer(Self.screen(title: parts.0, tail: parts.1, labels: labels, inverted: inverted, pflMarked: pflMarked,
+        let bytes = drawsScreen ? E16Outgoing.framebuffer(Self.screen(title: parts.0, tail: parts.1, labels: labels, inverted: inverted, outlined: outlined, pflMarked: pflMarked,
                                                                       centered: centersLabels, values: values, meters: meters, peaks: peakWidths, spans: spans, pairWords: pairWords))
             : E16Outgoing.labels(title: title(hub: hub), labels: labels)
         guard bytes != sentLabels else { return [] }
@@ -1175,7 +1187,7 @@ public struct E16Driver: Sendable {
     /// their digits in fixed places (`drawValue`). `inverted` names are drawn in a lit box (a
     /// mute) and `pflMarked` ones followed by a small square (a PFL); `meters` draws a bar of the
     /// given width under a name, a second one under it for a stereo channel's right side.
-    public static func screen(title: String, tail: String = "", labels: [String], inverted: Set<Int> = [], pflMarked: Set<Int> = [],
+    public static func screen(title: String, tail: String = "", labels: [String], inverted: Set<Int> = [], outlined: Set<Int> = [], pflMarked: Set<Int> = [],
                               centered: Bool = false, values: Set<Int> = [], meters: [Int: [Int]] = [:], peaks: [Int: [Int]] = [:], spans: Set<Int> = [],
                               pairWords: [Int: String] = [:]) -> E16Screen {
         // "-oo" (off) as "-∞": the font has no lowercase (Adam, 2026-11-05).
@@ -1242,14 +1254,18 @@ public struct E16Driver: Sendable {
             if pflMarked.contains(index) {
                 for px in (x + width + 2)...(x + width + 4) { for py in (y + 2)...(y + 4) { screen.set(px, py) } }
             }
+            let boxEnd = pflMarked.contains(index) ? x + width + 5 : x + width
             if inverted.contains(index) {
                 // A box one pixel larger than the letters all round, its pixels flipped; with PFL
                 // on too, it takes in the square, so the two read as one channel's (Adam,
                 // 2026-11-06).
-                let boxEnd = pflMarked.contains(index) ? x + width + 5 : x + width
                 for px in (x - 1)...boxEnd {
                     for py in (y - 1)...(y + E16Font.glyphHeight) { screen.set(px, py, !screen.pixel(px, py)) }
                 }
+            } else if outlined.contains(index) {
+                // The same box's outline: a mute's flash while Mute Master is off.
+                for px in (x - 1)...boxEnd { screen.set(px, y - 1); screen.set(px, y + E16Font.glyphHeight) }
+                for py in (y - 1)...(y + E16Font.glyphHeight) { screen.set(x - 1, py); screen.set(boxEnd, py) }
             }
         }
         for (left, word) in pairWords {
@@ -1262,9 +1278,10 @@ public struct E16Driver: Sendable {
     }
 
     /// The Shift page's cells whose labels start at the cell's margin, left-aligned (and may run
-    /// into the next cell): the send rows' current outputs, and the layout buttons under them,
-    /// which line up with them (Adam, 2026-11-06).
-    static func shiftSpans(_ layout: Layout) -> Set<Int> { layout == .four ? [0, 4, 12, 13] : [8, 12, 13] }
+    /// into the next cell): the send rows' current outputs (Adam, 2026-11-06). The layout
+    /// buttons' labels are centered in their cells, as the mode buttons' are (review of
+    /// 2026-11-07, Adam's choice).
+    static func shiftSpans(_ layout: Layout) -> Set<Int> { layout == .four ? [0, 4] : [8] }
 
     /// Where a Shift-page pair's word field starts. Every pair on a page shares one field, as wide
     /// as the page's widest word, so all the "<" line up and all the ">" line up (Adam,
@@ -1381,7 +1398,7 @@ public struct E16Driver: Sendable {
             func part(_ row: Int) -> String {
                 let index = indices.indices.contains(row) ? indices[row] : nil
                 let name = index.map { outputName($0, hub: hub) }
-                let short = index.flatMap { i in name.map { drawsScreen ? shortOutputName(i, width: room / 2, hub: hub).uppercased() : Self.fit($0, 3).uppercased() } }
+                let short = index.flatMap { i in name.map { drawsScreen ? outputForm(i, room: room / 2, hub: hub).uppercased() : Self.fit($0, 3).uppercased() } }
                 return (row == 0 ? "A>" : "B>") + (short ?? "-")
             }
             return part(0) + (drawsScreen ? Self.sendNameBreak : " ") + part(1)
@@ -1397,7 +1414,7 @@ public struct E16Driver: Sendable {
             // "A>…" is (Adam, 2026-11-06); room is left for a "■ 9/9" tail.
             let margin = (E16Screen.width / 4 - Self.labelMaxWidth) / 2
             let room = E16Screen.width - 2 * margin - E16Screen.width(of: "■ 9/9") - 4 - E16Screen.width(of: ">")
-            return ">" + shortOutputName(index, width: room, hub: hub).uppercased()
+            return ">" + outputForm(index, room: room, hub: hub).uppercased()
         }
     }
 
@@ -1430,6 +1447,34 @@ public struct E16Driver: Sendable {
         let names = hub.sendTargets.indices.map { outputName($0, hub: hub) }
         guard names.indices.contains(index) else { return "" }
         return Self.fitSet(names, width: width)[index]
+    }
+
+    /// The narrowest room an output's name is given, the 4-channel title's half (≈ 40 px): the
+    /// width of its one short form.
+    static var outputShortWidth: Int {
+        let margin = (E16Screen.width / 4 - labelMaxWidth) / 2
+        return (E16Screen.width * 3 / 4 - 2 * margin - E16Screen.width(of: "A>B>") - 6) / 2
+    }
+
+    /// An output's name as the screen shows it in `room` pixels: the full name where it fits,
+    /// otherwise its one short form, the same everywhere (review of 2026-11-07: one output read
+    /// "ADI3/4", "ADI 3/4", and "ADI-2 3/4" in three places).
+    func outputForm(_ index: Int, room: Int, hub: SurfaceHub) -> String {
+        let full = outputName(index, hub: hub)
+        if E16Screen.width(of: full.uppercased()) <= room { return full }
+        return shortOutputName(index, width: min(room, Self.outputShortWidth), hub: hub)
+    }
+
+    /// A channel's name in the title's overlays: the full name where it fits, otherwise its
+    /// label's form (`fitSet` over the page), so the title and the label agree (review of
+    /// 2026-11-07: "A11/12" on the label read "ANL11/12" in the title). The firmware's labels
+    /// (no host-drawn screen) keep `chars` characters.
+    func channelForm(_ strip: Int, _ name: String, chars: Int, room: Int? = nil) -> String {
+        guard drawsScreen else { return Self.fit(name, chars) }
+        let room = room ?? chars * 6
+        if E16Screen.width(of: name.uppercased()) <= room { return name }
+        let labels = Self.fitSet((0..<columns).map { infos[$0]?.name ?? "" }, width: Self.labelMaxWidth)
+        return labels.indices.contains(strip) ? labels[strip] : Self.fit(name, chars)
     }
 
     func outputName(_ index: Int, hub: SurfaceHub) -> String {
@@ -1536,7 +1581,7 @@ public struct E16Driver: Sendable {
             let output = ChannelRef(.output, hub.sendTargets[n])
             if let color = hub.mirror.channels[output]?.color, color != 1, let sendRGB = Self.totalMixRGB[color] { rgb = sendRGB }
         }
-        // In 4 channel strips the bottom row is always the level, whatever the 16-channel mode
+        // In 4 channels the bottom row is always the level, whatever the 16-channel mode
         // was (review of 2026-11-07: after PAN mode it was drawn as a pan).
         let level: E16Ring = isPan && layout == .sixteen
             ? Self.panRing(value, rgb)
@@ -1638,7 +1683,10 @@ public struct E16Driver: Sendable {
             guard pulsePeriod > 0 else {
                 return RingLook(ring: E16Ring(red: bright.0, green: bright.1, blue: bright.2, amount: 1), exact: true)
             }
-            let dim = Self.availableColor(rgb)
+            // The trough stops `pulseTroughRaise` above an available button's level, so the
+            // button in use is never as dim as an available one (review of 2026-11-07, a trial).
+            let available = Self.availableColor(rgb)
+            let dim = Self.atLevel(rgb, Double(max(available.0, available.1, available.2)) + pulseTroughRaise)
             let f = 0.5 * (1 + cos(2 * Double.pi * max(clock - shiftSince, 0) / pulsePeriod))
             func mix(_ a: UInt8, _ b: UInt8) -> UInt8 { UInt8((Double(a) + f * (Double(b) - Double(a))).rounded()) }
             return RingLook(ring: E16Ring(red: mix(dim.0, bright.0), green: mix(dim.1, bright.1), blue: mix(dim.2, bright.2), amount: 1), exact: true)
@@ -1684,6 +1732,11 @@ public struct E16Driver: Sendable {
     public static let pulsePeriodDefault = 1.0
     /// See `pulsePeriodDefault`; settable for trying values on the device.
     public var pulsePeriod = E16Driver.pulsePeriodDefault
+    /// How far above an available button's level the pulse's trough stops (its color's largest
+    /// part, 0–127): a trial (review of 2026-11-07; `sbdev e16bridge`'s `trough`).
+    public static let pulseTroughRaiseDefault = 2.0
+    /// See `pulseTroughRaiseDefault`; settable for trying values on the device.
+    public var pulseTroughRaise = E16Driver.pulseTroughRaiseDefault
     /// The top of the pulse as a share of the brightness setting (still never below
     /// `inUseFloor`): at 1 the button in use peaks at the setting, as it was lit steady before.
     /// A trial (`sbdev e16bridge`'s `top`; Adam, 2026-11-07: at brightness 55 "quite bright").

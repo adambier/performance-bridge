@@ -121,4 +121,30 @@ final class ReviewFixTests: XCTestCase {
         // Column 3: the box around "3RD W" and its square ends before column 4 begins.
         for py in (y - 1)...(y + 7) { XCTAssertFalse(screen.pixel(96, py), "x 96 clear at y \(py)") }
     }
+
+    /// One output, one short form: the full name where it fits, otherwise the 4-channel title's.
+    func testAnOutputHasOneShortForm() {
+        var hub = SurfaceHub()
+        for (n, name) in [(0, "Main"), (2, "ADI-2 3/4"), (4, "ADAT 1/2")] {
+            _ = hub.handle(.channel(bus: .output, channel: n, parameter: "stereo", value: .number(1)), now: 0)
+            _ = hub.handle(.channel(bus: .output, channel: n, parameter: "name", value: .text(name)), now: 0)
+        }
+        _ = hub.handle(.other(path: "controlroom/mainout", value: .number(0)), now: 0)
+        let driver = E16Driver(name: "e16")
+        guard let adi = hub.sendTargets.firstIndex(of: 2) else { return XCTFail("no ADI-2 3/4 target") }
+        let short = driver.outputForm(adi, room: E16Driver.outputShortWidth, hub: hub)
+        XCTAssertNotEqual(short, "ADI-2 3/4")
+        XCTAssertEqual(driver.outputForm(adi, room: 34, hub: hub), short, "the overlay's room: the same short form")
+        XCTAssertEqual(driver.outputForm(adi, room: 120, hub: hub), "ADI-2 3/4", "the full name where it fits")
+    }
+
+    /// A mute's flash while Mute Master is off: the box's outline in the off phase.
+    func testMuteFlashOffPhaseIsAnOutline() {
+        let plain = E16Driver.screen(title: "LEVEL", labels: ["VOX"], centered: true)
+        let outline = E16Driver.screen(title: "LEVEL", labels: ["VOX"], outlined: [0], centered: true)
+        let y = E16Driver.labelTop
+        let added = (0..<32).filter { x in outline.pixel(x, y - 1) && !plain.pixel(x, y - 1) }
+        XCTAssertGreaterThan(added.count, 10, "a line over the name")
+        XCTAssertEqual(plain.pixel(16, y + 3), outline.pixel(16, y + 3), "the name itself unchanged")
+    }
 }

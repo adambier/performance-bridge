@@ -132,7 +132,7 @@ Adam, 2026-11-05/06) there are two, chosen in Settings or on the Shift page:
 
 - **16 channels** (`E16Driver.Layout.sixteen`; 1.1.x's only layout): sixteen channels a page, one
   encoder each, always sources; the turn is the level, the pan, or a send, by the mode.
-- **4 channel strips** (`.four`): four channels a page, one column each: the top row turns send A level,
+- **4 channels** (`.four`): four channels a page, one column each: the top row turns send A level,
   the second send B level, the third the pan, and the bottom row the main level. Send A and B are outputs
   chosen in Settings or on the Shift page (`SendRows`, in SurfaceCore), never the same output, and
   kept across launches. A push of any encoder in a column is that channel's mute or PFL, shown on
@@ -221,20 +221,22 @@ Everything below applies to both unless it says otherwise.
 - **Shift** makes the encoders buttons. In 16 channels: 1 LEVEL (white), 2 PAN (magenta), 3 SEND
   (deep green; back to the last output used), 11 and 12 the previous and next send output (deep
   green; outside SEND mode either arrow enters it at the last output used),[^test-4] with that
-  output's name across 9–10. In 4 channel strips: 3 and 4 the previous and next output for send A,
+  output's name across 9–10. In 4 channels: 3 and 4 the previous and next output for send A,
   7 and 8 for send B (each skipping the other's output), with the current outputs' names across 1–2
-  ("A: ADI-2 3/4") and 5–6 ("B: ADAT 1/2"). In both: 13 and 14 the layout (yellow; "16 CH" and "4 CH"),
+  ("A: ADI-2 3/4") and 5–6 ("B: ADAT 1/2"). In both: 13 and 14 the layout (yellow; "16 CH" and "4 CH", centered in their cells like the
+  mode labels),
   15 and 16 the previous and next page (blue). Back and forward are always the right two columns
   of a row, labeled as a pair, "< SEND >" or "< PAGE >": the word between the arrows, one word space
   each side, the ">" ending at the cell's right margin, and every arrow on a page lined up; a
   missing arrow leaves the rest in place, and with no arrow the word isn't shown. The layout
-  buttons work like the mode buttons; switching to 4 channel strips lands on the row holding the
+  buttons work like the mode buttons; switching to 4 channels lands on the row holding the
   channel last turned or pushed, and back to 16 channels on the page holding those four
   (test 10). While Shift is held the screen names the buttons and the rings show them: off
   (nothing there, or nowhere to go); available, at the lowest level that keeps the color's
   proportions (`availableColor`: 2 of 127 for most; yellow 3, 2, 0, since 2, 1, 0 read as orange,
-  the mute color); **in use, pulsing once a second** between that level and the brightness setting
-  (never below 8, `inUseFloor`), starting bright when Shift goes down; and pressed, the button's
+  the mute color); **in use, pulsing once a second** between just above that level (2 higher,
+  `pulseTroughRaise`, a trial from the review of 2026-11-07) and the brightness setting (never
+  below 8, `inUseFloor`), starting bright when Shift goes down; and pressed, the button's
   color with its largest part at 127. The pulse replaced a steady in-use level, which at the
   lowest brightness setting was barely brighter than an available button.[^test-11]
 - **How this compares with the factory firmware's Shift** (the manual, sections 1.5–1.6 and 2.6,
@@ -279,20 +281,25 @@ Everything below applies to both unless it says otherwise.
   The firmware's own LABELS layout, with four-character labels (e.g., "P1/2"), is kept as a
   fallback.
   **From 1.2.0:** labels are 5×7 values and names at rows 14, 27, 40, and 53, three clear lines
-  above and below the title's rule. In 4 channel strips each column shows, top to bottom, send A's
+  above and below the title's rule. In 4 channels each column shows, top to bottom, send A's
   level, send B's level, the pan, and the name; values sit in fixed digit places, blank at rest
   (an off send, a centered pan), "-∞" for off. The title names send A at the left and send B
   ending at the third column's margin ("A>ADI3/4 … B>ADT1/2"); in 16 channels SEND mode it reads
-  ">ADI-2 3/4" (the full name where it fits). A turn shows the channel, the output for a send, and the value ("KEYS>ADI2
-  -6.0 dB"). Names are centered and shortened as a set (`fitSet`): each takes its longest form
+  ">ADI-2 3/4" (the full name where it fits). A turn shows the channel, the output for a send, and the value ("KEYS>ADI3/4
+  -6.0 dB"). An output's name is the full name where it fits and otherwise one short form, the
+  same everywhere; a channel's in the title is its full name or its label's form. A mute
+  turned off shows "MUTE OFF" whatever Mute Master says, one turned on while it is off
+  "MUTE SET". Names are centered and shortened as a set (`fitSet`): each takes its longest form
   that fits, and two names ending in a number or a pair that would come out the same take
   distinct forms ("ADI-2 3/4" and "ADAT 3/4" become "AI3/4" and "AT3/4"); other names are cut
-  from the end and can still come out the same. A mute inverts the name in a lit box (flashing while
-  Mute Master is off) and a PFL adds a 3×3 square after it (the two centered together); a PFL on a channel not on
+  from the end and can still come out the same. A mute inverts the name in a lit box (while Mute Master
+  is off, flashing to the box's outline, so the name never looks unmuted) and a PFL adds a 3×3 square after it (the two centered together); a PFL on a channel not on
   this page shows as "■" before the page in the title's tail (1.1.x never showed one).
 - **Meters** (from 1.2.0, a Settings choice, off by default): a 1-pixel bar under each name, two
   blank lines below it, 26 pixels at full scale on TotalMix FX's fader law (`MeterScale`, shared
-  with the Roto-Control); a stereo channel's right side on the line below its left (read at the left channel + 1, as
+  with the Roto-Control); in 4 channels a stereo channel's right side on the line below its left, in 16 channels one
+  line, the louder side (a trial from the review of 2026-11-07, so each meter sits nearer its own
+  name than the next row's) (the right side read at the left channel + 1, as
   the Roto-Control's meters do; that TotalMix FX sends it there is inferred, not tested). The bar is an
   RMS-like average of the peaks TotalMix FX sends (over 0.03 s, 6 dB under them), and one pixel
   holds the true peak for 2 s. Redraws are capped at 25 a second (test 8 showed 60 is smooth). They need TotalMix FX's OSC
@@ -316,8 +323,8 @@ Everything below applies to both unless it says otherwise.
   inversion is unexplained. Watch for it when the driver uses LED messages in 1.1.1.
 - Whether the driver needs an acceleration curve of its own. For now it multiplies the device's
   1–8 steps by a fixed step.
-- In 16 channels, whether a meter ties clearly enough to its own name: it sits only slightly
-  nearer it than the next row's (for the 1.2.0 UI review).
+- In 16 channels, whether one meter line per channel (the louder side; the 1.2.0 review's
+  trial) ties each meter clearly enough to its own name: to judge on the device.
 
 ## 7. Tests
 

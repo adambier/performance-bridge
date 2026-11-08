@@ -507,11 +507,15 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertEqual(SetupChecklist.startIndex(of: skipping), ids.firstIndex(of: "channels"),
                        "the first step not done: TotalMix FX answered, but no channels yet")
         XCTAssertFalse(skipping.contains { $0.state == .done && $0.detail.isEmpty }, "a done page says what was checked")
-        XCTAssertFalse(steps.first { $0.id == "hide" }!.detail.contains("send row"),
-                       "no Launch Control tip before a Launch Control is chosen")
+        XCTAssertFalse(steps.first { $0.id == "hide" }!.detail.contains("a send feeds"),
+                       "no color tip before a Launch Control or the E16 is chosen")
+        var withE16 = status
+        withE16.e16Enabled = true
+        XCTAssertTrue(SetupChecklist.steps(status: withE16, settings: BridgeSettings()).first { $0.id == "hide" }!.detail.contains("a send feeds"),
+                      "the E16's send lights take their output's color too")
         status.launchControlName = "Launch Control XL 3"
         let withLaunchControl = SetupChecklist.steps(status: status, settings: BridgeSettings())
-        XCTAssertTrue(withLaunchControl.first { $0.id == "hide" }!.detail.contains("send row"))
+        XCTAssertTrue(withLaunchControl.first { $0.id == "hide" }!.detail.contains("a send feeds"))
         var launchControlOnly = status
         launchControlOnly.rotoEnabled = false
         XCTAssertNil(SetupChecklist.steps(status: launchControlOnly, settings: BridgeSettings()).first { $0.id == "meters" },

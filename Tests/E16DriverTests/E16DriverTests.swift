@@ -595,7 +595,7 @@ final class E16DriverTests: XCTestCase {
         XCTAssertNil(driver.tick(hub: &hub, now: 1.3).midi.rings[1], "still: a rotation step sends nothing")
         _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 2)
         let clear = driver.receive([0x80, 1, 0x00], hub: &hub, now: 2.1)
-        XCTAssertEqual(clear.midi.lastTitle, "Vox MUTE CLR")
+        XCTAssertEqual(clear.midi.lastTitle, "Vox MUTE OFF", "off is off, whatever Mute Master says")
         _ = driver.receive([0x90, 1, 0x7F], hub: &hub, now: 3)
         XCTAssertEqual(driver.receive([0x80, 1, 0x00], hub: &hub, now: 3.1).midi.lastTitle, "Vox MUTE SET")
     }
@@ -617,8 +617,8 @@ final class E16DriverTests: XCTestCase {
         _ = driver.setBrightness(0.03, hub: hub)
         let low = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1.3)
         XCTAssertEqual(low.midi.rings[1]?.r, UInt8(E16Driver.inUseFloorDefault), "PAN, now in use, at 3%: the floor, not 4")
-        // It pulses down to the available level and back, a period after Shift went down.
-        XCTAssertEqual(driver.tick(hub: &hub, now: 1.3 + E16Driver.pulsePeriodDefault / 2).midi.rings[1]?.r, 2, "half a pulse: the available level")
+        // It pulses down to just above the available level and back, a period after Shift went down.
+        XCTAssertEqual(driver.tick(hub: &hub, now: 1.3 + E16Driver.pulsePeriodDefault / 2).midi.rings[1]?.r, UInt8(2 + E16Driver.pulseTroughRaiseDefault), "half a pulse: the trough, above the available 2")
         XCTAssertEqual(driver.tick(hub: &hub, now: 1.3 + E16Driver.pulsePeriodDefault).midi.rings[1]?.r, UInt8(E16Driver.inUseFloorDefault), "a whole pulse: bright again")
     }
 
@@ -783,8 +783,8 @@ final class E16FourLayoutTests: XCTestCase {
     }
 
     func testLayoutSwitch() {
-        XCTAssertTrue(E16Driver.shiftSpans(.four).isSuperset(of: [0, 4, 12, 13]), "left-aligned under the send names")
-        XCTAssertTrue(E16Driver.shiftSpans(.sixteen).isSuperset(of: [8, 12, 13]))
+        XCTAssertEqual(E16Driver.shiftSpans(.four), [0, 4], "the send names left-aligned")
+        XCTAssertEqual(E16Driver.shiftSpans(.sixteen), [8], "the layout labels are centered, as the modes are")
         var hub = loadedHub()
         for n in 4..<10 {
             for (parameter, value) in [("stereo", TotalMixValue.number(0)), ("name", .text("In\(n)")), ("color", .number(1))] {

@@ -65,6 +65,8 @@ let e16BridgeCommandHelp = """
                            (its color's largest part, 0–127; the driver's default is 8)
       pulse S              how long one pulse of a Shift-page button in use takes, in seconds
                            (0 holds it steady; the driver's default is 1)
+      trough N             how far above the dim level the pulse's trough stops (the driver's
+                           default is 2)
       top F                the top of that pulse as a share of the brightness, 0–1 (never below
                            the floor; the driver's default is 1)
       quit                 leave Remote Mode and stop
@@ -338,6 +340,13 @@ final class E16BridgeSession: @unchecked Sendable {
             }
             driver.pulsePeriod = seconds
             log("Pulse \(seconds) s")
+        case "trough":
+            guard words.count == 2, let raise = Double(words[1]), (0...20).contains(raise) else {
+                print("trough N, from 0 to 20")
+                return true
+            }
+            driver.pulseTroughRaise = raise
+            log("Pulse trough \(Int(raise)) above the dim level")
         case "top":
             guard words.count == 2, let share = Double(words[1]), (0...1).contains(share) else {
                 print("top F, from 0 to 1")
