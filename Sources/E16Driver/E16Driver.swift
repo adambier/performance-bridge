@@ -258,7 +258,7 @@ public struct E16Driver: Sendable {
     /// TotalMix FX's 200 steps).
     public static let panStep: Double = 0.005
     /// Units a push-and-turn takes one way before it jumps (`jumpStops`): two, so a push that
-    /// nudges the knob one unit doesn't jump (inferred; to check on the device, Adam, 2026-11-06).
+    /// nudges the knob one unit doesn't jump (test 10: a push nudged one unit at most).
     public static let jumpUnits = 2
     /// How many of the title's 16 characters the device shows: the last one was cut off ("PF"
     /// for "PFL" at the end; seen 2026-11-04).
@@ -273,7 +273,7 @@ public struct E16Driver: Sendable {
     /// full ring had been one LED from a full-level orange channel).
     public static let rotationStep: Double = 0.15
     /// How many units of turning, one way, a pan at center takes before it moves (`centerStop`):
-    /// a starting value, to tune on the device.
+    /// held for this many, and the next message moves it (test 10, tuned blind: 2).
     public static let panCenterUnits = 2
     /// How long a turn must pause, after it has stopped at center, before turning moves the pan
     /// on (`centerStop`): 0.05 s, tuned on the device (Adam, 2026-11-06: 0.25 s and 0.1 s felt
@@ -1523,7 +1523,7 @@ public struct E16Driver: Sendable {
             // The 4-channel layout's other rows (the plan, 2026-11-05): a pan as in the
             // 16-channel layout, unchanged by a mute; a send in its output's color (the
             // channel's, for an output left white), dark while a mute is in effect, since a mute
-            // silences the channel's sends too (inference; to test on the device).
+            // silences the channel's sends too (checked 2026-11-06, docs/TOTALMIX-OSC.md).
             if index >= 8 { return RingLook(ring: Self.panRing(value, rgb)) }
             guard !muteInEffect else { return RingLook(ring: .off) }
             let indices = sendIndices(hub: hub)
@@ -1674,13 +1674,13 @@ public struct E16Driver: Sendable {
     }
 
     /// The least a Shift-page button in use is lit, as the largest part of its color (0–127),
-    /// whatever the brightness setting: about three times an available button's level. A
-    /// starting value (an inference), to tune on the device (`sbdev e16bridge`'s `floor`).
+    /// whatever the brightness setting: about three times an available button's level.
+    /// Tuned on the device (test 11: 6 too close at the lowest brightness, 8 kept).
     public static let inUseFloorDefault = 8.0
     /// See `inUseFloorDefault`; settable for trying values on the device.
     public var inUseFloor = E16Driver.inUseFloorDefault
-    /// How long one pulse of a Shift-page button in use takes, in seconds (0: steady). A starting
-    /// value (an inference), to tune on the device (`sbdev e16bridge`'s `pulse`).
+    /// How long one pulse of a Shift-page button in use takes, in seconds (0: steady).
+    /// Tuned on the device (test 11: 1.5 s too slow, 1.25 s tried, 1 s kept).
     public static let pulsePeriodDefault = 1.0
     /// See `pulsePeriodDefault`; settable for trying values on the device.
     public var pulsePeriod = E16Driver.pulsePeriodDefault

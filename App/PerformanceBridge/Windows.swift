@@ -419,7 +419,7 @@ struct E16LayoutView: View {
                 get: { model.status.e16Meters },
                 set: { model.setE16Meters($0) }))
                 .padding(.top, 6)
-            Text("Meters need levels from TotalMix FX: in Options → Mixer Settings… (F3) → OSC, check “Send Level Data” and uncheck “Peak Hold” for Performance Bridge’s OSC Controller.")
+            Text("Meters need levels from TotalMix FX: in Options → Mixer Settings… (F3) → OSC, check “Send Level Data” for Performance Bridge’s OSC Controller, and leave “Peak Hold” unchecked.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

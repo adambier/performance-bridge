@@ -113,7 +113,7 @@ public struct BridgeSettings: Equatable, Sendable {
     /// Whether the E16 shows meters under the names (`E16Driver.showsMeters`; `e16Meters`).
     public var e16Meters = false
     /// The 4-channel layout's send rows' outputs (A, B), 0-based (`E16Driver.sendOutputs`;
-    /// `e16Sends`, -1 for none), as saved by the app, from Settings or the E16's Shift page.
+    /// `e16Sends`; the app saves `nil` as -1), as saved by the app, from Settings or the E16's Shift page.
     public var e16Sends: [Int?] = []
     /// How often the engine tries again to open TotalMix FX's port or the Roto-Control's MIDI ports
     /// while either is not open, in seconds.

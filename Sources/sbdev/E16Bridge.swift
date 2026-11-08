@@ -42,13 +42,14 @@ let e16BridgeUsage = """
 
       On the device: turn is level, pan, or a send, by the mode; push and release is mute; a hold of
       one second is PFL; with Shift held the encoders are buttons: 1 LEVEL, 2 PAN, 3 SEND, 11 and 12
-      the previous and next send output, 15 and 16 the previous and next page. Control-C or `quit`
+      the previous and next send output, 13 and 14 the layout, 15 and 16 the previous and next page.
+      Control-C or `quit`
       gives the device back.
 
       In the 4-channel layout: four channels across, one column each; the rows turn send A, send
       B, pan, and level. A push on any encoder of a column is mute, a hold of one second PFL. With
-      Shift held: 3 and 4 the previous and next output for send A, 7 and 8 for send B, 15 and 16
-      the previous and next page.
+      Shift held: 3 and 4 the previous and next output for send A, 7 and 8 for send B, 13 and 14
+      the layout, 15 and 16 the previous and next page.
     """
 
 let e16BridgeCommandHelp = """

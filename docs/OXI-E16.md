@@ -35,7 +35,7 @@ reasoning that has not been checked, the text says so in words ("inference", "un
 [^test-10]: [Test 10](#test-10-2026-11-07-the-sticky-centers-count-push-nudges-the-layout-buttons) (2026-11-07), section 7; firmware 1.3.0.
 [^test-11]: [Test 11](#test-11-2026-11-07-the-shift-pages-lighting-at-low-brightness-settings) (2026-11-07), section 7; firmware 1.3.0.
 
-**Status (2026-11-06).** Nine tests have been run, all on Adam's E16 with firmware 1.3.0 (section
+**Status (2026-11-07).** Eleven tests have been run, all on Adam's E16 with firmware 1.3.0 (section
 7). Section 6 lists what is still open.
 
 ## 1. Sources
@@ -132,8 +132,8 @@ Adam, 2026-11-05/06) there are two, chosen in Settings or on the Shift page:
 
 - **16 channels** (`E16Driver.Layout.sixteen`; 1.1.x's only layout): sixteen channels a page, one
   encoder each, always sources; the turn is the level, the pan, or a send, by the mode.
-- **4 channel strips** (`.four`): four channels a page, one column each: the top row turns send A,
-  the second send B, the third the pan, and the bottom row the level. Send A and B are outputs
+- **4 channel strips** (`.four`): four channels a page, one column each: the top row turns send A level,
+  the second send B level, the third the pan, and the bottom row the main level. Send A and B are outputs
   chosen in Settings or on the Shift page (`SendRows`, in SurfaceCore), never the same output, and
   kept across launches. A push of any encoder in a column is that channel's mute or PFL, shown on
   its level ring; the pan ring is unchanged and the send rings go dark while it is muted (a mute
@@ -168,8 +168,8 @@ Everything below applies to both unless it says otherwise.
   there, however fast, and the rest of that turn is ignored (messages less than
   `panCenterPause`, 0.05 s, apart are one turn: a fast turn arrives as a burst of up to 8 units a
   message, and went straight through a count of units alone, Adam, 14:56); after a pause, the
-  pan moves only after `panCenterUnits` (2) units turned one way, a turn the other way starting
-  the count again, and the message that leaves center moves it one step, whatever units it
+  pan is held for the first `panCenterUnits` (2) units turned one way (a turn the other way
+  starts the count again), and the next message moves it one step, whatever units it
   carries beyond the count. The encoders are endless and accelerated
   (1–8 units a message), so center is otherwise hard to land on; a double press to reset was
   considered and not taken (it would delay every mute, or mute and unmute). The count and the
@@ -223,7 +223,7 @@ Everything below applies to both unless it says otherwise.
   green; outside SEND mode either arrow enters it at the last output used),[^test-4] with that
   output's name across 9–10. In 4 channel strips: 3 and 4 the previous and next output for send A,
   7 and 8 for send B (each skipping the other's output), with the current outputs' names across 1–2
-  ("A: ADI 3/4") and 5–6 ("B: ADT 1/2"). In both: 13 and 14 the layout (yellow; "16 CH" and "4 CH"),
+  ("A: ADI-2 3/4") and 5–6 ("B: ADAT 1/2"). In both: 13 and 14 the layout (yellow; "16 CH" and "4 CH"),
   15 and 16 the previous and next page (blue). Back and forward are always the right two columns
   of a row, labeled as a pair, "< SEND >" or "< PAGE >": the word between the arrows, one word space
   each side, the ">" ending at the cell's right margin, and every arrow on a page lined up; a
@@ -272,7 +272,7 @@ Everything below applies to both unless it says otherwise.
 - **Screen.** The host draws it (FRAMEBUFFER) with a 5×7 proportional font of the project's own,
   after 3×5 and 4×6 fonts were too small to read. The title (the mode, or an overlay) is at the
   left and "PFL" and the page at the right; a rule runs under them; the sixteen labels sit in four
-  rows 14 pixels apart, each at the left of its 32-pixel cell and no wider than 26 pixels (the
+  rows 14 pixels apart (13 from 1.2.0), each at the left of its 32-pixel cell (centered from 1.2.0) and no wider than 26 pixels (the
   Shift page's arrow labels are 28 pixels, accepted on the device). A stereo pair keeps both
   numbers, losing its word first ("ADAT3/4", "ADT3/4", "AD3/4", "3/4"; "P15/16", "15/16"); only a
   pair of three-digit numbers, which no form fits, is cut from the end ("100/10").
@@ -283,18 +283,20 @@ Everything below applies to both unless it says otherwise.
   level, send B's level, the pan, and the name; values sit in fixed digit places, blank at rest
   (an off send, a centered pan), "-∞" for off. The title names send A at the left and send B
   ending at the third column's margin ("A>ADI3/4 … B>ADT1/2"); in 16 channels SEND mode it reads
-  ">ADI3/4". A turn shows the channel, the output for a send, and the value ("KEYS>ADI2
+  ">ADI-2 3/4" (the full name where it fits). A turn shows the channel, the output for a send, and the value ("KEYS>ADI2
   -6.0 dB"). Names are centered and shortened as a set (`fitSet`): each takes its longest form
-  that fits, and two names that would come out the same take distinct forms ("ADI-2 3/4" and
-  "ADAT 3/4" become "AI3/4" and "AT3/4"). A mute inverts the name in a lit box (flashing while
-  Mute Master is off) and a PFL adds a 3×3 square after it; a PFL on another page shows as "■" and
-  its page in the title's tail (1.1.x never showed one).
+  that fits, and two names ending in a number or a pair that would come out the same take
+  distinct forms ("ADI-2 3/4" and "ADAT 3/4" become "AI3/4" and "AT3/4"); other names are cut
+  from the end and can still come out the same. A mute inverts the name in a lit box (flashing while
+  Mute Master is off) and a PFL adds a 3×3 square after it (the two centered together); a PFL on a channel not on
+  this page shows as "■" before the page in the title's tail (1.1.x never showed one).
 - **Meters** (from 1.2.0, a Settings choice, off by default): a 1-pixel bar under each name, two
   blank lines below it, 26 pixels at full scale on TotalMix FX's fader law (`MeterScale`, shared
-  with the Roto-Control); a stereo channel's right side on the line below its left. The bar is an
+  with the Roto-Control); a stereo channel's right side on the line below its left (read at the left channel + 1, as
+  the Roto-Control's meters do; that TotalMix FX sends it there is inferred, not tested). The bar is an
   RMS-like average of the peaks TotalMix FX sends (over 0.03 s, 6 dB under them), and one pixel
-  holds the true peak for 2 s. At most 25 redraws a second (test 8). They need TotalMix FX's OSC
-  "Send Level Data" on and its "Peak Hold" off (`docs/TOTALMIX-OSC.md`).
+  holds the true peak for 2 s. Redraws are capped at 25 a second (test 8 showed 60 is smooth). They need TotalMix FX's OSC
+  "Send Level Data" on; with "Peak Hold" on they move slowly (`docs/TOTALMIX-OSC.md`).
 
 ## 6. Open questions
 
@@ -323,7 +325,8 @@ Run with `sbdev e16` (the probe: `ports`, `monitor`, `enter`, `exit`, `labels`, 
 `demo`) and `sbdev e16bridge` (the driver with TotalMix FX, as the app runs it), on macOS. Both
 print what they send and receive with the time since starting. The logs of tests 2 and 3 are
 Adam's Terminal transcript of the day (`e16bridge-terminal-1104.log`, in the project folder); the
-probe's runs in test 1 were not logged, so its numbers rest on the session's notes.
+probe's runs in test 1 were not logged, so its numbers rest on the session's notes. Tests 9–11
+are Adam's observations, not logged.
 
 ### Test 1 (2026-11-04): the probe
 
@@ -494,8 +497,8 @@ stayed smooth, and turns moved their rings at once.
 
 ### Test 9 (2026-11-06): push-and-turn jumps
 
-**Setup.** `sbdev e16bridge --layout 4 --meters` on branch `e16-four`, from `3bd4bd8` (stops at
-−∞, 0 dB, and +6 dB) with `--jump-pause S` to try the pause after a jump; Adam turned pushed
+**Setup.** `sbdev e16bridge --layout 4 --meters` on branch `e16-four`, from `7381250` (a 0.05 s
+pause), then `1899cf1` (`--jump-pause S`) and `3bd4bd8` (stops at −∞, 0 dB, and +6 dB), with `--jump-pause S` to try the pause after a jump; Adam turned pushed
 encoders quickly through 0 dB, up and down.
 
 **Findings (Adam):**

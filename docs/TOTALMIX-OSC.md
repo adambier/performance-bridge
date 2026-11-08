@@ -146,7 +146,7 @@ The three rows of the mixer are spelled three ways (`TotalMixBus`).[^rme-doc]
 - `solo`;
 - `groupflags`.
 
-**Levels** have the form `/level/<in|pb|out>/<channel>`. Each is a peak level in dB, and only changing values are sent. TotalMix FX sends them; it does not accept them.[^rme-doc] Performance Bridge's meters (the Roto-Control's, and the E16's from 1.2.0) average these peaks and hold the highest themselves (SurfaceCore's `MeterScale`), so they expect the OSC tab's "Send Level Data" on and "Peak Hold" off; what "Peak Hold" changes in what TotalMix FX sends has not been tested here.
+**Levels** have the form `/level/<in|pb|out>/<channel>`. Each is a peak level in dB, and only changing values are sent. TotalMix FX sends them; it does not accept them.[^rme-doc] Performance Bridge's meters (the Roto-Control's, and the E16's from 1.2.0) average these peaks and hold the highest themselves (SurfaceCore's `MeterScale`), so they expect the OSC tab's "Send Level Data" on. With "Peak Hold" on, the levels sent were seen to hold at their peaks (Adam, 2026-11-06, the E16's meters in one session; not measured), so the setup text says to leave it unchecked.
 
 **Requests for state**[^rme-doc]:
 

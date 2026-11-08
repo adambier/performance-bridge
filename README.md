@@ -35,8 +35,8 @@ app's own Setup Guide (in its menu) checks each step as it goes.
     or a send; switches for mute and PFL; and each channel's name, TotalMix FX color, and meter. Tested
     on the device (`docs/ROTO-CONTROL.md`).
   - **OXI Instruments' E16**, in its Remote Mode (firmware 1.3.0 or later): sixteen push encoders,
-    as sixteen channels (level, pan, or a send each) or four channel strips (two sends, pan, and
-    level); mute on a press, PFL on a hold, and a jump to 0 dB, −∞, or +6 dB (or a pan's center or
+    as **16 channels** (level, pan, or a send each) or **4 channel strips** (send A level, send B
+    level, pan, and main level); mute on a press, PFL on a hold, and a jump to −∞, 0 dB, or +6 dB (or a pan's center or
     ends) on a push and turn; and each channel's name and value on the screen, with an optional
     meter, and its TotalMix FX color and level on its encoder's ring. Tested on the device
     (`docs/OXI-E16.md`).

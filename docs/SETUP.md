@@ -4,8 +4,9 @@
 
 - A Mac running macOS 13 or later.
 - TotalMix FX 2.1 or later (release candidates included), on a supported RME interface. Earlier versions don't have Global OSC; the Setup Guide checks the version. Tested only with a Digiface AES.
-- A hardware controller, connected to the Mac by USB: a Roto-Control (tested with firmware 3.3.0), a Launch
-  Control XL 3 (tested with firmware 1.2), or a Launch Control 3 (not yet tried on a device).
+- A hardware controller, connected to the Mac by USB: a Roto-Control (tested with firmware 3.3.0), an OXI
+  E16 (firmware 1.3.0 or later; tested with 1.3.0), a Launch Control XL 3 (tested with firmware 1.2), or a Launch Control 3 (not
+  yet tried on a device).
 - Performance Bridge 1.0.0 or later, from the [latest release](https://github.com/adambier/performance-bridge/releases/latest),
   moved to the Applications folder. (To run it from source instead, see the README, "Running the app
   from source".)
@@ -46,8 +47,9 @@ Checked on screen with TotalMix FX "2.10 (1)" on a Mac (2026-10-31); the screens
 
    <img src="../App/PerformanceBridge/Resources/totalmix-osc-tab.png" width="380" alt="Mixer Settings, OSC tab: controller 1 in use, ports 7001 and 9001, host localhost, Global OSC">
 
-6. In the OSC tab's **Options** group, check **Send Level Data** and uncheck **Peak Hold** for meters on the
-   Roto-Control or the E16 (the Launch Controls have no meters), and leave **Lock Remote to Submix** off (Performance Bridge chooses submixes itself). The effect of **Number of faders per bank** on
+6. In the OSC tab's **Options** group, check **Send Level Data** for meters on the Roto-Control or the E16 (the
+   Launch Controls have no meters); leave **Peak Hold** unchecked, or the levels TotalMix FX sends hold at their
+   peaks and the E16's meters move slowly. Leave **Lock Remote to Submix** off (Performance Bridge chooses submixes itself). The effect of **Number of faders per bank** on
    the app has not been tested.
 7. Click **Details**, which opens "Gobal OSC - Detailed Settings" (TotalMix FX's spelling), and check **Send
    changes** and **Send status**. The other settings shown are the ones used in the tests: "Send all data on
@@ -130,8 +132,8 @@ connected, it uses the one with the lowest device ID.
 
 With the E16 chosen, the Connections tab also shows, below Apply, its **Layout** (16 channels or 4 channel
 strips), with **Send A** and **Send B** for 4 channel strips; **Show meters under the channel names**; and a
-**Brightness** slider for its rings, from 1 to 100. Each takes effect at once, without Apply, and follows a
-change made on the E16 (Step 6). The send outputs can be chosen while TotalMix FX is open.
+**Brightness** slider for its rings, from 1 to 100. Each takes effect at once, without Apply; the layout and sends also
+follow a change made on the E16 (Step 6). The send outputs can be chosen while TotalMix FX is open.
 
 With a Launch Control chosen, the Connections tab also shows its send rows below Apply. Their outputs can
 be chosen there at any time while TotalMix FX is open, with the Launch Control connected or not, and a
@@ -236,7 +238,7 @@ before a performance.
 |---|---|
 | **←** / **→** | Show the previous or next eight channels. In the single-channel view (**FUNC**), the previous or next page of sends. |
 | **←** and **→** together | Switch to the Roto-Control's second track set ("MIX-RTN" on its screen). It shows the same channels, on the same page; press both again to go back. |
-| **SEL** (hold) | Choose the knob mode with the switch under VOLUME, PAN, or the send (labeled "FX"; pressing it again has been seen to step through the sends), and the switch mode with the switch under MUTE or SOLO (ARM does nothing). The modes are kept when the Roto-Control is switched off. |
+| **SEL** (hold) | Choose the knob mode with the switch under VOLUME, PAN, or the send (labeled "FX"; pressing it again has been observed to step through the sends), and the switch mode with the switch under MUTE or SOLO (ARM does nothing). The modes are kept when the Roto-Control is switched off. |
 | **FUNC** | All of one channel's controls: the channel whose knob was last touched (the first channel until one is), with knob 1 level, knob 2 pan, and knobs 3–8 its first six sends; **←** and **→** page through eight more sends at a time. The switches do nothing in this view. Press **FUNC** again to go back to eight channels. |
 | **MODE** | The Roto-Control's own mode menu. Performance Bridge works in its MIX mode; press **MODE**, then MIX, to return to it. PLUGIN mode shows no plugins in this release, and MIDI mode is not used. |
 | **LEARN**, the tape button, the (+) button, and the transport switches | Nothing in this release. Learn belongs to PLUGIN mode; the tape button switches the eight switches to transport controls, kept for a later connection to a DAW (press it again to get mute or PFL back); the (+) button is track grouping, which TotalMix FX has no use for (it blinks green until pressed again). |
@@ -251,34 +253,34 @@ before a performance.
 
 <img src="../App/PerformanceBridge/Resources/controller-oxi-e16.png" width="252" alt="OXI Instruments E16, seen from above: sixteen encoders with light rings in four rows of four, and a screen above them">
 
-The E16 has two layouts. In **16 channels**, each encoder is one channel: the four rows of four are the channels in order, left to right and top to bottom. In **4 channel strips**, each column is one channel: send A on the top row, send B on the second, pan on the third, and the level on the bottom. The screen names the channels, and each ring shows its value in its channel's TotalMix FX color (a send in its output's color).
+The E16 has two layouts. In **16 channels**, each encoder is one channel: the four rows of four are the channels in order, left to right and top to bottom. In **4 channel strips**, each column is one channel: send A level on the top row, send B level on the second, pan on the third, and main level on the bottom. The screen names the channels, and each ring shows its value in its channel's TotalMix FX color (a send in its output's color).
 
 | Control (each encoder) | What it does for that encoder's channel |
 |---|---|
-| Turn | In 16 channels, level in Main Out, pan in Main Out, or a send, by the mode (**Shift**, below); in 4 channel strips, the row's send, pan, or level. The screen shows the value while it turns; turning faster moves further. A level or send fills its ring at 0 dB and above. |
-| Press and release | Mute on or off; in 4 channel strips, any encoder of the channel's column, shown on its level ring. A muted channel's ring goes dark with four orange lights turning around it, and its name is boxed on the screen. While TotalMix FX's Mute Master is off, so a mute does nothing in the audio, the four lights stand still and take turns with the level, half a second each, and the box flashes; with PFL also on, the lights turn with the pink ones and blink. The screen says "MUTE ON" or "MUTE OFF", or "MUTE SET" or "MUTE CLR" while Mute Master is off. |
-| Hold for one second | PFL on or off. After a quarter second, a pink arc counts down around the ring, and when it closes PFL switches. While PFL is on, the ring goes dark with four pink lights turning around it, as a mute's orange ones do, and a small square follows the channel's name; with both on, the orange and pink lights turn together. The screen says "PFL ON" or "PFL OFF" while the encoder is held. |
-| Push and turn | A jump to the next stop the way it turns: for a level or a send, −∞, 0 dB, or +6 dB; for a pan, hard left, center, or hard right. To jump on to the next stop, pause, then turn again. Start turning within a second of pushing: a push that turns then neither mutes nor switches PFL. |
+| Turn | In 16 channels, level in Main Out, pan in Main Out, or a send, by the mode (**Shift**, below); in 4 channel strips, the row's send A level, send B level, pan, or main level. The screen shows the value while it turns; turning faster moves further. A level or send fills its ring at 0 dB and above. |
+| Push and release | Mute on or off; in 4 channel strips, any encoder of the channel's column, shown on its main level ring. A muted channel's ring goes dark with four orange lights turning around it, and its name is boxed on the screen. While TotalMix FX's Mute Master is off, a mute is only set and doesn't silence the channel: the four lights stand still and take turns with the level, half a second each, and the box flashes; with PFL also on, the lights turn with the pink ones and blink. The screen says "MUTE ON" or "MUTE OFF", or "MUTE SET" or "MUTE CLR" while Mute Master is off. |
+| Hold for one second | PFL on or off. After a quarter second, a pink arc counts down around the ring; when it closes, PFL switches. While PFL is on, the ring goes dark with four pink lights turning around it, as a mute's orange ones do, and a small square follows the channel's name; with both on, the orange and pink lights turn together. The screen says "PFL ON" or "PFL OFF" while the encoder is held. |
+| Push and turn | A jump to the next stop the way it turns: for a level or a send, −∞, 0 dB, or +6 dB; for a pan, hard left, center, or hard right. To jump on to the next stop, pause, then turn again. Start turning within a second of pushing: a push that turns neither mutes nor switches PFL. |
 
 | Hold Shift and press (16 channels) | What it does |
 |---|---|
 | **1** LEVEL / **2** PAN / **3** SEND | What a turn does: level (white), pan (magenta), or a send (green) to the last output used. |
-| **11** / **12** < SEND > | The previous or next output for the sends, from the Outputs list (Performance Bridge's **Settings… → Channel Layout**), named at the left of the row. In LEVEL or PAN mode either arrow enters SEND mode at the last output used. |
+| **11** / **12** < SEND > | The previous or next output for the sends (green), from the Outputs list (Performance Bridge's **Settings… → Channel Layout**), named at the left of the row. In LEVEL or PAN mode either arrow enters SEND mode at the last output used. |
 | **13** 16 CH / **14** 4 CH | The layout (yellow). 4 CH shows the four channels holding the one last turned or pushed. |
 | **15** / **16** < PAGE > | The previous or next sixteen channels (blue). |
 
 | Hold Shift and press (4 channel strips) | What it does |
 |---|---|
-| **3** / **4** < SEND > | The previous or next output for send A, the top row, named at the left of the row. It skips send B's output. |
+| **3** / **4** < SEND > | The previous or next output for send A (green), the top row, named at the left of the row. It skips send B's output. |
 | **7** / **8** < SEND > | The same for send B, the second row. |
 | **13** 16 CH / **14** 4 CH | The layout (yellow). 16 CH shows the sixteen channels holding these four. |
 | **15** / **16** < PAGE > | The previous or next four channels (blue). |
 
-- While Shift is held, the screen names each button and the rings show them: dim where a button is available, pulsing for the one in use, and full while pressed; an arrow with nowhere to go, and the other encoders, are dark.
-- The top line of the screen shows the mode (LEVEL, PAN, or the send's output) in 16 channels, and send A's and send B's outputs in 4 channel strips. At the right, it shows the page (e.g., "2/3") when there is more than one, after a small square while a channel on another page has PFL on.
+- While Shift is held, the screen names each button and the rings show them: dim where a button is available, pulsing for the one in use, and full while pressed; an arrow with nowhere to go and the other encoders are dark.
+- The top line of the screen shows the mode (LEVEL, PAN, or the send's output) in 16 channels and send A's and send B's outputs in 4 channel strips. At the right, it shows the page (e.g., "2/3") when there is more than one, after a small square while a channel not on this page has PFL on.
 - A ring that is dark has no channel, unless lights turn around it or stand on it: four orange for a mute, four pink for a PFL. In 4 channel strips a muted channel's send rings are dark too.
-- A pan shows as an arc from the top: in the channel's color at center, and red as soon as it moves off center, however little. Turning a pan stops at center, however fast; to move past it, pause, then turn a little further.
-- The layout, send A and B, meters under the channel names, and the rings' brightness can be set in Performance Bridge's **Settings… → Connections**. Meters need TotalMix FX's **Send Level Data** on and **Peak Hold** off (Step 1).
+- A pan shows as an arc from the top: in the channel's color at center and red as soon as it moves off center, however little. Turning a pan stops at center, however fast; to move past it, pause, then turn a little further.
+- The layout, send A and B, meters under the channel names, and the rings' brightness can be set in Performance Bridge's **Settings… → Connections**. Meters need TotalMix FX's **Send Level Data** on (Step 1).
 - Levels and pans are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so TotalMix FX's window shows the levels and pans set here only while Main Out's output is selected in its bottom row.
 - The E16 needs firmware 1.3.0 or later (Remote Mode doesn't work before 1.3.0). When Performance Bridge quits, it gives the E16 back to its own firmware; if the E16 is ever left blank, switch it off and on.
 - Details and the test records are in [`docs/OXI-E16.md`](OXI-E16.md).
