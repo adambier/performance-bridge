@@ -225,7 +225,8 @@ Everything below applies to both unless it says otherwise.
   7 and 8 for send B (each skipping the other's output), with the current outputs' names across 1–2
   ("A: ADI-2 3/4") and 5–6 ("B: ADAT 1/2"). In both: 13 and 14 the layout (yellow; "16CH" and "STRIP"; "STRIP" is 27 pixels, one over the labels' 26; "16 CH" with a
   space read with "STRIP" as one phrase, Adam, 2026-11-07). Every Shift-page label starts at its
-  cell's margin, so each column has one left edge (centered, "16CH" under "LEVEL" looked off),
+  cell's margin, so each column has one left edge (centered, "16CH" under "LEVEL" looked off). The layout in use is inverted on the screen (a trial), the one state
+  the screen shows nowhere else; the mode isn't, since the title names it,
   15 and 16 the previous and next page (blue). Back and forward are always the right two columns
   of a row, labeled as a pair, "< SEND >" or "< PAGE >": the word between the arrows, one word space
   each side, the ">" ending at the cell's right margin, and every arrow on a page lined up; a

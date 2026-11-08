@@ -343,6 +343,8 @@ public struct E16Driver: Sendable {
     private var sentLabels: [UInt8]?
     /// What the last screen showed (its title parts and labels), so the framebuffer is drawn and
     /// packed only when something on it changed, not on every tick (review of 2026-11-04).
+    /// The last screen drawn, for tests.
+    var lastScreenForTests: E16Screen?
     private var shownScreen: (title: String, tail: String, labels: [String], drawn: Bool, marks: [Int], meters: [Int: [Int]], peaks: [Int: [Int]])?
     private var sentRings: [RingLook?] = Array(repeating: nil, count: E16Driver.stripCount)
 
@@ -1112,6 +1114,10 @@ public struct E16Driver: Sendable {
                 if pflOn[strip] { pflMarked.insert(index) }
             }
         }
+        // On the Shift page the layout in use is inverted, the one state the screen shows nowhere
+        // else (the title names the mode); the modes aren't, so each state shows once (Adam,
+        // 2026-11-07, a trial).
+        if shiftHeld, drawsScreen { inverted.insert(layout == .sixteen ? 12 : 13) }
         // The meters, as bar widths, under the names (`showsMeters`), and their held peaks.
         var meters: [Int: [Int]] = [:], peakWidths: [Int: [Int]] = [:]
         if showsMeters, drawsScreen, !shiftHeld {
@@ -1163,9 +1169,11 @@ public struct E16Driver: Sendable {
             let pairs: [(Int, String)] = layout == .four ? [(2, "SEND"), (6, "SEND"), (14, "PAGE")] : [(10, "SEND"), (14, "PAGE")]
             for (left, word) in pairs where !labels[left].isEmpty || !labels[left + 1].isEmpty { pairWords[left] = word }
         }
-        let bytes = drawsScreen ? E16Outgoing.framebuffer(Self.screen(title: parts.0, tail: parts.1, labels: labels, inverted: inverted, outlined: outlined, pflMarked: pflMarked,
-                                                                      centered: centersLabels && !shiftHeld, values: values, meters: meters, peaks: peakWidths, spans: spans,
-                                                                      rightAligned: shiftHeld ? Self.shiftRightAligned : [], pairWords: pairWords))
+        let drawn = Self.screen(title: parts.0, tail: parts.1, labels: labels, inverted: inverted, outlined: outlined, pflMarked: pflMarked,
+                                centered: centersLabels && !shiftHeld, values: values, meters: meters, peaks: peakWidths, spans: spans,
+                                rightAligned: shiftHeld ? Self.shiftRightAligned : [], pairWords: pairWords)
+        lastScreenForTests = drawn
+        let bytes = drawsScreen ? E16Outgoing.framebuffer(drawn)
             : E16Outgoing.labels(title: title(hub: hub), labels: labels)
         guard bytes != sentLabels else { return [] }
         sentLabels = bytes
