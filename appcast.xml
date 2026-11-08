@@ -3,6 +3,29 @@
     <channel>
         <title>Performance Bridge</title>
         <item>
+            <title>1.2.0</title>
+            <pubDate>Sat, 07 Nov 2026 22:03:00 -0800</pubDate>
+            <sparkle:version>596</sparkle:version>
+            <sparkle:shortVersionString>1.2.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[**OXI E16**
+
+- **Two layouts:** **16 channels**, one encoder each, as before; or **channel strips**, one column per channel: send A level, send B level, pan, and main level, top to bottom. Choose the layout in **Settings… → Connections** or switch the layout and step the sends on the E16 with Shift.
+- **Push and turn jumps** to the next stop: −∞, 0 dB, or +6 dB for a level or send; hard left, center, or hard right for a pan. This replaces 1.1.1's push and turn (pan in LEVEL and SEND modes, level in PAN mode).
+- **Pans stop at center**, however fast they turn; pause, then turn on to pass it.
+- **The screen** shows each channel's values, marks a muted or PFL'd channel's name, and can show a meter under each name. Meters need TotalMix FX's **Send Level Data** on (Options → Mixer Settings… (F3) → OSC); leave **Peak Hold** off, or the meters move slowly.
+- **Shift page:** the button in use pulses, and the screen inverts the mode and layout in use. In LEVEL or PAN mode, **< SEND >** steps to the previous or next output, as in SEND mode.
+- **Fixes:** a PFL on another page now shows in the title; a Shift-page arrow that reaches the last page or send stays lit until released.
+
+**Hidden channels:** a channel hidden or shown in TotalMix FX now appears or disappears on the hardware controller by itself, when you switch away from TotalMix FX or within half a minute; the menu's **Update Hidden Channels** (formerly Refresh Channels from TotalMix FX) does it at once.
+
+**Roto-Control:** meters follow TotalMix FX's fader scale, so quiet levels show lower than before; a pan knob's center stop now reads C in TotalMix FX (it read L01).
+
+**Internal:** shared send rows (`SendRows`), one meter scale (`MeterScale`), names shortened as a set (`fitSet`); device tests 8–11 in `docs/OXI-E16.md`; new `sbdev e16bridge` options.
+]]></description>
+            <enclosure url="https://github.com/adambier/performance-bridge/releases/download/v1.2.0/Performance-Bridge-1.2.0.zip" length="6077627" type="application/octet-stream" sparkle:edSignature="z1yQQ0piEutJOmbM5ULKguUTm4pW/9goFE4U2Q7mrmjeHkZYiDgMpW1OWxkUG/k3ruDrNNWfbyWPWW0JhreEDQ=="/>
+        </item>
+        <item>
             <title>1.1.1</title>
             <pubDate>Thu, 05 Nov 2026 13:19:48 -0800</pubDate>
             <sparkle:version>481</sparkle:version>
