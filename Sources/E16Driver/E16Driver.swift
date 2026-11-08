@@ -1100,15 +1100,16 @@ public struct E16Driver: Sendable {
         let parts = titleParts(hub: hub)
         // The names that show a switch (`marksNames`): the 16-channel layout's every label, the
         // 4-channel layout's bottom row.
-        var inverted = Set<Int>(), outlined = Set<Int>(), pflMarked = Set<Int>()
+        var inverted = Set<Int>(), outlined = Set<Int>(), struck = Set<Int>(), pflMarked = Set<Int>()
         if marksNames, !shiftHeld {
             for strip in 0..<columns {
                 let index = layout == .four ? 12 + strip : strip
                 // A mute set while Mute Master is off (not silencing) flashes, in step with its
                 // ring (Adam, 2026-11-05).
-                // A mute is an outline around the name, flashing while Mute Master is off;
-                // inversion means "selected", on the Shift page (Adam, 2026-11-07).
-                if muteOn[strip], hub.mirror.muteMaster != false || blinkLit { outlined.insert(index) }
+                // A mute strikes through the name, flashing while Mute Master is off (Adam,
+                // 2026-11-07, a trial: an outline met the meter line under the name; inversion
+                // means "selected", on the Shift page).
+                if muteOn[strip], hub.mirror.muteMaster != false || blinkLit { struck.insert(index) }
                 if pflOn[strip] { pflMarked.insert(index) }
             }
         }
@@ -1161,7 +1162,10 @@ public struct E16Driver: Sendable {
             }
         }
         let values: Set<Int> = layout == .four && !shiftHeld ? Set(0..<12) : []
-        let marks = inverted.sorted() + [-1] + pflMarked.sorted() + [-3] + outlined.sorted()
+        var marks: [Int] = inverted.sorted()
+        marks += [-1] + pflMarked.sorted()
+        marks += [-3] + outlined.sorted()
+        marks += [-4] + struck.sorted()
         let key = marks + (centersLabels ? [-2] : [])
         if let shown = shownScreen, shown.title == parts.0, shown.tail == parts.1, shown.labels == labels, shown.drawn == drawsScreen, shown.marks == key {
             // Only the meters changed: at most `meterFrame` apart.
@@ -1176,7 +1180,7 @@ public struct E16Driver: Sendable {
             let pairs: [(Int, String)] = layout == .four ? [(2, "SEND"), (6, "SEND"), (14, "PAGE")] : [(10, "SEND"), (14, "PAGE")]
             for (left, word) in pairs where !labels[left].isEmpty || !labels[left + 1].isEmpty { pairWords[left] = word }
         }
-        let drawn = Self.screen(title: parts.0, tail: parts.1, labels: labels, inverted: inverted, outlined: outlined, pflMarked: pflMarked,
+        let drawn = Self.screen(title: parts.0, tail: parts.1, labels: labels, inverted: inverted, outlined: outlined, struck: struck, pflMarked: pflMarked,
                                 centered: centersLabels, values: values, meters: meters, peaks: peakWidths, spans: spans,
                                 rightAligned: shiftHeld ? Self.shiftRightAligned : [], pairWords: pairWords)
         lastScreenForTests = drawn
@@ -1203,7 +1207,7 @@ public struct E16Driver: Sendable {
     /// their digits in fixed places (`drawValue`). `inverted` names are drawn in a lit box (a
     /// mute) and `pflMarked` ones followed by a small square (a PFL); `meters` draws a bar of the
     /// given width under a name, a second one under it for a stereo channel's right side.
-    public static func screen(title: String, tail: String = "", labels: [String], inverted: Set<Int> = [], outlined: Set<Int> = [], pflMarked: Set<Int> = [],
+    public static func screen(title: String, tail: String = "", labels: [String], inverted: Set<Int> = [], outlined: Set<Int> = [], struck: Set<Int> = [], pflMarked: Set<Int> = [],
                               centered: Bool = false, values: Set<Int> = [], meters: [Int: [Int]] = [:], peaks: [Int: [Int]] = [:], spans: Set<Int> = [], rightAligned: Set<Int> = [],
                               pairWords: [Int: String] = [:]) -> E16Screen {
         // "-oo" (off) as "-∞": the font has no lowercase (Adam, 2026-11-05).
@@ -1283,6 +1287,9 @@ public struct E16Driver: Sendable {
                 for px in (x - 1)...boxEnd {
                     for py in (y - 1)...(y + E16Font.glyphHeight) { screen.set(px, py, !screen.pixel(px, py)) }
                 }
+            } else if struck.contains(index) {
+                // A line through the middle of the letters, a pixel past them each side.
+                for px in max(x - 1, cellX)...min(x + width, cellX + cell - 1) { screen.set(px, y + E16Font.glyphHeight / 2) }
             } else if outlined.contains(index) {
                 // An outline one pixel clear of the letters all round: a mute's flash while Mute
                 // Master is off (Adam, 2026-11-07: an outline on the box's own edge ran into the
