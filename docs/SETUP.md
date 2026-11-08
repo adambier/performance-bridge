@@ -258,14 +258,14 @@ The E16 has two layouts. In the **16-channel layout**, each encoder is one chann
 | Control (each encoder) | What it does for that encoder's channel |
 |---|---|
 | Turn | In the 16-channel layout, level in Main Out, pan in Main Out, or a send, by the mode (**Shift**, below); in the channel-strip layout, the row's send A level, send B level, pan, or main level. A level or send fills its ring at 0 dB and above. |
-| Push and release | Mute on or off; in the channel-strip layout, any encoder of the channel's column, shown on its main level ring. A muted channel's ring goes dark with four orange lights turning around it; on the screen, its name is outlined. While TotalMix FX's Mute Master is off, a mute is only set and doesn't silence the channel: the four lights stand still and take turns with the level, half a second each, and the outline flashes; with PFL also on, the lights turn with the pink ones and blink. The screen says "MUTE ON" or "MUTE OFF", with "MUTE SET" instead of "MUTE ON" while Mute Master is off. |
+| Push and release | Mute on or off; in the channel-strip layout, any encoder of the channel's column, shown on its main level ring. A muted channel's ring goes dark with four orange lights turning around it; on the screen, its name is struck through. While TotalMix FX's Mute Master is off, a mute is only set and doesn't silence the channel: the four lights stand still and take turns with the level, half a second each, and the line through its name flashes; with PFL also on, the lights turn with the pink ones and blink. The screen says "MUTE ON" or "MUTE OFF", with "MUTE SET" instead of "MUTE ON" while Mute Master is off. |
 | Hold for one second | PFL on or off. After a quarter second, a pink arc counts down around the ring; when it closes, PFL switches. While PFL is on, the ring goes dark with four pink lights turning around it, as a mute's orange ones do, and a small square follows the channel's name; with both on, the orange and pink lights turn together. The screen says "PFL ON" or "PFL OFF" while the encoder is held. |
 | Push and turn | A jump to the next stop the way it turns: for a level or a send, −∞, 0 dB, or +6 dB; for a pan, hard left, center, or hard right. To jump on to the next stop, pause, then turn again. Start turning within a second of pushing: a push that turns neither mutes nor switches PFL. |
 
 | Hold Shift and press (16-channel layout) | What it does |
 |---|---|
 | **1** LEVEL / **2** PAN / **3** SEND | What a turn does: level (white), pan (magenta), or a send (green) to the last output used. |
-| **11** / **12** < SEND > | The previous or next output for the sends (green). In LEVEL or PAN mode, either arrow enters SEND mode at the last output used. |
+| **11** / **12** < SEND > | The previous or next output for the sends (green), from the one named beside them; in LEVEL or PAN mode they also switch to SEND. |
 | **13** 16 CH / **14** STRIP | The layout (yellow). STRIP shows the four channels holding the one last turned or pushed. |
 | **15** / **16** < PAGE > | The previous or next sixteen channels (blue). |
 
@@ -280,7 +280,7 @@ The E16 has two layouts. In the **16-channel layout**, each encoder is one chann
 - A small square before the page number at the top right means a channel not on this page has PFL on.
 - A dark ring with no lights on it has no channel. In the channel-strip layout, a muted channel's send rings are dark too.
 - A pan shows as an arc from the top: in the channel's color at center and red as soon as it moves off center, however little. Turning a pan stops at center, however fast; to move past it, pause, then turn a little further.
-- The layout, the sends, meters, and ring brightness can be set in **Settings… → Connections**; meters need TotalMix FX's **Send Level Data** on (Step 1).
+- The layout, the sends, meters, and ring brightness can be set in **Settings… → Connections**; meters need TotalMix FX's **Send Level Data** on (see the Setup Guide).
 - Levels and pans are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so TotalMix FX's window shows the levels and pans set here only while Main Out's output is selected in its bottom row.
 - The E16 needs firmware 1.3.0 or later (Remote Mode doesn't work before 1.3.0). When Performance Bridge quits, it gives the E16 back to its own firmware; if the E16 is ever left blank, switch it off and on.
 - Details and the test records are in [`docs/OXI-E16.md`](OXI-E16.md).

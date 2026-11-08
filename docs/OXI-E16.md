@@ -220,7 +220,7 @@ Everything below applies to both unless it says otherwise.
   the way of a careful move.
 - **Shift** makes the encoders buttons. In 16 channels: 1 LEVEL (white), 2 PAN (magenta), 3 SEND
   (deep green; back to the last output used), 11 and 12 the previous and next send output (deep
-  green; outside SEND mode either arrow enters it at the last output used),[^test-4] with that
+  green; in every mode they step from the output named beside them, switching to SEND mode; until 2026-11-07, outside SEND mode either arrow entered it at the last output used,[^test-4] so their availability changed with the mode, Adam), with that
   output's name across 9–10. In channel strips: 3 and 4 the previous and next output for send A,
   7 and 8 for send B (each skipping the other's output), with the current outputs' names across 1–2
   ("A: ADI-2 3/4") and 5–6 ("B: ADAT 1/2"). In both: 13 and 14 the layout (yellow; "16 CH" and "STRIP"; "STRIP" is 27 pixels, one over the labels' 26; "16 CH" with a
@@ -295,8 +295,9 @@ Everything below applies to both unless it says otherwise.
   "MUTE SET". Names are centered and shortened as a set (`fitSet`): each takes its longest form
   that fits, and two names ending in a number or a pair that would come out the same take
   distinct forms ("ADI-2 3/4" and "ADAT 3/4" become "AI3/4" and "AT3/4"); other names are cut
-  from the end and can still come out the same. A mute draws an outline one pixel clear of the name (flashing while Mute
-  Master is off); inversion is kept for "selected", on the Shift page (Adam, 2026-11-07) and a PFL adds a 3×3 square after it (the two centered together); a PFL on a channel not on
+  from the end and can still come out the same. A mute strikes through the name (flashing while Mute Master is off; an
+  outline was tried and met the meter line under the name); inversion is kept for "selected",
+  on the Shift page (Adam, 2026-11-07) and a PFL adds a 3×3 square after it (the two centered together); a PFL on a channel not on
   this page shows as "■" before the page in the title's tail (1.1.x never showed one).
 - **Meters** (from 1.2.0, a Settings choice, off by default): a 1-pixel bar under each name, two
   blank lines below it, 26 pixels at full scale on TotalMix FX's fader law (`MeterScale`, shared

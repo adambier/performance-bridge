@@ -753,8 +753,11 @@ public struct E16Driver: Sendable {
         case .output(let direction):
             let count = hub.sendTargets.count
             guard count > 0 else { return }
-            // Not in SEND mode, either arrow enters it at the last output used.
-            let current: Int = { if case .send(let n) = function { return n } else { return min(lastSend, count - 1) - direction } }()
+            // In every mode the arrows step from the output named beside them (the one in use,
+            // or the one SEND goes back to) and enter SEND mode, so they don't change meaning or
+            // availability with the mode (Adam, 2026-11-07; before, outside SEND mode either
+            // arrow entered it at the last output, test 4).
+            let current: Int = { if case .send(let n) = function { return n } else { return min(lastSend, count - 1) } }()
             let next = current + direction
             guard (0..<count).contains(next) else { return }
             setFunction(.send(next), hub: &hub, now: now, into: &step)
@@ -891,7 +894,7 @@ public struct E16Driver: Sendable {
         case .output(let direction):
             let count = hub.sendTargets.count
             guard count > 0 else { return false }
-            let current: Int = { if case .send(let n) = function { return n } else { return min(lastSend, count - 1) - direction } }()
+            let current: Int = { if case .send(let n) = function { return n } else { return min(lastSend, count - 1) } }()
             return (0..<count).contains(current + direction)
         case .page(let direction):
             let current = page.first / columns

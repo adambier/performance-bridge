@@ -395,8 +395,8 @@ final class E16DriverTests: XCTestCase {
         let shift = driver.receive([0x90, 16, 0x7F], hub: &hub, now: 1)
         XCTAssertEqual(shift.midi.lastTitle, "LEVEL", "the title stays")
         XCTAssertEqual(shift.midi.lastLabels, ["LVL", "PAN", "SEND", "", "", "", "", "",
-                                               "Phon", "", "<SND", "SND>", "16CH", "STRP", "", ""],
-                       "one page: no page arrows")
+                                               "Phon", "", "", "", "16CH", "STRP", "", ""],
+                       "one page: no page arrows; one send output: no send arrows, in any mode")
         let rings = shift.midi.rings
         XCTAssertEqual(rings[0]?.g, 127, "LEVEL, in use: white at the driver's brightness (1 in the tests)")
         XCTAssertEqual(rings[0]?.amount, 16383)
@@ -404,8 +404,8 @@ final class E16DriverTests: XCTestCase {
         XCTAssertEqual(rings[1]?.b, 2)
         XCTAssertEqual(rings[1]?.amount, 16383)
         XCTAssertEqual(rings[2]?.g, 2, "SEND: green at the available level")
-        XCTAssertEqual(rings[10]?.g, 2, "either arrow enters SEND mode at the last output used")
-        XCTAssertEqual(rings[11]?.g, 2)
+        XCTAssertNil(rings[10], "the arrows step from the output named beside them, in every mode: none before Phones")
+        XCTAssertNil(rings[11], "nor after it")
         XCTAssertEqual(rings[3]?.amount, 0, "a blank is dark")
         XCTAssertNil(rings[14], "no pages: an empty strip's ring was dark already")
         // A turn does nothing on the Shift page.
@@ -428,13 +428,13 @@ final class E16DriverTests: XCTestCase {
         _ = driver.receive([0x80, 2, 0x00], hub: &hub, now: 1.28)
         _ = driver.receive([0x90, 0, 0x7F, 0x80, 0, 0x00], hub: &hub, now: 1.29)  // back to LEVEL
         _ = driver.receive([0x90, 1, 0x7F, 0x80, 1, 0x00], hub: &hub, now: 1.295)  // and PAN, as before
-        // Next output: the only send, Phones; the arrow enters SEND mode.
-        let out = driver.receive([0x90, 11, 0x7F, 0x80, 11, 0x00], hub: &hub, now: 1.3)
+        // SEND: the only send, Phones.
+        let out = driver.receive([0x90, 2, 0x7F, 0x80, 2, 0x00], hub: &hub, now: 1.3)
         XCTAssertEqual(driver.function, .send(0))
         XCTAssertEqual(out.midi.lastTitle, "> PHONES")
         XCTAssertEqual(out.midi.rings[2]?.g, 60, "SEND in use")
-        XCTAssertEqual(out.midi.rings[11]?.amount, 0, "no next output: dark once released")
-        XCTAssertEqual(out.midi.rings[10]?.amount, 0, "no previous output either")
+        XCTAssertNil(out.midi.rings[11], "no next output: the arrow stays dark")
+        XCTAssertNil(out.midi.rings[10], "no previous output either")
         XCTAssertEqual(driver.receive([0x90, 11, 0x7F, 0x80, 11, 0x00], hub: &hub, now: 1.4).core.messages, [])
         XCTAssertEqual(driver.function, .send(0), "stays at the last output")
         // Release: the strips come back, in the send's color (white, Phones is white) and values.
