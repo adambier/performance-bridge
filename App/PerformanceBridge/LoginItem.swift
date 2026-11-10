@@ -38,9 +38,13 @@ enum LoginItemState: Equatable {
 extension BridgeModel {
     /// Reads the login item's state from macOS again: when Settings or the Setup Guide shows it,
     /// and when the app becomes active, since the user can change it in System Settings.
-    func refreshLoginItem() {
+    func refreshLoginItem(_ reason: String = "") {
         let state = LoginItemState.current
-        if loginItem != state { loginItem = state }
+        if loginItem != state {
+            // In the log (Terminal), so a test can see which check noticed a change.
+            FileHandle.standardError.write(Data("Open at login: \(loginItem) → \(state) (\(reason))\n".utf8))
+            loginItem = state
+        }
     }
 
     /// Turns opening at login on or off. macOS shows its own notice when an app adds a login item.
@@ -55,7 +59,7 @@ extension BridgeModel {
         } catch {
             loginItemError = error.localizedDescription
         }
-        refreshLoginItem()
+        refreshLoginItem("checkbox")
     }
 }
 
@@ -80,9 +84,15 @@ struct OpenAtLoginToggle: View {
                 note("macOS didn’t allow it: \(error)")
             }
         }
-        .onAppear { model.refreshLoginItem() }
+        .onAppear { model.refreshLoginItem("shown") }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
-            model.refreshLoginItem()
+            model.refreshLoginItem("app active")
+        }
+        // Also once a second while the checkbox shows: a change in System Settings wasn't picked
+        // up on returning to the app (Adam, 2026-11-10; it showed only after a relaunch), and a
+        // menu-bar app isn't always made active when its window is clicked (inference).
+        .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
+            model.refreshLoginItem("timer")
         }
     }
 
