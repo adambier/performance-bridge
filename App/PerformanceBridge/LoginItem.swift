@@ -3,7 +3,7 @@
 // app itself as a login item; there is no helper app and nothing written to another app's files.
 // macOS lists the app in System Settings → General → Login Items, where the user can also turn it
 // off, so the app reads the state back from macOS rather than keeping a setting of its own. (The
-// macOS version tested names that pane "Login Items & Extensions", as its "Login Item Added" notice
+// macOS version tested, Golden Gate 27.0.1, names that pane "Login Items & Extensions", as its "Login Item Added" notice
 // was observed to say, 2026-11-10; the app's text says "Login Items" and its button opens the pane,
 // whatever its name.)
 
