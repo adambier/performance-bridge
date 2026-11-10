@@ -543,6 +543,7 @@ final class BridgeEngineTests: XCTestCase {
         working.totalMixAnswering = true
         working.channelCount = 8
         working.rotoConnected = true
+        working.levelsSeen = true
         let done = SetupChecklist.steps(status: working, settings: BridgeSettings(), totalMixRunning: true,
                                         totalMixVersion: "2.10 (1)", openAtLogin: false)
         XCTAssertEqual(done[SetupChecklist.startIndex(of: done)].id, "livemode")
