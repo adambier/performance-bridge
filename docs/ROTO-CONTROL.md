@@ -54,6 +54,8 @@ words ("inference", "untested").
 [^test-7]: [Test 7](#test-7-2026-11-01-the-fx-label) (2026-11-01), section 9; firmware 3.3.0.
 [^test-12]: [Test 12](#test-12-2026-11-04-the-tape-and--buttons-mute-master-flashing-and-the-menu-screen)
     (2026-11-04), section 9; firmware 3.3.0.
+[^test-14]: [Test 14](#test-14-2026-11-10-mode-then-mix) (2026-11-10), section 9; firmware not
+    rechecked since test 12.
 [^totalmix-test-5]: Test 5 (2026-10-28) of the TotalMix FX tests,
     [docs/TOTALMIX-OSC.md](TOTALMIX-OSC.md#test-5-2026-10-28-does-totalmix-fx-echo-a-command),
     section 6.
@@ -437,7 +439,8 @@ marked "seen".
 - **PLUGIN mode with no plugins** (run 7): answered with NUM PLUGINS 0, FIRST PLUGIN 0, and PLUGIN
   DETAILS END, the Roto-Control sent SET PLUGIN MODE once each time the user chose PLUGIN mode
   and nothing more. Seen: the knob screens black, the MENU window blue with "---" on top and the
-  selected track's name below, and no flicker or cycling.
+  selected track's name below, and no flicker or cycling. MODE, then MIX, returns to the
+  channels.[^test-14]
 - **Meter colors** (`sbdev roto`, after run 7, seen): with thresholds 126 and 127, meter 1 at 125
   was green almost to its end, at 126 much the same (any yellow was at most a pixel or two), and
   at 127 full with a red last pixel. So a meter shows red at the red threshold itself. A yellow
@@ -675,3 +678,18 @@ its own rounded positions (test 3 of `docs/TOTALMIX-OSC.md`: 0.5 came back as 0.
 **Consequences.** No knob movement from the refresh in runs 1 and 2. Pan knobs are rounded to
 TotalMix FX's pan steps from 1.2.0.
 
+### Test 14 (2026-11-10): MODE, then MIX
+
+**Setup.** Adam's Roto-Control (firmware not rechecked since test 12's 3.3.0) with the app (1.2.0,
+installed), in MIX mode. Not logged; seen by Adam. The Controls Guide's MODE row ("press **MODE**, then
+MIX, to return to it") had no test record of its own.
+
+- **Run 1: to PLUGIN.** MODE, then PLUGIN: the main screen turned blue with "---" on its top line and
+  its bottom line dark; every track screen was dark (seen). That is PLUGIN mode with no plugins, as
+  the driver answers it. (In test 4, run 7, the MENU window's bottom line showed the
+  selected track's name; why it was dark this time is not known.)
+- **Run 2: back to MIX.** MODE, then MIX: the small screen read "MIX-TRACKS" and "KNOBS-PAN", and the
+  track screens showed the page's channels in their colors (Tonverk red, ADAT 3/4, ADAT 5/6, PB 1/2
+  purple, PB 3/4 gray, PB 5/6 orange), each switch labeled MUTE (seen).
+
+**Consequence.** The guide's MODE row stands as written.

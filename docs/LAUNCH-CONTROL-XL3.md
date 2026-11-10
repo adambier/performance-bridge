@@ -79,6 +79,7 @@ seen").
 [^test-17]: Test 17 (2026-11-02), section [10](#test-17-2026-11-02-colors-and-brightness-for-101).
 [^test-18]: Test 18 (2026-11-02), section [10](#test-18-2026-11-02-the-101-build-in-the-app-and-two-adjustments).
 [^test-19]: Test 19 (2026-11-02), section [10](#test-19-2026-11-02-dimmer-off-buttons).
+[^test-20]: Test 20 (2026-11-10), section [10](#test-20-2026-11-10-a-pans-center-in-totalmix-fx).
 [^tm-marks]: `docs/TOTALMIX-OSC.md`, test 18 (2026-11-01), the marks on TotalMix FX's faders.
 
 ## 2. MIDI ports
@@ -348,7 +349,7 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   controls (Adam, 2026-11-01): its 54 detents from −63.5 to +6 dB (docs/TOTALMIX-OSC.md, test 19),
   spread over the encoder's values so that 0 dB is at 101, as on the faders. That is about 0.2 dB a
   value from −5 to +5 dB, 0.4 dB from −15 to −5, and up to 1.3 dB at the bottom; value 0 is off.
-- **Pan encoders.** They are centered at 64 and land on TotalMix FX's whole pan steps (L100 to
+- **Pan encoders.** They are centered at 64, which TotalMix FX shows as C from either side,[^test-20] and land on TotalMix FX's whole pan steps (L100 to
   R100), about 1.6 steps a value, so they move in steps of 1 or 2. Each value is sent a quarter step to the right of
   its whole step, so that TotalMix FX's window shows the same step as the encoder's display. TotalMix FX
   has been observed to show the whole step below a fractional pan, toward L (Adam, 2026-11-01):
@@ -832,3 +833,16 @@ Adam tried yellow one step dimmer (10, 7, 0) and went back to 16, 11, 0.
 
 **Consequence.** A button that is off is drawn by exact RGB, yellow 16, 11, 0 and orange 12, 4, 0
 (1.0.2). Not tried: other LED brightness settings.
+
+### Test 20 (2026-11-10): a pan's center in TotalMix FX
+
+**Setup.** Adam's XL 3 with the app (1.2.0, installed), its Launch Control XL 3 layout. Not logged;
+seen by Adam. Asked after the Roto-Control's center stop showed L01 in TotalMix FX (`docs/ROTO-CONTROL.md`,
+test 13), since 0–127 has no exact middle either.
+
+- **Run 1: from the left.** Bottom 1 (In 1's pan) turned a little left, then slowly right until the
+  XL 3's screen showed C. TotalMix FX showed C for In 1's pan in Main Out's mix (seen).
+- **Run 2: from the right.** The same, turned a little right, then slowly left to C. TotalMix FX
+  showed C (seen).
+
+**Consequence.** No change: the driver's center at 64 is TotalMix FX's C from both sides.
