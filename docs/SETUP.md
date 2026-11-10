@@ -208,8 +208,9 @@ Performance Bridge doesn't open at login unless you turn it on. Check **Open Per
 the bottom of **Settings… → Connections** or on the Setup Guide's last page; it takes effect at once. macOS
 then shows a "Login Item Added" notice and lists Performance Bridge in System Settings → General → Login Items
 (named "Login Items & Extensions" in recent versions of macOS, as that notice says), where it can also be
-turned off. If it is turned off there, the checkbox stays checked and a note says so, with **Open Login Items
-Settings…** to go there.
+turned off. Turning it off there has been observed to quit Performance Bridge at once if it is running (macOS
+ends it; 2026-11-10), so don't do it during a performance. If it is turned off there, the checkbox stays
+checked and a note says so, with **Open Login Items Settings…** to go there.
 
 ## Step 6: Use the hardware controllers
 

@@ -88,9 +88,10 @@ struct OpenAtLoginToggle: View {
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             model.refreshLoginItem("app active")
         }
-        // Also once a second while the checkbox shows: a change in System Settings wasn't picked
-        // up on returning to the app (Adam, 2026-11-10; it showed only after a relaunch), and a
-        // menu-bar app isn't always made active when its window is clicked (inference).
+        // Also once a second while the checkbox shows, since a change in System Settings doesn't
+        // make this app active: turning it on there was picked up this way (Adam's test,
+        // 2026-11-10). Turning it off there has been observed to end the app with SIGTERM
+        // ("zsh: terminated"), so the note for that case shows from the next launch.
         .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
             model.refreshLoginItem("timer")
         }
