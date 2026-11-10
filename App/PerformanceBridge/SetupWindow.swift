@@ -37,7 +37,7 @@ struct SetupView: View {
     /// where the window holds more. TotalMix FX's ("totalmix-") are from TotalMix FX "2.10 (1)" on
     /// a Mac (Adam, 2026-10-31 and 2026-11-02), published with his permission; TotalMix FX's
     /// windows rarely change. Performance Bridge's own ("app-") need taking again when its
-    /// windows change.
+    /// windows change. The "login" page has none: its own checkbox is on the page.
     private var shots: [String: [String]] {
         let launchControl = model.status.launchControlLayout == .lc3 ? "app-connections-lc3" : "app-connections-xl3"
         return [
@@ -61,7 +61,8 @@ struct SetupView: View {
 
     private var steps: [SetupStep] {
         SetupChecklist.steps(status: model.status, settings: model.engine.settings,
-                             totalMixRunning: model.totalMixRunning, totalMixVersion: model.totalMixVersion)
+                             totalMixRunning: model.totalMixRunning, totalMixVersion: model.totalMixVersion,
+                             openAtLogin: model.loginItem == .unavailable ? nil : model.loginItem == .on)
     }
 
     private var index: Int {
@@ -166,6 +167,9 @@ struct SetupView: View {
                     if !step.instructions.isEmpty { detailText(step.instructions) }
                     screenshots(for: step)
                 }
+            }
+            if step.id == "login" {
+                OpenAtLoginToggle(model: model)
             }
             if let link = settingsLink(for: step.id) {
                 Button(link.title) { model.showSettings(link.tab) }

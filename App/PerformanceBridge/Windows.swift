@@ -175,6 +175,13 @@ struct SettingsWindowView: View {
         .onChange(of: model.status.sendTargets.isEmpty) { _ in
             DispatchQueue.main.async { Windows.fitToContent("settings") }
         }
+        // The login item's notes come and go too.
+        .onChange(of: model.loginItem) { _ in
+            DispatchQueue.main.async { Windows.fitToContent("settings") }
+        }
+        .onChange(of: model.loginItemError) { _ in
+            DispatchQueue.main.async { Windows.fitToContent("settings") }
+        }
         .onChange(of: tab) { tab in
             show(tab)
             // After SwiftUI has laid out the new tab.
@@ -248,6 +255,14 @@ struct SettingsView: View {
                         .padding(8)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
+            }
+
+            // Opening at login, last, in a box of its own: it takes effect at once and isn't
+            // covered by Apply (Adam, 2026-11-10).
+            GroupBox {
+                OpenAtLoginToggle(model: model)
+                    .padding(8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .padding(20)
@@ -495,7 +510,7 @@ struct E16SettingsView: View {
     }
 }
 
-/// A Launch Control's send rows, at the bottom of the Connections tab while a Launch Control is
+/// A Launch Control's send rows, in their own box on the Connections tab while a Launch Control is
 /// chosen: the outputs they feed, also chosen on the device with Page (top row) and Shift + Page
 /// (the XL 3's middle row). The engine holds both models' rows, so they can be set whether or not
 /// the model is applied or connected (Adam, 2026-11-02); changes take effect at once. The outputs
