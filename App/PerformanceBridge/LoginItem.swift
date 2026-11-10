@@ -2,10 +2,10 @@
 // Settings → Connections or on the Setup Guide's last page. macOS 13's SMAppService registers the
 // app itself as a login item; there is no helper app and nothing written to another app's files.
 // macOS lists the app in System Settings → General → Login Items, where the user can also turn it
-// off, so the app reads the state back from macOS rather than keeping a setting of its own. (Recent
-// versions of macOS name that pane "Login Items & Extensions", as their "Login Item Added" notice
-// has been observed to say, 2026-11-10; the app's text says "Login Items" and its button opens the
-// pane, whatever its name.)
+// off, so the app reads the state back from macOS rather than keeping a setting of its own. (The
+// macOS version tested names that pane "Login Items & Extensions", as its "Login Item Added" notice
+// was observed to say, 2026-11-10; the app's text says "Login Items" and its button opens the pane,
+// whatever its name.)
 
 import AppKit
 import ServiceManagement
@@ -44,6 +44,9 @@ extension BridgeModel {
             // In the log (Terminal), so a test can see which check noticed a change.
             FileHandle.standardError.write(Data("Open at login: \(loginItem) → \(state) (\(reason))\n".utf8))
             loginItem = state
+            // A refusal no longer applies once the state has settled another way (e.g., in System
+            // Settings; Tier 1 review, 2026-11-10).
+            if state == .on || state == .off { loginItemError = nil }
         }
     }
 
@@ -67,6 +70,8 @@ extension BridgeModel {
 /// at the bottom of Settings → Connections and on the Setup Guide's last page.
 struct OpenAtLoginToggle: View {
     @ObservedObject var model: BridgeModel
+    /// Held here so a redraw doesn't restart it (Tier 1 review, 2026-11-10).
+    @State private var ticks = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -75,7 +80,7 @@ struct OpenAtLoginToggle: View {
                 set: { model.setOpenAtLogin($0) }))
                 .disabled(model.loginItem == .unavailable)
             if model.loginItem == .needsApproval {
-                note("Performance Bridge is turned off in the Login Items of System Settings. Turn it on there to open it at login.")
+                note("Performance Bridge is turned off in System Settings’ Login Items, so it won’t open at login. Turn it on there.")
                 Button("Open Login Items Settings…") { SMAppService.openSystemSettingsLoginItems() }
             } else if model.loginItem == .unavailable {
                 note("Opening at login needs the app itself, not a build run from Terminal.")
@@ -92,7 +97,7 @@ struct OpenAtLoginToggle: View {
         // make this app active: turning it on there was picked up this way (Adam's test,
         // 2026-11-10). Turning it off there has been observed to end the app with SIGTERM
         // ("zsh: terminated"), so the note for that case shows from the next launch.
-        .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
+        .onReceive(ticks) { _ in
             model.refreshLoginItem("timer")
         }
     }

@@ -538,6 +538,14 @@ final class BridgeEngineTests: XCTestCase {
         XCTAssertEqual(on.last?.state, .done)
         XCTAssertEqual(SetupChecklist.startIndex(of: off), SetupChecklist.startIndex(of: none),
                        "the guide doesn't open at it while anything else needs doing")
+        // With every check done, the guide opens at the first note, not at the login page.
+        var working = status
+        working.totalMixAnswering = true
+        working.channelCount = 8
+        working.rotoConnected = true
+        let done = SetupChecklist.steps(status: working, settings: BridgeSettings(), totalMixRunning: true,
+                                        totalMixVersion: "2.10 (1)", openAtLogin: false)
+        XCTAssertEqual(done[SetupChecklist.startIndex(of: done)].id, "livemode")
     }
 
     func testTheHardwareControllerIsFoundByItsPortNames() {

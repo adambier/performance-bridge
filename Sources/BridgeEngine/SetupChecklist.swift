@@ -190,9 +190,9 @@ public enum SetupChecklist {
         if let openAtLogin {
             steps.append(openAtLogin
                 ? SetupStep(id: "login", title: "Performance Bridge opens at login", state: .done,
-                            detail: "Performance Bridge starts by itself whenever you log in to this Mac.")
+                            detail: "Performance Bridge opens by itself whenever you log in to this Mac. This can also be changed at the bottom of the Connections tab of Performance Bridge’s Settings.")
                 : SetupStep(id: "login", title: "Open Performance Bridge at login", state: .optional,
-                            detail: "Check the box to have Performance Bridge start by itself whenever you log in to this Mac. This can also be changed at the bottom of the Connections tab of Performance Bridge’s Settings."))
+                            detail: "Performance Bridge can open by itself whenever you log in to this Mac. Turn this on or off here or at the bottom of the Connections tab of Performance Bridge’s Settings."))
         }
         return steps
     }

@@ -510,7 +510,7 @@ struct E16SettingsView: View {
     }
 }
 
-/// A Launch Control's send rows, at the bottom of the Connections tab while a Launch Control is
+/// A Launch Control's send rows, in their own box on the Connections tab while a Launch Control is
 /// chosen: the outputs they feed, also chosen on the device with Page (top row) and Shift + Page
 /// (the XL 3's middle row). The engine holds both models' rows, so they can be set whether or not
 /// the model is applied or connected (Adam, 2026-11-02); changes take effect at once. The outputs

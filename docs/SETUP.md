@@ -140,6 +140,16 @@ With a Launch Control chosen, a second box below shows its send rows and **Level
 by default), which dims each level and send encoder's light with its level, from full at the top to dim at
 the bottom and dark at −oo. Each takes effect at once, without Apply (Step 6).
 
+### Open at login
+
+Performance Bridge doesn't open at login unless you turn it on. Check **Open Performance Bridge at login**, at
+the bottom of **Settings… → Connections** or on the Setup Guide's last page; it takes effect at once. macOS
+then shows a "Login Item Added" notice and lists Performance Bridge in System Settings → General → Login Items
+(named "Login Items & Extensions" in the macOS version tested, as that notice says), where it can also be
+turned off. Turning it off there while Performance Bridge is running has been observed to quit it (2026-11-10), so
+don't do it during a performance. If it is turned off there, the checkbox stays
+checked and a note says so, with **Open Login Items Settings…** to go there.
+
 ## Step 4: Check the connections
 
 The menu-bar icon's menu starts with two status lines, dimmed because they only report. The app keeps trying
@@ -201,16 +211,6 @@ Choose **Settings…** from the menu and open the **Channel Layout** tab.
   send feeds (e.g., each headphone output) a color of its own: a send's lights take its output's color, so the color
   shows which output it feeds.
 - The notes at the bottom say that channels hidden in TotalMix FX aren't listed and, on Sources, how playbacks without a label are named.
-
-### Open at login
-
-Performance Bridge doesn't open at login unless you turn it on. Check **Open Performance Bridge at login**, at
-the bottom of **Settings… → Connections** or on the Setup Guide's last page; it takes effect at once. macOS
-then shows a "Login Item Added" notice and lists Performance Bridge in System Settings → General → Login Items
-(named "Login Items & Extensions" in recent versions of macOS, as that notice says), where it can also be
-turned off. Turning it off there has been observed to quit Performance Bridge at once if it is running (macOS
-ends it; 2026-11-10), so don't do it during a performance. If it is turned off there, the checkbox stays
-checked and a note says so, with **Open Login Items Settings…** to go there.
 
 ## Step 6: Use the hardware controllers
 
@@ -329,8 +329,8 @@ The E16 has two layouts. In the **16-channel layout**, each encoder is one chann
   are dark at −oo.
 - Page and Track are lit where they can move and dark at the ends. While Shift is held, Page lights for the
   middle row.
-- Each row's output is remembered when Performance Bridge restarts. It can also be chosen in Settings, at the
-  bottom of the Connections tab, with the Launch Control connected or not; the change takes effect at once.
+- Each row's output is remembered when Performance Bridge restarts. It can also be chosen in Settings, in the Launch
+  Control's box on the Connections tab, with the Launch Control connected or not; the change takes effect at once.
 - Press **Track <** and **Track >** together to go back to the first eight channels.
 - The **Novation button** brings TotalMix FX's window to the front. Press it again while TotalMix FX is in
   front to go back to the app you were in (if TotalMix FX came to the front some other way, the press hides it
@@ -365,8 +365,8 @@ The E16 has two layouts. In the **16-channel layout**, each encoder is one chann
 - Moving a control shows its channel, what it does, and its value.
 - After each Page press the screen names the top row's new function. As a send, the row's lights take the
   color of the output it feeds: its color in TotalMix FX, or teal (a blue-green) for an output left white.
-- The top row's function is remembered when Performance Bridge restarts. It can also be chosen in Settings, at
-  the bottom of the Connections tab, with the Launch Control connected or not; the change takes effect at
+- The top row's function is remembered when Performance Bridge restarts. It can also be chosen in Settings, in
+  the Launch Control's box on the Connections tab, with the Launch Control connected or not; the change takes effect at
   once.
 - Press **Track <** and **Track >** together to go back to the first eight channels.
 - The **Novation button** brings TotalMix FX's window to the front. Press it again while TotalMix FX is in
