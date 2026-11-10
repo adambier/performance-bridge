@@ -61,7 +61,8 @@ struct SetupView: View {
 
     private var steps: [SetupStep] {
         SetupChecklist.steps(status: model.status, settings: model.engine.settings,
-                             totalMixRunning: model.totalMixRunning, totalMixVersion: model.totalMixVersion)
+                             totalMixRunning: model.totalMixRunning, totalMixVersion: model.totalMixVersion,
+                             openAtLogin: model.loginItem == .unavailable ? nil : model.loginItem == .on)
     }
 
     private var index: Int {
@@ -166,6 +167,9 @@ struct SetupView: View {
                     if !step.instructions.isEmpty { detailText(step.instructions) }
                     screenshots(for: step)
                 }
+            }
+            if step.id == "login" {
+                OpenAtLoginToggle(model: model)
             }
             if let link = settingsLink(for: step.id) {
                 Button(link.title) { model.showSettings(link.tab) }

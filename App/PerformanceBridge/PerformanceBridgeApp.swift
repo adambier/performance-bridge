@@ -273,6 +273,10 @@ final class BridgeModel: ObservableObject {
     /// setup window.
     @Published private(set) var totalMixRunning = false
     @Published private(set) var totalMixVersion: String?
+    /// Whether the app opens at login, as macOS reports it (LoginItem.swift).
+    @Published var loginItem = LoginItemState.current
+    /// Why macOS refused the last change to opening at login, if it did.
+    @Published var loginItemError: String?
     /// When the setup window opens by itself (SetupWatch in BridgeEngine).
     private var watch = SetupWatch(totalMixWorked: false, rotoWorked: false)
     private var watchTimer: Timer?

@@ -52,9 +52,10 @@ public struct SetupStep: Equatable, Sendable, Identifiable {
 public enum SetupChecklist {
     /// The steps for a status and the settings the engine runs with. `totalMixRunning` says whether
     /// TotalMix FX is among the running apps, and `totalMixVersion` is its version as its app bundle
-    /// gives it (`nil` when not running or not read).
+    /// gives it (`nil` when not running or not read). `openAtLogin` says whether the app opens at
+    /// login, for the last page, which offers it; `nil` leaves that page out (e.g., for `sbdev`).
     public static func steps(status: BridgeStatus, settings: BridgeSettings, totalMixRunning: Bool = false,
-                             totalMixVersion: String? = nil) -> [SetupStep] {
+                             totalMixVersion: String? = nil, openAtLogin: Bool? = nil) -> [SetupStep] {
         let incoming = settings.endpoint.incomingPort
         let outgoing = settings.endpoint.outgoingPort
         var steps: [SetupStep] = []
@@ -184,6 +185,15 @@ public enum SetupChecklist {
                                detail: "Hide and show channels in TotalMix FX: choose Options → Channel Layout…, select the channel’s row (on the Inputs, Playbacks, or Outputs tab), and under “Hide Channel in”, check or uncheck the box for Performance Bridge’s OSC Controller. Or right-click the channel and choose Change Channel Layout.\n\nPerformance Bridge picks up the change when you switch away from TotalMix FX or within half a minute, or at once with Update Hidden Channels from its menu.\n\nChannel colors can be set in the same window." + colorTip))
         steps.append(SetupStep(id: "order", title: "Set the order of the channels", state: .optional,
                                detail: "Set the order of the channels, and give them short labels for the hardware controllers, on the Channel Layout tab of Performance Bridge’s Settings."))
+        // Off until the user turns it on, offered once here so a new user meets it (Adam,
+        // 2026-11-10); the page's checkbox is the app's, as is the one in Settings → Connections.
+        if let openAtLogin {
+            steps.append(openAtLogin
+                ? SetupStep(id: "login", title: "Performance Bridge opens at login", state: .done,
+                            detail: "Performance Bridge starts by itself whenever you log in to this Mac.")
+                : SetupStep(id: "login", title: "Open Performance Bridge at login", state: .optional,
+                            detail: "Check the box to have Performance Bridge start by itself whenever you log in to this Mac. This can also be changed at the bottom of the Connections tab of Performance Bridge’s Settings."))
+        }
         return steps
     }
 

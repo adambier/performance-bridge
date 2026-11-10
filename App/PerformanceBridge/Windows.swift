@@ -175,6 +175,13 @@ struct SettingsWindowView: View {
         .onChange(of: model.status.sendTargets.isEmpty) { _ in
             DispatchQueue.main.async { Windows.fitToContent("settings") }
         }
+        // The login item's notes come and go too.
+        .onChange(of: model.loginItem) { _ in
+            DispatchQueue.main.async { Windows.fitToContent("settings") }
+        }
+        .onChange(of: model.loginItemError) { _ in
+            DispatchQueue.main.async { Windows.fitToContent("settings") }
+        }
         .onChange(of: tab) { tab in
             show(tab)
             // After SwiftUI has laid out the new tab.
@@ -248,6 +255,14 @@ struct SettingsView: View {
                         .padding(8)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
+            }
+
+            // Opening at login, last, in a box of its own: it takes effect at once and isn't
+            // covered by Apply (Adam, 2026-11-10).
+            GroupBox {
+                OpenAtLoginToggle(model: model)
+                    .padding(8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .padding(20)

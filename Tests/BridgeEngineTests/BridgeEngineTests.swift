@@ -525,6 +525,21 @@ final class BridgeEngineTests: XCTestCase {
                        "launchcontrol", "a Launch Control problem opens at its step")
     }
 
+    func testTheSetupGuideOffersOpeningAtLoginLast() {
+        var status = BridgeStatus()
+        status.listening = true
+        let none = SetupChecklist.steps(status: status, settings: BridgeSettings())
+        XCTAssertNil(none.first { $0.id == "login" }, "no page when the caller can't open at login (e.g., sbdev)")
+        let off = SetupChecklist.steps(status: status, settings: BridgeSettings(), openAtLogin: false)
+        XCTAssertEqual(off.last?.id, "login", "the last page, after the notes")
+        XCTAssertEqual(off.last?.state, .optional, "off by default, and optional")
+        XCTAssertEqual(Array(off.map(\.id).dropLast()), none.map(\.id), "the other pages are unchanged")
+        let on = SetupChecklist.steps(status: status, settings: BridgeSettings(), openAtLogin: true)
+        XCTAssertEqual(on.last?.state, .done)
+        XCTAssertEqual(SetupChecklist.startIndex(of: off), SetupChecklist.startIndex(of: none),
+                       "the guide doesn't open at it while anything else needs doing")
+    }
+
     func testTheHardwareControllerIsFoundByItsPortNames() {
         func sources(_ names: String...) -> [MIDIEndpointInfo] {
             names.enumerated().map { MIDIEndpointInfo(name: $1, uniqueID: Int32($0)) }

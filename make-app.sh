@@ -186,6 +186,7 @@ for A in "${ARCHS[@]}"; do
         -framework AppKit \
         -framework SwiftUI \
         -framework CoreMIDI \
+        -framework ServiceManagement \
         -F "$SPARKLE_DIR" \
         -framework Sparkle \
         -Xlinker -rpath -Xlinker @executable_path/../Frameworks \
