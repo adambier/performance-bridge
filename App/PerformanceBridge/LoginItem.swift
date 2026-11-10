@@ -2,9 +2,10 @@
 // Settings → Connections or on the Setup Guide's last page. macOS 13's SMAppService registers the
 // app itself as a login item; there is no helper app and nothing written to another app's files.
 // macOS lists the app in System Settings → General → Login Items, where the user can also turn it
-// off, so the app reads the state back from macOS rather than keeping a setting of its own. (That
-// pane is "Login Items & Extensions" from macOS 15, an inference not yet checked on screen; the
-// app's text says "Login Items" and its button opens the pane, whatever its name.)
+// off, so the app reads the state back from macOS rather than keeping a setting of its own. (Recent
+// versions of macOS name that pane "Login Items & Extensions", as their "Login Item Added" notice
+// has been observed to say, 2026-11-10; the app's text says "Login Items" and its button opens the
+// pane, whatever its name.)
 
 import AppKit
 import ServiceManagement

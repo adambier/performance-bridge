@@ -206,9 +206,9 @@ Choose **Settings…** from the menu and open the **Channel Layout** tab.
 
 Performance Bridge doesn't open at login unless you turn it on. Check **Open Performance Bridge at login**, at
 the bottom of **Settings… → Connections** or on the Setup Guide's last page; it takes effect at once. macOS
-then shows a notice and lists Performance Bridge in System Settings → General → Login Items ("Login Items &
-Extensions" in macOS 15 and later; this location hasn't been checked on screen), where it can also be turned
-off. If it is turned off there, the checkbox stays checked and a note says so, with **Open Login Items
+then shows a "Login Item Added" notice and lists Performance Bridge in System Settings → General → Login Items
+(named "Login Items & Extensions" in recent versions of macOS, as that notice says), where it can also be
+turned off. If it is turned off there, the checkbox stays checked and a note says so, with **Open Login Items
 Settings…** to go there.
 
 ## Step 6: Use the hardware controllers
