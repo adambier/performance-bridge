@@ -93,9 +93,11 @@ extension LaunchControlDriver {
     mutating func drawMeterScreen(hub: SurfaceHub, now: Double) -> [UInt8] {
         var levels: [[Int]] = [], peaks: [[Int]] = [], numbers: [MeterNumber?] = []
         let order = hub.layout.channels(.sources, in: hub.mirror)
-        for info in stripInfos {
+        for (column, info) in stripInfos.enumerated() {
             guard let info else { levels.append([]); peaks.append([]); numbers.append(nil); continue }
-            numbers.append(Self.meterNumber(info.channel, order: order, numbering: meterNumbering))
+            numbers.append(meterNumbering == .page
+                ? MeterNumber(number: column + 1, marked: info.channel.bus == .playback)
+                : Self.meterNumber(info.channel, order: order, numbering: meterNumbering))
             var refs = [info.channel]
             if info.stereo { refs.append(ChannelRef(info.channel.bus, info.channel.channel + 1)) }
             levels.append(refs.map { averagedHeight($0, hub: hub, now: now) })
@@ -104,7 +106,8 @@ extension LaunchControlDriver {
         // The averages and held peaks above follow every tick; only the sending waits for the device.
         if let sent = bitmapSentAt, now - sent < Self.bitmapTimeout { return [] }
         let picture = Self.meterPicture(levels: levels, peaks: peaks, numbers: numbers,
-                                        showsNumbers: meterNumbering != .none)
+                                        showsNumbers: meterNumbering != .none,
+                                        peakFloor: meterPeakFloor.map { Self.barHeight(db: $0, height: meterRows) })
         let packed = picture.packed
         guard packed != shownBitmap else { return [] }
         shownBitmap = packed
@@ -125,7 +128,16 @@ extension LaunchControlDriver {
         average.power += (power - average.power) * (1 - exp(-dt / Self.meterAverage))
         average.at = now
         meterAverages[ref] = average
-        return average.power > 0 ? Self.barHeight(db: 10 * log10(average.power) - Self.meterOffset, height: meterRows) : 0
+        var shown = average.power > 0 ? 10 * log10(average.power) - Self.meterOffset : -Double.infinity
+        if let fall = meterFall {
+            // A bar rises at once and falls at no more than `fall` dB a second (a trial).
+            if let last = meterShown[ref], last.db.isFinite {
+                shown = max(shown, last.db - fall * max(now - last.at, 0))
+                if shown < -65 { shown = -.infinity }
+            }
+            meterShown[ref] = (shown, now)
+        }
+        return shown.isFinite ? Self.barHeight(db: shown, height: meterRows) : 0
     }
 
     /// How the strips under the meters are numbered. The default counts each kind on its own, as
@@ -139,6 +151,8 @@ extension LaunchControlDriver {
         case acrossSources = "all"
         /// No numbers: the meters taller (`tallMeterHeight`), the playbacks' line kept.
         case none
+        /// The strip's place on the page, 1–8 (a trial from the UI review of 2026-11-10).
+        case page
     }
 
     /// The meters' height for the numbering in use.
@@ -215,8 +229,9 @@ extension LaunchControlDriver {
     /// none); a line under each run of marked numbers, from the first one's meter to the last
     /// one's; and over each bar a dotted line at 0 dBFS, the meters' top row (every other pixel).
     /// With `showsNumbers` false, the digits are left out and the meters are `tallMeterHeight` tall.
+    /// With `peakFloor` (a bar height), a held peak above it shows even with no bar under it.
     public static func meterPicture(levels: [[Int]], peaks: [[Int]], numbers: [MeterNumber?] = [],
-                                    showsNumbers: Bool = true) -> LaunchControlBitmap {
+                                    showsNumbers: Bool = true, peakFloor: Int? = nil) -> LaunchControlBitmap {
         var picture = LaunchControlBitmap()
         let rows = showsNumbers ? meterHeight : tallMeterHeight
         let bottom = rows - 1
@@ -242,7 +257,8 @@ extension LaunchControlDriver {
                 for dot in stride(from: x, to: x + width, by: 2) { picture[dot, 0] = true }
                 let height = min(max(heights[bar], 0), rows)
                 picture.fill(x: x, y: bottom - height + 1, width: width, height: height)
-                if height > 0, peaksHere.indices.contains(bar), peaksHere[bar] > height {
+                if height > 0 || peakFloor.map({ peaksHere.indices.contains(bar) && peaksHere[bar] > $0 }) == true,
+                   peaksHere.indices.contains(bar), peaksHere[bar] > height {
                     picture.fill(x: x, y: bottom - min(peaksHere[bar], rows) + 1, width: width, height: 1)
                 }
             }

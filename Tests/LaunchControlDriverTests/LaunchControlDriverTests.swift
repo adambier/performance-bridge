@@ -995,6 +995,36 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(driver.tick(hub: &hub, now: 0.25).midi.contains(header), "a new picture for the new numbering")
     }
 
+    func testTheTrialPeakFloorAndFall() {
+        typealias Driver = LaunchControlDriver
+        // A peak with no bar under it: hidden by default, shown above a floor.
+        let bottom = Driver.meterHeight - 1
+        let plain = Driver.meterPicture(levels: [[0]], peaks: [[20]])
+        let floored = Driver.meterPicture(levels: [[0]], peaks: [[20]], peakFloor: 10)
+        let low = Driver.meterPicture(levels: [[0]], peaks: [[5]], peakFloor: 10)
+        // One strip, centered: x 58–68.
+        XCTAssertFalse(plain[60, bottom - 19])
+        XCTAssertTrue(floored[60, bottom - 19], "a lone peak above the floor")
+        XCTAssertFalse(low[60, bottom - 4], "a lone peak below the floor stays hidden")
+        // The fall: a bar drops at no more than the rate set.
+        var hub = loadedHub()
+        var driver = LaunchControlDriver(name: "lc", layout: .xl3, showsMeters: true)
+        driver.meterFall = 10
+        _ = driver.start(hub: &hub, now: 0)
+        _ = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0)
+        _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -6), now: 0.05)
+        _ = driver.tick(hub: &hub, now: 0.1)
+        let ref = ChannelRef(.input, 2)
+        let high = driver.meterShown[ref]?.db ?? -.infinity
+        _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -60), now: 0.15)
+        _ = driver.tick(hub: &hub, now: 0.6)
+        XCTAssertEqual(driver.meterShown[ref]?.db ?? 0, high - 5, accuracy: 0.01, "10 dB a second for 0.5 s")
+        // Page numbering: each strip's place, 1–8.
+        driver.meterNumbering = .page
+        _ = driver.receive(LaunchControlModel.xl3.sysExHeader + [0x09, 0xF7], hub: &hub, now: 0.7)
+        XCTAssertFalse(driver.tick(hub: &hub, now: 0.8).midi.isEmpty)
+    }
+
     func testMeterNumbersCountEachKind() {
         let order = [ChannelRef(.input, 0), ChannelRef(.input, 2), ChannelRef(.playback, 4), ChannelRef(.input, 6), ChannelRef(.playback, 0)]
         XCTAssertEqual(LaunchControlDriver.meterNumber(ChannelRef(.input, 6), order: order), .init(number: 3, marked: false),
