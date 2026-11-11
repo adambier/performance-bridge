@@ -1086,7 +1086,7 @@ fastest which fader a moving meter is over. Playing distance measured first: the
   name with its slot ("1 Vox", "3 Gtr") and asked for the first line left-aligned and the second
   right-aligned.
 
-**Consequences.** The meters are numbered 1–8 by slot on every page (`MeterNumbering.page`); the
+**Consequences.** The meters are numbered 1–8 by slot on every page; the
 other numberings, the peak floor, and the bar fall were then removed (`sbdev lcbridge` keeps
 `peakfall`). Track's pop-up shows the page, then
 the first and last channels with their slots. The device centers each line, and the display
