@@ -321,7 +321,7 @@ The E16 has two layouts. In the **16-channel layout**, each encoder is one chann
 - The two send rows never feed the same output: stepping one skips the output the other has.
 - The screen shows the page and the channels on it, counted in the order of **Settings… → Channel Layout** with a
   stereo pair counting once, and where each send row goes (e.g., "Page 1/2: In 1-6", "Top > Phones 1",
-  "Mid > Phones 2"). With **Meters** on in Settings, it shows a meter for each channel instead, with its number under it and a line over the playbacks' numbers, two bars
+  "Mid > Phones 2"). With **Meters** on in Settings, it shows a meter for each channel instead, with its number under it and a line under the playbacks' numbers, two bars
   for a stereo channel, and Track shows the page; meters need TotalMix FX's **Send Level Data** on.
 - Moving a control shows its channel, what it does, and its value.
 - After each Page press the screen names the row and its new output, and each send row's lights take the color

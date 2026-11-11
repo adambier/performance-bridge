@@ -986,21 +986,20 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertFalse((0..<64).contains { picture[16, $0] }, "no ticks")
         // Strip 4: no bar, so no peak line, though the peak is above it (a noise floor).
         XCTAssertFalse((0..<LaunchControlDriver.meterHeight).contains { y in (50...60).contains { picture[$0, y] } })
-        // The numbers, from row 53: "1" (x 4–9, its stem at 7–8); "12" (x 17–29).
-        XCTAssertTrue(picture[7, 53] && picture[8, 63] && !picture[9, 63])
-        XCTAssertFalse((53..<64).contains { picture[2, $0] }, "the 1 is centered")
-        // The line over the playbacks' numbers, rows 49–50, three dark rows below the meters and two
-        // above the numbers: over strip 2 alone (x 18–28), and one line from strip 5's meter to
-        // strip 6's (x 66–92), not over the inputs.
-        XCTAssertTrue((18...28).allSatisfy { picture[$0, 49] && picture[$0, 50] } && !picture[17, 50] && !picture[29, 50])
-        XCTAssertTrue((66...92).allSatisfy { picture[$0, 49] && picture[$0, 50] } && !picture[65, 50] && !picture[93, 50])
-        XCTAssertFalse((0..<16).contains { picture[$0, 50] } || (48..<64).contains { picture[$0, 50] })
-        XCTAssertFalse([46, 47, 48, 51, 52].contains { y in (0..<128).contains { picture[$0, y] } }, "dark rows around the line")
+        // The numbers, from row 48: "1" (x 4–9, its stem at 7–8); "12" (x 17–29).
+        XCTAssertTrue(picture[7, 48] && picture[8, 58] && !picture[9, 58])
+        XCTAssertFalse((48..<64).contains { picture[2, $0] }, "the 1 is centered")
+        // The line under the playbacks' numbers, rows 61–62, two dark rows below them: under strip 2
+        // alone (x 18–28), and one line from strip 5's meter to strip 6's (x 66–92), not under the inputs.
+        XCTAssertTrue((18...28).allSatisfy { picture[$0, 61] && picture[$0, 62] } && !picture[17, 61] && !picture[29, 61])
+        XCTAssertTrue((66...92).allSatisfy { picture[$0, 61] && picture[$0, 62] } && !picture[65, 61] && !picture[93, 61])
+        XCTAssertFalse((0..<16).contains { picture[$0, 61] } || (48..<64).contains { picture[$0, 61] })
+        XCTAssertFalse([46, 47, 59, 60, 63].contains { y in (0..<128).contains { picture[$0, y] } }, "dark rows, the bottom one included")
         // "100" in narrow digits stays inside its column (x 49–62): its last "0" at x 59–62.
-        XCTAssertTrue((53..<64).contains { picture[59, $0] } && (53..<64).contains { picture[62, $0] })
-        XCTAssertFalse((53..<64).contains { picture[48, $0] || picture[63, $0] })
+        XCTAssertTrue((48..<59).contains { picture[59, $0] } && (48..<59).contains { picture[62, $0] })
+        XCTAssertFalse((48..<64).contains { picture[48, $0] || picture[63, $0] })
         // Strip 3 is blank.
-        XCTAssertFalse(picture[34, bottom] || (49..<64).contains { picture[40, $0] })
+        XCTAssertFalse(picture[34, bottom] || (48..<64).contains { picture[40, $0] })
     }
 
     func testMetersAreSentAsPicturesPacedByTheReadyReply() {
