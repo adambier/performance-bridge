@@ -80,6 +80,7 @@ seen").
 [^test-18]: Test 18 (2026-11-02), section [10](#test-18-2026-11-02-the-101-build-in-the-app-and-two-adjustments).
 [^test-19]: Test 19 (2026-11-02), section [10](#test-19-2026-11-02-dimmer-off-buttons).
 [^test-20]: Test 20 (2026-11-10), section [10](#test-20-2026-11-10-a-pans-center-in-totalmix-fx).
+[^test-21]: Test 21 (2026-11-10), section [10](#test-21-2026-11-10-bitmaps).
 
 ## 2. MIDI ports
 
@@ -218,7 +219,13 @@ and Shift on channel 7.
     given.
   - **Bitmap.** SysEx 09h sends a whole picture: 64 rows of 19 bytes, 7 pixels per byte, highest
     bit leftmost. The device answers when it is ready for the next one. It holds one bitmap at a
-    time.[^prg-bitmap]
+    time.[^prg-bitmap] On the device, the target is 35h (the stationary display, as "Configure
+    displays" numbers it; the guide's 20h drew nothing), the message ends with F7h, a set bit
+    lights a pixel, and the first byte is the top left; the reply took 66–72 ms, so about 14
+    pictures a second; a control's own temporary display shows over the picture and the picture
+    returns after it; pictures sent meanwhile are answered as usual.[^test-21] A picture sent to 36h
+    replaced the one on the screen and stayed up; whether 36h differs from 35h at all is not yet
+    known.[^test-21]
 
 ## 6. Feature controls
 
@@ -264,10 +271,11 @@ Each is resolved here as stated, until the device settles it.
    targets that only set names, 22h–28h (34–40), a range that overlaps encoder targets (34–36) and
    button numbers (37–40). The target list gives no such range.
 5. **Bitmap targets.** The bitmap section names the stationary display 20h and the global
-   temporary display 21h, where "Configure displays" uses 35h and 36h.
+   temporary display 21h, where "Configure displays" uses 35h and 36h. Settled on the device:
+   20h drew nothing and got no reply; 35h works.[^test-21]
 6. **Bitmap message end.** The bitmap message is shown ending with 7Fh, not F7h, and the reply as
-   F0h … 09h 7Fh, with no F7h. The 7Fh may be a misprint for F7h, or the reply may have a 7Fh and
-   lost its F7h in print (inference either way). The library reads either form as the reply.
+   F0h … 09h 7Fh, with no F7h. Settled on the device: a message ending with F7h alone works with
+   35h (with 20h, neither end worked); the reply is read in either form.[^test-21]
 7. **The global MIDI channel.** The feature control table gives the range as 00h–0Eh, called 0–15,
    with 00h as channel 1 and 0Eh as channel 16; but 0Eh is 14. Performance Bridge leaves this setting
    alone, so it doesn't matter here.
@@ -850,3 +858,33 @@ test 13), since 0–127 has no exact middle either.
 
 **Consequence.** No change. The XL 3 shows C only at 64 (`LaunchControlDriver.panSteps` maps 63 and 65
 to L02 and R02), and TotalMix FX showed C there from both sides.
+
+### Test 21 (2026-11-10): bitmaps
+
+**Setup.** Adam's XL 3 in DAW mode, `sbdev lcxl` on branch `lc-bitmap-probe` (`bitmap` and
+`bitmaprate`). Not logged beyond the Terminal lines Adam pasted; the screen seen by Adam.
+
+- **Run 1: target 20h**, `bitmap 20 frame`, then with `7f` (7Fh F7h at the end): no change on the
+  screen and no ready reply within 1 s, both times (seen).
+- **Run 2: target 35h**, `bitmap 35 frame`: the screen showed a border, a filled block at the top
+  left, and a diagonal from the top left toward the bottom right, as drawn (seen); the ready reply
+  came after 67.5 ms.
+- **Run 3: rate**, `bitmaprate 35 10`: 145 pictures in 10.1 s (14.4 a second), every one answered;
+  reply times 65.9–71.9 ms, median 68.4 ms. The bars moved smoothly (seen).
+- **Run 4: target 36h**, `bitmap 36 frame` over the last meter picture: the box picture replaced it
+  and stayed up (seen); reply after 68.7 ms. Then `bitmap 35 clear` blanked the screen (seen).
+- **Run 5: a control over a picture.** With `bitmap 35 frame` up, turning the bottom row's first
+  encoder showed its temporary display ("Tonverk", "Pan", "C": text the app had set in an earlier
+  session), and after a few seconds the box came back by itself (seen).
+- **Run 6: a control during pictures**, `bitmaprate 35 10` while turning the same encoder (8 steps
+  over 1.3 s, each with its touch reports): the temporary display stayed up over the moving bars
+  for a few seconds, then the bars came back (seen; they had stopped because the run had ended).
+  118 pictures in 10.0 s (11.8 a second), all answered; reply times 68.9–339.9 ms, median 71.6 ms.
+
+**Consequences.** Meters can be drawn as pictures on the stationary display (35h) at up to about
+14 a second, paced by the ready reply, without hiding a control's own temporary display. One reply
+took 340 ms while the encoder moved (inference: the device was busy with the temporary display),
+so a driver must wait for the reply rather than send on a timer. Not yet tried: whether 36h ever
+differs from 35h; whether the text home screen returns when pictures stop (e.g., with `show
+stationary off`); the Launch Control 3.
+

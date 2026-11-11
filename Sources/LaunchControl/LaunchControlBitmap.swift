@@ -3,10 +3,10 @@
 // (version 1.0), "Bitmap": target 20h (stationary display) or 21h (global temporary display), then
 // 64 rows of 19 bytes, 7 pixels per byte with the highest bit leftmost (the last byte of a row has
 // five unused bits), then a terminator the guide prints as 7Fh; the device answers when it is
-// ready for the next picture. Whether a set bit lights a pixel, which target byte the device takes
-// (the guide's "Configure displays" uses 35h and 36h for the same displays), and how the message
-// really ends are open until `sbdev lcxl bitmap` has been run on a device
-// (docs/LAUNCH-CONTROL-XL3.md, section 7, items 5 and 6).
+// ready for the next picture. On an XL 3 (docs/LAUNCH-CONTROL-XL3.md, test 21) the target that
+// works is 35h, the stationary display as "Configure displays" numbers it (20h drew nothing), the
+// message ends with F7h alone, a set bit lights a pixel, the first byte is the top left, and the
+// reply comes after about 68 ms.
 
 import Foundation
 
@@ -71,10 +71,10 @@ public struct LaunchControlBitmap: Equatable, Sendable {
 }
 
 extension LaunchControlOutgoing {
-    /// The bitmap message: the model's SysEx header, 09h, `target`, the packed picture, then the
-    /// end. The guide prints the end as 7Fh, which can't end a SysEx message, so `extraEnd` adds a
-    /// 7Fh before the F7h, and otherwise the message ends with F7h alone; which the device wants is
-    /// for the probe to show.
+    /// The bitmap message: the model's SysEx header, 09h, `target` (35h for the stationary display,
+    /// test 21), the packed picture, then F7h. The guide prints the end as 7Fh, which can't end a
+    /// SysEx message; `extraEnd` adds a 7Fh before the F7h, for the probe only, since F7h alone has
+    /// been observed to work.
     public static func bitmap(_ picture: LaunchControlBitmap, target: UInt8, extraEnd: Bool = false,
                               model: LaunchControlModel = .xl3) -> [UInt8] {
         model.sysExHeader + [0x09, target & 0x7F] + picture.packed + (extraEnd ? [0x7F, 0xF7] : [0xF7])
