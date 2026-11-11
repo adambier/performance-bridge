@@ -474,10 +474,10 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   screen[^test-22]), which nothing else on the device shows (Adam, 2026-11-01). Whether the page's
   "Page " fits is estimated from character widths measured in a photo of the screen (an
   inference).[^test-22] With **Meters** on (a setting, off by default), the home screen is a
-  picture instead: a meter for each strip, 49 pixels tall, a stereo channel's two bars one pixel
+  picture instead: a meter for each strip, 47 pixels tall, a stereo channel's two bars one pixel
   apart and the strips five apart, each bar with its peak held 2 s while the bar shows, and no dB
   marks; under each meter the channel's number, counted within its kind as the first line counts
-  ("In 1-3, PB 1-3" gives 1 2 3 1 2 3), the playbacks' underlined; Track shows the page on the
+  ("In 1-3, PB 1-3" gives 1 2 3 1 2 3), with one line under each run of playbacks; Track shows the page on the
   overlay (Adam, 2026-11-10).[^test-22] Whether that numbering is intuitive next to TotalMix FX's
   own channel numbers is flagged for the UI review (Adam, 2026-11-10). The eight names packed to
   four characters (arrangement 3, e.g., "ADI2SonoM1/2Tonv") were tried first and were unreadable
@@ -930,7 +930,10 @@ playing, one build per run. Seen in Adam's videos and photo, and his words; no M
   screen's side.
 - **Run 8:** the build with the numbers: "1 2 3 1 2 3" under the meters, the second three
   underlined, readable at a glance in Adam's photo; with the music quiet, strip 2 showed a short pair
-  of bars with its peaks and strip 1 nothing, so no stray lines.
+  of bars with its peaks and strip 1 nothing, so no stray lines (Adam: "stray lines are gone").
+  The underlines were hard to make out as such (Adam): one pixel, one row under the digits, they
+  read as part of the number. A two-pixel line two rows below, one under each run of playbacks,
+  replaced them (Adam chose it from a mockup).
 
 **Consequences.** The meter layout of run 4 is the driver's. Measured in the photo (about 11.8 of
 its pixels to one of the screen's, from the cut-off edge and the centered first line; an

@@ -955,9 +955,10 @@ final class LaunchControlDriverTests: XCTestCase {
 
     func testTheMeterPicture() {
         typealias Number = LaunchControlDriver.MeterNumber
-        let picture = LaunchControlDriver.meterPicture(levels: [[10], [20, 30], [], [0]], peaks: [[15], [20, 40], [], [5]],
+        let picture = LaunchControlDriver.meterPicture(levels: [[10], [20, 30], [], [0], [5], [5]], peaks: [[15], [20, 40], [], [5], [5], [5]],
                                                        numbers: [Number(number: 1, underlined: false), Number(number: 12, underlined: true), nil,
-                                                                 Number(number: 100, underlined: false)])
+                                                                 Number(number: 100, underlined: false), Number(number: 1, underlined: true),
+                                                                 Number(number: 2, underlined: true)])
         let bottom = LaunchControlDriver.meterHeight - 1
         // Strip 1, mono: one bar 11 pixels wide (x 2–12), 10 tall, its peak 15 pixels up.
         XCTAssertTrue(picture[2, bottom] && picture[12, bottom] && !picture[1, bottom] && !picture[13, bottom])
@@ -971,15 +972,20 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertFalse((0..<64).contains { picture[16, $0] }, "no ticks")
         // Strip 4: no bar, so no peak line, though the peak is above it (a noise floor).
         XCTAssertFalse((0..<LaunchControlDriver.meterHeight).contains { y in (50...60).contains { picture[$0, y] } })
-        // The numbers, from row 51: "1" (x 4–9, its stem at 7–8), not underlined; "12" (x 17–29), underlined.
-        XCTAssertTrue(picture[7, 51] && picture[8, 61] && !picture[9, 61] && !picture[7, 63])
-        XCTAssertFalse((51..<64).contains { picture[2, $0] }, "the 1 is centered")
-        XCTAssertTrue((17...29).allSatisfy { picture[$0, 63] } && !picture[16, 63] && !picture[30, 63], "the playback's underline")
+        // The numbers, from row 49: "1" (x 4–9, its stem at 7–8); "12" (x 17–29).
+        XCTAssertTrue(picture[7, 49] && picture[8, 59] && !picture[9, 59])
+        XCTAssertFalse((49..<64).contains { picture[2, $0] }, "the 1 is centered")
+        // The line under the playbacks, rows 62–63, two rows below the numbers: under strip 2 alone
+        // (x 18–28), and one line from strip 5's meter to strip 6's (x 66–92), not under the inputs.
+        XCTAssertTrue((18...28).allSatisfy { picture[$0, 62] && picture[$0, 63] } && !picture[17, 63] && !picture[29, 63])
+        XCTAssertTrue((66...92).allSatisfy { picture[$0, 62] && picture[$0, 63] } && !picture[65, 63] && !picture[93, 63])
+        XCTAssertFalse((0..<16).contains { picture[$0, 63] } || (48..<64).contains { picture[$0, 63] })
+        XCTAssertFalse((60...61).contains { y in (0..<128).contains { picture[$0, y] } }, "two dark rows above the line")
         // "100" in narrow digits stays inside its column (x 49–62): its last "0" at x 59–62.
-        XCTAssertTrue((51..<62).contains { picture[59, $0] } && (51..<62).contains { picture[62, $0] })
-        XCTAssertFalse((51..<64).contains { picture[48, $0] || picture[63, $0] })
+        XCTAssertTrue((49..<60).contains { picture[59, $0] } && (49..<60).contains { picture[62, $0] })
+        XCTAssertFalse((49..<64).contains { picture[48, $0] || picture[63, $0] })
         // Strip 3 is blank.
-        XCTAssertFalse(picture[34, bottom] || (51..<64).contains { picture[40, $0] })
+        XCTAssertFalse(picture[34, bottom] || (49..<64).contains { picture[40, $0] })
     }
 
     func testMetersAreSentAsPicturesPacedByTheReadyReply() {
