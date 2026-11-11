@@ -481,7 +481,7 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   screen[^test-22]), which nothing else on the device shows (Adam, 2026-11-01). Whether the page's
   "Page " fits is estimated from character widths measured in a photo of the screen (an
   inference).[^test-22] With **Meters** on (a setting, off by default), the home screen is a
-  picture instead: a meter for each strip, 45 pixels tall, with a 4 × 2 mark at each side of the screen at 0 dBFS (the top), no clip lights, a stereo channel's two bars one pixel
+  picture instead: a meter for each strip, 45 pixels tall, with a finely dotted line across each bar at 0 dBFS (the top), no clip lights, a stereo channel's two bars one pixel
   apart and the strips four apart, each bar with its peak held 2 s while the bar shows, and no dB
   marks; under each meter the channel's number, counted within its kind as the first line counts
   ("In 1-3, PB 1-3" gives 1 2 3 1 2 3), with one line under each run of playbacks' numbers, and the screen's bottom row dark; Track shows the page on the
@@ -977,6 +977,8 @@ playing, one build per run. Seen in Adam's videos and photo, and his words; no M
   were dropped (meters 45 pixels again), and the gap between strips went from five pixels to
   four, centering the eight strips with six dark pixels at each side, so the marks are 4 × 2 with
   two dark pixels before the bars.
+- **Run 16** (asked before that build was tried): Adam suggested a finely dotted line on each
+  meter at 0 dBFS instead of the side marks: every other pixel of the top row over each bar.
 
 **Consequences.** The meter layout of run 4 is the driver's. Measured in the photo (about 11.8 of
 its pixels to one of the screen's, from the cut-off edge and the centered first line; an

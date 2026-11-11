@@ -952,8 +952,7 @@ final class LaunchControlDriverTests: XCTestCase {
                                                      numbers: [Number(number: 1, marked: false), Number(number: 2, marked: false), Number(number: 3, marked: false)])
         let bottom = LaunchControlDriver.meterHeight - 1
         XCTAssertTrue(three[43, bottom] && !three[42, bottom] && three[83, bottom] && !three[84, bottom])
-        XCTAssertFalse((4..<43).contains { x in (0..<64).contains { three[x, $0] } }, "nothing at the left but the 0 dBFS mark")
-        XCTAssertTrue(three[0, 0] && three[127, 1], "the 0 dBFS marks stay at the sides")
+        XCTAssertFalse((0..<43).contains { x in (0..<64).contains { three[x, $0] } }, "nothing at the left")
         // A blank strip inside the page keeps its place; only trailing blanks count as missing.
         let gap = LaunchControlDriver.meterPicture(levels: [[10], [], [10]], peaks: [[], [], []])
         XCTAssertTrue(gap[43, bottom] && !gap[60, bottom] && gap[73, bottom])
@@ -1000,9 +999,11 @@ final class LaunchControlDriverTests: XCTestCase {
         // "100" in narrow digits (x 50–63): its last "0" at x 60–63.
         XCTAssertTrue((48..<59).contains { picture[60, $0] } && (48..<59).contains { picture[63, $0] })
         XCTAssertFalse((48..<64).contains { picture[49, $0] || picture[64, $0] })
-        // 0 dBFS: a 4 × 2 mark at each side, on the meters' top two rows, two dark pixels from the bars.
-        XCTAssertTrue([0, 1, 2, 3, 124, 125, 126, 127].allSatisfy { x in picture[x, 0] && picture[x, 1] })
-        XCTAssertFalse(picture[0, 2] || picture[4, 0] || picture[123, 0])
+        // 0 dBFS: a dotted line on the top row over each bar (every other pixel), none at the sides
+        // or over a blank strip.
+        XCTAssertTrue([6, 8, 10, 12, 14, 16].allSatisfy { picture[$0, 0] } && ![7, 9, 15].contains { picture[$0, 0] })
+        XCTAssertTrue([21, 23, 25, 27, 29, 31].allSatisfy { picture[$0, 0] } && !picture[26, 0], "a pair's two bars dotted")
+        XCTAssertFalse((0..<6).contains { picture[$0, 0] } || (36...46).contains { picture[$0, 0] } || picture[6, 1])
         // Strip 3 is blank.
         XCTAssertFalse(picture[36, bottom] || (48..<64).contains { picture[41, $0] })
     }

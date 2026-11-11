@@ -4,11 +4,12 @@
 // peak, and the channel's number under it. What the device showed (test 22, all Adam, 2026-11-10):
 // - dB ticks between the strips read as a grid, with or without the peaks, so there are none;
 // - with equal gaps everywhere a stereo pair's two bars couldn't be told from two strips, so a
-//   pair's bars are one pixel apart and the strips four (five at first; four leaves room for the
-//   0 dBFS marks);
+//   pair's bars are one pixel apart and the strips four (five at first; four was for side marks,
+//   since dropped);
 // - a peak line with no bar under it, at a channel's noise floor, looked like stray pixels, so a
 //   peak shows only over a bar;
-// - one-pixel 0 dBFS marks at the screen's sides were too small, so they are 4 × 2;
+// - 0 dBFS marks at the screen's sides (one pixel, then 2 × 2, then 4 × 2) gave way to a finely
+//   dotted line across each bar at 0 dBFS, the meters' top row (Adam's idea);
 // - clip boxes over the bars looked like tiny glyphs, and nothing shows that TotalMix FX's levels
 //   flag a clip reliably (they are peaks in dB, sent only when they change), so there are none.
 //
@@ -54,8 +55,6 @@ extension LaunchControlDriver {
     static let stripWidth = 11
     /// The dark pixels between two strips.
     static let stripGap = 4
-    /// The 0 dBFS marks at the screen's sides: this wide, two rows tall, from the top row.
-    static let zeroMarkWidth = 4
     /// The top row of the channel numbers: three dark rows below the meters (Adam, 2026-11-10: one
     /// more than the first try), 11 rows tall.
     static let numberTop = 48
@@ -186,7 +185,7 @@ extension LaunchControlDriver {
     /// (`levels` and `peaks` give one or two heights per strip, empty for no channel), each with its
     /// held peak as a line while the bar shows; the strip's number under it (`numbers`, `nil` for
     /// none); a line under each run of marked numbers, from the first one's meter to the last
-    /// one's; and a 4 × 2 mark at each side of the screen at 0 dBFS, the meters' top.
+    /// one's; and over each bar a dotted line at 0 dBFS, the meters' top row (every other pixel).
     public static func meterPicture(levels: [[Int]], peaks: [[Int]], numbers: [MeterNumber?] = []) -> LaunchControlBitmap {
         var picture = LaunchControlBitmap()
         let bottom = meterHeight - 1
@@ -196,8 +195,6 @@ extension LaunchControlDriver {
         let count = max(min(used, stripCount), 1)
         let start = (LaunchControlBitmap.width - (count * stripWidth + (count - 1) * stripGap)) / 2
         func left(_ column: Int) -> Int { start + column * (stripWidth + stripGap) }
-        picture.fill(x: 0, y: 0, width: zeroMarkWidth, height: 2)
-        picture.fill(x: LaunchControlBitmap.width - zeroMarkWidth, y: 0, width: zeroMarkWidth, height: 2)
         for (column, number) in numbers.enumerated() {
             guard let number else { continue }
             drawNumber(number, left: left(column), in: &picture)
@@ -211,6 +208,7 @@ extension LaunchControlDriver {
             let bars: [(x: Int, width: Int)] = heights.count > 1 ? [(x0, 5), (x0 + 6, 5)] : [(x0, stripWidth)]
             let peaksHere = peaks.indices.contains(column) ? peaks[column] : []
             for (bar, (x, width)) in zip(bars.indices, bars) where heights.indices.contains(bar) {
+                for dot in stride(from: x, to: x + width, by: 2) { picture[dot, 0] = true }
                 let height = min(max(heights[bar], 0), meterHeight)
                 picture.fill(x: x, y: bottom - height + 1, width: width, height: height)
                 if height > 0, peaksHere.indices.contains(bar), peaksHere[bar] > height {
