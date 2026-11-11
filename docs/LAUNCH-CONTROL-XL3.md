@@ -82,6 +82,13 @@ seen").
 [^test-20]: Test 20 (2026-11-10), section [10](#test-20-2026-11-10-a-pans-center-in-totalmix-fx).
 [^test-21]: Test 21 (2026-11-10), section [10](#test-21-2026-11-10-bitmaps).
 [^test-22]: Test 22 (2026-11-10), section [10](#test-22-2026-11-10-meters-on-the-home-screen).
+[^test-23]: Test 23 (2026-11-10), section [10](#test-23-2026-11-10-display-timeout).
+[^nov-settings]: Novation, "Launch Control XL 3's Settings page", Launch Control XL 3 user guide
+    (online), <https://userguides.novationmusic.com/hc/en-gb/articles/26190532189330-Launch-Control-XL-3-s-Settings-page>,
+    read 2026-11-10.
+[^nov-custom]: Novation, "Using Custom Modes on the Launch Control XL 3", Launch Control XL 3 user
+    guide (online), <https://userguides.novationmusic.com/hc/en-gb/articles/26190535820562-Using-Custom-Modes-on-the-Launch-Control-XL-3>,
+    read 2026-11-10.
 
 ## 2. MIDI ports
 
@@ -953,4 +960,26 @@ nearly as many, "i" about 4, and a space about 3; "Mid row > Phones 2" needs abo
 The send rows' lines are "Top >" and "Mid >" again, since with "row" most outputs' names don't fit,
 and the driver estimates the first line's width from these figures (`LaunchControlDriver.screenWidth`)
 to decide between "Page 1/2: " and "1/2: ".
+
+### Test 23 (2026-11-10): Display Timeout
+
+**Setup.** Adam's XL 3 with `sbdev lcbridge --meters`. Novation's Settings page lists a **Display
+Timeout** setting, 1–10, default 3, for how long temporary messages stay on the screen, without
+units; the Settings page opens from a Custom Mode by holding both Track buttons, Page ▲▼ step
+through the settings, and the top-left encoder changes one; Mode leaves.[^nov-settings] A Custom
+Mode is chosen with Mode, one of the 16 buttons lit blue, and Mode again.[^nov-custom]
+
+**Findings** (seen):
+- Mode, a blue button, and Mode put the device in a Custom Mode (the screen named a new custom
+  mode); both Track buttons then opened the Settings page at "Global MIDI Channel 9"; Display
+  Timeout read 5 (not the default 3) and was turned down to 2; Mode left the Settings page with the
+  screen blank (the device still in the Custom Mode, which the driver doesn't draw).
+- Quitting and starting `sbdev lcbridge --meters` again put the device back in DAW mode with the
+  meters.
+- At 2, the pop-up after turning an encoder goes away soon enough ("yeah think so at 2", Adam).
+
+**Consequences.** The setting applies to the temporary displays in DAW mode, so the driver needs no
+timer of its own. The Controls Guide says where the setting is. Whether Mode and a button can go
+back to DAW mode without restarting the host was not tried, so the guide says to quit and reopen.
+The Launch Control 3 has a Settings page too; whether it has the same setting was not checked.
 

@@ -324,6 +324,10 @@ The E16 has two layouts. In the **16-channel layout**, each encoder is one chann
   "Mid > Phones 2"). With **Meters** on in Settings, it shows a meter for each channel instead, with its number under it and a line under the playbacks' numbers, two bars
   for a stereo channel, and Track shows the page; meters need TotalMix FX's **Send Level Data** on.
 - Moving a control shows its channel, what it does, and its value.
+- How long that stays up is the XL 3's own **Display Timeout** setting: a lower number is shorter. To change
+  it, switch to a Custom Mode (**Mode**, a blue button, **Mode**), hold **Track <** and **Track >** together, press
+  **Page ▼** to Display Timeout, and turn the top-left encoder; then press **Mode**, and quit and reopen
+  Performance Bridge to go back to its layout.
 - After each Page press the screen names the row and its new output, and each send row's lights take the color
   of the output it feeds: its color in TotalMix FX, or, for an output left white, teal (a blue-green) for the
   top row and magenta for the middle row.
