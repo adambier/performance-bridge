@@ -56,11 +56,6 @@ words ("inference", "untested").
     (2026-11-04), section 9; firmware 3.3.0.
 [^test-14]: [Test 14](#test-14-2026-11-10-mode-then-mix) (2026-11-10), section 9; firmware not
     rechecked since test 12.
-[^totalmix-test-5]: Test 5 (2026-10-28) of the TotalMix FX tests,
-    [docs/TOTALMIX-OSC.md](TOTALMIX-OSC.md#test-5-2026-10-28-does-totalmix-fx-echo-a-command),
-    section 6.
-[^totalmix-meters]: [docs/TOTALMIX-OSC.md](TOTALMIX-OSC.md#3-addresses-this-project-uses),
-    section 3, "Meter colors".
 
 **Status.** Twelve tests so far (section 9), with firmware 3.3.0. Section 8 lists what is still
 open.

@@ -80,7 +80,6 @@ seen").
 [^test-18]: Test 18 (2026-11-02), section [10](#test-18-2026-11-02-the-101-build-in-the-app-and-two-adjustments).
 [^test-19]: Test 19 (2026-11-02), section [10](#test-19-2026-11-02-dimmer-off-buttons).
 [^test-20]: Test 20 (2026-11-10), section [10](#test-20-2026-11-10-a-pans-center-in-totalmix-fx).
-[^tm-marks]: `docs/TOTALMIX-OSC.md`, test 18 (2026-11-01), the marks on TotalMix FX's faders.
 
 ## 2. MIDI ports
 
