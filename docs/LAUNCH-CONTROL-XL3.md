@@ -1129,6 +1129,11 @@ about 10.5 pixels and "1" as 8 (test 22's 9 for every digit was too small for 6 
 gets seven spaces. Run 6 (photo): "6 Pb 5/6" whole, a few pixels from the right edge, and "to" and
 "1 Tonverk" starting at about the same place.
 
+Peaks (videos, `peaks bar` and `peaks floor`, quiet material on channel 1): the review's suggestion
+that a held peak also show alone above −40 dBFS after its bar has emptied. Adam "couldn't tell the
+difference"; in the frames the bars reach only a few pixels, so the case it covers (a loud hit, then
+silence) hardly came up. The default stays: a held peak only over a bar.
+
 Adam also saw "1 Tonverk" not quite at the left edge: its "1" starts about 3 screen pixels right
 of "to" (measured). A line is centered unless it is wider than the screen, and a field holds 20
 characters, so "1 Tonverk" with its 11 spaces is about 127 pixels wide and sits a pixel or so in
