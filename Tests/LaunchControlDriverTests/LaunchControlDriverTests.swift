@@ -1052,6 +1052,28 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertFalse(driver.tick(hub: &hub, now: 0.8).midi.isEmpty)
     }
 
+    func testTheTrialPeakFall() {
+        // Adam, 2026-11-11: TotalMix FX's peaks drop; these vanished after their hold.
+        var hub = loadedHub()
+        var driver = LaunchControlDriver(name: "lc", layout: .xl3, showsMeters: true)
+        driver.meterPeakFall = 20
+        let ref = ChannelRef(.input, 2)
+        _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -6), now: 0)
+        let top = driver.heldPeak(ref, hub: hub, now: 0)
+        _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -60), now: 0.1)
+        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 1.9), top, "held for 2 s")
+        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 2.5), LaunchControlDriver.barHeight(db: -16, height: driver.meterRows),
+                       "then 20 dB a second: 10 dB down after 0.5 s")
+        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 5), LaunchControlDriver.barHeight(db: -60, height: driver.meterRows),
+                       "down to the level, then the level's own")
+        _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -20), now: 5.1)
+        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 5.2), LaunchControlDriver.barHeight(db: -20, height: driver.meterRows), "a new peak")
+        driver.meterPeakFall = nil
+        _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -60), now: 5.3)
+        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 8), LaunchControlDriver.barHeight(db: -60, height: driver.meterRows),
+                       "the default: down at once after the hold")
+    }
+
     func testMeterNumbersCountEachKind() {
         let order = [ChannelRef(.input, 0), ChannelRef(.input, 2), ChannelRef(.playback, 4), ChannelRef(.input, 6), ChannelRef(.playback, 0)]
         XCTAssertEqual(LaunchControlDriver.meterNumber(ChannelRef(.input, 6), order: order, numbering: .byKind), .init(number: 3, marked: false),

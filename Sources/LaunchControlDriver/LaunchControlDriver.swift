@@ -92,7 +92,7 @@ public struct LaunchControlDriver: Sendable {
     /// How the meters' strips are numbered (`MeterNumbering`): by slot, 1–8 on every page, the
     /// default (Adam, 2026-11-11; test 24); the others remain for trials (`sbdev lcbridge --numbers`).
     public var meterNumbering = MeterNumbering.page {
-        didSet { if meterNumbering != oldValue { shownBitmap = nil; meterPeaks = [:] } }
+        didSet { if meterNumbering != oldValue { shownBitmap = nil; meterPeaks = [:]; meterPeakLevels = [:] } }
     }
     /// For a trial on the device (the UI review of 2026-11-10): the level, in dBFS, above which a
     /// held peak shows even with no bar under it; `nil`, the default, shows a peak only over a bar.
@@ -100,6 +100,12 @@ public struct LaunchControlDriver: Sendable {
     /// For a trial on the device (the UI review of 2026-11-10): how fast a bar may fall, in dB a
     /// second; `nil`, the default, lets it follow the average down.
     public var meterFall: Double?
+    /// For a trial on the device (Adam, 2026-11-11: TotalMix FX's peaks drop, these vanished): how
+    /// fast a held peak falls once its hold ends, in dB a second; `nil`, the default, drops it to
+    /// the level at once.
+    public var meterPeakFall: Double?
+    /// Each channel's held peak, in dBFS, and when it was reached, for `meterPeakFall`.
+    var meterPeakLevels: [ChannelRef: (db: Double, at: Double)] = [:]
     /// Each channel's shown bar level, in dBFS, and when, for `meterFall`.
     var meterShown: [ChannelRef: (db: Double, at: Double)] = [:]
     /// Each channel's averaged level, in power, and when it was last updated (`showsMeters`).

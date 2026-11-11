@@ -111,7 +111,8 @@ extension LaunchControlDriver {
         if let sent = bitmapSentAt, now - sent < Self.bitmapTimeout { return [] }
         let picture = Self.meterPicture(levels: levels, peaks: peaks, numbers: numbers,
                                         showsNumbers: meterNumbering != .none,
-                                        peakFloor: meterPeakFloor.map { Self.barHeight(db: $0, height: meterRows) })
+                                        // A falling peak shows down to an empty bar, as TotalMix FX's do.
+                                        peakFloor: meterPeakFall != nil ? 0 : meterPeakFloor.map { Self.barHeight(db: $0, height: meterRows) })
         let packed = picture.packed
         guard packed != shownBitmap else { return [] }
         shownBitmap = packed
@@ -171,8 +172,19 @@ extension LaunchControlDriver {
         return MeterNumber(number: index + 1, marked: channel.bus == .playback)
     }
 
-    private mutating func heldPeak(_ ref: ChannelRef, hub: SurfaceHub, now: Double) -> Int {
-        let height = Self.barHeight(db: hub.mirror.meters[ref] ?? -.infinity, height: meterRows)
+    mutating func heldPeak(_ ref: ChannelRef, hub: SurfaceHub, now: Double) -> Int {
+        let db = hub.mirror.meters[ref] ?? -.infinity
+        let height = Self.barHeight(db: db, height: meterRows)
+        if let fall = meterPeakFall {
+            // Held for `peakHold`, then falling at `fall` dB a second until the level meets it.
+            if let held = meterPeakLevels[ref] {
+                let age = now - held.at
+                let fallen = age < Self.peakHold ? held.db : held.db - fall * (age - Self.peakHold)
+                if fallen > db, fallen > -65 { return Self.barHeight(db: fallen, height: meterRows) }
+            }
+            meterPeakLevels[ref] = (db, now)
+            return height
+        }
         if let held = meterPeaks[ref], held.height >= height, now - held.at < Self.peakHold { return held.height }
         meterPeaks[ref] = (height, now)
         return height

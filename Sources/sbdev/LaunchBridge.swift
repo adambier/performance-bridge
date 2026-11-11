@@ -50,6 +50,8 @@ let lcBridgeCommandHelp = """
       numbers kind | all | none | page   how the meters' strips are numbered (see --numbers)
       peaks bar | floor    a held peak only over a bar (the default), or also alone above −40 dBFS
       fall off | N         let a bar fall with the average (the default), or at N dB a second at most
+      peakfall off | N     drop a held peak to the level after its 2 s hold (the default), or let it
+                           fall at N dB a second
       order                the sources in the channel order, numbered from 1, with their names
       move A B             move the source at place A in that order to place B
       sendall              ask TotalMix FX for its state again
@@ -268,6 +270,16 @@ final class LaunchBridgeSession: @unchecked Sendable {
             }
             driver.meterPeakFloor = words[1] == "floor" ? -40 : nil
             log("Peaks: \(words[1] == "floor" ? "also alone above −40 dBFS" : "only over a bar")")
+        case "peakfall":
+            if words.count == 2, words[1] == "off" {
+                driver.meterPeakFall = nil
+                log("Peak fall: none; a held peak drops to the level after its hold")
+            } else if words.count == 2, let rate = Double(words[1]), rate > 0 {
+                driver.meterPeakFall = rate
+                log("Peak fall: \(words[1]) dB a second after the hold")
+            } else {
+                print("peakfall off, or peakfall N (dB a second, e.g., peakfall 20)")
+            }
         case "fall":
             if words.count == 2, words[1] == "off" {
                 driver.meterFall = nil
