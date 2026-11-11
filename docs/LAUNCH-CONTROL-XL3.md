@@ -1110,3 +1110,9 @@ screen's when it shows the page alone, now read that way; the home screen's "Pag
 in front of the names stays, since "of" would leave too little room for them. Not yet seen on the
 device.
 
+Run 4: "Page 2 of 2" reads well. Adam then suggested "Pb" for an unlabeled playback, which "may
+actually be easier to understand/remember than PB", and "to" at the far left of the last line now
+that it is pushed right. Both made: unlabeled playbacks are "Pb 1/2" on every hardware controller
+(the E16 draws them in capitals, its font having no lowercase), and the last line reads "to", spaces,
+then the channel ("to      3 Gtr", `LaunchControlDriver.spread`). Not yet seen on the device.
+

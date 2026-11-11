@@ -499,8 +499,8 @@ public struct LaunchControlDriver: Sendable {
         // The meter screen has no page line (too small to read, Adam, 2026-11-10), so the page
         // shows here, in the device's own text, as Page shows a send row's output: its number, then
         // its first and last channels, each with its slot, the number under its meter ("1 Vox",
-        // "3 Gtr"), the first pushed left and the last right (Adam, 2026-11-11; test 24: "Vox" and
-        // "to Gtr" were slow to take in while the pop-up showed).
+        // "3 Gtr"), the first pushed left and the last right, with "to" at the left of its line
+        // (Adam, 2026-11-11; test 24: "Vox" and "to Gtr", centered, were slow to take in).
         if showsMeters, connected, !inCustomMode {
             // "Page 1 of 2", not "Page 1/2": it fits and is faster to take in (Adam, 2026-11-11).
             let number = "Page \(pageNumber?.current ?? 1) of \(pageNumber?.of ?? 1)"
@@ -508,7 +508,7 @@ public struct LaunchControlDriver: Sendable {
             switch ends.count {
             case 0: step.midi += overlay(number, "No channels")
             case 1: step.midi += overlay(number, Self.pushed(ends[0], to: .left))
-            default: step.midi += overlay(number, Self.pushed(ends[0], to: .left), Self.pushed(ends[1], to: .right))
+            default: step.midi += overlay(number, Self.pushed(ends[0], to: .left), Self.spread("to", ends[1]))
             }
         }
     }
@@ -1069,12 +1069,16 @@ public struct LaunchControlDriver: Sendable {
     /// (`pushedWidth`), since the widths are estimates and that one was about 7 short.
     static func pushed(_ text: String, to side: Side,
                        fits: (String) -> Bool = { $0.count <= fieldLength && screenWidth($0) <= pushedWidth }) -> String {
-        var line = text
-        while true {
-            let next = side == .left ? line + " " : " " + line
-            guard fits(next) else { return line }
-            line = next
-        }
+        side == .left ? spread(text, "", fits: fits) : spread("", text, fits: fits)
+    }
+
+    /// `left` and `right` on one line, pushed apart with spaces as `pushed(_:to:fits:)` pushes one
+    /// text ("to        3 Gtr"); one space between them when even that doesn't fit.
+    static func spread(_ left: String, _ right: String,
+                       fits: (String) -> Bool = { $0.count <= fieldLength && screenWidth($0) <= pushedWidth }) -> String {
+        var gap = left.isEmpty || right.isEmpty ? "" : " "
+        while fits(left + gap + " " + right) { gap += " " }
+        return left + gap + right
     }
 
     /// The page shown and the number of pages, or `nil` with only one page.
@@ -1085,7 +1089,7 @@ public struct LaunchControlDriver: Sendable {
     }
 
     /// The home screen's first line: the page, then its first and last channels by name ("Page 1/2:
-    /// Keys to PB 1/2"), as the controls' displays name them. Counts by position ("In 1-3, PB 1-3")
+    /// Keys to Pb 1/2"), as the controls' displays name them. Counts by position ("In 1-3, PB 1-3")
     /// matched nothing in TotalMix FX, and "In" could be read as "ln" (Adam, 2026-11-11; test 24).
     /// "Page " goes when the line doesn't `fit`; then the names go, rather than being cut into
     /// fragments, leaving the page ("Page 1 of 2") or, with one page, the number of channels, since the
