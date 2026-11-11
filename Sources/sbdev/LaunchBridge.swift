@@ -43,6 +43,7 @@ let lcBridgeCommandHelp = """
       home N | home main   the home submix: output N (from 1), or TotalMix FX's Main Out
       pbpage on | pbpage off   start the first playback on a new page, or not
       meters on | meters off   the home screen as meters, or as text
+      clip N               strip N's channel (1–8 on this page) reaches 0 dBFS once, to see its clip box
       sendall              ask TotalMix FX for its state again
       status               the layout, the home submix, the send targets, and each layer's strips
       quit                 leave DAW mode and stop
@@ -238,6 +239,16 @@ final class LaunchBridgeSession: @unchecked Sendable {
             step.midi = driver.setShowsMeters(words[1] == "on", hub: hub)
             send(step)
             log("Meters: \(driver.showsMeters ? "on" : "off")")
+        case "clip":
+            guard words.count == 2, let number = Int(words[1]), (1...LaunchControlDriver.stripCount).contains(number),
+                  let info = driver.stripInfos[number - 1] else {
+                print("clip N, N a strip with a channel on this page (1–8)")
+                return true
+            }
+            var refs = [info.channel]
+            if info.stereo { refs.append(ChannelRef(info.channel.bus, info.channel.channel + 1)) }
+            for ref in refs { dispatch(hub.handle(.level(bus: ref.bus, channel: ref.channel, peakDB: 0), now: now)) }
+            log("Strip \(number) at 0 dBFS once")
         case "sendall":
             dispatch(hub.connect(now: now))
         case "status":

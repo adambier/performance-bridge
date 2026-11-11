@@ -952,7 +952,8 @@ final class LaunchControlDriverTests: XCTestCase {
                                                      numbers: [Number(number: 1, marked: false), Number(number: 2, marked: false), Number(number: 3, marked: false)])
         let bottom = LaunchControlDriver.meterTop + LaunchControlDriver.meterHeight - 1
         XCTAssertTrue(three[42, bottom] && !three[41, bottom] && three[84, bottom] && !three[85, bottom])
-        XCTAssertFalse((0..<41).contains { x in (0..<64).contains { three[x, $0] } }, "nothing at the left")
+        XCTAssertFalse((1..<41).contains { x in (0..<64).contains { three[x, $0] } }, "nothing at the left but the 0 dBFS mark")
+        XCTAssertTrue(three[0, LaunchControlDriver.meterTop] && three[127, LaunchControlDriver.meterTop], "the 0 dBFS marks stay at the edges")
         // A blank strip inside the page keeps its place; only trailing blanks count as missing.
         let gap = LaunchControlDriver.meterPicture(levels: [[10], [], [10]], peaks: [[], [], []])
         XCTAssertTrue(gap[42, bottom] && !gap[58, bottom] && gap[74, bottom])
@@ -969,7 +970,7 @@ final class LaunchControlDriverTests: XCTestCase {
     func testTheMeterPicture() {
         typealias Number = LaunchControlDriver.MeterNumber
         // Eight strips, the last two with no meter, but the eighth with a number, so nothing is centered.
-        let picture = LaunchControlDriver.meterPicture(levels: [[10], [20, 30], [], [0], [5], [5], [], []], peaks: [[15], [20, 40], [], [5], [5], [5], [], []],
+        let picture = LaunchControlDriver.meterPicture(levels: [[10], [20, 30], [], [0], [5], [5], [], []], peaks: [[15], [20, 35], [], [5], [5], [5], [], []],
                                                        clips: [[false], [false, true]],
                                                        numbers: [Number(number: 1, marked: false), Number(number: 12, marked: true), nil,
                                                                  Number(number: 100, marked: false), Number(number: 1, marked: true),
@@ -983,17 +984,21 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(picture[18, bottom - 19] && !picture[18, bottom - 20])
         XCTAssertTrue(picture[24, bottom - 29] && picture[28, bottom] && !picture[23, bottom], "one pixel between a pair's bars")
         XCTAssertFalse((13...17).contains { picture[$0, bottom] }, "five between the strips")
-        XCTAssertTrue(picture[24, bottom - 39], "the right side's peak")
+        XCTAssertTrue(picture[24, bottom - 34], "the right side's peak")
         XCTAssertFalse((0..<64).contains { picture[16, $0] }, "no ticks")
         // Strip 4: no bar, so no peak line, though the peak is above it (a noise floor).
         XCTAssertFalse((LaunchControlDriver.meterTop..<(bottom + 1)).contains { y in (50...60).contains { picture[$0, y] } })
-        // The clip boxes, rows 0–2, one dark row under them: hollow over strip 1's bar (x 2–12) and
-        // the left side of strip 2, filled over the right side (x 24–28), which reached 0 dBFS.
-        XCTAssertTrue(picture[2, 0] && picture[7, 0] && picture[7, 2] && picture[2, 1] && picture[12, 1] && !picture[7, 1])
-        XCTAssertTrue(picture[18, 0] && picture[22, 1] && !picture[20, 1])
-        XCTAssertTrue((24...28).allSatisfy { x in (0...2).allSatisfy { picture[x, $0] } })
-        XCTAssertFalse((0..<128).contains { picture[$0, 3] }, "a dark row under the boxes")
-        XCTAssertFalse((0...2).contains { picture[40, $0] }, "no box over a blank strip")
+        // The clip boxes, rows 0–4, one dark row under them, a pixel past the bar on the outer side:
+        // hollow over strip 1's bar (x 1–13) and the left side of strip 2 (x 17–22), filled over the
+        // right side (x 24–29), which reached 0 dBFS.
+        XCTAssertTrue(picture[1, 0] && picture[7, 0] && picture[7, 4] && picture[1, 2] && picture[13, 2] && !picture[7, 2] && !picture[0, 2])
+        XCTAssertTrue(picture[17, 0] && picture[22, 2] && !picture[20, 2] && !picture[23, 2])
+        XCTAssertTrue((24...29).allSatisfy { x in (0...4).allSatisfy { picture[x, $0] } } && !picture[30, 2])
+        XCTAssertFalse((0..<128).contains { picture[$0, 5] }, "a dark row under the boxes")
+        XCTAssertFalse((0...4).contains { picture[40, $0] }, "no box over a blank strip")
+        // 0 dBFS: one pixel at each edge, on the meters' top row.
+        XCTAssertTrue(picture[0, LaunchControlDriver.meterTop] && picture[127, LaunchControlDriver.meterTop])
+        XCTAssertFalse(picture[0, LaunchControlDriver.meterTop + 1] || picture[1, LaunchControlDriver.meterTop])
         // The numbers, from row 48: "1" (x 4–9, its stem at 7–8); "12" (x 17–29).
         XCTAssertTrue(picture[7, 48] && picture[8, 58] && !picture[9, 58])
         XCTAssertFalse((48..<64).contains { picture[2, $0] }, "the 1 is centered")
@@ -1056,6 +1061,7 @@ final class LaunchControlDriverTests: XCTestCase {
         guard let hollow = boxPixels(driver.tick(hub: &hub, now: 0.1).midi) else { return XCTFail("no picture") }
         _ = driver.receive(ready, hub: &hub, now: 0.15)
         _ = hub.handle(.level(bus: .input, channel: 2, peakDB: 0), now: 0.2)
+        _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -12), now: 0.21)  // replaced before the draw
         guard let lit = boxPixels(driver.tick(hub: &hub, now: 0.25).midi) else { return XCTFail("no picture") }
         XCTAssertGreaterThan(lit, hollow, "0 dBFS fills the channel's box")
         _ = driver.receive(ready, hub: &hub, now: 0.3)

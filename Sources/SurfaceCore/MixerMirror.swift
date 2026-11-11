@@ -101,6 +101,9 @@ public struct MixerMirror: Sendable {
     public private(set) var nodes: [NodeKey: NodeState] = [:]
     /// The last peak level in dB of each channel number (both halves of a pair).
     public private(set) var meters: [ChannelRef: Double] = [:]
+    /// How many level messages at 0 dBFS or above each channel has sent, so a surface's clip light
+    /// catches one even when a lower level follows before the surface next draws.
+    public private(set) var overs: [ChannelRef: Int] = [:]
     /// The output channel (its left channel) assigned to each monitoring role in the control room.
     public private(set) var monitoring: [MonitoringRole: Int] = [:]
     /// TotalMix FX's Mute Master (`/globalmute`), or `nil` until TotalMix FX has reported it. While it is
@@ -123,6 +126,7 @@ public struct MixerMirror: Sendable {
             return applyNode(NodeKey(ChannelRef(bus, channel), output), parameter, value)
         case .level(let bus, let channel, let peakDB):
             let ref = ChannelRef(bus, channel)
+            if peakDB >= 0 { overs[ref, default: 0] += 1 }
             if meters[ref] == peakDB { return nil }
             meters[ref] = peakDB
             return .meter(ref)

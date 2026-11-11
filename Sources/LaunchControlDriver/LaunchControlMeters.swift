@@ -6,9 +6,11 @@
 // are none (marks at the screen's side were declined too); with equal gaps everywhere a stereo
 // pair's two bars couldn't be told from two strips, so a pair's bars are one pixel apart and the
 // strips five; and a peak line with no bar under it, at a channel's noise floor, looked like stray
-// pixels, so a peak shows only over a bar. Above each bar is a small box marking 0 dBFS, hollow, and
+// pixels, so a peak shows only over a bar. Above each bar is a box marking 0 dBFS, hollow, and
 // filled for `clipHold` after that side reaches 0 dBFS (Adam, 2026-11-10: a fixed mark and a clip
-// light, both).
+// light, both; three rows tall and as wide as the bar were too small to see, so five rows, and a
+// pixel wider than the bar on each side). And one pixel at each edge of the screen marks 0 dBFS,
+// the meters' top row (Adam, 2026-11-10).
 //
 // The numbers count each kind in the channel order, as the text home screen's first line does
 // ("In 1-3, PB 1-3" gives 1 2 3 1 2 3), with one line under each run of playbacks (Adam,
@@ -44,11 +46,11 @@ extension LaunchControlDriver {
     /// Replies took 66–72 ms, once 340 ms while a control moved (test 21).
     public static let bitmapTimeout = 0.5
     /// The meters' height in pixels, from the screen's top row; the channel numbers go below.
-    public static let meterHeight = 41
-    /// The top row of the meters: under the clip boxes (rows 0–2) and one dark row.
-    public static let meterTop = 4
-    /// The clip boxes' height: rows 0–2, hollow (top and bottom rows and the two sides) until lit.
-    static let clipBoxHeight = 3
+    public static let meterHeight = 39
+    /// The top row of the meters: under the clip boxes (rows 0–4) and one dark row.
+    public static let meterTop = 6
+    /// The clip boxes' height: rows 0–4, hollow (top and bottom rows and the two sides) until lit.
+    static let clipBoxHeight = 5
     /// How long a clip box stays filled after its side reaches 0 dBFS, in seconds: the peak hold's
     /// time (a starting value, to tune on the device).
     public static let clipHold = 2.0
@@ -123,9 +125,12 @@ extension LaunchControlDriver {
         return MeterNumber(number: index + 1, marked: channel.bus == .playback)
     }
 
-    /// Whether a channel's clip box is lit: it reached 0 dBFS in the last `clipHold` seconds.
+    /// Whether a channel's clip box is lit: it reached 0 dBFS in the last `clipHold` seconds. Any
+    /// message at 0 dBFS counts, even one a lower level replaced before this draw (`MixerMirror.overs`).
     private mutating func clipped(_ ref: ChannelRef, hub: SurfaceHub, now: Double) -> Bool {
-        if let db = hub.mirror.meters[ref], db >= 0 { meterClips[ref] = now }
+        let overs = hub.mirror.overs[ref] ?? 0
+        if overs > meterOvers[ref, default: 0] { meterClips[ref] = now }
+        meterOvers[ref] = overs
         guard let at = meterClips[ref] else { return false }
         return now - at < Self.clipHold
     }
@@ -190,7 +195,8 @@ extension LaunchControlDriver {
     /// give one or two heights per strip, empty for no channel), each with its held peak as a line
     /// while the bar shows; the strip's number under it (`numbers`, `nil` for none); and a line
     /// under each run of marked numbers, from the first one's meter to the last one's. Over each bar
-    /// is its clip box, filled where `clips` says so. A page with
+    /// is its clip box, filled where `clips` says so, and a pixel at each edge of the screen marks
+    /// 0 dBFS. A page with
     /// fewer than eight strips is centered (Adam, 2026-11-10): the screen sits to the left of the
     /// controls, so a meter's place never lined up with its fader anyway (seen in Adam's photos).
     public static func meterPicture(levels: [[Int]], peaks: [[Int]], clips: [[Bool]] = [],
@@ -201,6 +207,8 @@ extension LaunchControlDriver {
             (levels.indices.contains($0) && !levels[$0].isEmpty) || (numbers.indices.contains($0) && numbers[$0] != nil)
         }.map { $0 + 1 } ?? 0
         let shift = (stripCount - min(used, stripCount)) * 8
+        picture[0, meterTop] = true
+        picture[LaunchControlBitmap.width - 1, meterTop] = true
         for (column, number) in numbers.enumerated() {
             guard let number else { continue }
             drawNumber(number, left: shift + column * 16, in: &picture)
@@ -214,13 +222,17 @@ extension LaunchControlDriver {
             let peaksHere = peaks.indices.contains(column) ? peaks[column] : []
             let clipsHere = clips.indices.contains(column) ? clips[column] : []
             for (bar, (x, width)) in zip(bars.indices, bars) where heights.indices.contains(bar) {
+                // The box reaches a pixel past the bar on its outer side (into the gap between
+                // strips), so a pair's two boxes stay one pixel apart.
+                let boxX = bar == 0 ? x - 1 : x
+                let boxWidth = width + (bars.count == 1 ? 2 : 1)
                 if clipsHere.indices.contains(bar), clipsHere[bar] {
-                    picture.fill(x: x, y: 0, width: width, height: clipBoxHeight)
+                    picture.fill(x: boxX, y: 0, width: boxWidth, height: clipBoxHeight)
                 } else {
-                    picture.fill(x: x, y: 0, width: width, height: 1)
-                    picture.fill(x: x, y: clipBoxHeight - 1, width: width, height: 1)
-                    picture.fill(x: x, y: 0, width: 1, height: clipBoxHeight)
-                    picture.fill(x: x + width - 1, y: 0, width: 1, height: clipBoxHeight)
+                    picture.fill(x: boxX, y: 0, width: boxWidth, height: 1)
+                    picture.fill(x: boxX, y: clipBoxHeight - 1, width: boxWidth, height: 1)
+                    picture.fill(x: boxX, y: 0, width: 1, height: clipBoxHeight)
+                    picture.fill(x: boxX + boxWidth - 1, y: 0, width: 1, height: clipBoxHeight)
                 }
                 let height = min(max(heights[bar], 0), meterHeight)
                 picture.fill(x: x, y: bottom - height + 1, width: width, height: height)
