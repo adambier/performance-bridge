@@ -297,7 +297,11 @@ port names.
 10. **Screen.** Run.[^test-5] `display f1 2`, then `text f1 0 Mix`, `text f1 1 ADI-2`, `text f1 2 -6.0 dB`, and
     move fader 1. How many characters fit per field? Then `display stationary 3` with eight names,
     and the `quiet` option (no display on change).
-11. **Bitmap targets** (section 7, item 5), only if a bitmap is wanted later.
+11. **Bitmaps** (section 7, items 5 and 6), for meters on the screen (Adam asked, 2026-11-10).
+    `bitmap 20 frame`, then `21`, `35`, and `36`: which targets show the picture, does the reply
+    come, and with which end (add `7f` for 7Fh F7h)? Does a set bit light a pixel, and is the block
+    at the top left? `show stationary off` takes it down. Then `bitmaprate T 10` with a target that
+    works: how many pictures a second, and how long the reply takes.
 12. **Do level encoders need relative mode?** Part 1 run (2026-11-01, Launch Control 3 layout on
     the XL 3, TotalMix FX's curve): "pretty smooth". Adam then asked for the ARC USB's scale for volume
     encoders (section 9), which is finer near 0 dB. On it, a slow fade of a send from about −20 dB

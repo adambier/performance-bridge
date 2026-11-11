@@ -39,6 +39,13 @@ let lcxlCommandHelp = """
       feature N V        send feature control N with value V;  query N  asks for its setting
       daw on|off         DAW mode on or off
       hex BYTES          send raw bytes, e.g. hex B0 25 05
+      bitmap T P [7f]    send one picture to bitmap target T (hex: 20, 21, 35, or 36) and time the
+                         reply; P is clear, full, checker, or frame (a border, a block at the top
+                         left, and a diagonal, to show orientation and which bit lights a pixel);
+                         7f ends the message with 7F F7 instead of F7
+      bitmaprate T S [7f]  send moving meter pictures to T for S seconds (1–60), each after the
+                         device's ready reply (or 0.5 s without one), and report pictures per
+                         second and reply times; show stationary off (or overlay) takes it down
       quit
     """
 
@@ -52,6 +59,10 @@ final class LaunchControlSession: @unchecked Sendable {
     private let outName: String
     private let raw: Bool
     private let touch: Bool
+    /// Signaled on each bitmap ready reply while a bitmap command waits for one.
+    private var bitmapWaiter: DispatchSemaphore?
+    /// Whether ready replies are left unprinted (during `bitmaprate`).
+    private var quietBitmapReplies = false
 
     init(inName: String, outName: String, raw: Bool, touch: Bool) {
         self.inName = inName
@@ -83,7 +94,13 @@ final class LaunchControlSession: @unchecked Sendable {
         lock.lock()
         defer { lock.unlock() }
         if raw { print(stamp() + "<- " + hex(bytes)) }
-        for event in parser.feed(bytes) { print(stamp() + describeLaunchControl(event)) }
+        for event in parser.feed(bytes) {
+            if event == .bitmapReady {
+                bitmapWaiter?.signal()
+                if quietBitmapReplies { continue }
+            }
+            print(stamp() + describeLaunchControl(event))
+        }
         flushOutput()
     }
 
@@ -179,6 +196,19 @@ final class LaunchControlSession: @unchecked Sendable {
         case "daw":
             guard let value = on(0) else { print("daw on|off"); break }
             send(LaunchControlOutgoing.dawMode(value), "DAW mode \(value ? "on" : "off")")
+        case "bitmap":
+            guard let target = rest.first.flatMap({ UInt8($0, radix: 16) }), target < 0x80, rest.count >= 2,
+                  let picture = launchControlTestPicture(rest[1]) else {
+                print("bitmap T P [7f]  (T in hex: 20, 21, 35, or 36; P: clear, full, checker, frame)"); break
+            }
+            let extraEnd = rest.count > 2 && rest[2].lowercased() == "7f"
+            sendBitmapAndWait(picture, target: target, extraEnd: extraEnd, label: "bitmap \(rest[0]) \(rest[1])\(extraEnd ? " 7f" : "")")
+        case "bitmaprate":
+            guard let target = rest.first.flatMap({ UInt8($0, radix: 16) }), target < 0x80, let seconds = number(1, 1...60) else {
+                print("bitmaprate T S [7f]  (T in hex; S seconds, 1–60)"); break
+            }
+            let extraEnd = rest.count > 2 && rest[2].lowercased() == "7f"
+            bitmapRate(target: target, seconds: Double(seconds), extraEnd: extraEnd)
         case "hex":
             let bytes = rest.compactMap { UInt8($0, radix: 16) }
             guard bytes.count == rest.count, !bytes.isEmpty else { print("hex BYTES (in hexadecimal)"); break }
@@ -190,11 +220,96 @@ final class LaunchControlSession: @unchecked Sendable {
         return true
     }
 
+    /// Sends one picture and waits up to 1 s for the ready reply, printing how long it took.
+    private func sendBitmapAndWait(_ picture: LaunchControlBitmap, target: UInt8, extraEnd: Bool, label: String) {
+        let waiter = DispatchSemaphore(value: 0)
+        lock.lock(); bitmapWaiter = waiter; lock.unlock()
+        let sent = Date()
+        send(LaunchControlOutgoing.bitmap(picture, target: target, extraEnd: extraEnd), label)
+        flushOutput()
+        let replied = waiter.wait(timeout: .now() + 1) == .success
+        lock.lock(); bitmapWaiter = nil; lock.unlock()
+        print(replied ? String(format: "Ready reply after %.1f ms.", Date().timeIntervalSince(sent) * 1000)
+                      : "No ready reply within 1 s.")
+    }
+
+    /// Sends moving meter pictures for `seconds`, each after the previous one's ready reply or
+    /// 0.5 s without one, and reports the rate and the reply times.
+    private func bitmapRate(target: UInt8, seconds: Double, extraEnd: Bool) {
+        let waiter = DispatchSemaphore(value: 0)
+        lock.lock(); bitmapWaiter = waiter; quietBitmapReplies = true; lock.unlock()
+        defer { lock.lock(); bitmapWaiter = nil; quietBitmapReplies = false; lock.unlock() }
+        print(stamp() + "-> bitmaprate \(String(target, radix: 16)) for \(Int(seconds)) s\(extraEnd ? " (7f)" : "")…")
+        flushOutput()
+        let start = Date()
+        var frames = 0, timeouts = 0, failures = 0
+        var replyTimes: [Double] = []
+        while Date().timeIntervalSince(start) < seconds {
+            let picture = launchControlMeterPicture(frame: frames)
+            let sent = Date()
+            do {
+                try connection?.send(LaunchControlOutgoing.bitmap(picture, target: target, extraEnd: extraEnd))
+            } catch {
+                failures += 1
+            }
+            frames += 1
+            if waiter.wait(timeout: .now() + 0.5) == .success {
+                replyTimes.append(Date().timeIntervalSince(sent) * 1000)
+            } else {
+                timeouts += 1
+            }
+        }
+        let elapsed = Date().timeIntervalSince(start)
+        let sorted = replyTimes.sorted()
+        print(String(format: "Sent %d pictures in %.1f s: %.1f a second. Replies: %d; no reply within 0.5 s: %d; send errors: %d.",
+                     frames, elapsed, Double(frames) / elapsed, replyTimes.count, timeouts, failures))
+        if let first = sorted.first, let last = sorted.last {
+            print(String(format: "Reply times: shortest %.1f ms, median %.1f ms, longest %.1f ms.",
+                         first, sorted[sorted.count / 2], last))
+        }
+    }
+
     func close() {
         send(LaunchControlOutgoing.dawMode(false), "DAW mode off")
         Thread.sleep(forTimeInterval: 0.1)
         connection?.close()
     }
+}
+
+/// A test picture by name: clear, full, checker, or frame.
+func launchControlTestPicture(_ name: String) -> LaunchControlBitmap? {
+    var picture = LaunchControlBitmap()
+    let width = LaunchControlBitmap.width, height = LaunchControlBitmap.height
+    switch name.lowercased() {
+    case "clear": break
+    case "full": picture.fill(x: 0, y: 0, width: width, height: height)
+    case "checker":
+        for y in 0..<height { for x in 0..<width where (x / 8 + y / 8) % 2 == 0 { picture[x, y] = true } }
+    case "frame":
+        // A one-pixel border, a 16 × 8 block at the top left, and a diagonal from there, so the
+        // screen shows which corner is first and whether a set bit lights a pixel.
+        picture.fill(x: 0, y: 0, width: width, height: 1)
+        picture.fill(x: 0, y: height - 1, width: width, height: 1)
+        picture.fill(x: 0, y: 0, width: 1, height: height)
+        picture.fill(x: width - 1, y: 0, width: 1, height: height)
+        picture.fill(x: 2, y: 2, width: 16, height: 8)
+        for step in 0..<height { picture[step * 2, step] = true }
+    default: return nil
+    }
+    return picture
+}
+
+/// Eight meter bars moving at different speeds, as meters under eight channel names might, for
+/// timing how fast the screen takes whole pictures.
+func launchControlMeterPicture(frame: Int) -> LaunchControlBitmap {
+    var picture = LaunchControlBitmap()
+    for column in 0..<8 {
+        let phase = Double(frame) * (0.15 + 0.04 * Double(column))
+        let level = Int((sin(phase) * 0.5 + 0.5) * 48)
+        picture.fill(x: column * 16 + 3, y: 60 - level, width: 10, height: level)
+    }
+    picture.fill(x: 0, y: 62, width: LaunchControlBitmap.width, height: 1)
+    return picture
 }
 
 /// A control from its short name: f1–f8, e11–e38, b11–b28, or a button's name.
