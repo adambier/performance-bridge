@@ -4,8 +4,8 @@
 // peak, and the channel's number under it. What the device showed (test 22, all Adam, 2026-11-10):
 // - dB ticks between the strips read as a grid, with or without the peaks, so there are none;
 // - with equal gaps everywhere a stereo pair's two bars couldn't be told from two strips, so a
-//   pair's bars are one pixel apart and the strips four (five at first; four was for side marks,
-//   since dropped);
+//   pair's bars are one pixel apart and the strips five (four was tried, to make room for side
+//   marks, and went back to five with them);
 // - a peak line with no bar under it, at a channel's noise floor, looked like stray pixels, so a
 //   peak shows only over a bar;
 // - 0 dBFS marks at the screen's sides (one pixel, then 2 × 2, then 4 × 2) gave way to a finely
@@ -54,7 +54,7 @@ extension LaunchControlDriver {
     /// A strip's width in pixels: one bar 11 wide, or two 5 wide one pixel apart.
     static let stripWidth = 11
     /// The dark pixels between two strips.
-    static let stripGap = 4
+    static let stripGap = 5
     /// The top row of the channel numbers: three dark rows below the meters (Adam, 2026-11-10: one
     /// more than the first try), 11 rows tall.
     static let numberTop = 48
@@ -179,8 +179,8 @@ extension LaunchControlDriver {
         }
     }
 
-    /// The home screen as a picture: a meter per strip, left to right, each 11 pixels wide with 4 dark
-    /// pixels between strips, the strips used centered (so 6 pixels at each side on a full page):
+    /// The home screen as a picture: a meter per strip, left to right, each 11 pixels wide with 5 dark
+    /// pixels between strips, the strips used centered (2 dark pixels at the left of a full page):
     /// one bar for a mono channel, or two bars 5 pixels wide and one pixel apart for a stereo one
     /// (`levels` and `peaks` give one or two heights per strip, empty for no channel), each with its
     /// held peak as a line while the bar shows; the strip's number under it (`numbers`, `nil` for

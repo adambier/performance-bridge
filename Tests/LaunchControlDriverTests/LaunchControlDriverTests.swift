@@ -947,15 +947,15 @@ final class LaunchControlDriverTests: XCTestCase {
 
     func testAPageOfFewerStripsIsCentered() {
         typealias Number = LaunchControlDriver.MeterNumber
-        // Three strips: 3 × 11 + 2 × 4 = 41 pixels wide, from x 43: bars at 43–53, 58–68, 73–83.
+        // Three strips: 3 × 11 + 2 × 5 = 43 pixels wide, from x 42: bars at 42–52, 58–68, 74–84.
         let three = LaunchControlDriver.meterPicture(levels: [[10], [10], [10]], peaks: [[], [], []],
                                                      numbers: [Number(number: 1, marked: false), Number(number: 2, marked: false), Number(number: 3, marked: false)])
         let bottom = LaunchControlDriver.meterHeight - 1
-        XCTAssertTrue(three[43, bottom] && !three[42, bottom] && three[83, bottom] && !three[84, bottom])
-        XCTAssertFalse((0..<43).contains { x in (0..<64).contains { three[x, $0] } }, "nothing at the left")
+        XCTAssertTrue(three[42, bottom] && !three[41, bottom] && three[84, bottom] && !three[85, bottom])
+        XCTAssertFalse((0..<42).contains { x in (0..<64).contains { three[x, $0] } }, "nothing at the left")
         // A blank strip inside the page keeps its place; only trailing blanks count as missing.
         let gap = LaunchControlDriver.meterPicture(levels: [[10], [], [10]], peaks: [[], [], []])
-        XCTAssertTrue(gap[43, bottom] && !gap[60, bottom] && gap[73, bottom])
+        XCTAssertTrue(gap[42, bottom] && !gap[60, bottom] && gap[74, bottom])
     }
 
     func testMeterNumbersCountEachKind() {
@@ -969,43 +969,43 @@ final class LaunchControlDriverTests: XCTestCase {
     func testTheMeterPicture() {
         typealias Number = LaunchControlDriver.MeterNumber
         // Eight strips, the last two with no meter but the eighth with a number, so nothing is
-        // centered: strip k's meter starts at x 6 + 15(k − 1).
+        // centered: strip k's meter starts at x 2 + 16(k − 1).
         let picture = LaunchControlDriver.meterPicture(levels: [[10], [20, 30], [], [0], [5], [5], [], []], peaks: [[15], [20, 35], [], [5], [5], [5], [], []],
                                                        numbers: [Number(number: 1, marked: false), Number(number: 12, marked: true), nil,
                                                                  Number(number: 100, marked: false), Number(number: 1, marked: true),
                                                                  Number(number: 2, marked: true), nil, Number(number: 8, marked: false)])
         let bottom = LaunchControlDriver.meterHeight - 1
-        // Strip 1, mono: one bar 11 pixels wide (x 6–16), 10 tall, its peak 15 pixels up.
-        XCTAssertTrue(picture[6, bottom] && picture[16, bottom] && !picture[5, bottom] && !picture[17, bottom])
-        XCTAssertTrue(picture[11, bottom - 9] && !picture[11, bottom - 10])
-        XCTAssertTrue(picture[11, bottom - 14] && !picture[11, bottom - 13], "the peak line")
-        // Strip 2, stereo: two bars 5 pixels wide (x 21–25 and 27–31), 20 and 30 tall, one pixel apart.
-        XCTAssertTrue(picture[21, bottom - 19] && !picture[21, bottom - 20])
-        XCTAssertTrue(picture[27, bottom - 29] && picture[31, bottom] && !picture[26, bottom], "one pixel between a pair's bars")
-        XCTAssertFalse((17...20).contains { picture[$0, bottom] }, "four between the strips")
-        XCTAssertTrue(picture[27, bottom - 34], "the right side's peak")
-        XCTAssertFalse((5..<64).contains { picture[19, $0] }, "no ticks")
+        // Strip 1, mono: one bar 11 pixels wide (x 2–12), 10 tall, its peak 15 pixels up.
+        XCTAssertTrue(picture[2, bottom] && picture[12, bottom] && !picture[1, bottom] && !picture[13, bottom])
+        XCTAssertTrue(picture[7, bottom - 9] && !picture[7, bottom - 10])
+        XCTAssertTrue(picture[7, bottom - 14] && !picture[7, bottom - 13], "the peak line")
+        // Strip 2, stereo: two bars 5 pixels wide (x 18–22 and 24–28), 20 and 30 tall, one pixel apart.
+        XCTAssertTrue(picture[18, bottom - 19] && !picture[18, bottom - 20])
+        XCTAssertTrue(picture[24, bottom - 29] && picture[28, bottom] && !picture[23, bottom], "one pixel between a pair's bars")
+        XCTAssertFalse((13...17).contains { picture[$0, bottom] }, "five between the strips")
+        XCTAssertTrue(picture[24, bottom - 34], "the right side's peak")
+        XCTAssertFalse((0..<64).contains { picture[15, $0] }, "no ticks")
         // Strip 4: no bar, so no peak line, though the peak is above it (a noise floor).
-        XCTAssertFalse((0...bottom).contains { y in (51...61).contains { picture[$0, y] } })
-        // The numbers, from row 48, three dark rows under the meters: "1" (x 8–13, its stem at 11–12).
-        XCTAssertTrue(picture[11, 48] && picture[12, 58] && !picture[13, 58])
-        XCTAssertFalse((48..<64).contains { picture[7, $0] }, "the 1 is centered")
-        // The line under the playbacks' numbers, rows 61–62: under strip 2 alone (x 21–31), and one
-        // line from strip 5's meter to strip 6's (x 66–91), not under the inputs.
-        XCTAssertTrue((21...31).allSatisfy { picture[$0, 61] && picture[$0, 62] } && !picture[20, 61] && !picture[32, 61])
-        XCTAssertTrue((66...91).allSatisfy { picture[$0, 61] && picture[$0, 62] } && !picture[65, 61] && !picture[92, 61])
-        XCTAssertFalse((0..<20).contains { picture[$0, 61] } || (50..<65).contains { picture[$0, 61] })
+        XCTAssertFalse((1...bottom).contains { y in (50...60).contains { picture[$0, y] } })
+        // The numbers, from row 48, three dark rows under the meters: "1" (x 4–9, its stem at 7–8).
+        XCTAssertTrue(picture[7, 48] && picture[8, 58] && !picture[9, 58])
+        XCTAssertFalse((48..<64).contains { picture[3, $0] }, "the 1 is centered")
+        // The line under the playbacks' numbers, rows 61–62: under strip 2 alone (x 18–28), and one
+        // line from strip 5's meter to strip 6's (x 66–92), not under the inputs.
+        XCTAssertTrue((18...28).allSatisfy { picture[$0, 61] && picture[$0, 62] } && !picture[17, 61] && !picture[29, 61])
+        XCTAssertTrue((66...92).allSatisfy { picture[$0, 61] && picture[$0, 62] } && !picture[65, 61] && !picture[93, 61])
+        XCTAssertFalse((0..<16).contains { picture[$0, 61] } || (48..<64).contains { picture[$0, 61] })
         XCTAssertFalse([45, 46, 47, 59, 60, 63].contains { y in (0..<128).contains { picture[$0, y] } }, "dark rows, the bottom one included")
-        // "100" in narrow digits (x 50–63): its last "0" at x 60–63.
-        XCTAssertTrue((48..<59).contains { picture[60, $0] } && (48..<59).contains { picture[63, $0] })
-        XCTAssertFalse((48..<64).contains { picture[49, $0] || picture[64, $0] })
+        // "100" in narrow digits (x 49–62): its last "0" at x 59–62.
+        XCTAssertTrue((48..<59).contains { picture[59, $0] } && (48..<59).contains { picture[62, $0] })
+        XCTAssertFalse((48..<64).contains { picture[48, $0] || picture[63, $0] })
         // 0 dBFS: a dotted line on the top row over each bar (every other pixel), none at the sides
         // or over a blank strip.
-        XCTAssertTrue([6, 8, 10, 12, 14, 16].allSatisfy { picture[$0, 0] } && ![7, 9, 15].contains { picture[$0, 0] })
-        XCTAssertTrue([21, 23, 25, 27, 29, 31].allSatisfy { picture[$0, 0] } && !picture[26, 0], "a pair's two bars dotted")
-        XCTAssertFalse((0..<6).contains { picture[$0, 0] } || (36...46).contains { picture[$0, 0] } || picture[6, 1])
+        XCTAssertTrue([2, 4, 6, 8, 10, 12].allSatisfy { picture[$0, 0] } && ![3, 5, 11].contains { picture[$0, 0] })
+        XCTAssertTrue([18, 20, 22, 24, 26, 28].allSatisfy { picture[$0, 0] } && !picture[23, 0], "a pair's two bars dotted")
+        XCTAssertFalse((0..<2).contains { picture[$0, 0] } || (34...44).contains { picture[$0, 0] } || picture[2, 1])
         // Strip 3 is blank.
-        XCTAssertFalse(picture[36, bottom] || (48..<64).contains { picture[41, $0] })
+        XCTAssertFalse(picture[34, bottom] || (48..<64).contains { picture[40, $0] })
     }
 
     func testMetersAreSentAsPicturesPacedByTheReadyReply() {
