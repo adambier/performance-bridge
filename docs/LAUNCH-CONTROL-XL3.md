@@ -489,7 +489,8 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   line fits is estimated from character widths measured in a photo of the screen (an
   inference).[^test-22] With **Meters** on (a setting, off by default), the home screen is a
   picture instead: a meter for each strip, 45 pixels tall, with a finely dotted line across each bar at 0 dBFS (the top), no clip lights, a stereo channel's two bars one pixel
-  apart and the strips five apart, each bar with its peak held 2 s while the bar shows, and no dB
+  apart and the strips five apart, each bar with its peak held 2 s and then falling at 20 dB a second, as TotalMix FX's peaks drop
+  (Adam, 2026-11-11[^test-24]), and no dB
   marks; under each meter its place on the page, 1–8 (Adam, 2026-11-11[^test-24]), with one line
   under each run of playbacks' numbers (one pixel thick; kept for now, Adam), and the screen's bottom
   rows dark; Track shows the page and its first and last channels on the overlay, each with its
@@ -1138,6 +1139,10 @@ Fall (`fall 12`, `fall 20`, against TotalMix FX's own meters): "fall 12 is not g
 disappear rather than dropping like TMFX. 20 was harder to tell" (Adam). An inference from the
 code: with the bar falling slowly, it stays above the held peak once the 2 s hold ends, so the peak
 line vanishes into the bar. The default stays: the bar follows the averaged level.
+
+Peak fall (`peakfall 20` and `peakfall 40`): since TotalMix FX's peaks drop where these vanished, a
+held peak now falls after its 2 s hold, shown down to an empty bar. "either 20 or 40 was right", "20
+maybe closer", "but it's also hard to see the difference" (Adam). 20 dB a second is the default.
 
 Adam also saw "1 Tonverk" not quite at the left edge: its "1" starts about 3 screen pixels right
 of "to" (measured). A line is centered unless it is wider than the screen, and a field holds 20

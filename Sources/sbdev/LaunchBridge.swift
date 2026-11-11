@@ -50,8 +50,8 @@ let lcBridgeCommandHelp = """
       numbers kind | all | none | page   how the meters' strips are numbered (see --numbers)
       peaks bar | floor    a held peak only over a bar (the default), or also alone above −40 dBFS
       fall off | N         let a bar fall with the average (the default), or at N dB a second at most
-      peakfall off | N     drop a held peak to the level after its 2 s hold (the default), or let it
-                           fall at N dB a second
+      peakfall N | off     let a held peak fall at N dB a second after its 2 s hold (20, the
+                           default), or drop it to the level at once
       order                the sources in the channel order, numbered from 1, with their names
       move A B             move the source at place A in that order to place B
       sendall              ask TotalMix FX for its state again

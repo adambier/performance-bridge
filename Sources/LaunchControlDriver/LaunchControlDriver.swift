@@ -100,10 +100,11 @@ public struct LaunchControlDriver: Sendable {
     /// For a trial on the device (the UI review of 2026-11-10): how fast a bar may fall, in dB a
     /// second; `nil`, the default, lets it follow the average down.
     public var meterFall: Double?
-    /// For a trial on the device (Adam, 2026-11-11: TotalMix FX's peaks drop, these vanished): how
-    /// fast a held peak falls once its hold ends, in dB a second; `nil`, the default, drops it to
-    /// the level at once.
-    public var meterPeakFall: Double?
+    /// How fast a held peak falls once its hold ends, in dB a second, down to an empty bar:
+    /// TotalMix FX's peaks drop, and these vanished (Adam, 2026-11-11). Next to TotalMix FX's meters
+    /// 20 and 40 both looked right, "20 maybe closer" (test 24). `nil` drops a peak to the level at
+    /// once.
+    public var meterPeakFall: Double? = 20
     /// Each channel's held peak, in dBFS, and when it was reached, for `meterPeakFall`.
     var meterPeakLevels: [ChannelRef: (db: Double, at: Double)] = [:]
     /// Each channel's shown bar level, in dBFS, and when, for `meterFall`.
