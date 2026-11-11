@@ -934,6 +934,8 @@ playing, one build per run. Seen in Adam's videos and photo, and his words; no M
   The underlines were hard to make out as such (Adam): one pixel, one row under the digits, they
   read as part of the number. A two-pixel line two rows below, one under each run of playbacks,
   replaced them (Adam chose it from a mockup).
+- **Run 9:** that build: "1 2 3 1 2 3" with one line under the second three, clear in Adam's
+  photo.
 
 **Consequences.** The meter layout of run 4 is the driver's. Measured in the photo (about 11.8 of
 its pixels to one of the screen's, from the cut-off edge and the centered first line; an
