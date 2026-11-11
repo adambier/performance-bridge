@@ -3,6 +3,20 @@
     <channel>
         <title>Performance Bridge</title>
         <item>
+            <title>1.2.1</title>
+            <pubDate>Tue, 10 Nov 2026 16:20:48 -0800</pubDate>
+            <sparkle:version>613</sparkle:version>
+            <sparkle:shortVersionString>1.2.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[**Open at login:** Performance Bridge can open by itself when you log in to your Mac. Check **Open Performance Bridge at login**, at the bottom of **Settings… → Connections** or on the Setup Guide's last page. It's off until you turn it on. It can also be turned off in System Settings → General → Login Items (Login Items & Extensions in macOS Golden Gate); doing that while Performance Bridge is running has been observed to quit it.
+
+**Guides:** the Launch Control guides point to the Launch Control's own box in Settings, the Roto-Control guide places its small screen above LEARN, and the Setup Guide's screenshots show the new checkbox.
+
+**Internal:** device tests recorded for the Launch Control XL 3's pan center (test 20) and the Roto-Control's MODE, then MIX (test 14).
+]]></description>
+            <enclosure url="https://github.com/adambier/performance-bridge/releases/download/v1.2.1/Performance-Bridge-1.2.1.zip" length="6376502" type="application/octet-stream" sparkle:edSignature="11vuQuiQCUNTId/7SJDAUnymPWhBuk7Bsl1DH549LJLRo2YytBh+9GoZPPymnp9EnCJo3C5rR5HmYuUlLJRIBg=="/>
+        </item>
+        <item>
             <title>1.2.0</title>
             <pubDate>Sat, 07 Nov 2026 22:03:00 -0800</pubDate>
             <sparkle:version>596</sparkle:version>
