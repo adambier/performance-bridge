@@ -1055,14 +1055,19 @@ public struct LaunchControlDriver: Sendable {
         return named.count > 1 ? [first, last] : [first]
     }
 
+    /// The estimated width (`screenWidth`) a pushed line may take (test 24).
+    static let pushedWidth = 120.0
+
     /// A side of the screen, for `pushed(_:to:fits:)`.
     enum Side { case left, right }
 
     /// `text` pushed toward one side of the screen with spaces on the other, as far as the field's
-    /// 20 characters and the screen's width (`fits`) allow. The device centers each line (test 5), and
-    /// a space is about 3 pixels (test 22), so the push is about 20 pixels at most for a short name.
-    /// Whether the firmware keeps leading and trailing spaces had not been seen when this was written.
-    static func pushed(_ text: String, to side: Side, fits: (String) -> Bool = fitsScreen) -> String {
+    /// 20 characters and `fits` allow. The device centers a line and keeps its spaces; a line wider
+    /// than the screen starts at its left edge and loses its end ("3 ADAT 5/6" with ten leading
+    /// spaces showed "3 ADAT 5/"; test 24). So the default leaves about 6 pixels to spare
+    /// (`pushedWidth`), since the widths are estimates and that one was about 7 short.
+    static func pushed(_ text: String, to side: Side,
+                       fits: (String) -> Bool = { $0.count <= fieldLength && screenWidth($0) <= pushedWidth }) -> String {
         var line = text
         while true {
             let next = side == .left ? line + " " : " " + line

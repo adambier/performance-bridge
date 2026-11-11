@@ -1019,7 +1019,8 @@ the XL 3's 5 × 7 text about 6.4 (unreadable, run 1), and the meter numbers' 11-
 peak between two pictures was lost; they now follow every tick. Measured in the photo (about 11.8 of
 its pixels to one of the screen's, from the cut-off edge and the centered first line; an
 inference), capitals and digits take about 9 screen pixels with their gap, most lowercase letters
-nearly as many, "i" about 4, and a space about 3; "Mid row > Phones 2" needs about 129 of the 128.
+nearly as many, "i" about 4, and a space about 3 (about 5, measured better in test 24); "Mid row >
+Phones 2" needs about 129 of the 128.
 The send rows' lines are "Top >" and "Mid >" again, since with "row" most outputs' names don't fit,
 and the driver estimates the first line's width from these figures (`LaunchControlDriver.screenWidth`)
 to decide between "Page 1/2: " and "1/2: ".
@@ -1086,9 +1087,19 @@ fastest which fader a moving meter is over. Playing distance measured first: the
 other numberings stay in `sbdev` until the branch's cleanup. Track's pop-up shows the page, then
 the first and last channels with their slots. The device centers each line, and the display
 arrangements this project uses (section 5) choose lines, not alignment, so the driver pads the first with trailing spaces and the second with
-leading ones, up to the field's 20 characters (`LaunchControlDriver.pushed`); for a short name that
-moves it about 20 pixels (an estimate, from test 22's space width). The text home screen's first
-line names the same two channels ("1/2: Vox to Gtr"), where there is more time to read, and falls
-back to the page alone when they don't fit. The slots and the padding have not yet been seen on the
-device.
+leading ones, up to the field's 20 characters (`LaunchControlDriver.pushed`). The text home
+screen's first line names the same two channels ("1/2: Vox to Gtr"), where there is more time to
+read, and falls back to the page alone when they don't fit.
+
+Run 2 (photos): Track's pop-up read "Page 1/2", "1 Tonverk" at the screen's left edge, and "3 ADAT
+5/" at its right, the "6" lost; on page 2, "Page 2/2", "1 PB 1/2" at the left, and "3 PB 5/6" whole
+at the right. So the firmware keeps leading and trailing spaces, and a line wider than the screen
+starts at the left edge and loses its end (the end of "3 ADAT 5/6" with ten spaces in front). Measured
+in the photos, the first character of the right line sits twelve spaces (page 2) or ten (page 1)
+after the left line's, about 16.6 and 15.5 photo pixels a space, at about 3.25 photo pixels to a
+screen pixel (from the meter picture's known slot spacing, 16 pixels): a space is about 5 pixels,
+not test 22's 3. The width estimate now counts 5 for a space, and a pushed line keeps about 6 pixels
+to spare (an estimated 120 of the 128), since "3 ADAT 5/6" came out about 7 pixels wider than
+estimated. With these, "3 ADAT 5/6" gets eight spaces in front and "3 PB 5/6" eleven; not yet seen on
+the device. The meter picture on page 2 showed 1 2 3 with the playbacks' line under all three.
 

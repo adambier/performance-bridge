@@ -26,13 +26,14 @@ extension LaunchControlDriver {
     /// after each character. The font is proportional and Novation doesn't give its widths, so these
     /// are estimates (an inference), measured from a photo of the XL 3's screen
     /// (docs/LAUNCH-CONTROL-XL3.md, test 22): capitals and digits about 9 pixels (a capital I about
-    /// 5), most lowercase letters nearly as wide, a space about 3.
+    /// 5), most lowercase letters nearly as wide; a space about 5, from the spaces' offsets in two
+    /// photos of padded lines (test 24; test 22's 3 was too small).
     public static func screenWidth(_ text: String) -> Double {
         text.reduce(0) { width, character in
             switch character {
             case "i", "l", "j", ",", ".", ":", ";", "!", "'", "|": return width + 4
             case "I": return width + 5
-            case " ": return width + 3
+            case " ": return width + 5
             case "f", "t", "r", "(", ")", "-", "/", ">", "<": return width + 7
             case "m", "w", "M", "W": return width + 10.5
             default: return width + (character.isUppercase || character.isNumber ? 9 : 8.75)
