@@ -59,7 +59,7 @@ struct LayoutView: View {
             // send controls step through them (Adam, 2026-11-01).
             // One instruction for both views (Adam, 2026-11-07: the outputs' longer text, and why
             // some outputs aren't listed, were cut).
-            Text("Drag to reorder. Click a channel name to change its display on the screen of a hardware controller.")
+            Text("Drag to reorder. Click a channel name to change how it displays on a hardware controller screen.")
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
