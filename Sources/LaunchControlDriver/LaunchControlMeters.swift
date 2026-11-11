@@ -19,8 +19,11 @@
 // of the digit, a line above the numbers was tried and moved back). The screen's bottom row stays
 // dark: at an angle it is hard to read. Whether this numbering is intuitive next to TotalMix FX's
 // own channel numbers is for the UI review (Adam). A page line in the E16's font was too small to
-// read, so Track shows the page in the device's own text instead (`goToPage`). A page with fewer
-// strips is centered.
+// read, so Track shows the page in the device's own text instead (`goToPage`). Every page keeps
+// eight fixed slots, strip k in the kth: a page of six centered made Adam stop to work out which
+// fader a meter was over (2026-11-11), since the screen isn't above the faders and a meter's slot
+// is how its fader is found; an empty slot shows one dot where its 0 dBFS line would be, so the
+// eight can be counted.
 //
 // A new picture goes out only after the device's ready reply (or `bitmapTimeout` without one), and
 // only when it changed. A control's own temporary display shows over the picture as usual (test
@@ -222,7 +225,8 @@ extension LaunchControlDriver {
     }
 
     /// The home screen as a picture: a meter per strip, left to right, each 11 pixels wide with 5 dark
-    /// pixels between strips, the strips used centered (2 dark pixels at the left of a full page):
+    /// pixels between strips, in eight fixed slots (2 dark pixels at the left), an empty slot marked
+    /// by one dot on the top row at its middle:
     /// one bar for a mono channel, or two bars 5 pixels wide and one pixel apart for a stereo one
     /// (`levels` and `peaks` give one or two heights per strip, empty for no channel), each with its
     /// held peak as a line while the bar shows; the strip's number under it (`numbers`, `nil` for
@@ -235,12 +239,13 @@ extension LaunchControlDriver {
         var picture = LaunchControlBitmap()
         let rows = showsNumbers ? meterHeight : tallMeterHeight
         let bottom = rows - 1
-        let used = (0..<max(levels.count, numbers.count)).last {
-            (levels.indices.contains($0) && !levels[$0].isEmpty) || (numbers.indices.contains($0) && numbers[$0] != nil)
-        }.map { $0 + 1 } ?? 0
-        let count = max(min(used, stripCount), 1)
-        let start = (LaunchControlBitmap.width - (count * stripWidth + (count - 1) * stripGap)) / 2
+        let start = (LaunchControlBitmap.width - (stripCount * stripWidth + (stripCount - 1) * stripGap)) / 2
         func left(_ column: Int) -> Int { start + column * (stripWidth + stripGap) }
+        for column in 0..<stripCount {
+            let hasMeter = levels.indices.contains(column) && !levels[column].isEmpty
+            let hasNumber = numbers.indices.contains(column) && numbers[column] != nil
+            if !hasMeter && !hasNumber { picture[left(column) + stripWidth / 2, 0] = true }
+        }
         for (column, number) in numbers.prefix(stripCount).enumerated() {
             guard let number else { continue }
             if showsNumbers { drawNumber(number, left: left(column), in: &picture) }

@@ -953,17 +953,20 @@ final class LaunchControlDriverTests: XCTestCase {
                        "the word Page dropped when the line is too long")
     }
 
-    func testAPageOfFewerStripsIsCentered() {
+    func testAPageOfFewerStripsKeepsItsSlots() {
         typealias Number = LaunchControlDriver.MeterNumber
-        // Three strips: 3 × 11 + 2 × 5 = 43 pixels wide, from x 42: bars at 42–52, 58–68, 74–84.
+        // Three strips stay in slots 1–3 (x 2–12, 18–28, 34–44), as on a full page; slots 4–8 are
+        // empty, each marked by one dot on the top row at its middle (x 55, 71, 87, 103, 119).
         let three = LaunchControlDriver.meterPicture(levels: [[10], [10], [10]], peaks: [[], [], []],
                                                      numbers: [Number(number: 1, marked: false), Number(number: 2, marked: false), Number(number: 3, marked: false)])
         let bottom = LaunchControlDriver.meterHeight - 1
-        XCTAssertTrue(three[42, bottom] && !three[41, bottom] && three[84, bottom] && !three[85, bottom])
-        XCTAssertFalse((0..<42).contains { x in (0..<64).contains { three[x, $0] } }, "nothing at the left")
-        // A blank strip inside the page keeps its place; only trailing blanks count as missing.
+        XCTAssertTrue(three[2, bottom] && three[44, bottom] && !three[45, bottom])
+        XCTAssertTrue([55, 71, 87, 103, 119].allSatisfy { three[$0, 0] })
+        XCTAssertFalse([54, 56, 70, 72].contains { three[$0, 0] } || three[55, 1], "one dot each")
+        XCTAssertFalse((50..<128).contains { x in (1..<64).contains { three[x, $0] } }, "nothing else in the empty slots")
+        // A blank strip inside the page keeps its place, with its dot.
         let gap = LaunchControlDriver.meterPicture(levels: [[10], [], [10]], peaks: [[], [], []])
-        XCTAssertTrue(gap[42, bottom] && !gap[60, bottom] && gap[74, bottom])
+        XCTAssertTrue(gap[2, bottom] && !gap[20, bottom] && gap[34, bottom] && gap[23, 0])
     }
 
     func testTheTrialNumberings() {
@@ -975,11 +978,11 @@ final class LaunchControlDriverTests: XCTestCase {
         // No numbers: the meters 58 rows tall, no digits, the playbacks' line kept.
         let picture = Driver.meterPicture(levels: [[58], [10]], peaks: [[], []],
                                           numbers: [.init(number: 1, marked: false), .init(number: 2, marked: true)], showsNumbers: false)
-        // Two strips, centered: the first at x 50–60, the second at 66–76.
-        XCTAssertTrue(picture[55, 1] && picture[55, 57] && !picture[55, 58], "a full bar fills rows 0–57")
+        // Two strips, in slots 1 and 2: x 2–12 and 18–28.
+        XCTAssertTrue(picture[7, 1] && picture[7, 57] && !picture[7, 58], "a full bar fills rows 0–57")
         XCTAssertFalse((58..<61).contains { y in (0..<128).contains { picture[$0, y] } }, "three dark rows above the line")
-        XCTAssertTrue(picture[66, 61] && picture[76, 61] && !picture[60, 61], "the playbacks' line")
-        XCTAssertFalse((59..<61).contains { picture[55, $0] }, "no digits")
+        XCTAssertTrue(picture[18, 61] && picture[28, 61] && !picture[12, 61], "the playbacks' line")
+        XCTAssertFalse((59..<61).contains { picture[7, $0] }, "no digits")
         XCTAssertFalse((0..<128).contains { picture[$0, 62] || picture[$0, 63] })
         XCTAssertEqual(Driver.barHeight(db: 0, height: Driver.tallMeterHeight), Driver.tallMeterHeight)
         // The driver redraws when the numbering changes.
@@ -1002,10 +1005,10 @@ final class LaunchControlDriverTests: XCTestCase {
         let plain = Driver.meterPicture(levels: [[0]], peaks: [[20]])
         let floored = Driver.meterPicture(levels: [[0]], peaks: [[20]], peakFloor: 10)
         let low = Driver.meterPicture(levels: [[0]], peaks: [[5]], peakFloor: 10)
-        // One strip, centered: x 58–68.
-        XCTAssertFalse(plain[60, bottom - 19])
-        XCTAssertTrue(floored[60, bottom - 19], "a lone peak above the floor")
-        XCTAssertFalse(low[60, bottom - 4], "a lone peak below the floor stays hidden")
+        // One strip, in slot 1: x 2–12.
+        XCTAssertFalse(plain[4, bottom - 19])
+        XCTAssertTrue(floored[4, bottom - 19], "a lone peak above the floor")
+        XCTAssertFalse(low[4, bottom - 4], "a lone peak below the floor stays hidden")
         // The fall: a bar drops at no more than the rate set.
         var hub = loadedHub()
         var driver = LaunchControlDriver(name: "lc", layout: .xl3, showsMeters: true)
@@ -1067,10 +1070,11 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue((48..<59).contains { picture[59, $0] } && (48..<59).contains { picture[62, $0] })
         XCTAssertFalse((48..<64).contains { picture[48, $0] || picture[63, $0] })
         // 0 dBFS: a dotted line on the top row over each bar (every other pixel), none at the sides
-        // or over a blank strip.
+        // or over a blank strip, which has only its one dot, at its middle (x 39).
         XCTAssertTrue([2, 4, 6, 8, 10, 12].allSatisfy { picture[$0, 0] } && ![3, 5, 11].contains { picture[$0, 0] })
         XCTAssertTrue([18, 20, 22, 24, 26, 28].allSatisfy { picture[$0, 0] } && !picture[23, 0], "a pair's two bars dotted")
-        XCTAssertFalse((0..<2).contains { picture[$0, 0] } || (34...44).contains { picture[$0, 0] } || picture[2, 1])
+        XCTAssertFalse((0..<2).contains { picture[$0, 0] } || (34...44).contains { $0 != 39 && picture[$0, 0] } || picture[2, 1])
+        XCTAssertTrue(picture[39, 0], "the blank strip's dot")
         // Strip 3 is blank.
         XCTAssertFalse(picture[34, bottom] || (48..<64).contains { picture[40, $0] })
     }

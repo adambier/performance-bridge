@@ -492,8 +492,8 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   overlay (Adam, 2026-11-10).[^test-22] How long a control's display stays up is the device's own
   Display Timeout setting, in seconds (by eye), which applies in DAW mode too (that it covers the overlay as
   well is an inference); 1 or 2 suits this layout (Adam, 2026-11-10).[^test-23] Whether that numbering is intuitive next to TotalMix FX's
-  own channel numbers is flagged for the UI review (Adam, 2026-11-10). A page with fewer than eight
-  strips is centered (Adam, 2026-11-10). The eight names packed to
+  own channel numbers is flagged for the UI review (Adam, 2026-11-10). Every page keeps eight fixed slots, strip k in the kth, an empty slot marked by one dot on the top
+  row (centering a shorter page was tried and dropped, test 24). The eight names packed to
   four characters (arrangement 3, e.g., "ADI2SonoM1/2Tonv") were tried first and were unreadable
   (Adam, 2026-11-01); each strip's name shows on its control's display when the control moves.
   Page shows the new send on the overlay.
