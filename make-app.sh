@@ -88,7 +88,7 @@ APP="Performance Bridge.app"
 EXECUTABLE="PerformanceBridge"
 BUNDLE_ID="org.biers.performancebridge"
 ARCH="$(uname -m)"
-VERSION="1.2.0"
+VERSION="1.2.1"
 # The build number must rise with every release (an updater compares it): the number of commits.
 BUILD_NUMBER="$(git rev-list --count HEAD 2>/dev/null || echo 1)"
 DEPLOYMENT_TARGET="13.0"
