@@ -171,19 +171,25 @@ extension LaunchControlDriver {
     /// channel, or two bars 5 pixels wide and one pixel apart for a stereo one (`levels` and `peaks`
     /// give one or two heights per strip, empty for no channel), each with its held peak as a line
     /// while the bar shows; the strip's number under it (`numbers`, `nil` for none); and a line
-    /// over each run of marked numbers, from the first one's meter to the last one's.
+    /// over each run of marked numbers, from the first one's meter to the last one's. A page with
+    /// fewer than eight strips is centered (Adam, 2026-11-10): the screen sits to the left of the
+    /// controls, so a meter's place never lined up with its fader anyway (seen in Adam's photos).
     public static func meterPicture(levels: [[Int]], peaks: [[Int]], numbers: [MeterNumber?] = []) -> LaunchControlBitmap {
         var picture = LaunchControlBitmap()
         let bottom = meterHeight - 1
+        let used = (0..<max(levels.count, numbers.count)).last {
+            (levels.indices.contains($0) && !levels[$0].isEmpty) || (numbers.indices.contains($0) && numbers[$0] != nil)
+        }.map { $0 + 1 } ?? 0
+        let shift = (stripCount - min(used, stripCount)) * 8
         for (column, number) in numbers.enumerated() {
             guard let number else { continue }
-            drawNumber(number, left: column * 16, in: &picture)
+            drawNumber(number, left: shift + column * 16, in: &picture)
             guard number.marked else { continue }
             let joinsLeft = column > 0 && numbers[column - 1]?.marked == true
-            picture.fill(x: column * 16 + (joinsLeft ? -3 : 2), y: playbackLineTop, width: joinsLeft ? 16 : 11, height: 2)
+            picture.fill(x: shift + column * 16 + (joinsLeft ? -3 : 2), y: playbackLineTop, width: joinsLeft ? 16 : 11, height: 2)
         }
         for (column, heights) in levels.enumerated() {
-            let left = column * 16
+            let left = shift + column * 16
             let bars: [(x: Int, width: Int)] = heights.count > 1 ? [(left + 2, 5), (left + 8, 5)] : [(left + 2, 11)]
             let peaksHere = peaks.indices.contains(column) ? peaks[column] : []
             for (bar, (x, width)) in zip(bars.indices, bars) where heights.indices.contains(bar) {

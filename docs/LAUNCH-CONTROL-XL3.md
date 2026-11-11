@@ -479,7 +479,8 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   marks; under each meter the channel's number, counted within its kind as the first line counts
   ("In 1-3, PB 1-3" gives 1 2 3 1 2 3), with one line over each run of playbacks' numbers; Track shows the page on the
   overlay (Adam, 2026-11-10).[^test-22] Whether that numbering is intuitive next to TotalMix FX's
-  own channel numbers is flagged for the UI review (Adam, 2026-11-10). The eight names packed to
+  own channel numbers is flagged for the UI review (Adam, 2026-11-10). A page with fewer than eight
+  strips is centered (Adam, 2026-11-10). The eight names packed to
   four characters (arrangement 3, e.g., "ADI2SonoM1/2Tonv") were tried first and were unreadable
   (Adam, 2026-11-01); each strip's name shows on its control's display when the control moves.
   Page shows the new send on the overlay.
@@ -936,7 +937,8 @@ playing, one build per run. Seen in Adam's videos and photo, and his words; no M
   replaced them (Adam chose it from a mockup).
 - **Run 9:** that build: "1 2 3 1 2 3" with one line under the second three, clear in Adam's
   photo. Adam then asked to try the line above the numbers, a little further from the bars: now
-  three dark rows below the meters, the line, two dark rows, and the numbers.
+  three dark rows below the meters, the line, two dark rows, and the numbers He also asked that a page
+  with fewer than eight strips be centered on the screen.
 
 **Consequences.** The meter layout of run 4 is the driver's. Measured in the photo (about 11.8 of
 its pixels to one of the screen's, from the cut-off edge and the centered first line; an

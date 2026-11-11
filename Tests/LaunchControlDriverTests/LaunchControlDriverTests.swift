@@ -945,6 +945,19 @@ final class LaunchControlDriverTests: XCTestCase {
                        "the word Page dropped when the line is too long")
     }
 
+    func testAPageOfFewerStripsIsCentered() {
+        typealias Number = LaunchControlDriver.MeterNumber
+        // Three strips: shifted right by (8 − 3) × 8 = 40 pixels, so the first bar starts at x 42.
+        let three = LaunchControlDriver.meterPicture(levels: [[10], [10], [10]], peaks: [[], [], []],
+                                                     numbers: [Number(number: 1, marked: false), Number(number: 2, marked: false), Number(number: 3, marked: false)])
+        let bottom = LaunchControlDriver.meterHeight - 1
+        XCTAssertTrue(three[42, bottom] && !three[41, bottom] && three[84, bottom] && !three[85, bottom])
+        XCTAssertFalse((0..<41).contains { x in (0..<64).contains { three[x, $0] } }, "nothing at the left")
+        // A blank strip inside the page keeps its place; only trailing blanks count as missing.
+        let gap = LaunchControlDriver.meterPicture(levels: [[10], [], [10]], peaks: [[], [], []])
+        XCTAssertTrue(gap[42, bottom] && !gap[58, bottom] && gap[74, bottom])
+    }
+
     func testMeterNumbersCountEachKind() {
         let order = [ChannelRef(.input, 0), ChannelRef(.input, 2), ChannelRef(.playback, 4), ChannelRef(.input, 6), ChannelRef(.playback, 0)]
         XCTAssertEqual(LaunchControlDriver.meterNumber(ChannelRef(.input, 6), order: order), .init(number: 3, marked: false),
@@ -955,10 +968,11 @@ final class LaunchControlDriverTests: XCTestCase {
 
     func testTheMeterPicture() {
         typealias Number = LaunchControlDriver.MeterNumber
-        let picture = LaunchControlDriver.meterPicture(levels: [[10], [20, 30], [], [0], [5], [5]], peaks: [[15], [20, 40], [], [5], [5], [5]],
+        // Eight strips, the last two with no meter, but the eighth with a number, so nothing is centered.
+        let picture = LaunchControlDriver.meterPicture(levels: [[10], [20, 30], [], [0], [5], [5], [], []], peaks: [[15], [20, 40], [], [5], [5], [5], [], []],
                                                        numbers: [Number(number: 1, marked: false), Number(number: 12, marked: true), nil,
                                                                  Number(number: 100, marked: false), Number(number: 1, marked: true),
-                                                                 Number(number: 2, marked: true)])
+                                                                 Number(number: 2, marked: true), nil, Number(number: 8, marked: false)])
         let bottom = LaunchControlDriver.meterHeight - 1
         // Strip 1, mono: one bar 11 pixels wide (x 2–12), 10 tall, its peak 15 pixels up.
         XCTAssertTrue(picture[2, bottom] && picture[12, bottom] && !picture[1, bottom] && !picture[13, bottom])
