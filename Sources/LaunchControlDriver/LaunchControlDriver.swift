@@ -93,10 +93,6 @@ public struct LaunchControlDriver: Sendable {
     var meterAverages: [ChannelRef: (power: Double, at: Double)] = [:]
     /// Each channel's held peak, as a bar height, and when it was reached.
     var meterPeaks: [ChannelRef: (height: Int, at: Double)] = [:]
-    /// When each channel last reached 0 dBFS, for its clip light (`clipHold`).
-    var meterClips: [ChannelRef: Double] = [:]
-    /// Each channel's count of 0 dBFS messages when last drawn (`MixerMirror.overs`).
-    var meterOvers: [ChannelRef: Int] = [:]
     /// When the last picture was sent, while its ready reply hasn't come (`bitmapTimeout`).
     var bitmapSentAt: Double?
     /// The last picture sent, packed, so an unchanged one isn't sent again.
@@ -1008,7 +1004,7 @@ public struct LaunchControlDriver: Sendable {
     }
 
     /// The page's strips, as the first layer shows them (`nil` for a blank strip).
-    public var stripInfos: [StripInfo?] { infos[layers[0]] ?? Array(repeating: nil, count: Self.stripCount) }
+    var stripInfos: [StripInfo?] { infos[layers[0]] ?? Array(repeating: nil, count: Self.stripCount) }
 
     /// Forgets what the stationary display was last sent, so `drawStationary` sends it all again
     /// (after pictures replaced it).

@@ -1,32 +1,34 @@
 // Meters on a Launch Control's home screen (Adam, 2026-11-10): with `showsMeters` on, the
-// stationary display is a picture (SysEx 09h, target 35h; docs/LAUNCH-CONTROL-XL3.md, test 21):
-// a meter for each of the page's eight strips, the screen's full height, two bars for a stereo
-// channel, each bar with its held peak, and the channel's number under it. On the device (Adam,
-// 2026-11-10), dB ticks between the strips read as a grid, with or without the peaks, so there
-// are none (marks at the screen's side were declined too); with equal gaps everywhere a stereo
-// pair's two bars couldn't be told from two strips, so a pair's bars are one pixel apart and the
-// strips five; and a peak line with no bar under it, at a channel's noise floor, looked like stray
-// pixels, so a peak shows only over a bar. Above each bar is a box marking 0 dBFS, hollow, and
-// filled for `clipHold` after that side reaches 0 dBFS (Adam, 2026-11-10: a fixed mark and a clip
-// light, both; three rows tall and as wide as the bar were too small to see, so five rows, and a
-// pixel wider than the bar on each side). And a mark at each edge of the screen at 0 dBFS, the
-// meters' top two rows, two pixels wide (Adam, 2026-11-10: one pixel was too small); wider would
-// touch the outer strips' bars on a full page, which start at the third pixel.
+// stationary display is a picture (SysEx 09h, target 35h; docs/LAUNCH-CONTROL-XL3.md, tests 21 and
+// 22): a meter for each of the page's strips, two bars for a stereo channel, each bar with its held
+// peak, and the channel's number under it. What the device showed (test 22, all Adam, 2026-11-10):
+// - dB ticks between the strips read as a grid, with or without the peaks, so there are none;
+// - with equal gaps everywhere a stereo pair's two bars couldn't be told from two strips, so a
+//   pair's bars are one pixel apart and the strips four (five at first; four leaves room for the
+//   0 dBFS marks);
+// - a peak line with no bar under it, at a channel's noise floor, looked like stray pixels, so a
+//   peak shows only over a bar;
+// - one-pixel 0 dBFS marks at the screen's sides were too small, so they are 4 × 2;
+// - clip boxes over the bars looked like tiny glyphs, and nothing shows that TotalMix FX's levels
+//   flag a clip reliably (they are peaks in dB, sent only when they change), so there are none.
 //
 // The numbers count each kind in the channel order, as the text home screen's first line does
-// ("In 1-3, PB 1-3" gives 1 2 3 1 2 3), with one line under each run of playbacks (Adam,
-// 2026-11-10: drawn in reverse they were unreadable in a mockup, a one-pixel underline under each
-// number read as part of the digit on the device, a line under each run read clearly, a line
-// above the numbers was tried and moved back). The screen's bottom row stays dark: at an angle
-// it is hard to read (Adam, 2026-11-10). Whether this numbering is intuitive next to TotalMix
-// FX's own channel numbers is for the UI review (Adam, 2026-11-10). A page line in the E16's font was too small to read on the XL 3's screen (Adam,
-// 2026-11-10), so Track shows the page in the device's own text instead (`goToPage`). A new picture goes out only after the device's ready reply (or
-// `bitmapTimeout` without one), and only when it changed. A control's own temporary display shows
-// over the picture as usual (test 21), so the send rows' outputs still show on Page (the overlay)
-// and when an encoder turns.
+// ("In 1-3, PB 1-3" gives 1 2 3 1 2 3), with one line under each run of playbacks (drawn in
+// reverse they were unreadable in a mockup, a one-pixel underline under each number read as part
+// of the digit, a line above the numbers was tried and moved back). The screen's bottom row stays
+// dark: at an angle it is hard to read. Whether this numbering is intuitive next to TotalMix FX's
+// own channel numbers is for the UI review (Adam). A page line in the E16's font was too small to
+// read, so Track shows the page in the device's own text instead (`goToPage`). A page with fewer
+// strips is centered.
+//
+// A new picture goes out only after the device's ready reply (or `bitmapTimeout` without one), and
+// only when it changed. A control's own temporary display shows over the picture as usual (test
+// 21), so the send rows' outputs still show on Page (the overlay) and when an encoder turns.
 //
 // The averaging and peak hold are the E16's, tuned there by eye against TotalMix FX's own meters
-// (docs/OXI-E16.md, section 5); the scale is `MeterScale`, shared with the Roto-Control and the E16.
+// (docs/OXI-E16.md, section 5); the scale is `MeterScale`, shared with the Roto-Control and the E16,
+// with 0 dBFS at the top: the meters show only inputs and playbacks, whose levels are inferred to
+// stop at 0 dBFS (Adam considered room up to +6 dB and dropped it).
 
 import Foundation
 #if canImport(SurfaceCore)
@@ -46,15 +48,14 @@ extension LaunchControlDriver {
     /// How long to wait for the ready reply before sending the next picture anyway, in seconds.
     /// Replies took 66–72 ms, once 340 ms while a control moved (test 21).
     public static let bitmapTimeout = 0.5
-    /// The meters' height in pixels, from the screen's top row; the channel numbers go below.
-    public static let meterHeight = 39
-    /// The top row of the meters: under the clip boxes (rows 0–4) and one dark row.
-    public static let meterTop = 6
-    /// The clip boxes' height: rows 0–4, hollow (top and bottom rows and the two sides) until lit.
-    static let clipBoxHeight = 5
-    /// How long a clip box stays filled after its side reaches 0 dBFS, in seconds: the peak hold's
-    /// time (a starting value, to tune on the device).
-    public static let clipHold = 2.0
+    /// The meters' height in pixels, from the screen's top row (0 dBFS); the channel numbers go below.
+    public static let meterHeight = 45
+    /// A strip's width in pixels: one bar 11 wide, or two 5 wide one pixel apart.
+    static let stripWidth = 11
+    /// The dark pixels between two strips.
+    static let stripGap = 4
+    /// The 0 dBFS marks at the screen's sides: this wide, two rows tall, from the top row.
+    static let zeroMarkWidth = 4
     /// The top row of the channel numbers: three dark rows below the meters (Adam, 2026-11-10: one
     /// more than the first try), 11 rows tall.
     static let numberTop = 48
@@ -84,18 +85,17 @@ extension LaunchControlDriver {
     /// The picture for now, if it changed and the device is ready for one.
     mutating func drawMeterScreen(hub: SurfaceHub, now: Double) -> [UInt8] {
         if let sent = bitmapSentAt, now - sent < Self.bitmapTimeout { return [] }
-        var levels: [[Int]] = [], peaks: [[Int]] = [], clips: [[Bool]] = [], numbers: [MeterNumber?] = []
+        var levels: [[Int]] = [], peaks: [[Int]] = [], numbers: [MeterNumber?] = []
         let order = hub.layout.channels(.sources, in: hub.mirror)
         for info in stripInfos {
-            guard let info else { levels.append([]); peaks.append([]); clips.append([]); numbers.append(nil); continue }
+            guard let info else { levels.append([]); peaks.append([]); numbers.append(nil); continue }
             numbers.append(Self.meterNumber(info.channel, order: order))
             var refs = [info.channel]
             if info.stereo { refs.append(ChannelRef(info.channel.bus, info.channel.channel + 1)) }
             levels.append(refs.map { averagedHeight($0, hub: hub, now: now) })
             peaks.append(refs.map { heldPeak($0, hub: hub, now: now) })
-            clips.append(refs.map { clipped($0, hub: hub, now: now) })
         }
-        let picture = Self.meterPicture(levels: levels, peaks: peaks, clips: clips, numbers: numbers)
+        let picture = Self.meterPicture(levels: levels, peaks: peaks, numbers: numbers)
         let packed = picture.packed
         guard packed != shownBitmap else { return [] }
         shownBitmap = packed
@@ -124,16 +124,6 @@ extension LaunchControlDriver {
     static func meterNumber(_ channel: ChannelRef, order: [ChannelRef]) -> MeterNumber? {
         guard let index = order.filter({ $0.bus == channel.bus }).firstIndex(of: channel) else { return nil }
         return MeterNumber(number: index + 1, marked: channel.bus == .playback)
-    }
-
-    /// Whether a channel's clip box is lit: it reached 0 dBFS in the last `clipHold` seconds. Any
-    /// message at 0 dBFS counts, even one a lower level replaced before this draw (`MixerMirror.overs`).
-    private mutating func clipped(_ ref: ChannelRef, hub: SurfaceHub, now: Double) -> Bool {
-        let overs = hub.mirror.overs[ref] ?? 0
-        if overs > meterOvers[ref, default: 0] { meterClips[ref] = now }
-        meterOvers[ref] = overs
-        guard let at = meterClips[ref] else { return false }
-        return now - at < Self.clipHold
     }
 
     private mutating func heldPeak(_ ref: ChannelRef, hub: SurfaceHub, now: Double) -> Int {
@@ -172,14 +162,14 @@ extension LaunchControlDriver {
         [".####.", "##..##", "##..##", "##..##", "##..##", ".#####", "....##", "....##", "....##", "##..##", ".####."],
     ]
 
-    /// Draws `number` centered under the meter of the strip starting at `left`: digits 6 pixels
+    /// Draws `number` centered under the meter that starts at `left`: digits 6 pixels
     /// wide one pixel apart, or, for three digits, 4 pixels wide (each digit's second and fifth
-    /// columns left out), so a number stays inside its 16-pixel column.
+    /// columns left out), so a number stays within a pixel of its meter's width (or two, for three digits).
     static func drawNumber(_ number: MeterNumber, left: Int, in picture: inout LaunchControlBitmap) {
         let text = String(number.number).compactMap { $0.wholeNumberValue }
         let columns = text.count > 2 ? [0, 2, 3, 5] : Array(0..<6)
         let width = text.count * columns.count + text.count - 1
-        let x0 = left + 2 + (11 - width) / 2
+        let x0 = left + (stripWidth - width) / 2
         for (place, digit) in text.enumerated() {
             for (row, line) in digits[digit].enumerated() {
                 let pixels = Array(line)
@@ -190,51 +180,37 @@ extension LaunchControlDriver {
         }
     }
 
-    /// The home screen as a picture: one 16-pixel column per strip, left to right, each with a meter
-    /// 11 pixels wide (x + 2 to x + 12), so five dark pixels separate the strips: one bar for a mono
-    /// channel, or two bars 5 pixels wide and one pixel apart for a stereo one (`levels` and `peaks`
-    /// give one or two heights per strip, empty for no channel), each with its held peak as a line
-    /// while the bar shows; the strip's number under it (`numbers`, `nil` for none); and a line
-    /// under each run of marked numbers, from the first one's meter to the last one's. Over each bar
-    /// is its clip box, filled where `clips` says so, and a 2 × 2 mark at each edge of the screen
-    /// at 0 dBFS. A page with
-    /// fewer than eight strips is centered (Adam, 2026-11-10): the screen sits to the left of the
-    /// controls, so a meter's place never lined up with its fader anyway (seen in Adam's photos).
-    public static func meterPicture(levels: [[Int]], peaks: [[Int]], clips: [[Bool]] = [],
-                                    numbers: [MeterNumber?] = []) -> LaunchControlBitmap {
+    /// The home screen as a picture: a meter per strip, left to right, each 11 pixels wide with 4 dark
+    /// pixels between strips, the strips used centered (so 6 pixels at each side on a full page):
+    /// one bar for a mono channel, or two bars 5 pixels wide and one pixel apart for a stereo one
+    /// (`levels` and `peaks` give one or two heights per strip, empty for no channel), each with its
+    /// held peak as a line while the bar shows; the strip's number under it (`numbers`, `nil` for
+    /// none); a line under each run of marked numbers, from the first one's meter to the last
+    /// one's; and a 4 × 2 mark at each side of the screen at 0 dBFS, the meters' top.
+    public static func meterPicture(levels: [[Int]], peaks: [[Int]], numbers: [MeterNumber?] = []) -> LaunchControlBitmap {
         var picture = LaunchControlBitmap()
-        let bottom = meterTop + meterHeight - 1
+        let bottom = meterHeight - 1
         let used = (0..<max(levels.count, numbers.count)).last {
             (levels.indices.contains($0) && !levels[$0].isEmpty) || (numbers.indices.contains($0) && numbers[$0] != nil)
         }.map { $0 + 1 } ?? 0
-        let shift = (stripCount - min(used, stripCount)) * 8
-        picture.fill(x: 0, y: meterTop, width: 2, height: 2)
-        picture.fill(x: LaunchControlBitmap.width - 2, y: meterTop, width: 2, height: 2)
+        let count = max(min(used, stripCount), 1)
+        let start = (LaunchControlBitmap.width - (count * stripWidth + (count - 1) * stripGap)) / 2
+        func left(_ column: Int) -> Int { start + column * (stripWidth + stripGap) }
+        picture.fill(x: 0, y: 0, width: zeroMarkWidth, height: 2)
+        picture.fill(x: LaunchControlBitmap.width - zeroMarkWidth, y: 0, width: zeroMarkWidth, height: 2)
         for (column, number) in numbers.enumerated() {
             guard let number else { continue }
-            drawNumber(number, left: shift + column * 16, in: &picture)
+            drawNumber(number, left: left(column), in: &picture)
             guard number.marked else { continue }
             let joinsLeft = column > 0 && numbers[column - 1]?.marked == true
-            picture.fill(x: shift + column * 16 + (joinsLeft ? -3 : 2), y: playbackLineTop, width: joinsLeft ? 16 : 11, height: 2)
+            picture.fill(x: left(column) - (joinsLeft ? stripGap : 0), y: playbackLineTop,
+                         width: stripWidth + (joinsLeft ? stripGap : 0), height: 2)
         }
         for (column, heights) in levels.enumerated() {
-            let left = shift + column * 16
-            let bars: [(x: Int, width: Int)] = heights.count > 1 ? [(left + 2, 5), (left + 8, 5)] : [(left + 2, 11)]
+            let x0 = left(column)
+            let bars: [(x: Int, width: Int)] = heights.count > 1 ? [(x0, 5), (x0 + 6, 5)] : [(x0, stripWidth)]
             let peaksHere = peaks.indices.contains(column) ? peaks[column] : []
-            let clipsHere = clips.indices.contains(column) ? clips[column] : []
             for (bar, (x, width)) in zip(bars.indices, bars) where heights.indices.contains(bar) {
-                // The box reaches a pixel past the bar on its outer side (into the gap between
-                // strips), so a pair's two boxes stay one pixel apart.
-                let boxX = bar == 0 ? x - 1 : x
-                let boxWidth = width + (bars.count == 1 ? 2 : 1)
-                if clipsHere.indices.contains(bar), clipsHere[bar] {
-                    picture.fill(x: boxX, y: 0, width: boxWidth, height: clipBoxHeight)
-                } else {
-                    picture.fill(x: boxX, y: 0, width: boxWidth, height: 1)
-                    picture.fill(x: boxX, y: clipBoxHeight - 1, width: boxWidth, height: 1)
-                    picture.fill(x: boxX, y: 0, width: 1, height: clipBoxHeight)
-                    picture.fill(x: boxX + boxWidth - 1, y: 0, width: 1, height: clipBoxHeight)
-                }
                 let height = min(max(heights[bar], 0), meterHeight)
                 picture.fill(x: x, y: bottom - height + 1, width: width, height: height)
                 if height > 0, peaksHere.indices.contains(bar), peaksHere[bar] > height {
