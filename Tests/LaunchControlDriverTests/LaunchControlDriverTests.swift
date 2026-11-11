@@ -993,93 +993,52 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(gap[2, bottom] && !gap[20, bottom] && gap[34, bottom] && gap[23, 0])
     }
 
-    func testTheTrialNumberings() {
-        typealias Driver = LaunchControlDriver
-        let order = [ChannelRef(.input, 0), ChannelRef(.input, 2), ChannelRef(.playback, 4), ChannelRef(.input, 6), ChannelRef(.playback, 0)]
-        XCTAssertEqual(Driver.meterNumber(ChannelRef(.playback, 0), order: order, numbering: .acrossSources), .init(number: 5, marked: true),
-                       "one count across inputs and playbacks")
-        XCTAssertEqual(Driver.meterNumber(ChannelRef(.input, 6), order: order, numbering: .acrossSources), .init(number: 4, marked: false))
-        // No numbers: the meters 58 rows tall, no digits, the playbacks' line kept.
-        let picture = Driver.meterPicture(levels: [[58], [10]], peaks: [[], []],
-                                          numbers: [.init(number: 1, marked: false), .init(number: 2, marked: true)], showsNumbers: false)
-        // Two strips, in slots 1 and 2: x 2–12 and 18–28.
-        XCTAssertTrue(picture[7, 1] && picture[7, 57] && !picture[7, 58], "a full bar fills rows 0–57")
-        XCTAssertFalse((58..<61).contains { y in (0..<128).contains { picture[$0, y] } }, "three dark rows above the line")
-        XCTAssertTrue(picture[18, 61] && picture[28, 61] && !picture[12, 61], "the playbacks' line")
-        XCTAssertFalse((59..<61).contains { picture[7, $0] }, "no digits")
-        XCTAssertFalse((0..<128).contains { picture[$0, 62] || picture[$0, 63] })
-        XCTAssertEqual(Driver.barHeight(db: 0, height: Driver.tallMeterHeight), Driver.tallMeterHeight)
-        // The driver redraws when the numbering changes.
+    func testTheMetersAreNumberedBySlot() {
+        // Adam, 2026-11-11 (test 24): each strip's place on the page, 1–8, whatever its kind.
         var hub = loadedHub()
+        var layout = hub.layout
+        layout.playbacksOnNewPage = true  // inputs 1-3, five blanks, then the playback
+        _ = hub.setLayout(layout, now: 0)
         var driver = LaunchControlDriver(name: "lc", layout: .xl3, showsMeters: true)
         _ = driver.start(hub: &hub, now: 0)
         _ = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0)
-        let header = LaunchControlModel.xl3.sysExHeader + [0x09, 0x35]
-        XCTAssertTrue(driver.tick(hub: &hub, now: 0.1).midi.contains(header))
-        _ = driver.receive(LaunchControlModel.xl3.sysExHeader + [0x09, 0xF7], hub: &hub, now: 0.17)
-        XCTAssertFalse(driver.tick(hub: &hub, now: 0.2).midi.contains(header), "nothing changed")
-        driver.meterNumbering = .acrossSources
-        XCTAssertTrue(driver.tick(hub: &hub, now: 0.25).midi.contains(header), "a new picture for the new numbering")
+        _ = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 0.05)  // Track >: the playback's page
+        let expected = LaunchControlDriver.meterPicture(levels: [[0, 0]], peaks: [[0, 0]],
+                                                        numbers: [.init(number: 1, marked: true)], lonePeaks: true)
+        let bytes = LaunchControlOutgoing.bitmap(expected, target: LaunchControlDriver.bitmapTarget, model: .xl3)
+        XCTAssertFalse(bytes.isEmpty)
+        XCTAssertTrue(driver.tick(hub: &hub, now: 0.1).midi.contains(bytes), "the playback is 1, in slot 1")
     }
 
-    func testTheTrialPeakFloorAndFall() {
-        typealias Driver = LaunchControlDriver
-        // A peak with no bar under it: hidden by default, shown above a floor.
-        let bottom = Driver.meterHeight - 1
-        let plain = Driver.meterPicture(levels: [[0]], peaks: [[20]])
-        let floored = Driver.meterPicture(levels: [[0]], peaks: [[20]], peakFloor: 10)
-        let low = Driver.meterPicture(levels: [[0]], peaks: [[5]], peakFloor: 10)
+    func testAFallingPeakShowsOverAnEmptyBar() {
+        let bottom = LaunchControlDriver.meterHeight - 1
+        let plain = LaunchControlDriver.meterPicture(levels: [[0]], peaks: [[20]])
+        let lone = LaunchControlDriver.meterPicture(levels: [[0]], peaks: [[20]], lonePeaks: true)
         // One strip, in slot 1: x 2–12.
-        XCTAssertFalse(plain[4, bottom - 19])
-        XCTAssertTrue(floored[4, bottom - 19], "a lone peak above the floor")
-        XCTAssertFalse(low[4, bottom - 4], "a lone peak below the floor stays hidden")
-        // The fall: a bar drops at no more than the rate set.
-        var hub = loadedHub()
-        var driver = LaunchControlDriver(name: "lc", layout: .xl3, showsMeters: true)
-        driver.meterFall = 10
-        _ = driver.start(hub: &hub, now: 0)
-        _ = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0)
-        _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -6), now: 0.05)
-        _ = driver.tick(hub: &hub, now: 0.1)
-        let ref = ChannelRef(.input, 2)
-        let high = driver.meterShown[ref]?.db ?? -.infinity
-        _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -60), now: 0.15)
-        _ = driver.tick(hub: &hub, now: 0.6)
-        XCTAssertEqual(driver.meterShown[ref]?.db ?? 0, high - 5, accuracy: 0.01, "10 dB a second for 0.5 s")
-        // Page numbering: each strip's place, 1–8.
-        driver.meterNumbering = .page
-        _ = driver.receive(LaunchControlModel.xl3.sysExHeader + [0x09, 0xF7], hub: &hub, now: 0.7)
-        XCTAssertFalse(driver.tick(hub: &hub, now: 0.8).midi.isEmpty)
+        XCTAssertFalse(plain[4, bottom - 19], "a peak only over a bar")
+        XCTAssertTrue(lone[4, bottom - 19], "a falling peak shows down to an empty bar")
     }
 
-    func testTheTrialPeakFall() {
+    func testAHeldPeakFalls() {
         // Adam, 2026-11-11: TotalMix FX's peaks drop; these vanished after their hold.
         var hub = loadedHub()
         var driver = LaunchControlDriver(name: "lc", layout: .xl3, showsMeters: true)
-        driver.meterPeakFall = 20
+        XCTAssertEqual(driver.meterPeakFall, 20, "the default (\"20 maybe closer\")")
         let ref = ChannelRef(.input, 2)
         _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -6), now: 0)
         let top = driver.heldPeak(ref, hub: hub, now: 0)
         _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -60), now: 0.1)
         XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 1.9), top, "held for 2 s")
-        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 2.5), LaunchControlDriver.barHeight(db: -16, height: driver.meterRows),
+        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 2.5), LaunchControlDriver.barHeight(db: -16),
                        "then 20 dB a second: 10 dB down after 0.5 s")
-        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 5), LaunchControlDriver.barHeight(db: -60, height: driver.meterRows),
+        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 5), LaunchControlDriver.barHeight(db: -60),
                        "down to the level, then the level's own")
         _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -20), now: 5.1)
-        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 5.2), LaunchControlDriver.barHeight(db: -20, height: driver.meterRows), "a new peak")
+        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 5.2), LaunchControlDriver.barHeight(db: -20), "a new peak")
         driver.meterPeakFall = nil
         _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -60), now: 5.3)
-        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 8), LaunchControlDriver.barHeight(db: -60, height: driver.meterRows),
-                       "the default: down at once after the hold")
-    }
-
-    func testMeterNumbersCountEachKind() {
-        let order = [ChannelRef(.input, 0), ChannelRef(.input, 2), ChannelRef(.playback, 4), ChannelRef(.input, 6), ChannelRef(.playback, 0)]
-        XCTAssertEqual(LaunchControlDriver.meterNumber(ChannelRef(.input, 6), order: order, numbering: .byKind), .init(number: 3, marked: false),
-                       "the third input in the channel order, whatever TotalMix FX's own number")
-        XCTAssertEqual(LaunchControlDriver.meterNumber(ChannelRef(.playback, 0), order: order, numbering: .byKind), .init(number: 2, marked: true))
-        XCTAssertNil(LaunchControlDriver.meterNumber(ChannelRef(.input, 9), order: order, numbering: .byKind))
+        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 8), LaunchControlDriver.barHeight(db: -60),
+                       "with no fall: down at once after the hold")
     }
 
     func testTheMeterPicture() {

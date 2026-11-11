@@ -13,8 +13,7 @@ import LaunchControlDriver
 let lcBridgeUsage = """
     Usage:
       sbdev lcbridge [--layout xl3 | lc3 | lc3-sim] [--host H] [--in-port P]
-                     [--out-port P] [--port NAME] [--home N] [--meters]
-                     [--numbers page | kind | all | none] [--verbose]
+                     [--out-port P] [--port NAME] [--home N] [--meters] [--verbose]
           Connects TotalMix FX and a Launch Control through SurfaceCore and the Launch Control
           driver, as the app will. Prints what is sent to TotalMix FX, with the time since starting;
           --verbose also prints every MIDI message to and from the device. Then reads commands
@@ -25,9 +24,6 @@ let lcBridgeUsage = """
           "LC3 n DAW" with the lowest device ID n).
           --host, --in-port, and --out-port are TotalMix FX's, as for monitor. --home is the home
           submix's output number, counting from 1 (default: TotalMix FX's Main Out).
-          --numbers chooses how the meters' strips are numbered: page (each strip's place on the
-          page, 1–8, the default), kind (each kind counted on its own), all (one count across
-          inputs and playbacks), or none (taller meters).
           --meters draws the home screen as a picture with a meter for each strip (TotalMix FX's
           "Send Level Data" on).
           Stop sbdev monitor, sbdev bridge, and the app first: they need the same ports.
@@ -47,9 +43,6 @@ let lcBridgeCommandHelp = """
       home N | home main   the home submix: output N (from 1), or TotalMix FX's Main Out
       pbpage on | pbpage off   start the first playback on a new page, or not
       meters on | meters off   the home screen as meters, or as text
-      numbers kind | all | none | page   how the meters' strips are numbered (see --numbers)
-      peaks bar | floor    a held peak only over a bar (the default), or also alone above −40 dBFS
-      fall off | N         let a bar fall with the average (the default), or at N dB a second at most
       peakfall N | off     let a held peak fall at N dB a second after its 2 s hold (20, the
                            default), or drop it to the level at once
       order                the sources in the channel order, numbered from 1, with their names
@@ -67,7 +60,6 @@ struct LaunchBridgeOptions {
     var home: Int?
     var verbose = false
     var meters = false
-    var numbering = LaunchControlDriver.MeterNumbering.page
 }
 
 func parseLaunchBridgeOptions(_ arguments: ArraySlice<String>) -> LaunchBridgeOptions {
@@ -99,11 +91,6 @@ func parseLaunchBridgeOptions(_ arguments: ArraySlice<String>) -> LaunchBridgeOp
             options.home = number - 1
         case "--verbose": options.verbose = true
         case "--meters": options.meters = true
-        case "--numbers":
-            guard let numbering = LaunchControlDriver.MeterNumbering(rawValue: value(argument)) else {
-                fail("--numbers is kind, all, none, or page.")
-            }
-            options.numbering = numbering
         case "-h", "--help": print(lcBridgeUsage); exit(0)
         default: fail("Unknown option \(argument).\n\n\(lcBridgeUsage)")
         }
@@ -125,7 +112,6 @@ final class LaunchBridgeSession: @unchecked Sendable {
     init(options: LaunchBridgeOptions) {
         self.options = options
         driver = LaunchControlDriver(name: "lc", layout: options.layout, device: options.device, showsMeters: options.meters)
-        driver.meterNumbering = options.numbering
     }
 
     private var now: Double { Date().timeIntervalSince(start) }
@@ -256,20 +242,6 @@ final class LaunchBridgeSession: @unchecked Sendable {
             step.midi = driver.setShowsMeters(words[1] == "on", hub: hub)
             send(step)
             log("Meters: \(driver.showsMeters ? "on" : "off")")
-        case "numbers":
-            guard words.count == 2, let numbering = LaunchControlDriver.MeterNumbering(rawValue: words[1]) else {
-                print("numbers kind, all, none, or page")
-                return true
-            }
-            driver.meterNumbering = numbering
-            log("Numbering: \(numbering.rawValue)")
-        case "peaks":
-            guard words.count == 2, words[1] == "bar" || words[1] == "floor" else {
-                print("peaks bar or peaks floor")
-                return true
-            }
-            driver.meterPeakFloor = words[1] == "floor" ? -40 : nil
-            log("Peaks: \(words[1] == "floor" ? "also alone above −40 dBFS" : "only over a bar")")
         case "peakfall":
             if words.count == 2, words[1] == "off" {
                 driver.meterPeakFall = nil
@@ -279,16 +251,6 @@ final class LaunchBridgeSession: @unchecked Sendable {
                 log("Peak fall: \(words[1]) dB a second after the hold")
             } else {
                 print("peakfall off, or peakfall N (dB a second, e.g., peakfall 20)")
-            }
-        case "fall":
-            if words.count == 2, words[1] == "off" {
-                driver.meterFall = nil
-                log("Fall: with the average")
-            } else if words.count == 2, let rate = Double(words[1]), rate > 0 {
-                driver.meterFall = rate
-                log("Fall: at most \(words[1]) dB a second")
-            } else {
-                print("fall off, or fall N (dB a second, e.g., fall 12)")
             }
         case "order":
             for (index, ref) in hub.layout.channels(.sources, in: hub.mirror).enumerated() {
