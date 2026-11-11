@@ -365,10 +365,10 @@ final class LaunchControlDriverTests: XCTestCase {
         var driver = LaunchControlDriver(name: "lc", layout: .xl3)
         _ = driver.start(hub: &hub, now: 0)
         _ = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0)
-        XCTAssertEqual(driver.stationaryLines(hub: hub)[0], "Page 1/2: Inputs 1-3", "the page in front (Adam, 2026-11-10)")
+        XCTAssertEqual(driver.stationaryLines(hub: hub)[0], "1/2: Inputs 1-3", "the page in front (Adam, 2026-11-10), short, since 'Page 1/2: Inputs 1-3' is too wide")
         let track = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 1)
-        XCTAssertEqual(driver.stationaryLines(hub: hub)[0], "Page 2/2: Playback 1", "not 'Channels 9-9'")
-        XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.stationary, field: 0, "Page 2/2: Playback 1") ?? []))
+        XCTAssertEqual(driver.stationaryLines(hub: hub)[0], "2/2: Playback 1", "not 'Channels 9-9'")
+        XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.stationary, field: 0, "2/2: Playback 1") ?? []))
         XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.showDisplay(.stationary, true, model: .xl3) ?? []),
                       "the home screen brought up again with its new title")
     }
@@ -624,7 +624,7 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertEqual(driver.currentSendOutputs(hub: hub), [2, 6])
         XCTAssertEqual(driver.sendOutputs, [2, 6], "the top row kept its output")
         XCTAssertTrue(step.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, "> ADAT 3/4") ?? []))
-        XCTAssertTrue(step.midi.contains(LaunchControlOutgoing.text(.stationary, field: 2, "Mid row > ADAT 3/4") ?? []))
+        XCTAssertTrue(step.midi.contains(LaunchControlOutgoing.text(.stationary, field: 2, "Mid > ADAT 3/4") ?? []))
         XCTAssertTrue(driver.setSendOutput(row: 0, to: 6, hub: &hub, now: 2).midi.isEmpty, "the other row's output is refused")
         XCTAssertTrue(driver.setSendOutput(row: 0, to: nil, hub: &hub, now: 2).midi.isEmpty, "no pan on the XL 3")
         XCTAssertTrue(driver.setSendOutput(row: 0, to: 99, hub: &hub, now: 2).midi.isEmpty, "not a send target")
@@ -636,21 +636,30 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertEqual(lc3.currentSendOutputs(hub: lc3Hub), [nil], "back to pan")
     }
 
+    func testTheScreenWidthEstimate() {
+        // docs/LAUNCH-CONTROL-XL3.md, test 22: both of these ran off the XL 3's screen.
+        XCTAssertFalse(LaunchControlDriver.fitsScreen("Top row > ADI-2 3/4"))
+        XCTAssertFalse(LaunchControlDriver.fitsScreen("Mid row > Phones 2"))
+        XCTAssertTrue(LaunchControlDriver.fitsScreen("In 1-3, PB 1-3"))
+        XCTAssertTrue(LaunchControlDriver.fitsScreen("Top > ADI-2 3/4"))
+        XCTAssertFalse(LaunchControlDriver.fitsScreen(String(repeating: "i", count: 21)), "and 20 characters at most")
+    }
+
     func testTheHomeScreenShowsWhereTheRowsGo() {
         var (driver, hub, midi) = connected(layout: .xl3, outputs: [(4, "ADAT 1/2"), (6, "ADAT 3/4")])
-        XCTAssertEqual(driver.stationaryLines(hub: hub), ["In 1-3, PB 1", "Top row > Phones", "Mid row > ADAT 1/2"])
-        XCTAssertTrue(midi.contains(LaunchControlOutgoing.text(.stationary, field: 1, "Top row > Phones") ?? []))
+        XCTAssertEqual(driver.stationaryLines(hub: hub), ["In 1-3, PB 1", "Top > Phones", "Mid > ADAT 1/2"])
+        XCTAssertTrue(midi.contains(LaunchControlOutgoing.text(.stationary, field: 1, "Top > Phones") ?? []))
         _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 1)
         let shiftPage = driver.receive([0xB0, 0x6B, 0x7F], hub: &hub, now: 1)
-        XCTAssertEqual(driver.stationaryLines(hub: hub)[2], "Mid row > ADAT 3/4")
-        XCTAssertTrue(shiftPage.midi.contains(LaunchControlOutgoing.text(.stationary, field: 2, "Mid row > ADAT 3/4") ?? []),
+        XCTAssertEqual(driver.stationaryLines(hub: hub)[2], "Mid > ADAT 3/4")
+        XCTAssertTrue(shiftPage.midi.contains(LaunchControlOutgoing.text(.stationary, field: 2, "Mid > ADAT 3/4") ?? []),
                       "the home screen follows the row")
 
         var (lc3, lc3Hub, _) = connected(layout: .lc3)
-        XCTAssertEqual(lc3.stationaryLines(hub: lc3Hub), ["In 1-3, PB 1", "Top row: Pan", "Buttons: Mute"])
+        XCTAssertEqual(lc3.stationaryLines(hub: lc3Hub), ["In 1-3, PB 1", "Top: Pan", "Buttons: Mute"])
         _ = lc3.receive([0xB0, 0x6B, 0x7F], hub: &lc3Hub, now: 1)
         let function = lc3.receive([0xB0, 0x42, 0x7F], hub: &lc3Hub, now: 2)
-        XCTAssertEqual(lc3.stationaryLines(hub: lc3Hub), ["In 1-3, PB 1", "Top row > Phones", "Buttons: PFL"])
+        XCTAssertEqual(lc3.stationaryLines(hub: lc3Hub), ["In 1-3, PB 1", "Top > Phones", "Buttons: PFL"])
         XCTAssertTrue(function.midi.contains(LaunchControlOutgoing.text(.stationary, field: 2, "Buttons: PFL", model: .lc3) ?? []))
     }
 
@@ -977,7 +986,7 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.overlay, field: 0, "Page 1/1") ?? []),
                       "Track shows the page, which the picture doesn't")
         let off = driver.setShowsMeters(false, hub: hub)
-        XCTAssertTrue(off.contains(LaunchControlOutgoing.text(.stationary, field: 1, "Top row > Phones") ?? []),
+        XCTAssertTrue(off.contains(LaunchControlOutgoing.text(.stationary, field: 1, "Top > Phones") ?? []),
                       "the text home screen again")
         XCTAssertTrue(off.contains(LaunchControlOutgoing.showDisplay(.stationary, true, model: .xl3) ?? []))
         XCTAssertFalse(driver.tick(hub: &hub, now: 3).midi.contains(header), "no pictures with meters off")

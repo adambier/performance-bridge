@@ -986,19 +986,21 @@ public struct LaunchControlDriver: Sendable {
     /// control's display when the control moves. (Four-letter names in two rows of four were tried
     /// first and were unreadable; docs/LAUNCH-CONTROL-XL3.md, test 5.)
     func stationaryLines(hub: SurfaceHub) -> [String] {
-        let title = Self.withPage(pageTitle(hub: hub), pageNumber: pageNumber, fits: { $0.count <= Self.fieldLength })
+        let title = Self.withPage(pageTitle(hub: hub), pageNumber: pageNumber, fits: Self.fitsScreen)
         func row(_ prefix: String, _ index: Int?, none: String) -> String {
             guard let index, hub.sendTargets.indices.contains(index) else { return prefix + ": " + none }
             return prefix + " " + Self.sendLabel(sendName(index, hub: hub))
         }
         let send = { (row: Int) -> Int? in self.sendIndices.indices.contains(row) ? self.sendIndices[row] : nil }
+        // "Top" and "Mid", not "Top row" and "Mid row": with "row", most outputs' names ran off the
+        // screen ("Top row > ADI-2 3/4", "Mid row > Phones 2"; docs/LAUNCH-CONTROL-XL3.md, test 22).
         if layout == .xl3 {
-            return [title, row("Top row", send(0), none: "none"), row("Mid row", send(1), none: "none")]
+            return [title, row("Top", send(0), none: "none"), row("Mid", send(1), none: "none")]
         }
         // "PFL on" when a channel's PFL is on while the buttons are mute, since nothing else would
         // show it once Function is released (UI review of 2026-11-02); 20 characters at most.
         let buttons = buttonsArePFL ? "Buttons: PFL" : Self.anyPFL(hub) ? "PFL on, buttons Mute" : "Buttons: Mute"
-        return [title, row("Top row", send(0), none: "Pan"), buttons]
+        return [title, row("Top", send(0), none: "Pan"), buttons]
     }
 
     /// The page's strips, as the first layer shows them (`nil` for a blank strip).
@@ -1025,7 +1027,7 @@ public struct LaunchControlDriver: Sendable {
     }
 
     /// The home screen's first line with the page in front (Adam, 2026-11-10): "Page 1/2: " when the
-    /// line still `fits`, else "1/2: "; the title alone with only one page.
+    /// line still `fits` (`fitsScreen`), else "1/2: "; the title alone with only one page.
     static func withPage(_ title: String, pageNumber: (current: Int, of: Int)?, fits: (String) -> Bool) -> String {
         guard let pageNumber else { return title }
         let number = "\(pageNumber.current)/\(pageNumber.of)"

@@ -43,8 +43,8 @@ extension LaunchControlDriver {
     public static let peakHold = 2.0
 
     /// Turns `showsMeters` on or off, and returns what changes on the device: with meters off, the
-    /// text home screen is drawn again (that it then shows instead of the last picture is an
-    /// inference, to check on the device); with meters on, `tick` draws the picture.
+    /// text home screen is drawn again, and shows in place of the last picture
+    /// (docs/LAUNCH-CONTROL-XL3.md, test 22); with meters on, `tick` draws the picture.
     public mutating func setShowsMeters(_ on: Bool, hub: SurfaceHub) -> [UInt8] {
         guard on != showsMeters else { return [] }
         showsMeters = on

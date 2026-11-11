@@ -22,6 +22,30 @@ extension LaunchControlDriver {
     /// The most characters a display field keeps: 20 (inference from the XL 3, test 5).
     public static let fieldLength = 20
 
+    /// Roughly how wide a line of text is on the screen, in pixels of the 128, counting the gap
+    /// after each character. The font is proportional and Novation doesn't give its widths, so these
+    /// are estimates (an inference), measured from a photo of the XL 3's screen
+    /// (docs/LAUNCH-CONTROL-XL3.md, test 22): capitals and digits about 9 pixels, most lowercase
+    /// letters nearly as wide, a space about 3.
+    public static func screenWidth(_ text: String) -> Double {
+        text.reduce(0) { width, character in
+            switch character {
+            case "i", "l", "j", ",", ".", ":", ";", "!", "'", "|": return width + 4
+            case "I": return width + 5
+            case " ": return width + 3
+            case "f", "t", "r", "(", ")", "-", "/", ">", "<": return width + 7
+            case "m", "w", "M", "W": return width + 10.5
+            default: return width + (character.isUppercase || character.isNumber ? 9 : 8.75)
+            }
+        }
+    }
+
+    /// Whether a line fits the screen's 128 pixels (`screenWidth`), with a little room to spare,
+    /// since the widths are estimates; and the field's 20 characters.
+    public static func fitsScreen(_ text: String) -> Bool {
+        text.count <= fieldLength && screenWidth(text) <= 126
+    }
+
     /// The label for a send: "> " and the output's name (AGENTS.md, house style).
     public static func sendLabel(_ name: String) -> String { "> " + name }
 

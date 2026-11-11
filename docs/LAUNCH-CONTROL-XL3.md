@@ -81,6 +81,7 @@ seen").
 [^test-19]: Test 19 (2026-11-02), section [10](#test-19-2026-11-02-dimmer-off-buttons).
 [^test-20]: Test 20 (2026-11-10), section [10](#test-20-2026-11-10-a-pans-center-in-totalmix-fx).
 [^test-21]: Test 21 (2026-11-10), section [10](#test-21-2026-11-10-bitmaps).
+[^test-22]: Test 22 (2026-11-10), section [10](#test-22-2026-11-10-meters-on-the-home-screen).
 
 ## 2. MIDI ports
 
@@ -467,8 +468,15 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   what the control does ("Level", "Pan", "> Phones 1"), and the value in dB or as a pan, sent by
   the driver.[^test-5] The stationary display, the home screen, has three lines (arrangement 2): the
   channels on the page, each kind counted on its own ("Inputs 1-7", then "Playbacks 1-8"; "In 6-7, PB
-  1-6" for a page with both; Adam, 2026-11-01), and where each send row goes ("Top > Phones 1", "Mid >
-  Phones 2"), which nothing else on the device shows (Adam, 2026-11-01). The eight names packed to
+  1-6" for a page with both; Adam, 2026-11-01), with the page in front when there is more than one
+  ("Page 1/2: " or, if that doesn't fit, "1/2: "; Adam, 2026-11-10), and where each send row goes
+  ("Top > Phones 1", "Mid > Phones 2"; "Top row >" ran most outputs' names off the
+  screen[^test-22]), which nothing else on the device shows (Adam, 2026-11-01). Whether the page's
+  "Page " fits is estimated from character widths measured in a photo of the screen (an
+  inference).[^test-22] With **Meters** on (a setting, off by default), the home screen is a
+  picture instead: a meter for each strip, the screen's full height, a stereo channel's two bars one
+  pixel apart and the strips five apart, each bar with its peak held 2 s, and no dB marks; Track
+  shows the page on the overlay (Adam, 2026-11-10).[^test-22] The eight names packed to
   four characters (arrangement 3, e.g., "ADI2SonoM1/2Tonv") were tried first and were unreadable
   (Adam, 2026-11-01); each strip's name shows on its control's display when the control moves.
   Page shows the new send on the overlay.
@@ -885,6 +893,36 @@ to L02 and R02), and TotalMix FX showed C there from both sides.
 14 a second, paced by the ready reply, without hiding a control's own temporary display. One reply
 took 340 ms while the encoder moved (inference: the device was busy with the temporary display),
 so a driver must wait for the reply rather than send on a timer. Not yet tried: whether 36h ever
-differs from 35h; whether the text home screen returns when pictures stop (e.g., with `show
-stationary off`); the Launch Control 3.
+differs from 35h; the Launch Control 3. (That the text home screen returns when the driver stops
+sending pictures was seen in test 22.)
+
+### Test 22 (2026-11-10): meters on the home screen
+
+**Setup.** Adam's XL 3, `sbdev lcbridge --meters` on branch `lc-bitmap-probe` with TotalMix FX
+playing, one build per run. Seen in Adam's videos and photo, and his words; no MIDI log.
+
+- **Run 1:** a page line at the top in the E16's 5 × 7 font over meters 34 pixels tall. "That top
+  line of text is too small to read, even with glasses" (Adam). The page line was dropped, the
+  meters made the full 64 pixels, and the page put on Track's overlay.
+- **Run 2:** two-pixel dB ticks between the strips (and one at each edge) at −6, −20, and −40 dB,
+  and a peak line over each bar. The ticks read as a grid, 27 dashes with most strips silent, which
+  bothered Adam "a bit"; he found the peaks a little busy too, or perhaps only the two together.
+- **Run 3:** one-pixel ticks, no peaks. Adam: bring back the peaks; he doesn't love the grid; and
+  it is hard to see where one stereo pair stops and the next starts (both gaps were 2 pixels).
+- **Run 4:** no ticks; peaks back; a pair's bars one pixel apart and the strips five apart. The
+  bars and peaks followed the music; turning controls showed their temporary displays over the
+  meters ("Level −3.9 dB", "> Phones 2 −14.8 dB", "Pan L9"), and the meters came back afterward
+  (seen in the video). Adam has not yet said whether this version is final.
+- **Run 5:** `meters off`: the text home screen came back in place of the picture (photo). Its
+  lines were "In 1-3, PB 1-3", "Top row > ADI-2 3." (cut off at the screen's right edge), and "Mid
+  row > Phones 2" (the "2" cut off). The second and third lines started at the screen's left edge,
+  the first was centered.
+
+**Consequences.** The meter layout of run 4 is the driver's. Measured in the photo (about 11.8 of
+its pixels to one of the screen's, from the cut-off edge and the centered first line; an
+inference), capitals and digits take about 9 screen pixels with their gap, most lowercase letters
+nearly as many, "i" about 4, and a space about 3; "Mid row > Phones 2" needs about 129 of the 128.
+The send rows' lines are "Top >" and "Mid >" again, since with "row" most outputs' names don't fit,
+and the driver estimates the first line's width from these figures (`LaunchControlDriver.screenWidth`)
+to decide between "Page 1/2: " and "1/2: ".
 
