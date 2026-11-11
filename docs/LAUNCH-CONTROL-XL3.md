@@ -984,6 +984,10 @@ playing, one build per run. Seen in Adam's videos and photo, and his words; no M
   1 2 3", and the line under the playbacks (Adam's photo).
   The line under the playbacks then went from two pixels to one (asked how it looked, I said it was
   the heaviest mark on the screen; Adam agreed to one).
+  Adam then asked for the 0 dBFS line "even more gray": the screen has one bit per pixel, so its
+  dots went from every other pixel to one in three, on one grid across the screen, which "looks
+  weirdly mottled" (Adam): the dots fell differently on each bar. Back to every other pixel from
+  each bar's left end, which is even and symmetric on a 5- or 11-pixel bar.
 
 **Consequences.** The meter layout of run 4 is the driver's. Measured in the photo (about 11.8 of
 its pixels to one of the screen's, from the cut-off edge and the centered first line; an
