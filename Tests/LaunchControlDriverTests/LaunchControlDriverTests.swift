@@ -355,7 +355,7 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertEqual(LaunchControlDriver.pageLine(("Keys", "PB 1/2"), count: 4, pageNumber: nil, fits: fits), "Keys to PB 1/2")
         XCTAssertEqual(LaunchControlDriver.pageLine(("Keys", nil), count: 1, pageNumber: (2, 2), fits: fits), "Page 2/2: Keys")
         XCTAssertEqual(LaunchControlDriver.pageLine(nil, count: 0, pageNumber: nil, fits: fits), "No channels")
-        XCTAssertEqual(LaunchControlDriver.pageLine(nil, count: 0, pageNumber: (2, 2), fits: fits), "Page 2/2")
+        XCTAssertEqual(LaunchControlDriver.pageLine(nil, count: 0, pageNumber: (2, 2), fits: fits), "Page 2 of 2")
         var hub = loadedHub()
         var layout = hub.layout
         layout.playbacksOnNewPage = true  // inputs 1-3, five blanks, then the playback
@@ -654,7 +654,7 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertEqual(LaunchControlDriver.pageLine(("Vox", nil), count: 1, pageNumber: (1, 2), fits: fits), "Page 1/2: Vox")
         XCTAssertEqual(LaunchControlDriver.pageLine(("Keys", "Gtr"), count: 3, pageNumber: (1, 2), fits: fits), "1/2: Keys to Gtr",
                        "'Page ' goes first")
-        XCTAssertEqual(LaunchControlDriver.pageLine(("Analog 1/2", "PB 15/16"), count: 8, pageNumber: (2, 2), fits: fits), "Page 2/2",
+        XCTAssertEqual(LaunchControlDriver.pageLine(("Analog 1/2", "PB 15/16"), count: 8, pageNumber: (2, 2), fits: fits), "Page 2 of 2",
                        "then the names, rather than fragments of them")
         XCTAssertEqual(LaunchControlDriver.pageLine(("Analog 1/2", "PB 15/16"), count: 8, pageNumber: nil, fits: fits), "8 channels")
     }
@@ -1113,7 +1113,7 @@ final class LaunchControlDriverTests: XCTestCase {
         _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -30), now: 0.55)
         XCTAssertTrue(driver.tick(hub: &hub, now: 2.6).midi.contains(header), "sent without a reply after the timeout")
         let track = driver.receive([0xB0, 0x67, 0x7F], hub: &hub, now: 2.7)  // Track <
-        XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.overlay, field: 0, "Page 1/1") ?? []),
+        XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.overlay, field: 0, "Page 1 of 1") ?? []),
                       "Track shows the page, which the picture doesn't")
         let firstEnd = LaunchControlDriver.pushed("1 Keys", to: .left), lastEnd = LaunchControlDriver.pushed("4 PB 1/2", to: .right)
         XCTAssertTrue(firstEnd.hasPrefix("1 Keys ") && lastEnd.hasSuffix(" 4 PB 1/2"), "pushed apart")

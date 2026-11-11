@@ -502,7 +502,8 @@ public struct LaunchControlDriver: Sendable {
         // "3 Gtr"), the first pushed left and the last right (Adam, 2026-11-11; test 24: "Vox" and
         // "to Gtr" were slow to take in while the pop-up showed).
         if showsMeters, connected, !inCustomMode {
-            let number = pageNumber.map { "Page \($0.current)/\($0.of)" } ?? "Page 1/1"
+            // "Page 1 of 2", not "Page 1/2": it fits and is faster to take in (Adam, 2026-11-11).
+            let number = "Page \(pageNumber?.current ?? 1) of \(pageNumber?.of ?? 1)"
             let ends = pageEnds().map { "\($0.slot) \($0.name)" }
             switch ends.count {
             case 0: step.midi += overlay(number, "No channels")
@@ -1087,14 +1088,15 @@ public struct LaunchControlDriver: Sendable {
     /// Keys to PB 1/2"), as the controls' displays name them. Counts by position ("In 1-3, PB 1-3")
     /// matched nothing in TotalMix FX, and "In" could be read as "ln" (Adam, 2026-11-11; test 24).
     /// "Page " goes when the line doesn't `fit`; then the names go, rather than being cut into
-    /// fragments, leaving the page ("Page 1/2") or, with one page, the number of channels, since the
+    /// fragments, leaving the page ("Page 1 of 2") or, with one page, the number of channels, since the
     /// Track pop-up and each control's display show the names in full.
     static func pageLine(_ names: (first: String, last: String?)?, count: Int, pageNumber: (current: Int, of: Int)?,
                          fits: (String) -> Bool) -> String {
         let number = pageNumber.map { "\($0.current)/\($0.of)" }
-        guard let names else { return number.map { "Page \($0)" } ?? "No channels" }
+        let words = pageNumber.map { "Page \($0.current) of \($0.of)" }  // as Track's pop-up has it
+        guard let names else { return words ?? "No channels" }
         let range = names.last.map { "\(names.first) to \($0)" } ?? names.first
-        let candidates = number.map { ["Page \($0): \(range)", "\($0): \(range)", "Page \($0)"] }
+        let candidates = number.map { ["Page \($0): \(range)", "\($0): \(range)", words ?? "Page \($0)"] }
             ?? [range, count == 1 ? "1 channel" : "\(count) channels"]
         return candidates.first(where: fits) ?? candidates[candidates.count - 1]
     }

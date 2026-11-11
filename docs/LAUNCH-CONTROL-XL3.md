@@ -481,7 +481,7 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   the driver.[^test-5] The stationary display, the home screen, has three lines (arrangement 2): the
   page's first and last channels by name ("Vox to Gtr"), as the controls' displays name them, with
   the page in front when there is more than one ("Page 1/2: " or, if that doesn't fit, "1/2: "; Adam,
-  2026-11-10), or the page alone ("Page 1/2") when the names don't fit, rather than names cut into
+  2026-11-10), or the page alone ("Page 1 of 2") when the names don't fit, rather than names cut into
   fragments (counts by kind, "In 6-7, PB 1-6", matched nothing in TotalMix FX, and "In" could be read
   as "ln"; Adam, 2026-11-11[^test-24]), and where each send row goes
   ("Top > Phones 1", "Mid > Phones 2"; "Top row >" ran most outputs' names off the
@@ -494,8 +494,8 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   under each run of playbacks' numbers (one pixel thick; kept for now, Adam), and the screen's bottom
   rows dark; Track shows the page and its first and last channels on the overlay, each with its
   slot, the number under its meter, the first pushed left and the last right with spaces, since the
-  device centers each line ("Page 1/2", "1 Vox", "3 Gtr"; Adam, 2026-11-10 and 2026-11-11; whether
-  the firmware keeps the spaces is not yet seen).[^test-22][^test-24] How long a control's display stays up is the device's own
+  device centers each line ("Page 1 of 2", "1 Vox", "3 Gtr"; Adam, 2026-11-10 and 2026-11-11;
+  test 24 for the spaces).[^test-22][^test-24] How long a control's display stays up is the device's own
   Display Timeout setting, in seconds (by eye), which applies in DAW mode too (that it covers the overlay as
   well is an inference); 1 or 2 suits this layout (Adam, 2026-11-10).[^test-23] Every page keeps eight fixed slots, strip k in the kth, an empty slot marked by one dot on the top
   row (centering a shorter page was tried and dropped).[^test-24] The eight names packed to
@@ -1101,6 +1101,12 @@ after the left line's, about 16.6 and 15.5 photo pixels a space, at about 3.25 p
 screen pixel (from the meter picture's known slot spacing, 16 pixels): a space is about 5 pixels,
 not test 22's 3. The width estimate now counts 5 for a space, and a pushed line keeps about 6 pixels
 to spare (an estimated 120 of the 128), since both lines came out wider than estimated: "3 ADAT
-5/6" by about 7 pixels, "3 PB 5/6" by a few. With these, "3 ADAT 5/6" gets eight spaces in front and "3 PB 5/6" eleven; not yet seen on
-the device. The meter picture on page 2 showed 1 2 3 with the playbacks' line under all three.
+5/6" by about 7 pixels, "3 PB 5/6" by a few. With these, "3 ADAT 5/6" gets eight spaces in front and
+"3 PB 5/6" eleven. The meter picture on page 2 showed 1 2 3 with the playbacks' line under all three.
+
+Run 3: with those spaces, both right lines fit ("yes it fits", Adam). He asked for "Page 1 of 2" in
+place of "Page 1/2": it fits and is faster to take in. The pop-up's first line, and the home
+screen's when it shows the page alone, now read that way; the home screen's "Page 1/2: " or "1/2: "
+in front of the names stays, since "of" would leave too little room for them. Not yet seen on the
+device.
 
