@@ -148,6 +148,11 @@ the same sizes below: it gets more room by replacing the rest view, not by using
    draft; ISO 9241-303 wasn't checked.
 4. Use the larger of that minimum and the smallest font the panel draws cleanly (strokes at least
    one pixel; characters at least 4 pixels wide lowercase and 5 uppercase).
+5. Marks whose meaning comes from sequence or position rather than from being read (index numbers
+   under meters, separators) may go below the floor if they can be told apart on the device, in
+   context, at the playing distance; labels and values keep the floor (Adam, 2026-11-11). A known
+   sequence is recognized more than read; where it can't be predicted (a later page, two-digit
+   numbers, a count restarting), check that neighbors can still be told apart.
 
 Both screens so far are 128 × 64 and one bit, but the Launch Control XL 3's active area is about
 21 mm wide (0.16–0.17 mm pixels) and the E16's about 35 mm (0.27 mm pixels), measured from the
