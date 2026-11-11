@@ -943,6 +943,8 @@ playing, one build per run. Seen in Adam's videos and photo, and his words; no M
   the numbers, with the screen's bottom row kept dark, since at an angle it is hard to read. Now:
   the meters, two dark rows, the numbers, two dark rows, the line (two rows), and the dark bottom
   row.
+- **Run 11:** that build: six strips centered on the screen, "1 2 3 1 2 3" with the line under
+  the second three, clear of the bottom row (Adam's photo).
 
 **Consequences.** The meter layout of run 4 is the driver's. Measured in the photo (about 11.8 of
 its pixels to one of the screen's, from the cut-off edge and the centered first line; an
