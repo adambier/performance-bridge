@@ -170,7 +170,7 @@ final class LaunchBridgeSession: @unchecked Sendable {
         defer { lock.unlock() }
         dispatch(hub.tick(now: now))
         let step = driver.tick(hub: &hub, now: now)
-        if !step.midi.isEmpty { log("No answer from the device yet; asking for DAW mode again") }
+        if !driver.isConnected, !step.midi.isEmpty { log("No answer from the device yet; asking for DAW mode again") }
         send(step)
     }
 
