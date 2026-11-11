@@ -9,9 +9,10 @@
 // pixels, so a peak shows only over a bar.
 //
 // The numbers count each kind in the channel order, as the text home screen's first line does
-// ("In 1-3, PB 1-3" gives 1 2 3 1 2 3), with one line under each run of playbacks (Adam,
-// 2026-11-10: drawn in reverse they were unreadable in a mockup, and a one-pixel underline under
-// each number read as part of the digit on the device). Whether this numbering is intuitive next to TotalMix
+// ("In 1-3, PB 1-3" gives 1 2 3 1 2 3), with one line over each run of playbacks, between the
+// meters and the numbers (Adam, 2026-11-10: drawn in reverse they were unreadable in a mockup, a
+// one-pixel underline under each number read as part of the digit on the device, and a line under
+// each run read clearly; then he asked for it above the numbers, a little further from the bars). Whether this numbering is intuitive next to TotalMix
 // FX's own channel numbers is for the UI review (Adam, 2026-11-10). A page line in the E16's font was too small to read on the XL 3's screen (Adam,
 // 2026-11-10), so Track shows the page in the device's own text instead (`goToPage`). A new picture goes out only after the device's ready reply (or
 // `bitmapTimeout` without one), and only when it changed. A control's own temporary display shows
@@ -40,12 +41,13 @@ extension LaunchControlDriver {
     /// Replies took 66–72 ms, once 340 ms while a control moved (test 21).
     public static let bitmapTimeout = 0.5
     /// The meters' height in pixels, from the screen's top row; the channel numbers go below.
-    public static let meterHeight = 47
-    /// The top row of the channel numbers: two rows below the meters.
-    static let numberTop = 49
-    /// The top row of the line under the playbacks: two rows below the numbers, two rows tall, to
-    /// the screen's bottom.
-    static let underlineTop = LaunchControlBitmap.height - 2
+    public static let meterHeight = 46
+    /// The top row of the line over the playbacks' numbers: three dark rows below the meters, two
+    /// rows tall.
+    static let playbackLineTop = 49
+    /// The top row of the channel numbers: two dark rows below the playbacks' line, 11 rows tall,
+    /// to the screen's bottom.
+    static let numberTop = 53
     /// The time constant of the average the bars follow, in seconds (the E16's, `E16Driver.meterAverage`).
     public static let meterAverage = 0.03
     /// How far below the averaged peaks a bar sits, in dB (the E16's, `E16Driver.meterOffset`).
@@ -104,10 +106,10 @@ extension LaunchControlDriver {
     }
 
     /// A strip's number under its meter: the channel's place among its kind in `order`, as the
-    /// text home screen counts (`pageTitle`), underlined for a playback.
+    /// text home screen counts (`pageTitle`), marked for a playback.
     static func meterNumber(_ channel: ChannelRef, order: [ChannelRef]) -> MeterNumber? {
         guard let index = order.filter({ $0.bus == channel.bus }).firstIndex(of: channel) else { return nil }
-        return MeterNumber(number: index + 1, underlined: channel.bus == .playback)
+        return MeterNumber(number: index + 1, marked: channel.bus == .playback)
     }
 
     private mutating func heldPeak(_ ref: ChannelRef, hub: SurfaceHub, now: Double) -> Int {
@@ -117,17 +119,17 @@ extension LaunchControlDriver {
         return height
     }
 
-    /// A number under a meter, and whether it is underlined (a playback's): one line runs under
-    /// each run of underlined numbers.
+    /// A number under a meter, and whether it is marked (a playback's): one line runs over each
+    /// run of marked numbers.
     public struct MeterNumber: Equatable, Sendable {
         /// The number, from 1.
         public var number: Int
-        /// Whether the line under the playbacks runs under it.
-        public var underlined: Bool
-        /// A number, underlined or not.
-        public init(number: Int, underlined: Bool) {
+        /// Whether the line over the playbacks runs over it.
+        public var marked: Bool
+        /// A number, marked or not.
+        public init(number: Int, marked: Bool) {
             self.number = number
-            self.underlined = underlined
+            self.marked = marked
         }
     }
 
@@ -169,16 +171,16 @@ extension LaunchControlDriver {
     /// channel, or two bars 5 pixels wide and one pixel apart for a stereo one (`levels` and `peaks`
     /// give one or two heights per strip, empty for no channel), each with its held peak as a line
     /// while the bar shows; the strip's number under it (`numbers`, `nil` for none); and a line
-    /// under each run of underlined numbers, from the first one's meter to the last one's.
+    /// over each run of marked numbers, from the first one's meter to the last one's.
     public static func meterPicture(levels: [[Int]], peaks: [[Int]], numbers: [MeterNumber?] = []) -> LaunchControlBitmap {
         var picture = LaunchControlBitmap()
         let bottom = meterHeight - 1
         for (column, number) in numbers.enumerated() {
             guard let number else { continue }
             drawNumber(number, left: column * 16, in: &picture)
-            guard number.underlined else { continue }
-            let joinsLeft = column > 0 && numbers[column - 1]?.underlined == true
-            picture.fill(x: column * 16 + (joinsLeft ? -3 : 2), y: underlineTop, width: joinsLeft ? 16 : 11, height: 2)
+            guard number.marked else { continue }
+            let joinsLeft = column > 0 && numbers[column - 1]?.marked == true
+            picture.fill(x: column * 16 + (joinsLeft ? -3 : 2), y: playbackLineTop, width: joinsLeft ? 16 : 11, height: 2)
         }
         for (column, heights) in levels.enumerated() {
             let left = column * 16
