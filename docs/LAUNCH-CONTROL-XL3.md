@@ -1134,6 +1134,11 @@ that a held peak also show alone above −40 dBFS after its bar has emptied. Ada
 difference"; in the frames the bars reach only a few pixels, so the case it covers (a loud hit, then
 silence) hardly came up. The default stays: a held peak only over a bar.
 
+Fall (`fall 12`, `fall 20`, against TotalMix FX's own meters): "fall 12 is not good. the peaks just
+disappear rather than dropping like TMFX. 20 was harder to tell" (Adam). An inference from the
+code: with the bar falling slowly, it stays above the held peak once the 2 s hold ends, so the peak
+line vanishes into the bar. The default stays: the bar follows the averaged level.
+
 Adam also saw "1 Tonverk" not quite at the left edge: its "1" starts about 3 screen pixels right
 of "to" (measured). A line is centered unless it is wider than the screen, and a field holds 20
 characters, so "1 Tonverk" with its 11 spaces is about 127 pixels wide and sits a pixel or so in
