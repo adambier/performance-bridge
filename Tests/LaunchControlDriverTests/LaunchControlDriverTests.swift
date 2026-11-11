@@ -641,11 +641,11 @@ final class LaunchControlDriverTests: XCTestCase {
         let wide = "1 Analog 1/2"
         XCTAssertTrue(LaunchControlDriver.fitsScreen(LaunchControlDriver.pushed(wide, to: .right)), "never off the screen")
         XCTAssertEqual(LaunchControlDriver.pushed("1 Synthesizer 1/2", to: .right), "1 Synthesizer 1/2", "too wide already: left as it is")
-        // Test 24: ten leading spaces cut "3 ADAT 5/6" to "3 ADAT 5/"; twelve before "3 PB 5/6" just fit.
+        // Test 24: ten leading spaces cut "3 ADAT 5/6" to "3 ADAT 5/"; twelve cut part of "3 PB 5/6"'s 6.
         let adat = LaunchControlDriver.pushed("3 ADAT 5/6", to: .right)
         XCTAssertLessThan(adat.count - "3 ADAT 5/6".count, 10, adat)
         let playback = LaunchControlDriver.pushed("3 PB 5/6", to: .right)
-        XCTAssertLessThanOrEqual(playback.count - "3 PB 5/6".count, 12, playback)
+        XCTAssertLessThan(playback.count - "3 PB 5/6".count, 12, playback)
         XCTAssertGreaterThanOrEqual(playback.count - "3 PB 5/6".count, 9, playback)
     }
 

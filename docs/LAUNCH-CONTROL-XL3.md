@@ -1092,14 +1092,15 @@ screen's first line names the same two channels ("1/2: Vox to Gtr"), where there
 read, and falls back to the page alone when they don't fit.
 
 Run 2 (photos): Track's pop-up read "Page 1/2", "1 Tonverk" at the screen's left edge, and "3 ADAT
-5/" at its right, the "6" lost; on page 2, "Page 2/2", "1 PB 1/2" at the left, and "3 PB 5/6" whole
-at the right. So the firmware keeps leading and trailing spaces, and a line wider than the screen
-starts at the left edge and loses its end (the end of "3 ADAT 5/6" with ten spaces in front). Measured
+5/" at its right, the "6" lost; on page 2, "Page 2/2", "1 PB 1/2" at the left, and "3 PB 5/6" at
+the right with part of its "6" cut off (Adam). So the firmware keeps leading and trailing spaces, and a line wider than the screen
+starts at the left edge and loses its end (with ten spaces in front of "3 ADAT 5/6", and twelve in
+front of "3 PB 5/6"). Measured
 in the photos, the first character of the right line sits twelve spaces (page 2) or ten (page 1)
 after the left line's, about 16.6 and 15.5 photo pixels a space, at about 3.25 photo pixels to a
 screen pixel (from the meter picture's known slot spacing, 16 pixels): a space is about 5 pixels,
 not test 22's 3. The width estimate now counts 5 for a space, and a pushed line keeps about 6 pixels
-to spare (an estimated 120 of the 128), since "3 ADAT 5/6" came out about 7 pixels wider than
-estimated. With these, "3 ADAT 5/6" gets eight spaces in front and "3 PB 5/6" eleven; not yet seen on
+to spare (an estimated 120 of the 128), since both lines came out wider than estimated: "3 ADAT
+5/6" by about 7 pixels, "3 PB 5/6" by a few. With these, "3 ADAT 5/6" gets eight spaces in front and "3 PB 5/6" eleven; not yet seen on
 the device. The meter picture on page 2 showed 1 2 3 with the playbacks' line under all three.
 
