@@ -1117,6 +1117,10 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(firstEnd.hasPrefix("1 Keys ") && lastEnd.hasPrefix("to ") && lastEnd.hasSuffix(" 4 Pb 1/2"), "pushed apart, 'to' at the left")
         XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, firstEnd) ?? []), "then the first channel, with its slot")
         XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.overlay, field: 2, lastEnd) ?? []), "and the last")
+        driver.slotSeparator = ": "  // a trial for the UI review
+        let colon = driver.receive([0xB0, 0x67, 0x7F], hub: &hub, now: 2.8)
+        XCTAssertTrue(colon.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, LaunchControlDriver.pushed("1: Keys", to: .left)) ?? []),
+                      "the separator between slot and name")
         let off = driver.setShowsMeters(false, hub: hub)
         XCTAssertTrue(off.contains(LaunchControlOutgoing.text(.stationary, field: 1, "Top > Phones") ?? []),
                       "the text home screen again")

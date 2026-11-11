@@ -191,6 +191,8 @@ extension LaunchControlDriver {
     /// Draws `number` centered under the meter that starts at `left`: digits 6 pixels
     /// wide one pixel apart, or, for three digits, 4 pixels wide (each digit's second and fifth
     /// columns left out), so a number stays within a pixel of its meter's width (or two, for three digits).
+    /// The driver numbers strips by slot, 1–8, so it draws only one digit; the wider numbers are
+    /// kept for `meterPicture`'s other callers and tests.
     static func drawNumber(_ number: MeterNumber, left: Int, in picture: inout LaunchControlBitmap) {
         let text = String(number.number).compactMap { $0.wholeNumberValue }
         let columns = text.count > 2 ? [0, 2, 3, 5] : Array(0..<6)

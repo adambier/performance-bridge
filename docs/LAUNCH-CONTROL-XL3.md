@@ -501,7 +501,9 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   device centers each line ("Page 1 of 2", "1 Vox", "to" and "3 Gtr"; Adam, 2026-11-10 and 2026-11-11;
   test 24 for the spaces; a page with one channel shows two lines, not yet seen on the device). Flagged for the UI review (Adam, 2026-11-11): a separator after the slot
   number (a colon, an en dash, or an em dash, or a hyphen if the font has no dash), and "Pb" or "PB"
-  for an unlabeled playback.[^test-22][^test-24] How long a control's display stays up is the device's own
+  for an unlabeled playback. The screen's characters are ASCII plus four symbols (section 5), so a
+  dash goes out as a hyphen; the trial is a space, a colon, a hyphen, or a spaced hyphen (`sbdev
+  lcbridge`: `sep`, and `pbname` for "Pb" or "PB").[^test-22][^test-24] How long a control's display stays up is the device's own
   Display Timeout setting, in seconds (by eye), which applies in DAW mode too (that it covers the overlay as
   well is an inference); 1 or 2 suits this layout (Adam, 2026-11-10).[^test-23] Every page keeps eight fixed slots, strip k in the kth, an empty slot marked by one dot on the top
   row (centering a shorter page was tried and dropped).[^test-24] The eight names packed to
