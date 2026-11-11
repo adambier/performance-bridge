@@ -492,8 +492,10 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   apart and the strips five apart, each bar with its peak held 2 s while the bar shows, and no dB
   marks; under each meter its place on the page, 1–8 (Adam, 2026-11-11[^test-24]), with one line
   under each run of playbacks' numbers (one pixel thick; kept for now, Adam), and the screen's bottom
-  rows dark; Track shows the page and its first and last channels by name on the overlay ("Page
-  1/2", "Vox", "to Gtr"; Adam, 2026-11-10 and 2026-11-11).[^test-22][^test-24] How long a control's display stays up is the device's own
+  rows dark; Track shows the page and its first and last channels on the overlay, each with its
+  slot, the number under its meter, the first pushed left and the last right with spaces, since the
+  device centers each line ("Page 1/2", "1 Vox", "3 Gtr"; Adam, 2026-11-10 and 2026-11-11; whether
+  the firmware keeps the spaces is not yet seen).[^test-22][^test-24] How long a control's display stays up is the device's own
   Display Timeout setting, in seconds (by eye), which applies in DAW mode too (that it covers the overlay as
   well is an inference); 1 or 2 suits this layout (Adam, 2026-11-10).[^test-23] Every page keeps eight fixed slots, strip k in the kth, an empty slot marked by one dot on the top
   row (centering a shorter page was tried and dropped).[^test-24] The eight names packed to
@@ -1075,9 +1077,18 @@ fastest which fader a moving meter is over. Playing distance measured first: the
   the playbacks' line for now. He added that the mixed-case "In" of the counts could be read as
   "ln".
 
+- The pop-up then showed "Page 2/2", the first channel's name, and "to" and the last's: better, but
+  "the 'to' is a little hard to make sense of within the 1 second the screen shows." He chose each
+  name with its slot ("1 Vox", "3 Gtr") and asked for the first line left-aligned and the second
+  right-aligned.
+
 **Consequences.** The meters are numbered 1–8 by slot on every page (`MeterNumbering.page`); the
-other numberings stay in `sbdev` until the branch's cleanup. Track's pop-up shows the page, the
-first channel's name, and "to" and the last's; the text home screen's first line names the same two
-channels, and falls back to the page alone when they don't fit. None of the new text has been seen
-on the device yet.
+other numberings stay in `sbdev` until the branch's cleanup. Track's pop-up shows the page, then
+the first and last channels with their slots. The device centers each line, and the display
+arrangements this project uses (section 5) choose lines, not alignment, so the driver pads the first with trailing spaces and the second with
+leading ones, up to the field's 20 characters (`LaunchControlDriver.pushed`); for a short name that
+moves it about 20 pixels (an estimate, from test 22's space width). The text home screen's first
+line names the same two channels ("1/2: Vox to Gtr"), where there is more time to read, and falls
+back to the page alone when they don't fit. The slots and the padding have not yet been seen on the
+device.
 

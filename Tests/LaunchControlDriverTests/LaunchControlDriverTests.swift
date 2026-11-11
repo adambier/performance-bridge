@@ -634,6 +634,15 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertEqual(lc3.currentSendOutputs(hub: lc3Hub), [nil], "back to pan")
     }
 
+    func testPushingTextToOneSide() {
+        XCTAssertEqual(LaunchControlDriver.pushed("1 Vox", to: .left, fits: { $0.count <= 8 }), "1 Vox   ")
+        XCTAssertEqual(LaunchControlDriver.pushed("3 Gtr", to: .right, fits: { $0.count <= 8 }), "   3 Gtr")
+        XCTAssertEqual(LaunchControlDriver.pushed("1 Vox", to: .left).count, LaunchControlDriver.fieldLength, "short names: the field's 20 characters")
+        let wide = "1 Analog 1/2"
+        XCTAssertTrue(LaunchControlDriver.fitsScreen(LaunchControlDriver.pushed(wide, to: .right)), "never off the screen")
+        XCTAssertEqual(LaunchControlDriver.pushed("1 Synthesizer 1/2", to: .right), "1 Synthesizer 1/2", "too wide already: left as it is")
+    }
+
     func testThePageLineDropsWhatDoesNotFit() {
         let fits = LaunchControlDriver.fitsScreen
         XCTAssertEqual(LaunchControlDriver.pageLine(("Vox", nil), count: 1, pageNumber: (1, 2), fits: fits), "Page 1/2: Vox")
@@ -1100,8 +1109,10 @@ final class LaunchControlDriverTests: XCTestCase {
         let track = driver.receive([0xB0, 0x67, 0x7F], hub: &hub, now: 2.7)  // Track <
         XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.overlay, field: 0, "Page 1/1") ?? []),
                       "Track shows the page, which the picture doesn't")
-        XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, "Keys") ?? []), "then the first channel")
-        XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.overlay, field: 2, "to PB 1/2") ?? []), "and the last")
+        let firstEnd = LaunchControlDriver.pushed("1 Keys", to: .left), lastEnd = LaunchControlDriver.pushed("4 PB 1/2", to: .right)
+        XCTAssertTrue(firstEnd.hasPrefix("1 Keys ") && lastEnd.hasSuffix(" 4 PB 1/2"), "pushed apart")
+        XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, firstEnd) ?? []), "then the first channel, with its slot")
+        XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.overlay, field: 2, lastEnd) ?? []), "and the last")
         let off = driver.setShowsMeters(false, hub: hub)
         XCTAssertTrue(off.contains(LaunchControlOutgoing.text(.stationary, field: 1, "Top > Phones") ?? []),
                       "the text home screen again")

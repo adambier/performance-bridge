@@ -323,7 +323,7 @@ The E16 has two layouts. In the **16-channel layout**, each encoder is one chann
   "1/2: Vox to Gtr", "Top > Phones 1", "Mid > Phones 2"). With **Meters: Show on the home screen** on
   (Settings… → Connections), it shows a meter for each channel instead, two bars for a stereo channel, numbered 1–8
   by its place on the page, with a line under the playbacks' numbers; Track shows the page and its first and last
-  channels, and the send rows' outputs show only on Page and when an encoder turns. Meters need TotalMix FX's **Send Level Data** on and **Peak Hold** off (see the Setup Guide).
+  channels with their numbers, and the send rows' outputs show only on Page and when an encoder turns. Meters need TotalMix FX's **Send Level Data** on and **Peak Hold** off (see the Setup Guide).
 - Moving a control shows its channel, what it does, and its value.
 - How long that stays up, in seconds, is the XL 3's own **Display Timeout** setting. To change
   it, switch to a Custom Mode (**Mode**, a blue button, **Mode**), hold **Track <** and **Track >** together, press

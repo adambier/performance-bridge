@@ -498,13 +498,16 @@ public struct LaunchControlDriver: Sendable {
         take(output, hub: hub, into: &step)
         // The meter screen has no page line (too small to read, Adam, 2026-11-10), so the page
         // shows here, in the device's own text, as Page shows a send row's output: its number, then
-        // its first and last channels by name (Adam, 2026-11-11; test 24).
+        // its first and last channels, each with its slot, the number under its meter ("1 Vox",
+        // "3 Gtr"), the first pushed left and the last right (Adam, 2026-11-11; test 24: "Vox" and
+        // "to Gtr" were slow to take in while the pop-up showed).
         if showsMeters, connected, !inCustomMode {
             let number = pageNumber.map { "Page \($0.current)/\($0.of)" } ?? "Page 1/1"
-            if let names = pageNames() {
-                step.midi += names.last.map { overlay(number, names.first, "to " + $0) } ?? overlay(number, names.first)
-            } else {
-                step.midi += overlay(number, "No channels")
+            let ends = pageEnds().map { "\($0.slot) \($0.name)" }
+            switch ends.count {
+            case 0: step.midi += overlay(number, "No channels")
+            case 1: step.midi += overlay(number, Self.pushed(ends[0], to: .left))
+            default: step.midi += overlay(number, Self.pushed(ends[0], to: .left), Self.pushed(ends[1], to: .right))
             }
         }
     }
@@ -1042,7 +1045,31 @@ public struct LaunchControlDriver: Sendable {
     }
 
     /// The names of the page's channels, in order, blanks left out.
-    var pageChannelNames: [String] { (infos[layers[0]] ?? []).compactMap { $0?.name } }
+    var pageChannelNames: [String] { stripInfos.compactMap { $0?.name } }
+
+    /// The page's first and last channels (one, with one channel), each with its slot, 1–8, as the
+    /// meters number them.
+    func pageEnds() -> [(slot: Int, name: String)] {
+        let named = stripInfos.enumerated().compactMap { index, info in info.map { (slot: index + 1, name: $0.name) } }
+        guard let first = named.first, let last = named.last else { return [] }
+        return named.count > 1 ? [first, last] : [first]
+    }
+
+    /// A side of the screen, for `pushed(_:to:fits:)`.
+    enum Side { case left, right }
+
+    /// `text` pushed toward one side of the screen with spaces on the other, as far as the field's
+    /// 20 characters and the screen's width (`fits`) allow. The device centers each line (test 5), and
+    /// a space is about 3 pixels (test 22), so the push is about 20 pixels at most for a short name.
+    /// Whether the firmware keeps leading and trailing spaces had not been seen when this was written.
+    static func pushed(_ text: String, to side: Side, fits: (String) -> Bool = fitsScreen) -> String {
+        var line = text
+        while true {
+            let next = side == .left ? line + " " : " " + line
+            guard fits(next) else { return line }
+            line = next
+        }
+    }
 
     /// The page shown and the number of pages, or `nil` with only one page.
     var pageNumber: (current: Int, of: Int)? {
