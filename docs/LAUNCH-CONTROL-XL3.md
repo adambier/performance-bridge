@@ -990,6 +990,17 @@ playing, one build per run. Seen in Adam's videos and photo, and his words; no M
   weirdly mottled" (Adam): the dots fell differently on each bar. Back to every other pixel from
   each bar's left end, which is even and symmetric on a 5- or 11-pixel bar.
 
+**Screen size** (measured 2026-11-11). The makers' top-view photos (`controller-*.png`, 316 pixels
+tall), scaled by the published sizes (XL 3 250 × 239 mm, Novation; E16 114 × 142 mm, Thomann's
+listing), give the XL 3's screen window as about 28 × 17 mm and the E16's as about 51 × 24 mm, with
+the E16's blank panel visible inside it at about 35.3 × 17.5 mm. In run 17's photo, the dotted
+0 dBFS lines (91 screen pixels) put the XL 3's 128 pixels at about 75% of its window: about 21 mm
+wide. So the pixel pitch is about 0.16–0.17 mm on the XL 3 and 0.27 mm on the E16, about 1.6 times
+as large on the E16 in each direction. Both match common 0.96-inch and 1.54-inch 128 × 64 OLED panels
+(an inference; neither maker names its panel). At about ±1 photo pixel, the figures are good to
+about ±0.5 mm (E16) and ±0.75 mm (XL 3, from a slightly angled photo). This is why the E16's 5 × 7
+font reads and the same font didn't on the XL 3 (run 1): about 1.9 mm against 1.2 mm.
+
 **Consequences.** The meter layout is run 17's, with the line under the playbacks one pixel thick
 (not yet seen on the device) and the 0 dBFS line every other pixel. A review of the same day
 (Tier 1) found that the averages and peaks were updated only when a picture could go out, so a

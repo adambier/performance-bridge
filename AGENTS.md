@@ -128,6 +128,17 @@ Where a surface has real detents (the Roto-Control's 0 dB indent), put the virtu
 points. Start there, tune on the device with a trial flag, and record the tuning
 (`docs/OXI-E16.md`, section 5: 0.05 s at a pan's center, 0.075 s between jumps).
 
+Design rule for screens (Adam, 2026-11-11): what a surface's screen shows at rest is set by what
+reads at playing distance, measured in millimeters on the device, not by its pixel count. Whatever
+doesn't fit legibly at rest goes to the view shown while a control moves. Both screens so far are
+128 × 64 and one bit, but the Launch Control XL 3's active area is about 21 mm wide (0.16–0.17 mm
+pixels) and the E16's about 35 mm (0.27 mm pixels), measured from the makers' photos and Adam's
+(`docs/LAUNCH-CONTROL-XL3.md`, test 22). A 5 × 7 font is about 1.9 mm tall on the E16 and reads; on the XL 3
+it is about 1.2 mm and doesn't (test 22, run 1). So the E16's rest view carries a page of names in that
+font, and the XL 3's carries only large shapes (meter bars, large digits), its names waiting for the
+firmware's own larger font while a control moves. Measure each new surface's screen this way
+(active area, pixel pitch, a photo with something lit) before designing for it.
+
 Recorded exceptions:
 - **Labels** (Adam, 2026-11-01). The app can give any channel a label of its own, shown only on
   the hardware controllers; a channel without one shows TotalMix FX's name. The case: TotalMix FX's names
