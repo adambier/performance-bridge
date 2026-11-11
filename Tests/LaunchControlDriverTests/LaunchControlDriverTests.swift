@@ -937,9 +937,12 @@ final class LaunchControlDriverTests: XCTestCase {
     }
 
     func testTheMeterPicture() {
-        let picture = LaunchControlDriver.meterPicture(title: "Page 1/2", levels: [[10], [20, 30], []], peaks: [[15], [20, 40], []])
-        XCTAssertTrue((0..<128).contains { x in (0..<7).contains { picture[x, $0] } }, "the title is drawn at the top")
+        let picture = LaunchControlDriver.meterPicture(levels: [[10], [20, 30], []], peaks: [[15], [20, 40], []])
         let bottom = 63
+        let tick = bottom - LaunchControlDriver.meterHeight(db: -20) + 1
+        XCTAssertTrue(picture[15, tick] && picture[16, tick], "a two-pixel tick between strips 1 and 2 at −20 dB")
+        XCTAssertTrue(picture[0, tick] && picture[127, tick], "and one pixel at each edge")
+        XCTAssertFalse(picture[40, tick], "nothing across a blank strip")
         // Strip 1, mono: one bar 12 pixels wide (x 2–13), 10 tall, its peak 15 pixels up.
         XCTAssertTrue(picture[2, bottom] && picture[13, bottom] && !picture[14, bottom])
         XCTAssertTrue(picture[7, bottom - 9] && !picture[7, bottom - 10])
@@ -948,7 +951,7 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(picture[17, bottom - 19] && !picture[17, bottom - 20])
         XCTAssertTrue(picture[25, bottom - 29] && !picture[23, bottom], "a gap between the two bars")
         XCTAssertTrue(picture[25, bottom - 39], "the right side's peak")
-        // Strip 3 is blank: only the dotted marks.
+        // Strip 3 is blank.
         XCTAssertFalse(picture[34, bottom])
     }
 
@@ -972,6 +975,9 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertFalse(driver.tick(hub: &hub, now: 0.5).midi.contains(header), "nothing changed")
         _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -30), now: 0.55)
         XCTAssertTrue(driver.tick(hub: &hub, now: 2.6).midi.contains(header), "sent without a reply after the timeout")
+        let track = driver.receive([0xB0, 0x67, 0x7F], hub: &hub, now: 2.7)  // Track <
+        XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.overlay, field: 0, "Page 1/1") ?? []),
+                      "Track shows the page, which the picture doesn't")
         let off = driver.setShowsMeters(false, hub: hub)
         XCTAssertTrue(off.contains(LaunchControlOutgoing.text(.stationary, field: 1, "Top row > Phones") ?? []),
                       "the text home screen again")

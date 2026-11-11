@@ -88,7 +88,7 @@ public struct ControlsGuide: Equatable, Sendable {
         ],
         notes: [
             "The two send rows never feed the same output: stepping one skips the output the other has.",
-            "The screen shows the page and the channels on it, counted in the order of **Settings… → Channel Layout** with a stereo pair counting once, and where each send row goes (e.g., \"Page 1/2: Inputs 1-7\", \"Top row > Phones 1\", \"Mid row > Phones 2\"). With **Meters** on in Settings, it shows the page line and a meter for each channel instead, two bars for a stereo channel; meters need TotalMix FX's **Send Level Data** on.",
+            "The screen shows the page and the channels on it, counted in the order of **Settings… → Channel Layout** with a stereo pair counting once, and where each send row goes (e.g., \"Page 1/2: Inputs 1-7\", \"Top row > Phones 1\", \"Mid row > Phones 2\"). With **Meters** on in Settings, it shows a meter for each channel instead, two bars for a stereo channel, and Track shows the page; meters need TotalMix FX's **Send Level Data** on.",
             "Moving a control shows its channel, what it does, and its value.",
             "After each Page press the screen names the row and its new output, and each send row's lights take the color of the output it feeds: its color in TotalMix FX, or, for an output left white, teal (a blue-green) for the top row and magenta for the middle row.",
             "With **Levels: Show by brightness** on (Settings… → Connections), the send encoders dim with their level and are dark at −oo.",

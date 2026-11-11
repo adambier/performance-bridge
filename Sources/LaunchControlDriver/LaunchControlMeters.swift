@@ -1,7 +1,8 @@
 // Meters on a Launch Control's home screen (Adam, 2026-11-10): with `showsMeters` on, the
-// stationary display is a picture (SysEx 09h, target 35h; docs/LAUNCH-CONTROL-XL3.md, test 21)
-// with the page line at the top and a meter for each of the page's eight strips below it, two bars
-// for a stereo channel. A new picture goes out only after the device's ready reply (or
+// stationary display is a picture (SysEx 09h, target 35h; docs/LAUNCH-CONTROL-XL3.md, test 21):
+// a meter for each of the page's eight strips, the screen's full height, two bars for a stereo
+// channel. A page line in the E16's font was too small to read on the XL 3's screen (Adam,
+// 2026-11-10), so Track shows the page in the device's own text instead (`goToPage`). A new picture goes out only after the device's ready reply (or
 // `bitmapTimeout` without one), and only when it changed. A control's own temporary display shows
 // over the picture as usual (test 21), so the send rows' outputs still show on Page (the overlay)
 // and when an encoder turns.
@@ -19,9 +20,6 @@ import TotalMixOSC
 #if canImport(LaunchControl)
 import LaunchControl
 #endif
-#if canImport(OXIE16)
-import OXIE16
-#endif
 
 extension LaunchControlDriver {
     /// The bitmap target for the stationary display: 35h, as "Configure displays" numbers it (the
@@ -30,12 +28,13 @@ extension LaunchControlDriver {
     /// How long to wait for the ready reply before sending the next picture anyway, in seconds.
     /// Replies took 66–72 ms, once 340 ms while a control moved (test 21).
     public static let bitmapTimeout = 0.5
-    /// The first pixel row of the meters, under the page line (7 pixels tall, then 3 blank).
-    public static let meterTop = 10
+    /// The first pixel row of the meters: the top, since the picture has no page line.
+    public static let meterTop = 0
     /// The meters' height in pixels, from `meterTop` to the screen's bottom row.
     public static let meterHeight = LaunchControlBitmap.height - meterTop
-    /// Levels marked with a dotted line behind the bars, in dBFS: TotalMix FX's own channel-strip
-    /// marks (docs/TOTALMIX-OSC.md, "Meter colors"); a starting choice, to try on the device.
+    /// Levels marked by short ticks between the strips, in dBFS: TotalMix FX's own channel-strip
+    /// marks (docs/TOTALMIX-OSC.md, "Meter colors"); dotted lines across the screen crowded it
+    /// (Adam, 2026-11-10), so ticks, his choice.
     public static let meterMarks: [Double] = [-6, -20, -40]
     /// The time constant of the average the bars follow, in seconds (the E16's, `E16Driver.meterAverage`).
     public static let meterAverage = 0.03
@@ -60,9 +59,6 @@ extension LaunchControlDriver {
     /// The picture for now, if it changed and the device is ready for one.
     mutating func drawMeterScreen(hub: SurfaceHub, now: Double) -> [UInt8] {
         if let sent = bitmapSentAt, now - sent < Self.bitmapTimeout { return [] }
-        let title = Self.withPage(pageTitle(hub: hub), pageNumber: pageNumber) {
-            E16Screen.width(of: $0.uppercased()) <= LaunchControlBitmap.width
-        }
         var levels: [[Int]] = [], peaks: [[Int]] = []
         let strips = stripInfos
         for info in strips {
@@ -72,7 +68,7 @@ extension LaunchControlDriver {
             levels.append(refs.map { averagedHeight($0, hub: hub, now: now) })
             peaks.append(refs.map { heldPeak($0, hub: hub, now: now) })
         }
-        let picture = Self.meterPicture(title: title, levels: levels, peaks: peaks)
+        let picture = Self.meterPicture(levels: levels, peaks: peaks)
         let packed = picture.packed
         guard packed != shownBitmap else { return [] }
         shownBitmap = packed
@@ -103,28 +99,26 @@ extension LaunchControlDriver {
         return height
     }
 
-    /// The home screen as a picture: `title` (in capitals) at the top, then one 16-pixel column
-    /// per strip, left to right, with one bar 12 pixels wide for a mono channel or two 6 pixels wide
-    /// for a stereo one (`levels` and `peaks` give one or two heights per strip, empty for no
-    /// channel), each with its held peak as a line, over dotted lines at `meterMarks`.
-    public static func meterPicture(title: String, levels: [[Int]], peaks: [[Int]]) -> LaunchControlBitmap {
-        var text = E16Screen()
-        _ = text.draw(title.uppercased(), x: 0, y: 0)
+    /// The home screen as a picture: one 16-pixel column per strip, left to right, with one bar 12
+    /// pixels wide for a mono channel or two 6 pixels wide for a stereo one (`levels` and `peaks`
+    /// give one or two heights per strip, empty for no channel), each with its held peak as a line,
+    /// and two-pixel ticks between the columns (one at each edge) at `meterMarks`.
+    public static func meterPicture(levels: [[Int]], peaks: [[Int]]) -> LaunchControlBitmap {
         var picture = LaunchControlBitmap()
-        for y in 0..<E16Font.glyphHeight {
-            for x in 0..<LaunchControlBitmap.width where text.pixel(x, y) { picture[x, y] = true }
-        }
         let bottom = LaunchControlBitmap.height - 1
         for mark in meterMarks {
             let y = bottom - meterHeight(db: mark) + 1
-            for x in stride(from: 0, to: LaunchControlBitmap.width, by: 4) { picture[x, y] = true }
+            picture[0, y] = true
+            picture[LaunchControlBitmap.width - 1, y] = true
+            for column in 1..<stripCount {
+                picture[column * 16 - 1, y] = true
+                picture[column * 16, y] = true
+            }
         }
         for (column, heights) in levels.enumerated() {
             let left = column * 16
             let bars: [(x: Int, width: Int)] = heights.count > 1 ? [(left + 1, 6), (left + 9, 6)] : [(left + 2, 12)]
             for (bar, (x, width)) in zip(bars.indices, bars) where heights.indices.contains(bar) {
-                // Clear the bar's column first, so the dotted marks show only between bars.
-                picture.fill(x: x, y: meterTop, width: width, height: meterHeight, false)
                 let height = min(max(heights[bar], 0), meterHeight)
                 picture.fill(x: x, y: bottom - height + 1, width: width, height: height)
                 let peaksHere = peaks.indices.contains(column) ? peaks[column] : []

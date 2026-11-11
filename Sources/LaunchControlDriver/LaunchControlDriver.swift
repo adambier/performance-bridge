@@ -482,6 +482,12 @@ public struct LaunchControlDriver: Sendable {
             }
         }
         take(output, hub: hub, into: &step)
+        // The meter screen has no page line (too small to read, Adam, 2026-11-10), so the page
+        // shows here, in the device's own text, as Page shows a send row's output.
+        if showsMeters, connected, !inCustomMode {
+            let number = pageNumber.map { "Page \($0.current)/\($0.of)" } ?? "Page 1/1"
+            step.midi += overlay(number, pageTitle(hub: hub))
+        }
     }
 
     /// Resolves the send rows against the send targets now (`LaunchControlSendRows.indices`).
