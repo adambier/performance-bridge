@@ -160,10 +160,13 @@ makers' photos and Adam's (`docs/LAUNCH-CONTROL-XL3.md`, test 22). A 5 × 7 font
 tall on the E16 and reads; on the XL 3 it is about 1.2 mm and doesn't (test 22, run 1). So the E16's
 rest view carries a page of names in that font, and the XL 3's carries only large shapes (meter
 bars, large digits), its names waiting for the firmware's own larger font while a control moves.
-Neither surface's playing distance is recorded yet. By step 3, the E16's 1.9 mm names meet the
-16 arcmin floor only at about 410 mm or closer; they read on the device, so either Adam plays that
-close or the floor is cautious for names he knows (an inference, not tested). Record the distance
-before designing to the floor.
+Playing distances (Adam, 2026-11-11, by tape measure, eye to screen): the XL 3 about 24–25 in
+(about 620 mm), the E16 about 27 in (about 690 mm). At those distances the E16's 5 × 7 names
+subtend about 9.6 arcmin and read; the XL 3's 5 × 7 text about 6.4 arcmin and didn't; the XL 3's
+meter digits (11 pixels, about 1.8 mm) about 9.9 arcmin. So for Adam, on these one-bit OLEDs with
+bold lit-on-dark glyphs, the line falls between about 6.4 and 9.6 arcmin, below step 3's 16 (two
+observations; an inference that the floor is cautious here, for names he knows). Step 3's figures
+stay the starting point for a new surface; check them on the device.
 
 Recorded exceptions:
 - **Labels** (Adam, 2026-11-01). The app can give any channel a label of its own, shown only on

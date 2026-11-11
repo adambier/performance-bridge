@@ -1003,6 +1003,10 @@ as large on the E16 in each direction. Both match common 0.96-inch and 1.54-inch
 (an inference; neither maker names its panel). At about ±1 photo pixel, the figures are good to
 about ±0.5 mm (E16) and ±0.75 mm (XL 3, from a slightly angled photo). This is why the E16's 5 × 7
 font reads and the same font didn't on the XL 3 (run 1): about 1.9 mm against 1.2 mm.
+Adam's playing distances (2026-11-11, tape measure, eye to screen): the XL 3 about 24–25 in (about
+620 mm), the E16 about 27 in (about 690 mm). In visual angle, the E16's names are about 9.6 arcmin,
+the XL 3's 5 × 7 text about 6.4 (unreadable, run 1), and the meter numbers' 11-pixel digits about 9.9
+(computed; readable in runs 8–17).
 
 **Consequences.** The meter layout is run 17's, with the line under the playbacks one pixel thick
 (not yet seen on the device) and the 0 dBFS line every other pixel. A review of the same day
