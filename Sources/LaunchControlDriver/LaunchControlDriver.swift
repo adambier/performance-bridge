@@ -89,9 +89,9 @@ public struct LaunchControlDriver: Sendable {
     /// instead of its text: a setting, off by default (Adam, 2026-11-10;
     /// `LaunchControlMeters.swift`).
     public internal(set) var showsMeters: Bool
-    /// How the meters' strips are numbered (`MeterNumbering`): each kind counted on its own, the
-    /// default; the alternatives are for a trial on the device (`sbdev lcbridge --numbers`).
-    public var meterNumbering = MeterNumbering.byKind {
+    /// How the meters' strips are numbered (`MeterNumbering`): by slot, 1–8 on every page, the
+    /// default (Adam, 2026-11-11; test 24); the others remain for trials (`sbdev lcbridge --numbers`).
+    public var meterNumbering = MeterNumbering.page {
         didSet { if meterNumbering != oldValue { shownBitmap = nil; meterPeaks = [:] } }
     }
     /// For a trial on the device (the UI review of 2026-11-10): the level, in dBFS, above which a
@@ -497,10 +497,15 @@ public struct LaunchControlDriver: Sendable {
         }
         take(output, hub: hub, into: &step)
         // The meter screen has no page line (too small to read, Adam, 2026-11-10), so the page
-        // shows here, in the device's own text, as Page shows a send row's output.
+        // shows here, in the device's own text, as Page shows a send row's output: its number, then
+        // its first and last channels by name (Adam, 2026-11-11; test 24).
         if showsMeters, connected, !inCustomMode {
             let number = pageNumber.map { "Page \($0.current)/\($0.of)" } ?? "Page 1/1"
-            step.midi += overlay(number, pageTitle(hub: hub))
+            if let names = pageNames() {
+                step.midi += names.last.map { overlay(number, names.first, "to " + $0) } ?? overlay(number, names.first)
+            } else {
+                step.midi += overlay(number, "No channels")
+            }
         }
     }
 
@@ -992,7 +997,7 @@ public struct LaunchControlDriver: Sendable {
         return ValueText.level(position: value)
     }
 
-    /// The stationary display (the home screen): what is on the page (`pageTitle`), then what isn't shown
+    /// The stationary display (the home screen): the page and its first and last channels (`pageLine`), then what isn't shown
     /// anywhere else on the device (Adam, 2026-11-01). XL 3: where each send row goes ("Top >
     /// Phones 1", "Mid > ADI-2 3/4"). Launch Control 3: the top row ("Top: Pan" or "Top > Phones 1")
     /// and the buttons ("Buttons: Mute" or "Buttons: PFL", or "PFL on, buttons Mute" while a channel's
@@ -1000,7 +1005,7 @@ public struct LaunchControlDriver: Sendable {
     /// control's display when the control moves. (Four-letter names in two rows of four were tried
     /// first and were unreadable; docs/LAUNCH-CONTROL-XL3.md, test 5.)
     func stationaryLines(hub: SurfaceHub) -> [String] {
-        let title = Self.withPage(pageTitle(hub: hub), pageNumber: pageNumber, fits: Self.fitsScreen)
+        let title = Self.pageLine(pageNames(), count: pageChannelNames.count, pageNumber: pageNumber, fits: Self.fitsScreen)
         func row(_ prefix: String, _ index: Int?, none: String) -> String {
             guard let index, hub.sendTargets.indices.contains(index) else { return prefix + ": " + none }
             return prefix + " " + Self.sendLabel(sendName(index, hub: hub))
@@ -1028,10 +1033,16 @@ public struct LaunchControlDriver: Sendable {
         for key in sentTexts.keys where key.hasPrefix("\(byte)/") { sentTexts[key] = nil }
     }
 
-    /// What is on the page (`pageTitle(_:order:)`), for this driver's strips.
-    func pageTitle(hub: SurfaceHub) -> String {
-        Self.pageTitle((infos[layers[0]] ?? []).compactMap { $0?.channel }, order: hub.layout.channels(.sources, in: hub.mirror))
+    /// The first and last channels' names on the page, as their controls' displays show them (the
+    /// app's label, or TotalMix FX's name), `last` `nil` with one channel.
+    func pageNames() -> (first: String, last: String?)? {
+        let names = pageChannelNames
+        guard let first = names.first else { return nil }
+        return (first, names.count > 1 ? names.last : nil)
     }
+
+    /// The names of the page's channels, in order, blanks left out.
+    var pageChannelNames: [String] { (infos[layers[0]] ?? []).compactMap { $0?.name } }
 
     /// The page shown and the number of pages, or `nil` with only one page.
     var pageNumber: (current: Int, of: Int)? {
@@ -1040,38 +1051,20 @@ public struct LaunchControlDriver: Sendable {
         return (page.first / Self.stripCount + 1, pages)
     }
 
-    /// The home screen's first line with the page in front (Adam, 2026-11-10): "Page 1/2: " when the
-    /// line still `fits` (`fitsScreen`), else "1/2: ", with "In" and "PB" for the kinds if it still
-    /// doesn't fit; the title alone with only one page.
-    static func withPage(_ title: String, pageNumber: (current: Int, of: Int)?, fits: (String) -> Bool) -> String {
-        guard let pageNumber else { return title }
-        let number = "\(pageNumber.current)/\(pageNumber.of)"
-        // The kinds shortened as the mixed form shortens them ("In", "PB"), so the range's end stays
-        // on the screen ("2/2: Playbacks 1-8" would run off it; review of 2026-11-10).
-        let short = title.replacingOccurrences(of: "Playbacks ", with: "PB ").replacingOccurrences(of: "Playback ", with: "PB ")
-            .replacingOccurrences(of: "Inputs ", with: "In ").replacingOccurrences(of: "Input ", with: "In ")
-        for line in ["Page \(number): " + title, number + ": " + title] where fits(line) { return line }
-        return number + ": " + short
-    }
-
-    /// The home screen's first line: what is on the page, each kind counted on its own in the
-    /// channel order (Adam, 2026-11-01), e.g., "Inputs 1-7", then "Playbacks 1-8" on the next page,
-    /// or "In 6-7, PB 1-6" for a page with both. Counting strips instead would count the blanks
-    /// left before the playbacks when they start a new page.
-    static func pageTitle(_ shown: [ChannelRef], order: [ChannelRef]) -> String {
-        func range(_ bus: TotalMixBus) -> (Int, Int)? {
-            let ofKind = order.filter { $0.bus == bus }
-            let numbers = shown.filter { $0.bus == bus }.compactMap { ref in ofKind.firstIndex(of: ref).map { $0 + 1 } }
-            guard let low = numbers.min(), let high = numbers.max() else { return nil }
-            return (low, high)
-        }
-        func text(_ range: (Int, Int)) -> String { range.0 == range.1 ? "\(range.0)" : "\(range.0)-\(range.1)" }
-        switch (range(.input), range(.playback)) {
-        case let (inputs?, playbacks?): return "In \(text(inputs)), PB \(text(playbacks))"
-        case let (inputs?, nil): return (inputs.0 == inputs.1 ? "Input " : "Inputs ") + text(inputs)
-        case let (nil, playbacks?): return (playbacks.0 == playbacks.1 ? "Playback " : "Playbacks ") + text(playbacks)
-        case (nil, nil): return "No channels"
-        }
+    /// The home screen's first line: the page, then its first and last channels by name ("Page 1/2:
+    /// Keys to PB 1/2"), as the controls' displays name them. Counts by position ("In 1-3, PB 1-3")
+    /// matched nothing in TotalMix FX, and "In" could be read as "ln" (Adam, 2026-11-11; test 24).
+    /// "Page " goes when the line doesn't `fit`; then the names go, rather than being cut into
+    /// fragments, leaving the page ("Page 1/2") or, with one page, the number of channels, since the
+    /// Track pop-up and each control's display show the names in full.
+    static func pageLine(_ names: (first: String, last: String?)?, count: Int, pageNumber: (current: Int, of: Int)?,
+                         fits: (String) -> Bool) -> String {
+        let number = pageNumber.map { "\($0.current)/\($0.of)" }
+        guard let names else { return number.map { "Page \($0)" } ?? "No channels" }
+        let range = names.last.map { "\(names.first) to \($0)" } ?? names.first
+        let candidates = number.map { ["Page \($0): \(range)", "\($0): \(range)", "Page \($0)"] }
+            ?? [range, count == 1 ? "1 channel" : "\(count) channels"]
+        return candidates.first(where: fits) ?? candidates[candidates.count - 1]
     }
 
     /// Sends the home screen's lines that changed, and then brings the screen up again: Track >

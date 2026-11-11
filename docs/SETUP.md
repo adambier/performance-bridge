@@ -319,10 +319,11 @@ The E16 has two layouts. In the **16-channel layout**, each encoder is one chann
 | **Shift + turn an encoder** | Reset it: a pan to the center, a send to −oo (release Shift, then Shift + turn it again to bring it back). Hold Shift for a moment (0.3 s) first; after Page or Track in the same hold, turning does nothing. |
 
 - The two send rows never feed the same output: stepping one skips the output the other has.
-- The screen shows the page and the channels on it, counted in the order of **Settings… → Channel Layout** with a
-  stereo pair counting once, and where each send row goes (e.g., "1/2: Inputs 1-8", "Top > Phones 1",
-  "Mid > Phones 2"). With **Meters: Show on the home screen** on (Settings… → Connections), it shows a meter for each channel instead, two bars
-  for a stereo channel, with the channel's number under it, inputs and playbacks each counted as in the first line, and a line under the playbacks' numbers; Track shows the page, and the send rows' outputs show only on Page and when an encoder turns. Meters need TotalMix FX's **Send Level Data** on and **Peak Hold** off (see the Setup Guide).
+- The screen shows the page with its first and last channels' names, and where each send row goes (e.g.,
+  "1/2: Vox to Gtr", "Top > Phones 1", "Mid > Phones 2"). With **Meters: Show on the home screen** on
+  (Settings… → Connections), it shows a meter for each channel instead, two bars for a stereo channel, numbered 1–8
+  by its place on the page, with a line under the playbacks' numbers; Track shows the page and its first and last
+  channels, and the send rows' outputs show only on Page and when an encoder turns. Meters need TotalMix FX's **Send Level Data** on and **Peak Hold** off (see the Setup Guide).
 - Moving a control shows its channel, what it does, and its value.
 - How long that stays up, in seconds, is the XL 3's own **Display Timeout** setting. To change
   it, switch to a Custom Mode (**Mode**, a blue button, **Mode**), hold **Track <** and **Track >** together, press
@@ -365,8 +366,7 @@ The E16 has two layouts. In the **16-channel layout**, each encoder is one chann
 | **Page ▲** / **Page ▼** | Change what the top encoder row does: Pan, then each output in the Outputs list, in order. |
 | **Shift + turn an encoder** | Reset it: a pan to the center, a level above 0 dB down to 0 dB (one at or below 0 dB stays), a send to −oo (release Shift, then Shift + turn it again to bring it back). Hold Shift for a moment (0.3 s) first; after Page or Track in the same hold, turning does nothing. |
 
-- The screen shows the channels on the page, counted in the order of **Settings… → Channel Layout** with a
-  stereo pair counting once, the top row's function (e.g., "Top: Pan"), and the buttons' ("Buttons: Mute", or
+- The screen shows the page with its first and last channels' names, the top row's function (e.g., "Top: Pan"), and the buttons' ("Buttons: Mute", or
   "PFL on, buttons Mute" while a PFL is on; "Buttons: PFL" while Function is held).
 - Moving a control shows its channel, what it does, and its value.
 - After each Page press the screen names the top row's new function. As a send, the row's lights take the

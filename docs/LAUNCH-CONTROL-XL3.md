@@ -83,6 +83,7 @@ seen").
 [^test-21]: Test 21 (2026-11-10), section [10](#test-21-2026-11-10-bitmaps).
 [^test-22]: Test 22 (2026-11-10), section [10](#test-22-2026-11-10-meters-on-the-home-screen).
 [^test-23]: Test 23 (2026-11-10), section [10](#test-23-2026-11-10-display-timeout).
+[^test-24]: Test 24 (2026-11-11), section [10](#test-24-2026-11-11-numbering-the-meters).
 [^nov-settings]: Novation, "Launch Control XL 3's Settings page", Launch Control XL 3 user guide
     (online), <https://userguides.novationmusic.com/hc/en-gb/articles/26190532189330-Launch-Control-XL-3-s-Settings-page>,
     read 2026-11-10.
@@ -478,22 +479,24 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
 - **Screen.** Each fader and encoder has a three-line display (arrangement 2): the channel's name,
   what the control does ("Level", "Pan", "> Phones 1"), and the value in dB or as a pan, sent by
   the driver.[^test-5] The stationary display, the home screen, has three lines (arrangement 2): the
-  channels on the page, each kind counted on its own ("Inputs 1-7", then "Playbacks 1-8"; "In 6-7, PB
-  1-6" for a page with both; Adam, 2026-11-01), with the page in front when there is more than one
-  ("Page 1/2: " or, if that doesn't fit, "1/2: "; Adam, 2026-11-10), and where each send row goes
+  page's first and last channels by name ("Vox to Gtr"), as the controls' displays name them, with
+  the page in front when there is more than one ("Page 1/2: " or, if that doesn't fit, "1/2: "; Adam,
+  2026-11-10), or the page alone ("Page 1/2") when the names don't fit, rather than names cut into
+  fragments (counts by kind, "In 6-7, PB 1-6", matched nothing in TotalMix FX, and "In" could be read
+  as "ln"; Adam, 2026-11-11[^test-24]), and where each send row goes
   ("Top > Phones 1", "Mid > Phones 2"; "Top row >" ran most outputs' names off the
   screen[^test-22]), which nothing else on the device shows (Adam, 2026-11-01). Whether the page's
-  "Page " fits is estimated from character widths measured in a photo of the screen (an
+  line fits is estimated from character widths measured in a photo of the screen (an
   inference).[^test-22] With **Meters** on (a setting, off by default), the home screen is a
   picture instead: a meter for each strip, 45 pixels tall, with a finely dotted line across each bar at 0 dBFS (the top), no clip lights, a stereo channel's two bars one pixel
   apart and the strips five apart, each bar with its peak held 2 s while the bar shows, and no dB
-  marks; under each meter the channel's number, counted within its kind as the first line counts
-  ("In 1-3, PB 1-3" gives 1 2 3 1 2 3), with one line under each run of playbacks' numbers (one pixel thick, not yet seen on the device), and the screen's bottom rows dark; numbers of three digits are drawn 4 pixels wide with one-pixel strokes (not yet seen on the device); Track shows the page on the
-  overlay (Adam, 2026-11-10).[^test-22] How long a control's display stays up is the device's own
+  marks; under each meter its place on the page, 1–8 (Adam, 2026-11-11[^test-24]), with one line
+  under each run of playbacks' numbers (one pixel thick; kept for now, Adam), and the screen's bottom
+  rows dark; Track shows the page and its first and last channels by name on the overlay ("Page
+  1/2", "Vox", "to Gtr"; Adam, 2026-11-10 and 2026-11-11).[^test-22][^test-24] How long a control's display stays up is the device's own
   Display Timeout setting, in seconds (by eye), which applies in DAW mode too (that it covers the overlay as
-  well is an inference); 1 or 2 suits this layout (Adam, 2026-11-10).[^test-23] Whether that numbering is intuitive next to TotalMix FX's
-  own channel numbers is flagged for the UI review (Adam, 2026-11-10). Every page keeps eight fixed slots, strip k in the kth, an empty slot marked by one dot on the top
-  row (centering a shorter page was tried and dropped, test 24). The eight names packed to
+  well is an inference); 1 or 2 suits this layout (Adam, 2026-11-10).[^test-23] Every page keeps eight fixed slots, strip k in the kth, an empty slot marked by one dot on the top
+  row (centering a shorter page was tried and dropped).[^test-24] The eight names packed to
   four characters (arrangement 3, e.g., "ADI2SonoM1/2Tonv") were tried first and were unreadable
   (Adam, 2026-11-01); each strip's name shows on its control's display when the control moves.
   Page shows the new send on the overlay.
@@ -1044,4 +1047,37 @@ back to DAW mode without restarting the host was not tried, so the guide says to
 (seen with `sbdev lcbridge`; the app starts the device the same way, `LaunchControlDriver.start`,
 an inference).
 The Launch Control 3 has a Settings page too; whether it has the same setting was not checked.
+
+### Test 24 (2026-11-11): numbering the meters
+
+**Setup.** Adam's XL 3 with `sbdev lcbridge --meters` and TotalMix FX, three inputs and three
+playbacks shown, all on page 1 at first, then with `pbpage on` (the playbacks on page 2). The
+question, from the UI review of 2026-11-10: which numbering under the meters lets him tell
+fastest which fader a moving meter is over. Playing distance measured first: the XL 3 about 24–25 in, the E16 about 27 in (eye to screen, tape measure).
+
+**Findings** (Adam's words where quoted):
+- The digits themselves: "very easy to read" (run 17's 11-pixel digits).
+- Six strips centered on the screen: mapping a meter to its fader took "a few seconds, since I had
+  to remember that only 6 channels are showing on the screen instead of 8." The page then kept
+  eight fixed slots with a dot on the top row of each empty one: "still somewhat slow: it's hard to
+  tell at a glance how many channels are to the left of the moving bars", since the dots are on the
+  top row, far from the bottom, where most of the motion is.
+- `numbers page` (1–8 by slot): "definitely faster."
+- `numbers kind` (1 2 3, then 1 2 3 for the playbacks): "a little slower than 1-8, because I had to
+  orient to the count restarting and there's nothing obvious causing the restarted numbering
+  (playback vs input is not obvious, and i didnt remember the meaning of the bar for a second)."
+- `numbers all` with the playbacks on page 2 (4, 5, 6 there): "the playback 1/2 starting with 4 is a
+  bit confusing, since I expect it to be the first such channel."
+- `numbers page` on page 2 (1, 2, 3): "Seeing 1 as the first channel makes sense."
+- Track's pop-up (the page and the channels counted by kind): "isn't very useful at all; it's not an 'overlay,' for one
+  thing--it's a screen that pops up and PB1-3 doesn't correspond to any channel numbers in TMFX."
+  Asked what it should show, he chose the page and the first and last channels' names, and to keep
+  the playbacks' line for now. He added that the mixed-case "In" of the counts could be read as
+  "ln".
+
+**Consequences.** The meters are numbered 1–8 by slot on every page (`MeterNumbering.page`); the
+other numberings stay in `sbdev` until the branch's cleanup. Track's pop-up shows the page, the
+first channel's name, and "to" and the last's; the text home screen's first line names the same two
+channels, and falls back to the page alone when they don't fit. None of the new text has been seen
+on the device yet.
 

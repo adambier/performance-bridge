@@ -99,7 +99,7 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(answer.midi.contains([0xB0, 0x21, 0]), "a blank strip's encoder is dark")
         XCTAssertTrue(answer.midi.contains([0xB0, 0x0D, LaunchControlDriver.sendRowHues[0]]),
                       "the top row sends to Phones, a white output: the top row's own hue, teal")
-        XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.stationary, field: 0, "In 1-3, PB 1") ?? []))
+        XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.stationary, field: 0, "Keys to PB 1/2") ?? []))
         XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.control(.fader(0)), field: 0, "Keys") ?? []))
         XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.control(.fader(0)), field: 1, "Level") ?? []))
         XCTAssertTrue(answer.midi.contains(LaunchControlOutgoing.text(.control(.encoder(row: 0, column: 0)), field: 1, "> Phones") ?? []))
@@ -349,15 +349,13 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(right.midi.contains(LaunchControlOutgoing.text(.control(.encoder(row: 2, column: 0)), field: 2, "R2") ?? []))
     }
 
-    func testTheHomeScreenTitleCountsEachKind() {
-        let order = [ChannelRef(.input, 0), ChannelRef(.input, 2), ChannelRef(.input, 3),
-                     ChannelRef(.playback, 0), ChannelRef(.playback, 2)]
-        XCTAssertEqual(LaunchControlDriver.pageTitle(Array(order[0...2]), order: order), "Inputs 1-3")
-        XCTAssertEqual(LaunchControlDriver.pageTitle(Array(order[3...4]), order: order), "Playbacks 1-2")
-        XCTAssertEqual(LaunchControlDriver.pageTitle([order[4]], order: order), "Playback 2")
-        XCTAssertEqual(LaunchControlDriver.pageTitle(Array(order[1...3]), order: order), "In 2-3, PB 1")
-        XCTAssertEqual(LaunchControlDriver.pageTitle([], order: order), "No channels")
-
+    func testTheHomeScreenTitleNamesTheFirstAndLastChannels() {
+        // Counts by position ("In 1-3, PB 1-3") matched nothing in TotalMix FX (Adam, 2026-11-11; test 24).
+        let fits = LaunchControlDriver.fitsScreen
+        XCTAssertEqual(LaunchControlDriver.pageLine(("Keys", "PB 1/2"), count: 4, pageNumber: nil, fits: fits), "Keys to PB 1/2")
+        XCTAssertEqual(LaunchControlDriver.pageLine(("Keys", nil), count: 1, pageNumber: (2, 2), fits: fits), "Page 2/2: Keys")
+        XCTAssertEqual(LaunchControlDriver.pageLine(nil, count: 0, pageNumber: nil, fits: fits), "No channels")
+        XCTAssertEqual(LaunchControlDriver.pageLine(nil, count: 0, pageNumber: (2, 2), fits: fits), "Page 2/2")
         var hub = loadedHub()
         var layout = hub.layout
         layout.playbacksOnNewPage = true  // inputs 1-3, five blanks, then the playback
@@ -365,10 +363,10 @@ final class LaunchControlDriverTests: XCTestCase {
         var driver = LaunchControlDriver(name: "lc", layout: .xl3)
         _ = driver.start(hub: &hub, now: 0)
         _ = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0)
-        XCTAssertEqual(driver.stationaryLines(hub: hub)[0], "1/2: Inputs 1-3", "the page in front (Adam, 2026-11-10), short, since 'Page 1/2: Inputs 1-3' is too wide")
+        XCTAssertEqual(driver.stationaryLines(hub: hub)[0], "1/2: Keys to Gtr", "the page in front (Adam, 2026-11-10), 'Page ' dropped to fit")
         let track = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 1)
-        XCTAssertEqual(driver.stationaryLines(hub: hub)[0], "2/2: Playback 1", "not 'Channels 9-9'")
-        XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.stationary, field: 0, "2/2: Playback 1") ?? []))
+        XCTAssertEqual(driver.stationaryLines(hub: hub)[0], "Page 2/2: PB 1/2", "one channel, one name")
+        XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.stationary, field: 0, "Page 2/2: PB 1/2") ?? []))
         XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.showDisplay(.stationary, true, model: .xl3) ?? []),
                       "the home screen brought up again with its new title")
     }
@@ -393,7 +391,7 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(leaving.midi.isEmpty, "nothing drawn on a device on its way out")
         let entering = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0.02)
         XCTAssertTrue(driver.isConnected)
-        XCTAssertTrue(entering.midi.contains(LaunchControlOutgoing.text(.stationary, field: 0, "In 1-3, PB 1") ?? []), "one full draw")
+        XCTAssertTrue(entering.midi.contains(LaunchControlOutgoing.text(.stationary, field: 0, "Keys to PB 1/2") ?? []), "one full draw")
     }
 
     func testAnOutputsNewColorReachesItsSendRow() {
@@ -636,26 +634,28 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertEqual(lc3.currentSendOutputs(hub: lc3Hub), [nil], "back to pan")
     }
 
-    func testThePagePrefixShortensTheKindsWhenNeeded() {
-        // "2/2: Playbacks 1-8" would run off the screen (review of 2026-11-10).
-        XCTAssertEqual(LaunchControlDriver.withPage("Playbacks 1-8", pageNumber: (2, 2), fits: LaunchControlDriver.fitsScreen), "2/2: PB 1-8")
-        XCTAssertEqual(LaunchControlDriver.withPage("Inputs 1-8", pageNumber: (1, 2), fits: LaunchControlDriver.fitsScreen), "1/2: Inputs 1-8")
-        XCTAssertEqual(LaunchControlDriver.withPage("Input 1", pageNumber: (1, 2), fits: LaunchControlDriver.fitsScreen), "Page 1/2: Input 1")
-        XCTAssertEqual(LaunchControlDriver.withPage("Inputs 1-8", pageNumber: nil, fits: LaunchControlDriver.fitsScreen), "Inputs 1-8")
+    func testThePageLineDropsWhatDoesNotFit() {
+        let fits = LaunchControlDriver.fitsScreen
+        XCTAssertEqual(LaunchControlDriver.pageLine(("Vox", nil), count: 1, pageNumber: (1, 2), fits: fits), "Page 1/2: Vox")
+        XCTAssertEqual(LaunchControlDriver.pageLine(("Keys", "Gtr"), count: 3, pageNumber: (1, 2), fits: fits), "1/2: Keys to Gtr",
+                       "'Page ' goes first")
+        XCTAssertEqual(LaunchControlDriver.pageLine(("Analog 1/2", "PB 15/16"), count: 8, pageNumber: (2, 2), fits: fits), "Page 2/2",
+                       "then the names, rather than fragments of them")
+        XCTAssertEqual(LaunchControlDriver.pageLine(("Analog 1/2", "PB 15/16"), count: 8, pageNumber: nil, fits: fits), "8 channels")
     }
 
     func testTheScreenWidthEstimate() {
         // docs/LAUNCH-CONTROL-XL3.md, test 22: both of these ran off the XL 3's screen.
         XCTAssertFalse(LaunchControlDriver.fitsScreen("Top row > ADI-2 3/4"))
         XCTAssertFalse(LaunchControlDriver.fitsScreen("Mid row > Phones 2"))
-        XCTAssertTrue(LaunchControlDriver.fitsScreen("In 1-3, PB 1-3"))
+        XCTAssertTrue(LaunchControlDriver.fitsScreen("1/2: Keys to Gtr"))
         XCTAssertTrue(LaunchControlDriver.fitsScreen("Top > ADI-2 3/4"))
         XCTAssertFalse(LaunchControlDriver.fitsScreen(String(repeating: "i", count: 21)), "and 20 characters at most")
     }
 
     func testTheHomeScreenShowsWhereTheRowsGo() {
         var (driver, hub, midi) = connected(layout: .xl3, outputs: [(4, "ADAT 1/2"), (6, "ADAT 3/4")])
-        XCTAssertEqual(driver.stationaryLines(hub: hub), ["In 1-3, PB 1", "Top > Phones", "Mid > ADAT 1/2"])
+        XCTAssertEqual(driver.stationaryLines(hub: hub), ["Keys to PB 1/2", "Top > Phones", "Mid > ADAT 1/2"])
         XCTAssertTrue(midi.contains(LaunchControlOutgoing.text(.stationary, field: 1, "Top > Phones") ?? []))
         _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 1)
         let shiftPage = driver.receive([0xB0, 0x6B, 0x7F], hub: &hub, now: 1)
@@ -664,10 +664,10 @@ final class LaunchControlDriverTests: XCTestCase {
                       "the home screen follows the row")
 
         var (lc3, lc3Hub, _) = connected(layout: .lc3)
-        XCTAssertEqual(lc3.stationaryLines(hub: lc3Hub), ["In 1-3, PB 1", "Top: Pan", "Buttons: Mute"])
+        XCTAssertEqual(lc3.stationaryLines(hub: lc3Hub), ["Keys to PB 1/2", "Top: Pan", "Buttons: Mute"])
         _ = lc3.receive([0xB0, 0x6B, 0x7F], hub: &lc3Hub, now: 1)
         let function = lc3.receive([0xB0, 0x42, 0x7F], hub: &lc3Hub, now: 2)
-        XCTAssertEqual(lc3.stationaryLines(hub: lc3Hub), ["In 1-3, PB 1", "Top > Phones", "Buttons: PFL"])
+        XCTAssertEqual(lc3.stationaryLines(hub: lc3Hub), ["Keys to PB 1/2", "Top > Phones", "Buttons: PFL"])
         XCTAssertTrue(function.midi.contains(LaunchControlOutgoing.text(.stationary, field: 2, "Buttons: PFL", model: .lc3) ?? []))
     }
 
@@ -946,10 +946,8 @@ final class LaunchControlDriverTests: XCTestCase {
     }
 
     func testTheHomeScreenPutsThePageFirstWhenItFits() {
-        XCTAssertEqual(LaunchControlDriver.withPage("Inputs 1-3", pageNumber: nil, fits: { _ in true }), "Inputs 1-3",
-                       "no page with only one")
-        XCTAssertEqual(LaunchControlDriver.withPage("Inputs 1-3", pageNumber: (1, 2), fits: { $0.count <= 20 }), "Page 1/2: Inputs 1-3")
-        XCTAssertEqual(LaunchControlDriver.withPage("In 11-12, PB 1-6", pageNumber: (2, 3), fits: { $0.count <= 20 }), "2/3: In 11-12, PB 1-6",
+        XCTAssertEqual(LaunchControlDriver.pageLine(("Keys", "Gtr"), count: 3, pageNumber: (1, 2), fits: { $0.count <= 21 }), "Page 1/2: Keys to Gtr")
+        XCTAssertEqual(LaunchControlDriver.pageLine(("Keys", "Gtr 3"), count: 3, pageNumber: (2, 3), fits: { $0.count <= 20 }), "2/3: Keys to Gtr 3",
                        "the word Page dropped when the line is too long")
     }
 
@@ -1030,10 +1028,10 @@ final class LaunchControlDriverTests: XCTestCase {
 
     func testMeterNumbersCountEachKind() {
         let order = [ChannelRef(.input, 0), ChannelRef(.input, 2), ChannelRef(.playback, 4), ChannelRef(.input, 6), ChannelRef(.playback, 0)]
-        XCTAssertEqual(LaunchControlDriver.meterNumber(ChannelRef(.input, 6), order: order), .init(number: 3, marked: false),
+        XCTAssertEqual(LaunchControlDriver.meterNumber(ChannelRef(.input, 6), order: order, numbering: .byKind), .init(number: 3, marked: false),
                        "the third input in the channel order, whatever TotalMix FX's own number")
-        XCTAssertEqual(LaunchControlDriver.meterNumber(ChannelRef(.playback, 0), order: order), .init(number: 2, marked: true))
-        XCTAssertNil(LaunchControlDriver.meterNumber(ChannelRef(.input, 9), order: order))
+        XCTAssertEqual(LaunchControlDriver.meterNumber(ChannelRef(.playback, 0), order: order, numbering: .byKind), .init(number: 2, marked: true))
+        XCTAssertNil(LaunchControlDriver.meterNumber(ChannelRef(.input, 9), order: order, numbering: .byKind))
     }
 
     func testTheMeterPicture() {
@@ -1102,6 +1100,8 @@ final class LaunchControlDriverTests: XCTestCase {
         let track = driver.receive([0xB0, 0x67, 0x7F], hub: &hub, now: 2.7)  // Track <
         XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.overlay, field: 0, "Page 1/1") ?? []),
                       "Track shows the page, which the picture doesn't")
+        XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, "Keys") ?? []), "then the first channel")
+        XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.overlay, field: 2, "to PB 1/2") ?? []), "and the last")
         let off = driver.setShowsMeters(false, hub: hub)
         XCTAssertTrue(off.contains(LaunchControlOutgoing.text(.stationary, field: 1, "Top > Phones") ?? []),
                       "the text home screen again")

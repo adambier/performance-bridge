@@ -13,12 +13,13 @@
 // - clip boxes over the bars looked like tiny glyphs, and nothing shows that TotalMix FX's levels
 //   flag a clip reliably (they are peaks in dB, sent only when they change), so there are none.
 //
-// The numbers count each kind in the channel order, as the text home screen's first line does
-// ("In 1-3, PB 1-3" gives 1 2 3 1 2 3), with one line under each run of playbacks (drawn in
-// reverse they were unreadable in a mockup, a one-pixel underline under each number read as part
-// of the digit, a line above the numbers was tried and moved back). The screen's bottom row stays
-// dark: at an angle it is hard to read. Whether this numbering is intuitive next to TotalMix FX's
-// own channel numbers is for the UI review (Adam). A page line in the E16's font was too small to
+// The numbers are each strip's place on the page, 1–8, whatever its kind: on the device that was
+// the fastest to map to a fader, and counting each kind on its own (1 2 3 1 2 3) or across the
+// sources (playbacks from 4) made Adam stop to work out where a count restarted or why a playback
+// wasn't 1 (2026-11-11; docs/LAUNCH-CONTROL-XL3.md, test 24). One line runs under each run of
+// playbacks (kept for now, Adam; drawn in reverse they were unreadable in a mockup, a one-pixel
+// underline under each number read as part of the digit, a line above the numbers was tried and
+// moved back). The screen's bottom row stays dark: at an angle it is hard to read. A page line in the E16's font was too small to
 // read, so Track shows the page in the device's own text instead (`goToPage`). Every page keeps
 // eight fixed slots, strip k in the kth: a page of six centered made Adam stop to work out which
 // fader a meter was over (2026-11-11), since the screen isn't above the faders and a meter's slot
@@ -143,10 +144,10 @@ extension LaunchControlDriver {
         return shown.isFinite ? Self.barHeight(db: shown, height: meterRows) : 0
     }
 
-    /// How the strips under the meters are numbered. The default counts each kind on its own, as
-    /// the text home screen's first line does; the others are for a trial on the device (the Tier 1
-    /// review of 2026-11-10 asked whether a number reads as a place in the layout or as TotalMix
-    /// FX's own channel number).
+    /// How the strips under the meters are numbered. The default is each strip's place on the
+    /// page (`page`), chosen on the device (Adam, 2026-11-11; test 24); the others remain for
+    /// trials (the Tier 1 review of 2026-11-10 asked whether a number reads as a place in the
+    /// layout or as TotalMix FX's own channel number).
     public enum MeterNumbering: String, CaseIterable, Sendable {
         /// Each kind counted on its own in the channel order ("In 1-3, PB 1-3" gives 1 2 3 1 2 3).
         case byKind = "kind"
@@ -154,7 +155,7 @@ extension LaunchControlDriver {
         case acrossSources = "all"
         /// No numbers: the meters taller (`tallMeterHeight`), the playbacks' line kept.
         case none
-        /// The strip's place on the page, 1–8 (a trial from the UI review of 2026-11-10).
+        /// The strip's place on the page, 1–8, the default.
         case page
     }
 
@@ -162,9 +163,9 @@ extension LaunchControlDriver {
     var meterRows: Int { meterNumbering == .none ? Self.tallMeterHeight : Self.meterHeight }
 
     /// A strip's number under its meter: the channel's place among its kind in `order` (or among
-    /// all of `order`, `numbering` `.acrossSources`), as the text home screen counts (`pageTitle`),
+    /// all of `order`, `numbering` `.acrossSources`), 
     /// marked for a playback.
-    static func meterNumber(_ channel: ChannelRef, order: [ChannelRef], numbering: MeterNumbering = .byKind) -> MeterNumber? {
+    static func meterNumber(_ channel: ChannelRef, order: [ChannelRef], numbering: MeterNumbering) -> MeterNumber? {
         let counted = numbering == .acrossSources ? order : order.filter { $0.bus == channel.bus }
         guard let index = counted.firstIndex(of: channel) else { return nil }
         return MeterNumber(number: index + 1, marked: channel.bus == .playback)

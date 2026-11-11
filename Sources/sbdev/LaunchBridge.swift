@@ -14,7 +14,7 @@ let lcBridgeUsage = """
     Usage:
       sbdev lcbridge [--layout xl3 | lc3 | lc3-sim] [--host H] [--in-port P]
                      [--out-port P] [--port NAME] [--home N] [--meters]
-                     [--numbers kind | all | none] [--verbose]
+                     [--numbers page | kind | all | none] [--verbose]
           Connects TotalMix FX and a Launch Control through SurfaceCore and the Launch Control
           driver, as the app will. Prints what is sent to TotalMix FX, with the time since starting;
           --verbose also prints every MIDI message to and from the device. Then reads commands
@@ -25,9 +25,9 @@ let lcBridgeUsage = """
           "LC3 n DAW" with the lowest device ID n).
           --host, --in-port, and --out-port are TotalMix FX's, as for monitor. --home is the home
           submix's output number, counting from 1 (default: TotalMix FX's Main Out).
-          --numbers chooses how the meters' strips are numbered: kind (each kind counted on its
-          own, the default), all (one count across inputs and playbacks), none (taller meters), or
-          page (each strip's place on the page, 1–8).
+          --numbers chooses how the meters' strips are numbered: page (each strip's place on the
+          page, 1–8, the default), kind (each kind counted on its own), all (one count across
+          inputs and playbacks), or none (taller meters).
           --meters draws the home screen as a picture with a meter for each strip (TotalMix FX's
           "Send Level Data" on).
           Stop sbdev monitor, sbdev bridge, and the app first: they need the same ports.
@@ -65,7 +65,7 @@ struct LaunchBridgeOptions {
     var home: Int?
     var verbose = false
     var meters = false
-    var numbering = LaunchControlDriver.MeterNumbering.byKind
+    var numbering = LaunchControlDriver.MeterNumbering.page
 }
 
 func parseLaunchBridgeOptions(_ arguments: ArraySlice<String>) -> LaunchBridgeOptions {
