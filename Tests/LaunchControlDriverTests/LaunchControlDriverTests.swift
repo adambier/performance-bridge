@@ -999,11 +999,11 @@ final class LaunchControlDriverTests: XCTestCase {
         // "100" in narrow digits (x 49–62): its last "0" at x 59–62.
         XCTAssertTrue((48..<59).contains { picture[59, $0] } && (48..<59).contains { picture[62, $0] })
         XCTAssertFalse((48..<64).contains { picture[48, $0] || picture[63, $0] })
-        // 0 dBFS: a dotted line on the top row over each bar, one pixel in three on one grid across
-        // the screen (x divisible by 3), none at the sides or over a blank strip.
-        XCTAssertTrue([3, 6, 9, 12].allSatisfy { picture[$0, 0] } && ![2, 4, 5, 7, 11].contains { picture[$0, 0] })
-        XCTAssertTrue([18, 21, 24, 27].allSatisfy { picture[$0, 0] } && ![19, 20, 22, 23, 28].contains { picture[$0, 0] }, "a pair's two bars dotted")
-        XCTAssertFalse((0..<2).contains { picture[$0, 0] } || (34...44).contains { picture[$0, 0] } || picture[3, 1] || picture[15, 0])
+        // 0 dBFS: a dotted line on the top row over each bar (every other pixel), none at the sides
+        // or over a blank strip.
+        XCTAssertTrue([2, 4, 6, 8, 10, 12].allSatisfy { picture[$0, 0] } && ![3, 5, 11].contains { picture[$0, 0] })
+        XCTAssertTrue([18, 20, 22, 24, 26, 28].allSatisfy { picture[$0, 0] } && !picture[23, 0], "a pair's two bars dotted")
+        XCTAssertFalse((0..<2).contains { picture[$0, 0] } || (34...44).contains { picture[$0, 0] } || picture[2, 1])
         // Strip 3 is blank.
         XCTAssertFalse(picture[34, bottom] || (48..<64).contains { picture[40, $0] })
     }
