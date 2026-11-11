@@ -967,6 +967,9 @@ playing, one build per run. Seen in Adam's videos and photo, and his words; no M
 - **Run 14:** the edge marks need to be more than one pixel wide, and possibly two tall (Adam).
   They are now 2 × 2, on the meters' top two rows; wider would touch the outer strips' bars on a
   full page.
+  Adam asked for room above 0 dBFS, up to +6, then withdrew it, since the meters show only
+  inputs and playbacks, whose levels are inferred to stop at 0 dBFS (an input's converter, a
+  playback's audio); the top of the meters stays 0 dBFS.
 
 **Consequences.** The meter layout of run 4 is the driver's. Measured in the photo (about 11.8 of
 its pixels to one of the screen's, from the cut-off edge and the centered first line; an
