@@ -655,7 +655,9 @@ final class LaunchControlDriverTests: XCTestCase {
 
     func testSpreadingTwoTextsApart() {
         XCTAssertEqual(LaunchControlDriver.spread("to", "3 Gtr", fits: { $0.count <= 12 }), "to     3 Gtr")
-        XCTAssertEqual(LaunchControlDriver.spread("to", "3 Gtr", fits: { $0.count <= 4 }), "to 3 Gtr", "one space at least")
+        XCTAssertEqual(LaunchControlDriver.spread("to", "3 Gtr", fits: { $0.count <= 4 }), "3 Gtr", "'to' dropped when it can't fit")
+        XCTAssertEqual(LaunchControlDriver.spread("to", "8 Synthesizer 1/2"), "8 Synthesizer 1/2", "rather than lose the pair's numbers")
+        XCTAssertEqual(LaunchControlDriver.spread("to", "3 Gtr", fits: { $0.count <= 8 }), "to 3 Gtr")
         XCTAssertEqual(LaunchControlDriver.spread("to", "3 ADAT 5/6"), "to" + String(repeating: " ", count: LaunchControlDriver.spread("to", "3 ADAT 5/6").count - 12) + "3 ADAT 5/6")
         XCTAssertLessThanOrEqual(LaunchControlDriver.screenWidth(LaunchControlDriver.spread("to", "3 ADAT 5/6")), LaunchControlDriver.pushedWidth)
     }
@@ -1004,7 +1006,7 @@ final class LaunchControlDriverTests: XCTestCase {
         _ = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0)
         _ = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 0.05)  // Track >: the playback's page
         let expected = LaunchControlDriver.meterPicture(levels: [[0, 0]], peaks: [[0, 0]],
-                                                        numbers: [.init(number: 1, marked: true)], lonePeaks: true)
+                                                        numbers: [.init(number: 1, marked: true)])
         let bytes = LaunchControlOutgoing.bitmap(expected, target: LaunchControlDriver.bitmapTarget, model: .xl3)
         XCTAssertFalse(bytes.isEmpty)
         XCTAssertTrue(driver.tick(hub: &hub, now: 0.1).midi.contains(bytes), "the playback is 1, in slot 1")
@@ -1013,9 +1015,9 @@ final class LaunchControlDriverTests: XCTestCase {
     func testAFallingPeakShowsOverAnEmptyBar() {
         let bottom = LaunchControlDriver.meterHeight - 1
         let plain = LaunchControlDriver.meterPicture(levels: [[0]], peaks: [[20]])
-        let lone = LaunchControlDriver.meterPicture(levels: [[0]], peaks: [[20]], lonePeaks: true)
+        let lone = LaunchControlDriver.meterPicture(levels: [[0]], peaks: [[20]], falling: [[true]])
         // One strip, in slot 1: x 2–12.
-        XCTAssertFalse(plain[4, bottom - 19], "a peak only over a bar")
+        XCTAssertFalse(plain[4, bottom - 19], "a held peak only over a bar (test 22's stray pixels)")
         XCTAssertTrue(lone[4, bottom - 19], "a falling peak shows down to an empty bar")
     }
 
@@ -1026,18 +1028,22 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertEqual(driver.meterPeakFall, 20, "the default (\"20 maybe closer\")")
         let ref = ChannelRef(.input, 2)
         _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -6), now: 0)
-        let top = driver.heldPeak(ref, hub: hub, now: 0)
+        let top = driver.heldPeak(ref, hub: hub, now: 0).height
         _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -60), now: 0.1)
-        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 1.9), top, "held for 2 s")
-        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 2.5), LaunchControlDriver.barHeight(db: -16),
+        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 1.9).height, top, "held for 2 s")
+        XCTAssertFalse(driver.heldPeak(ref, hub: hub, now: 1.95).falling)
+        XCTAssertTrue(driver.heldPeak(ref, hub: hub, now: 2.4).falling)
+        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 2.5).height, LaunchControlDriver.barHeight(db: -16),
                        "then 20 dB a second: 10 dB down after 0.5 s")
-        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 5), LaunchControlDriver.barHeight(db: -60),
+        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 5).height, LaunchControlDriver.barHeight(db: -60),
                        "down to the level, then the level's own")
+        XCTAssertFalse(driver.heldPeak(ref, hub: hub, now: 5.05).falling,
+                       "at the level, not falling: not drawn alone at a noise floor (review of 2026-11-11)")
         _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -20), now: 5.1)
-        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 5.2), LaunchControlDriver.barHeight(db: -20), "a new peak")
+        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 5.2).height, LaunchControlDriver.barHeight(db: -20), "a new peak")
         driver.meterPeakFall = nil
         _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -60), now: 5.3)
-        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 8), LaunchControlDriver.barHeight(db: -60),
+        XCTAssertEqual(driver.heldPeak(ref, hub: hub, now: 8).height, LaunchControlDriver.barHeight(db: -60),
                        "with no fall: down at once after the hold")
     }
 

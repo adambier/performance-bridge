@@ -87,7 +87,7 @@ seen").
 [^nov-settings]: Novation, "Launch Control XL 3's Settings page", Launch Control XL 3 user guide
     (online), <https://userguides.novationmusic.com/hc/en-gb/articles/26190532189330-Launch-Control-XL-3-s-Settings-page>,
     read 2026-11-10.
-[^nov-xl3-page]: Novation, "Launch Control XL" product page, <https://novationmusic.com/launch/launch-control-xl>, read
+[^nov-xl3-page]: Novation, "Launch Control XL 3" product page, <https://novationmusic.com/launch/launch-control-xl>, read
     2026-11-11 (dimensions; 128 × 64 monochrome OLED).
 [^thomann-e16]: Thomann, "OXI Instruments E16" listing, <https://www.thomann.co.uk/oxi_instruments_e16.htm>, read
     2026-11-11 (dimensions; OXI's own page was not checked).
@@ -481,22 +481,24 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   the driver.[^test-5] The stationary display, the home screen, has three lines (arrangement 2): the
   page's first and last channels by name ("Vox to Gtr"), as the controls' displays name them, with
   the page in front when there is more than one ("Page 1/2: " or, if that doesn't fit, "1/2: "; Adam,
-  2026-11-10), or the page alone ("Page 1 of 2") when the names don't fit, rather than names cut into
-  fragments (counts by kind, "In 6-7, PB 1-6", matched nothing in TotalMix FX, and "In" could be read
+  2026-11-10), or the page alone ("Page 1 of 2"; with one page, the number of channels) when the
+  names don't fit, rather than names cut into fragments (counts by kind, "In 6-7, PB 1-6", matched nothing in TotalMix FX, and "In" could be read
   as "ln"; Adam, 2026-11-11[^test-24]), and where each send row goes
   ("Top > Phones 1", "Mid > Phones 2"; "Top row >" ran most outputs' names off the
   screen[^test-22]), which nothing else on the device shows (Adam, 2026-11-01). Whether the page's
-  line fits is estimated from character widths measured in a photo of the screen (an
-  inference).[^test-22] With **Meters** on (a setting, off by default), the home screen is a
+  line fits is estimated from character widths measured in photos of the screen (an
+  inference).[^test-22][^test-24] With **Meters** on (a setting, off by default), the home screen is a
   picture instead: a meter for each strip, 45 pixels tall, with a finely dotted line across each bar at 0 dBFS (the top), no clip lights, a stereo channel's two bars one pixel
   apart and the strips five apart, each bar with its peak held 2 s and then falling at 20 dB a second, as TotalMix FX's peaks drop
-  (Adam, 2026-11-11[^test-24]), and no dB
+  (Adam, 2026-11-11[^test-24]), shown even once its bar has emptied, until it meets the level (a
+  held peak not yet falling shows only over a bar, since a lone one at a channel's noise floor looked
+  like stray pixels[^test-22]), and no dB
   marks; under each meter its place on the page, 1–8 (Adam, 2026-11-11[^test-24]), with one line
   under each run of playbacks' numbers (one pixel thick; kept for now, Adam), and the screen's bottom
   rows dark; Track shows the page and its first and last channels on the overlay, each with its
   slot, the number under its meter, the first pushed left and the last right with spaces, since the
   device centers each line ("Page 1 of 2", "1 Vox", "to" and "3 Gtr"; Adam, 2026-11-10 and 2026-11-11;
-  test 24 for the spaces). Flagged for the UI review (Adam, 2026-11-11): a separator after the slot
+  test 24 for the spaces; a page with one channel shows two lines, not yet seen on the device). Flagged for the UI review (Adam, 2026-11-11): a separator after the slot
   number (a colon, an en dash, or an em dash, or a hyphen if the font has no dash), and "Pb" or "PB"
   for an unlabeled playback.[^test-22][^test-24] How long a control's display stays up is the device's own
   Display Timeout setting, in seconds (by eye), which applies in DAW mode too (that it covers the overlay as
@@ -1012,7 +1014,7 @@ as large on the E16 in each direction. Both match common 0.96-inch and 1.54-inch
 about ±0.5 mm (E16) and ±0.75 mm (XL 3, from a slightly angled photo). This is why the E16's 5 × 7
 font reads and the same font didn't on the XL 3 (run 1): about 1.9 mm against 1.2 mm.
 Adam's playing distances (2026-11-11, tape measure, eye to screen): the XL 3 about 24–25 in (about
-620 mm), the E16 about 27 in (about 690 mm). In visual angle, the E16's names are about 9.6 arcmin,
+620 mm), the E16 about 27 in (about 690 mm). In visual angle, the E16's names are about 9.4 arcmin,
 the XL 3's 5 × 7 text about 6.4 (unreadable, run 1), and the meter numbers' 11-pixel digits about 9.9
 (computed; readable in runs 8–17).
 
@@ -1090,8 +1092,10 @@ fastest which fader a moving meter is over. Playing distance measured first: the
 other numberings, the peak floor, and the bar fall were then removed (`sbdev lcbridge` keeps
 `peakfall`). Track's pop-up shows the page, then
 the first and last channels with their slots. The device centers each line, and the display
-arrangements this project uses (section 5) choose lines, not alignment, so the driver pads the first with trailing spaces and the second with
-leading ones, up to the field's 20 characters (`LaunchControlDriver.pushed`). The text home
+arrangements this project uses (section 5) choose lines, not alignment, so the driver pushes the
+first channel left with trailing spaces and puts "to" at the left of the last line with the channel
+pushed right (`LaunchControlDriver.pushed`, `spread`), as far as the field's 20 characters and an
+estimated 118 of the screen's 128 pixels allow (runs 2–6 below). The text home
 screen's first line names the same two channels ("1/2: Vox to Gtr"), where there is more time to
 read, and falls back to the page alone when they don't fit.
 
@@ -1105,7 +1109,7 @@ after the left line's, about 16.6 and 15.5 photo pixels a space, at about 3.25 p
 screen pixel (from the meter picture's known slot spacing, 16 pixels): a space is about 5 pixels,
 not test 22's 3. The width estimate now counts 5 for a space, and a pushed line keeps about 6 pixels
 to spare (an estimated 120 of the 128), since both lines came out wider than estimated: "3 ADAT
-5/6" by about 7 pixels, "3 PB 5/6" by a few. With these, "3 ADAT 5/6" gets eight spaces in front and
+5/6" by about 7 pixels, "3 PB 5/6" by about 10 (measured about 72 against 62). With these, "3 ADAT 5/6" gets eight spaces in front and
 "3 PB 5/6" eleven. The meter picture on page 2 showed 1 2 3 with the playbacks' line under all three.
 
 Run 3: with those spaces, both right lines fit ("yes it fits", Adam). He asked for "Page 1 of 2" in
@@ -1121,20 +1125,25 @@ that it is pushed right. Both made: unlabeled playbacks are "Pb 1/2" on every ha
 then the channel ("to      3 Gtr", `LaunchControlDriver.spread`).
 
 Run 5 (photo, page 1 of 1, all six channels on one page): "Page 1 of 1", "1 Tonverk" at the left, and
-"to" at the left with "6 Pb 5/6" at the right, part of its last "6" cut off (Adam). "to" and "1"
-start at the same place, the screen's left edge: the line was again wider than the screen. Measured in
+"to" at the left with "6 Pb 5/6" at the right, part of its last "6" cut off (Adam). "to" starts at
+the screen's left edge and "1" about 3 pixels right of it (measured): the last line was again wider
+than the screen, so it started at the edge, while the second, narrower, was centered. Measured in
 the photo (about 3.77 photo pixels to a screen pixel, from the left edge to the cut-off end): "Page 1
 of 1" about 76 screen pixels wide, against an estimated 84, and "6 Pb 5/6" at least 71, against an
 estimated 62; the eight spaces about 41, 5 each, as in run 2. So the estimate now counts digits as
 about 10.5 pixels and "1" as 8 (test 22's 9 for every digit was too small for 6 and too large for
-1), and a pushed line keeps about 10 pixels to spare (an estimated 118 of the 128). The last line now
+1), and a pushed line keeps about 10 pixels to spare (an estimated 118 of the 128). Most lowercase
+letters measured narrower than the estimate's 8.75 (about 7.5), and strings of capitals and digits
+still about 5 pixels wider than estimated, so the margin, more than the calibration, keeps a padded
+line on the screen (a review of 2026-11-11, from the same photos). The last line now
 gets seven spaces. Run 6 (photo): "6 Pb 5/6" whole, a few pixels from the right edge, and "to" and
 "1 Tonverk" starting at about the same place.
 
 Peaks (videos, `peaks bar` and `peaks floor`, quiet material on channel 1): the review's suggestion
 that a held peak also show alone above −40 dBFS after its bar has emptied. Adam "couldn't tell the
 difference"; in the frames the bars reach only a few pixels, so the case it covers (a loud hit, then
-silence) hardly came up. The default stays: a held peak only over a bar.
+silence) hardly came up. The default stayed: a held peak only over a bar (until the peak fall
+below, which shows a falling peak down to an empty bar).
 
 Fall (`fall 12`, `fall 20`, against TotalMix FX's own meters): "fall 12 is not good. the peaks just
 disappear rather than dropping like TMFX. 20 was harder to tell" (Adam). An inference from the
@@ -1145,12 +1154,13 @@ Peak fall (`peakfall 20` and `peakfall 40`): since TotalMix FX's peaks drop wher
 held peak now falls after its 2 s hold, shown down to an empty bar. "either 20 or 40 was right", "20
 maybe closer", "but it's also hard to see the difference" (Adam). 20 dB a second is the default.
 
-Adam also saw "1 Tonverk" not quite at the left edge: its "1" starts about 3 screen pixels right
-of "to" (measured). A line is centered unless it is wider than the screen, and a field holds 20
-characters, so "1 Tonverk" with its 11 spaces is about 127 pixels wide and sits a pixel or so in
-from each side, while the overfull last line started at the edge. A shorter name sits further in
-("1 Vox" with 15 spaces, about 105 pixels, about 11 in): an inference from the measured widths,
-since no wider blank character is known to push it further.
+Adam also saw "1 Tonverk" not quite at the left edge (run 5: its "1" starts about 3 screen pixels
+right of "to", measured). A line is centered unless it is wider than the screen. "1 Tonverk" with
+its 9 spaces (estimated 118 pixels; about 119 from its measured width) sits about 4 pixels in from
+each side, while the overfull last line started at the edge. In run 6 both lines are centered and
+start within about a pixel of each other. A shorter name sits a little further in ("1 Vox" with 15
+spaces, an estimated 114.5 pixels, about 7 in): an inference from the estimate, since no wider
+blank character is known to push it further.
 
 Adam then flagged two questions for a UI review rather than settling them: whether the slot number
 needs a separator after it ("1: Tonverk", "1 – Tonverk", or "1 — Tonverk"; a hyphen if the font

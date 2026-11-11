@@ -1067,9 +1067,12 @@ public struct LaunchControlDriver: Sendable {
     }
 
     /// `left` and `right` on one line, pushed apart with spaces as `pushed(_:to:fits:)` pushes one
-    /// text ("to        3 Gtr"); one space between them when even that doesn't fit.
+    /// text ("to        3 Gtr"). When the two don't fit with one space between them, `right`
+    /// alone: a line wider than the screen loses its end (test 24), which is where a pair's
+    /// numbers are.
     static func spread(_ left: String, _ right: String,
                        fits: (String) -> Bool = { $0.count <= fieldLength && screenWidth($0) <= pushedWidth }) -> String {
+        guard left.isEmpty || right.isEmpty || fits(left + " " + right) else { return spread("", right, fits: fits) }
         var gap = left.isEmpty || right.isEmpty ? "" : " "
         while fits(left + gap + " " + right) { gap += " " }
         return left + gap + right
@@ -1082,8 +1085,8 @@ public struct LaunchControlDriver: Sendable {
         return (page.first / Self.stripCount + 1, pages)
     }
 
-    /// The home screen's first line: the page, then its first and last channels by name ("Page 1/2:
-    /// Keys to Pb 1/2"), as the controls' displays name them. Counts by position ("In 1-3, PB 1-3")
+    /// The home screen's first line: the page, then its first and last channels by name ("1/2: Vox
+    /// to Gtr", or "Page 2/2: Pb 1/2" when "Page " fits), as the controls' displays name them. Counts by position ("In 1-3, PB 1-3")
     /// matched nothing in TotalMix FX, and "In" could be read as "ln" (Adam, 2026-11-11; test 24).
     /// "Page " goes when the line doesn't `fit`; then the names go, rather than being cut into
     /// fragments, leaving the page ("Page 1 of 2") or, with one page, the number of channels, since the

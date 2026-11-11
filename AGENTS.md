@@ -158,13 +158,14 @@ Both screens so far are 128 × 64 and one bit, but the Launch Control XL 3's act
 21 mm wide (0.16–0.17 mm pixels) and the E16's about 35 mm (0.27 mm pixels), measured from the
 makers' photos and Adam's (`docs/LAUNCH-CONTROL-XL3.md`, test 22). A 5 × 7 font is about 1.9 mm
 tall on the E16 and reads; on the XL 3 it is about 1.2 mm and doesn't (test 22, run 1). So the E16's
-rest view carries a page of names in that font, and the XL 3's carries only large shapes (meter
-bars, large digits), its names waiting for the firmware's own larger font while a control moves.
+rest view carries a page of names in that font, and the XL 3's meter picture carries only large
+shapes (meter bars, large digits); its text, at rest or while a control moves, stays in the
+firmware's own larger font.
 Playing distances (Adam, 2026-11-11, by tape measure, eye to screen): the XL 3 about 24–25 in
 (about 620 mm), the E16 about 27 in (about 690 mm). At those distances the E16's 5 × 7 names
-subtend about 9.6 arcmin and read; the XL 3's 5 × 7 text about 6.4 arcmin and didn't; the XL 3's
+subtend about 9.4 arcmin and read; the XL 3's 5 × 7 text about 6.4 arcmin and didn't; the XL 3's
 meter digits (11 pixels, about 1.8 mm) about 9.9 arcmin. So for Adam, on these one-bit OLEDs with
-bold lit-on-dark glyphs, the line falls between about 6.4 and 9.6 arcmin, below step 3's 16 (two
+bold lit-on-dark glyphs, the line falls between about 6.4 and 9.4 arcmin, below step 3's 16 (two
 observations; an inference that the floor is cautious here, for names he knows). Step 3's figures
 stay the starting point for a new surface; check them on the device.
 

@@ -319,8 +319,8 @@ The E16 has two layouts. In the **16-channel layout**, each encoder is one chann
 | **Shift + turn an encoder** | Reset it: a pan to the center, a send to −oo (release Shift, then Shift + turn it again to bring it back). Hold Shift for a moment (0.3 s) first; after Page or Track in the same hold, turning does nothing. |
 
 - The two send rows never feed the same output: stepping one skips the output the other has.
-- The screen shows the page with its first and last channels' names, and where each send row goes (e.g.,
-  "1/2: Vox to Gtr", "Top > Phones 1", "Mid > Phones 2"). With **Meters: Show on the home screen** on
+- The screen shows the page's first and last channels and where each send row goes (e.g., "1/2: Vox to
+  Gtr", "Top > Phones 1", "Mid > Phones 2"), with the page number when there is more than one page. With **Meters: Show on the home screen** on
   (Settings… → Connections), it shows a meter for each channel instead, two bars for a stereo channel, numbered 1–8
   by its place on the page, with a line under the playbacks' numbers; Track shows the page and its first and last
   channels with their numbers, and the send rows' outputs show only on Page and when an encoder turns. Meters need TotalMix FX's **Send Level Data** on and **Peak Hold** off (see the Setup Guide).

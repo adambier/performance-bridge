@@ -28,7 +28,9 @@ extension LaunchControlDriver {
     /// (docs/LAUNCH-CONTROL-XL3.md, test 22): capitals about 9 pixels (a capital I about 5), most
     /// lowercase letters nearly as wide. Measured again in test 24's photos of padded lines: a space
     /// about 5 (test 22's 3 was too small), and digits about 10.5 but "1" about 8 (test 22's 9 for
-    /// all of them was too small for "6 Pb 5/6" and too large for "Page 1 of 1").
+    /// all of them was too small for "6 Pb 5/6" and too large for "Page 1 of 1"). Most lowercase
+    /// letters measured narrower than 8.75 (about 7.5), and strings of capitals and digits still about
+    /// 5 pixels wider than estimated, so a padded line keeps 10 pixels to spare (`pushedWidth`).
     public static func screenWidth(_ text: String) -> Double {
         text.reduce(0) { width, character in
             switch character {

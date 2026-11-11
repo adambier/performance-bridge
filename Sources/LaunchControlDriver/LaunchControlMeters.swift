@@ -7,7 +7,8 @@
 //   pair's bars are one pixel apart and the strips five (four was tried, to make room for side
 //   marks, and went back to five once the side marks were dropped);
 // - a peak line with no bar under it, at a channel's noise floor, looked like stray pixels, so a
-//   peak shows only over a bar;
+//   held peak shows only over a bar; once its hold ends it falls (`meterPeakFall`, test 24), and a
+//   falling peak shows down to an empty bar, until it meets the level;
 // - 0 dBFS marks at the screen's sides (one pixel, then 2 × 2, then 4 × 2) gave way to a finely
 //   dotted line across each bar at 0 dBFS, the meters' top row (Adam's idea);
 // - clip boxes over the bars looked like tiny glyphs, and nothing shows that TotalMix FX's levels
@@ -32,7 +33,8 @@
 //
 // The averaging and peak hold use the E16's constants, tuned there by eye at 25 screens a second
 // (docs/OXI-E16.md, section 5); that they suit the XL 3's slower pictures (about 14 a second) is an
-// inference, not yet compared with TotalMix FX's meters. They are updated on every tick, not only
+// inference; the peak fall was chosen next to TotalMix FX's own meters (test 24), the averaging
+// was not compared. They are updated on every tick, not only
 // when a picture goes out, so a peak between two pictures is held. The scale is `MeterScale`, shared with the Roto-Control and the E16,
 // with 0 dBFS at the top: the meters show only inputs and playbacks, whose levels are inferred to
 // stop at 0 dBFS (Adam considered room up to +6 dB and dropped it).
@@ -66,13 +68,15 @@ extension LaunchControlDriver {
     static let numberTop = 48
     /// The row of the line under the playbacks' numbers: two dark rows below them, one pixel thick
     /// (two at first, the heaviest mark on the screen; Adam chose one on a recommendation,
-    /// 2026-11-10; not yet seen on the device), leaving the screen's bottom two rows dark.
+    /// 2026-11-10; seen on the device in test 24, and kept for now, Adam), leaving the screen's
+    /// bottom two rows dark.
     static let playbackLineTop = 61
     /// The time constant of the average the bars follow, in seconds (the E16's, `E16Driver.meterAverage`).
     public static let meterAverage = 0.03
     /// How far below the averaged peaks a bar sits, in dB (the E16's, `E16Driver.meterOffset`).
     public static let meterOffset = 6.0
-    /// How long a peak holds before it drops to the level, in seconds (the E16's, `E16Driver.peakHold`).
+    /// How long a peak holds before it falls (`meterPeakFall`), or, with that `nil`, drops to the
+    /// level, in seconds (the E16's, `E16Driver.peakHold`).
     public static let peakHold = 2.0
 
     /// Turns `showsMeters` on or off, and returns what changes on the device: with meters off, the
@@ -92,21 +96,22 @@ extension LaunchControlDriver {
 
     /// The picture for now, if it changed and the device is ready for one.
     mutating func drawMeterScreen(hub: SurfaceHub, now: Double) -> [UInt8] {
-        var levels: [[Int]] = [], peaks: [[Int]] = [], numbers: [MeterNumber?] = []
+        var levels: [[Int]] = [], peaks: [[Int]] = [], falling: [[Bool]] = [], numbers: [MeterNumber?] = []
         for (column, info) in stripInfos.enumerated() {
-            guard let info else { levels.append([]); peaks.append([]); numbers.append(nil); continue }
+            guard let info else { levels.append([]); peaks.append([]); falling.append([]); numbers.append(nil); continue }
             // Each strip's place on the page, 1–8, whatever its kind: the fastest to map to a fader
             // (Adam, 2026-11-11; docs/LAUNCH-CONTROL-XL3.md, test 24).
             numbers.append(MeterNumber(number: column + 1, marked: info.channel.bus == .playback))
             var refs = [info.channel]
             if info.stereo { refs.append(ChannelRef(info.channel.bus, info.channel.channel + 1)) }
             levels.append(refs.map { averagedHeight($0, hub: hub, now: now) })
-            peaks.append(refs.map { heldPeak($0, hub: hub, now: now) })
+            let held = refs.map { heldPeak($0, hub: hub, now: now) }
+            peaks.append(held.map(\.height))
+            falling.append(held.map(\.falling))
         }
         // The averages and held peaks above follow every tick; only the sending waits for the device.
         if let sent = bitmapSentAt, now - sent < Self.bitmapTimeout { return [] }
-        // A falling peak shows down to an empty bar, as TotalMix FX's do.
-        let picture = Self.meterPicture(levels: levels, peaks: peaks, numbers: numbers, lonePeaks: meterPeakFall != nil)
+        let picture = Self.meterPicture(levels: levels, peaks: peaks, numbers: numbers, falling: falling)
         let packed = picture.packed
         guard packed != shownBitmap else { return [] }
         shownBitmap = packed
@@ -127,15 +132,16 @@ extension LaunchControlDriver {
         average.power += (power - average.power) * (1 - exp(-dt / Self.meterAverage))
         average.at = now
         meterAverages[ref] = average
-        // A bar follows the average down; a slower fall swallowed the held peaks (test 24).
+        // A bar follows the average down. With a slower fall (test 24's `fall 12`) the peaks
+        // vanished; that the bar swallowed them is an inference from the code.
         let shown = average.power > 0 ? 10 * log10(average.power) - Self.meterOffset : -Double.infinity
         return shown.isFinite ? Self.barHeight(db: shown) : 0
     }
 
     /// A channel's held peak as a bar height: the highest level in the last `peakHold`, then
     /// falling at `meterPeakFall` dB a second until the level meets it (or, with that `nil`, the
-    /// level at once).
-    mutating func heldPeak(_ ref: ChannelRef, hub: SurfaceHub, now: Double) -> Int {
+    /// level at once); `falling` while it falls.
+    mutating func heldPeak(_ ref: ChannelRef, hub: SurfaceHub, now: Double) -> (height: Int, falling: Bool) {
         let db = hub.mirror.meters[ref] ?? -.infinity
         let height = Self.barHeight(db: db)
         if let fall = meterPeakFall {
@@ -143,14 +149,14 @@ extension LaunchControlDriver {
             if let held = meterPeakLevels[ref] {
                 let age = now - held.at
                 let fallen = age < Self.peakHold ? held.db : held.db - fall * (age - Self.peakHold)
-                if fallen > db, fallen > -65 { return Self.barHeight(db: fallen) }
+                if fallen > db, fallen > -65 { return (Self.barHeight(db: fallen), age >= Self.peakHold) }
             }
             meterPeakLevels[ref] = (db, now)
-            return height
+            return (height, false)
         }
-        if let held = meterPeaks[ref], held.height >= height, now - held.at < Self.peakHold { return held.height }
+        if let held = meterPeaks[ref], held.height >= height, now - held.at < Self.peakHold { return (held.height, false) }
         meterPeaks[ref] = (height, now)
-        return height
+        return (height, false)
     }
 
     /// A number under a meter, and whether it is marked (a playback's): one line runs under each
@@ -208,10 +214,12 @@ extension LaunchControlDriver {
     /// held peak as a line while the bar shows; the strip's number under it (`numbers`, `nil` for
     /// none); a line under each run of marked numbers, from the first one's meter to the last
     /// one's; and over each bar a dotted line at 0 dBFS, the meters' top row (every other pixel).
-    /// With `lonePeaks`, a held peak shows even with no bar under it (a falling peak, down to an
-    /// empty bar).
+    /// A peak marked in `falling` (as `peaks`) shows even with no bar under it, down to an empty
+    /// bar: TotalMix FX's peaks have been observed to drop rather than vanish (Adam, test 24); that
+    /// its peaks show over an empty bar is an inference. A held peak not falling shows only over a
+    /// bar, since a lone one at a channel's noise floor looked like stray pixels (test 22).
     public static func meterPicture(levels: [[Int]], peaks: [[Int]], numbers: [MeterNumber?] = [],
-                                    lonePeaks: Bool = false) -> LaunchControlBitmap {
+                                    falling: [[Bool]] = []) -> LaunchControlBitmap {
         var picture = LaunchControlBitmap()
         let rows = meterHeight
         let bottom = rows - 1
@@ -234,11 +242,13 @@ extension LaunchControlDriver {
             let x0 = left(column)
             let bars: [(x: Int, width: Int)] = heights.count > 1 ? [(x0, 5), (x0 + 6, 5)] : [(x0, stripWidth)]
             let peaksHere = peaks.indices.contains(column) ? peaks[column] : []
+            let fallingHere = falling.indices.contains(column) ? falling[column] : []
             for (bar, (x, width)) in zip(bars.indices, bars) where heights.indices.contains(bar) {
                 for dot in stride(from: x, to: x + width, by: 2) { picture[dot, 0] = true }
                 let height = min(max(heights[bar], 0), rows)
                 picture.fill(x: x, y: bottom - height + 1, width: width, height: height)
-                if height > 0 || lonePeaks, peaksHere.indices.contains(bar), peaksHere[bar] > height {
+                let lone = fallingHere.indices.contains(bar) && fallingHere[bar]
+                if height > 0 || lone, peaksHere.indices.contains(bar), peaksHere[bar] > height {
                     picture.fill(x: x, y: bottom - min(peaksHere[bar], rows) + 1, width: width, height: 1)
                 }
             }
