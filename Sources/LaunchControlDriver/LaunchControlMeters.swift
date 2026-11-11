@@ -1,0 +1,258 @@
+// Meters on a Launch Control's home screen (Adam, 2026-11-10): with `showsMeters` on, the
+// stationary display is a picture (SysEx 09h, target 35h; docs/LAUNCH-CONTROL-XL3.md, tests 21 and
+// 22): a meter for each of the page's strips, two bars for a stereo channel, each bar with its held
+// peak, and the channel's number under it. What the device showed (test 22, all Adam, 2026-11-10):
+// - dB ticks between the strips read as a grid, with or without the peaks, so there are none;
+// - with equal gaps everywhere a stereo pair's two bars couldn't be told from two strips, so a
+//   pair's bars are one pixel apart and the strips five (four was tried, to make room for side
+//   marks, and went back to five once the side marks were dropped);
+// - a peak line with no bar under it, at a channel's noise floor, looked like stray pixels, so a
+//   held peak shows only over a bar; once its hold ends it falls (`meterPeakFall`, test 24), and a
+//   falling peak shows down to an empty bar, until it meets the level;
+// - 0 dBFS marks at the screen's sides (one pixel, then 2 × 2, then 4 × 2) gave way to a finely
+//   dotted line across each bar at 0 dBFS, the meters' top row (Adam's idea);
+// - clip boxes over the bars looked like tiny glyphs, and nothing shows that TotalMix FX's levels
+//   flag a clip reliably (they are peaks in dB, sent only when they change), so there are none.
+//
+// The numbers are each strip's place on the page, 1–8, whatever its kind: on the device that was
+// the fastest to map to a fader, and counting each kind on its own (1 2 3 1 2 3) or across the
+// sources (playbacks from 4) made Adam stop to work out where a count restarted or why a playback
+// wasn't 1 (2026-11-11; docs/LAUNCH-CONTROL-XL3.md, test 24). One line runs under each run of
+// playbacks (kept for now, Adam; drawn in reverse they were unreadable in a mockup, a one-pixel
+// underline under each number read as part of the digit, a line above the numbers was tried and
+// moved back). The screen's bottom row stays dark: at an angle it is hard to read. A page line in the E16's font was too small to
+// read, so Track shows the page in the device's own text instead (`goToPage`). Every page keeps
+// eight fixed slots, strip k in the kth: a page of six centered made Adam stop to work out which
+// fader a meter was over (2026-11-11), since the screen isn't above the faders and a meter's slot
+// is how its fader is found; an empty slot shows one dot where its 0 dBFS line would be, so the
+// eight can be counted.
+//
+// A new picture goes out only after the device's ready reply (or `bitmapTimeout` without one), and
+// only when it changed. A control's own temporary display shows over the picture as usual (test
+// 21), so the send rows' outputs still show on Page (the overlay) and when an encoder turns.
+//
+// The averaging and peak hold use the E16's constants, tuned there by eye at 25 screens a second
+// (docs/OXI-E16.md, section 5); that they suit the XL 3's slower pictures (about 14 a second) is an
+// inference; the peak fall was chosen next to TotalMix FX's own meters (test 24), the averaging
+// was not compared. They are updated on every tick, not only
+// when a picture goes out, so a peak between two pictures is held. The scale is `MeterScale`, shared with the Roto-Control and the E16,
+// with 0 dBFS at the top: the meters show only inputs and playbacks, whose levels are inferred to
+// stop at 0 dBFS (Adam considered room up to +6 dB and dropped it).
+
+import Foundation
+#if canImport(SurfaceCore)
+import SurfaceCore
+#endif
+#if canImport(TotalMixOSC)
+import TotalMixOSC
+#endif
+#if canImport(LaunchControl)
+import LaunchControl
+#endif
+
+extension LaunchControlDriver {
+    /// The bitmap target for the stationary display: 35h, as "Configure displays" numbers it (the
+    /// guide's bitmap section says 20h, which drew nothing; docs/LAUNCH-CONTROL-XL3.md, test 21).
+    public static let bitmapTarget: UInt8 = 0x35
+    /// How long to wait for the ready reply before sending the next picture anyway, in seconds.
+    /// Replies took 66–72 ms, once 340 ms while a control moved (test 21).
+    public static let bitmapTimeout = 0.5
+    /// The meters' height in pixels, from the screen's top row (0 dBFS); the channel numbers go below.
+    public static let meterHeight = 45
+    /// A strip's width in pixels: one bar 11 wide, or two 5 wide one pixel apart.
+    static let stripWidth = 11
+    /// The dark pixels between two strips.
+    static let stripGap = 5
+    /// The top row of the channel numbers: three dark rows below the meters (Adam, 2026-11-10: one
+    /// more than the first try), 11 rows tall.
+    static let numberTop = 48
+    /// The row of the line under the playbacks' numbers: two dark rows below them, one pixel thick
+    /// (two at first, the heaviest mark on the screen; Adam chose one on a recommendation,
+    /// 2026-11-10; seen on the device in test 24, and kept for now, Adam), leaving the screen's
+    /// bottom two rows dark.
+    static let playbackLineTop = 61
+    /// The time constant of the average the bars follow, in seconds (the E16's, `E16Driver.meterAverage`).
+    public static let meterAverage = 0.03
+    /// How far below the averaged peaks a bar sits, in dB (the E16's, `E16Driver.meterOffset`).
+    public static let meterOffset = 6.0
+    /// How long a peak holds before it falls (`meterPeakFall`), or, with that `nil`, drops to the
+    /// level, in seconds (the E16's, `E16Driver.peakHold`).
+    public static let peakHold = 2.0
+
+    /// Turns `showsMeters` on or off, and returns what changes on the device: with meters off, the
+    /// text home screen is drawn again, and shows in place of the last picture
+    /// (docs/LAUNCH-CONTROL-XL3.md, test 22); with meters on, `tick` draws the picture.
+    public mutating func setShowsMeters(_ on: Bool, hub: SurfaceHub) -> [UInt8] {
+        guard on != showsMeters else { return [] }
+        showsMeters = on
+        shownBitmap = nil
+        bitmapSentAt = nil
+        // Nothing is written in a Custom Mode (the user may change Display Timeout there); `connect`
+        // draws the home screen on the way back to DAW mode.
+        guard isConnected, !inCustomMode, !on else { return [] }
+        forgetStationaryText()
+        return drawStationary(hub: hub)
+    }
+
+    /// The picture for now, if it changed and the device is ready for one.
+    mutating func drawMeterScreen(hub: SurfaceHub, now: Double) -> [UInt8] {
+        var levels: [[Int]] = [], peaks: [[Int]] = [], falling: [[Bool]] = [], numbers: [MeterNumber?] = []
+        for (column, info) in stripInfos.enumerated() {
+            guard let info else { levels.append([]); peaks.append([]); falling.append([]); numbers.append(nil); continue }
+            // Each strip's place on the page, 1–8, whatever its kind: the fastest to map to a fader
+            // (Adam, 2026-11-11; docs/LAUNCH-CONTROL-XL3.md, test 24).
+            numbers.append(MeterNumber(number: column + 1, marked: info.channel.bus == .playback))
+            var refs = [info.channel]
+            if info.stereo { refs.append(ChannelRef(info.channel.bus, info.channel.channel + 1)) }
+            levels.append(refs.map { averagedHeight($0, hub: hub, now: now) })
+            let held = refs.map { heldPeak($0, hub: hub, now: now) }
+            peaks.append(held.map(\.height))
+            falling.append(held.map(\.falling))
+        }
+        // The averages and held peaks above follow every tick; only the sending waits for the device.
+        if let sent = bitmapSentAt, now - sent < Self.bitmapTimeout { return [] }
+        let picture = Self.meterPicture(levels: levels, peaks: peaks, numbers: numbers, falling: falling)
+        let packed = picture.packed
+        guard packed != shownBitmap else { return [] }
+        shownBitmap = packed
+        bitmapSentAt = now
+        return LaunchControlOutgoing.bitmap(picture, target: Self.bitmapTarget, model: device)
+    }
+
+    /// A level as a bar height on `MeterScale`.
+    static func barHeight(db: Double, height: Int = meterHeight) -> Int {
+        Int((Double(MeterScale.value(peakDB: db)) / Double(MeterScale.fullScale) * Double(height)).rounded())
+    }
+
+    private mutating func averagedHeight(_ ref: ChannelRef, hub: SurfaceHub, now: Double) -> Int {
+        let db = hub.mirror.meters[ref] ?? -.infinity
+        let power = db.isFinite ? pow(10, db / 10) : 0
+        var average = meterAverages[ref] ?? (power, now)
+        let dt = max(now - average.at, 0)
+        average.power += (power - average.power) * (1 - exp(-dt / Self.meterAverage))
+        average.at = now
+        meterAverages[ref] = average
+        // A bar follows the average down. With a slower fall (test 24's `fall 12`) the peaks
+        // vanished; that the bar swallowed them is an inference from the code.
+        let shown = average.power > 0 ? 10 * log10(average.power) - Self.meterOffset : -Double.infinity
+        return shown.isFinite ? Self.barHeight(db: shown) : 0
+    }
+
+    /// A channel's held peak as a bar height: the highest level in the last `peakHold`, then
+    /// falling at `meterPeakFall` dB a second until the level meets it (or, with that `nil`, the
+    /// level at once); `falling` while it falls.
+    mutating func heldPeak(_ ref: ChannelRef, hub: SurfaceHub, now: Double) -> (height: Int, falling: Bool) {
+        let db = hub.mirror.meters[ref] ?? -.infinity
+        let height = Self.barHeight(db: db)
+        if let fall = meterPeakFall {
+            // Held for `peakHold`, then falling at `fall` dB a second until the level meets it.
+            if let held = meterPeakLevels[ref] {
+                let age = now - held.at
+                let fallen = age < Self.peakHold ? held.db : held.db - fall * (age - Self.peakHold)
+                if fallen > db, fallen > -65 { return (Self.barHeight(db: fallen), age >= Self.peakHold) }
+            }
+            meterPeakLevels[ref] = (db, now)
+            return (height, false)
+        }
+        if let held = meterPeaks[ref], held.height >= height, now - held.at < Self.peakHold { return (held.height, false) }
+        meterPeaks[ref] = (height, now)
+        return (height, false)
+    }
+
+    /// A number under a meter, and whether it is marked (a playback's): one line runs under each
+    /// run of marked numbers.
+    public struct MeterNumber: Equatable, Sendable {
+        /// The number, from 1.
+        public var number: Int
+        /// Whether the line under the playbacks runs under it.
+        public var marked: Bool
+        /// A number, marked or not.
+        public init(number: Int, marked: Bool) {
+            self.number = number
+            self.marked = marked
+        }
+    }
+
+    /// The digits for the channel numbers, 6 × 11 pixels with two-pixel strokes, about as tall as
+    /// the device's own text. The project's own drawing.
+    static let digits: [[String]] = [
+        [".####.", "##..##", "##..##", "##..##", "##..##", "##..##", "##..##", "##..##", "##..##", "##..##", ".####."],
+        ["...##.", "..###.", ".####.", "...##.", "...##.", "...##.", "...##.", "...##.", "...##.", "...##.", "...##."],
+        [".####.", "##..##", "....##", "....##", "...##.", "..##..", ".##...", "##....", "##....", "##....", "######"],
+        [".####.", "##..##", "....##", "....##", "..###.", "....##", "....##", "....##", "....##", "##..##", ".####."],
+        ["...##.", "..###.", ".####.", "##.##.", "##.##.", "##.##.", "######", "...##.", "...##.", "...##.", "...##."],
+        ["######", "##....", "##....", "##....", "#####.", "....##", "....##", "....##", "....##", "##..##", ".####."],
+        [".####.", "##..##", "##....", "##....", "#####.", "##..##", "##..##", "##..##", "##..##", "##..##", ".####."],
+        ["######", "....##", "....##", "...##.", "...##.", "..##..", "..##..", ".##...", ".##...", ".##...", ".##..."],
+        [".####.", "##..##", "##..##", "##..##", ".####.", "##..##", "##..##", "##..##", "##..##", "##..##", ".####."],
+        [".####.", "##..##", "##..##", "##..##", "##..##", ".#####", "....##", "....##", "....##", "##..##", ".####."],
+    ]
+
+    /// Draws `number` centered under the meter that starts at `left`: digits 6 pixels
+    /// wide one pixel apart, or, for three digits, 4 pixels wide (each digit's second and fifth
+    /// columns left out), so a number stays within a pixel of its meter's width (or two, for three digits).
+    static func drawNumber(_ number: MeterNumber, left: Int, in picture: inout LaunchControlBitmap) {
+        let text = String(number.number).compactMap { $0.wholeNumberValue }
+        let columns = text.count > 2 ? [0, 2, 3, 5] : Array(0..<6)
+        let width = text.count * columns.count + text.count - 1
+        let x0 = left + (stripWidth - width) / 2
+        for (place, digit) in text.enumerated() {
+            for (row, line) in digits[digit].enumerated() {
+                let pixels = Array(line)
+                for (offset, column) in columns.enumerated() where pixels[column] == "#" {
+                    picture[x0 + place * (columns.count + 1) + offset, numberTop + row] = true
+                }
+            }
+        }
+    }
+
+    /// The home screen as a picture: a meter per strip, left to right, each 11 pixels wide with 5 dark
+    /// pixels between strips, in eight fixed slots (2 dark pixels at the left), an empty slot marked
+    /// by one dot on the top row at its middle:
+    /// one bar for a mono channel, or two bars 5 pixels wide and one pixel apart for a stereo one
+    /// (`levels` and `peaks` give one or two heights per strip, empty for no channel), each with its
+    /// held peak as a line while the bar shows; the strip's number under it (`numbers`, `nil` for
+    /// none); a line under each run of marked numbers, from the first one's meter to the last
+    /// one's; and over each bar a dotted line at 0 dBFS, the meters' top row (every other pixel).
+    /// A peak marked in `falling` (as `peaks`) shows even with no bar under it, down to an empty
+    /// bar: TotalMix FX's peaks have been observed to drop rather than vanish (Adam, test 24); that
+    /// its peaks show over an empty bar is an inference. A held peak not falling shows only over a
+    /// bar, since a lone one at a channel's noise floor looked like stray pixels (test 22).
+    public static func meterPicture(levels: [[Int]], peaks: [[Int]], numbers: [MeterNumber?] = [],
+                                    falling: [[Bool]] = []) -> LaunchControlBitmap {
+        var picture = LaunchControlBitmap()
+        let rows = meterHeight
+        let bottom = rows - 1
+        let start = (LaunchControlBitmap.width - (stripCount * stripWidth + (stripCount - 1) * stripGap)) / 2
+        func left(_ column: Int) -> Int { start + column * (stripWidth + stripGap) }
+        for column in 0..<stripCount {
+            let hasMeter = levels.indices.contains(column) && !levels[column].isEmpty
+            let hasNumber = numbers.indices.contains(column) && numbers[column] != nil
+            if !hasMeter && !hasNumber { picture[left(column) + stripWidth / 2, 0] = true }
+        }
+        for (column, number) in numbers.prefix(stripCount).enumerated() {
+            guard let number else { continue }
+            drawNumber(number, left: left(column), in: &picture)
+            guard number.marked else { continue }
+            let joinsLeft = column > 0 && numbers[column - 1]?.marked == true
+            picture.fill(x: left(column) - (joinsLeft ? stripGap : 0), y: playbackLineTop,
+                         width: stripWidth + (joinsLeft ? stripGap : 0), height: 1)
+        }
+        for (column, heights) in levels.prefix(stripCount).enumerated() {
+            let x0 = left(column)
+            let bars: [(x: Int, width: Int)] = heights.count > 1 ? [(x0, 5), (x0 + 6, 5)] : [(x0, stripWidth)]
+            let peaksHere = peaks.indices.contains(column) ? peaks[column] : []
+            let fallingHere = falling.indices.contains(column) ? falling[column] : []
+            for (bar, (x, width)) in zip(bars.indices, bars) where heights.indices.contains(bar) {
+                for dot in stride(from: x, to: x + width, by: 2) { picture[dot, 0] = true }
+                let height = min(max(heights[bar], 0), rows)
+                picture.fill(x: x, y: bottom - height + 1, width: width, height: height)
+                let lone = fallingHere.indices.contains(bar) && fallingHere[bar]
+                if height > 0 || lone, peaksHere.indices.contains(bar), peaksHere[bar] > height {
+                    picture.fill(x: x, y: bottom - min(peaksHere[bar], rows) + 1, width: width, height: 1)
+                }
+            }
+        }
+        return picture
+    }
+}

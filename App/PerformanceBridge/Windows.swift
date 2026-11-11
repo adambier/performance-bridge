@@ -576,6 +576,16 @@ struct LaunchControlSendRowsView: View {
                         set: { model.setLevelBrightness($0) }))
                         .frame(minHeight: E16SettingsView.rowHeight)
                 }
+                // Off by default (Adam, 2026-11-11, on the review's advice: on the XL 3 the meters
+                // replace the text home screen, and the Launch Control 3 hasn't been tried with them).
+                GridRow {
+                    Text("Meters")
+                        .frame(width: 110, alignment: .trailing)
+                    Toggle("Show on the home screen", isOn: Binding(
+                        get: { model.status.launchControlMeters },
+                        set: { model.setLaunchControlMeters($0) }))
+                        .frame(minHeight: E16SettingsView.rowHeight)
+                }
             }
         }
     }

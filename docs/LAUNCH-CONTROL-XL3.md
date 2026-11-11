@@ -80,6 +80,20 @@ seen").
 [^test-18]: Test 18 (2026-11-02), section [10](#test-18-2026-11-02-the-101-build-in-the-app-and-two-adjustments).
 [^test-19]: Test 19 (2026-11-02), section [10](#test-19-2026-11-02-dimmer-off-buttons).
 [^test-20]: Test 20 (2026-11-10), section [10](#test-20-2026-11-10-a-pans-center-in-totalmix-fx).
+[^test-21]: Test 21 (2026-11-10), section [10](#test-21-2026-11-10-bitmaps).
+[^test-22]: Test 22 (2026-11-10), section [10](#test-22-2026-11-10-meters-on-the-home-screen).
+[^test-23]: Test 23 (2026-11-10), section [10](#test-23-2026-11-10-display-timeout).
+[^test-24]: Test 24 (2026-11-11), section [10](#test-24-2026-11-11-numbering-the-meters).
+[^nov-settings]: Novation, "Launch Control XL 3's Settings page", Launch Control XL 3 user guide
+    (online), <https://userguides.novationmusic.com/hc/en-gb/articles/26190532189330-Launch-Control-XL-3-s-Settings-page>,
+    read 2026-11-10.
+[^nov-xl3-page]: Novation, "Launch Control XL 3" product page, <https://novationmusic.com/launch/launch-control-xl>, read
+    2026-11-11 (dimensions; 128 × 64 monochrome OLED).
+[^thomann-e16]: Thomann, "OXI Instruments E16" listing, <https://www.thomann.co.uk/oxi_instruments_e16.htm>, read
+    2026-11-11 (dimensions; OXI's own page was not checked).
+[^nov-custom]: Novation, "Using Custom Modes on the Launch Control XL 3", Launch Control XL 3 user
+    guide (online), <https://userguides.novationmusic.com/hc/en-gb/articles/26190535820562-Using-Custom-Modes-on-the-Launch-Control-XL-3>,
+    read 2026-11-10.
 
 ## 2. MIDI ports
 
@@ -218,7 +232,13 @@ and Shift on channel 7.
     given.
   - **Bitmap.** SysEx 09h sends a whole picture: 64 rows of 19 bytes, 7 pixels per byte, highest
     bit leftmost. The device answers when it is ready for the next one. It holds one bitmap at a
-    time.[^prg-bitmap]
+    time.[^prg-bitmap] On the device, the target is 35h (the stationary display, as "Configure
+    displays" numbers it; the guide's 20h drew nothing), the message ends with F7h, a set bit
+    lights a pixel, and the first byte is the top left; the reply took 66–72 ms (once 340 ms while a
+    control moved), so about 14 pictures a second at most; a control's own temporary display shows over the picture and the picture
+    returns after it; pictures sent meanwhile are answered as usual.[^test-21] A picture sent to 36h
+    replaced the one on the screen and stayed up; whether 36h differs from 35h at all is not yet
+    known.[^test-21]
 
 ## 6. Feature controls
 
@@ -264,10 +284,11 @@ Each is resolved here as stated, until the device settles it.
    targets that only set names, 22h–28h (34–40), a range that overlaps encoder targets (34–36) and
    button numbers (37–40). The target list gives no such range.
 5. **Bitmap targets.** The bitmap section names the stationary display 20h and the global
-   temporary display 21h, where "Configure displays" uses 35h and 36h.
+   temporary display 21h, where "Configure displays" uses 35h and 36h. Settled on the device:
+   20h drew nothing and got no reply; 35h works.[^test-21]
 6. **Bitmap message end.** The bitmap message is shown ending with 7Fh, not F7h, and the reply as
-   F0h … 09h 7Fh, with no F7h. The 7Fh may be a misprint for F7h, or the reply may have a 7Fh and
-   lost its F7h in print (inference either way). The library reads either form as the reply.
+   F0h … 09h 7Fh, with no F7h. Settled on the device: a message ending with F7h alone works with
+   35h (with 20h, neither end worked); the reply is read in either form.[^test-21]
 7. **The global MIDI channel.** The feature control table gives the range as 00h–0Eh, called 0–15,
    with 00h as channel 1 and 0Eh as channel 16; but 0Eh is 14. Performance Bridge leaves this setting
    alone, so it doesn't matter here.
@@ -297,7 +318,11 @@ port names.
 10. **Screen.** Run.[^test-5] `display f1 2`, then `text f1 0 Mix`, `text f1 1 ADI-2`, `text f1 2 -6.0 dB`, and
     move fader 1. How many characters fit per field? Then `display stationary 3` with eight names,
     and the `quiet` option (no display on change).
-11. **Bitmap targets** (section 7, item 5), only if a bitmap is wanted later.
+11. **Bitmaps** (section 7, items 5 and 6), for meters on the screen (Adam asked, 2026-11-10).
+    `bitmap 20 frame`, then `21`, `35`, and `36`: which targets show the picture, does the reply
+    come, and with which end (add `7f` for 7Fh F7h)? Does a set bit light a pixel, and is the block
+    at the top left? `show stationary off` takes it down. Then `bitmaprate T 10` with a target that
+    works: how many pictures a second, and how long the reply takes.
 12. **Do level encoders need relative mode?** Part 1 run (2026-11-01, Launch Control 3 layout on
     the XL 3, TotalMix FX's curve): "pretty smooth". Adam then asked for the ARC USB's scale for volume
     encoders (section 9), which is finer near 0 dB. On it, a slow fade of a send from about −20 dB
@@ -454,9 +479,32 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
 - **Screen.** Each fader and encoder has a three-line display (arrangement 2): the channel's name,
   what the control does ("Level", "Pan", "> Phones 1"), and the value in dB or as a pan, sent by
   the driver.[^test-5] The stationary display, the home screen, has three lines (arrangement 2): the
-  channels on the page, each kind counted on its own ("Inputs 1-7", then "Playbacks 1-8"; "In 6-7, PB
-  1-6" for a page with both; Adam, 2026-11-01), and where each send row goes ("Top > Phones 1", "Mid >
-  Phones 2"), which nothing else on the device shows (Adam, 2026-11-01). The eight names packed to
+  page's first and last channels by name ("Vox to Gtr"), as the controls' displays name them, with
+  the page in front when there is more than one ("Page 1/2: " or, if that doesn't fit, "1/2: "; Adam,
+  2026-11-10), or the page alone ("Page 1 of 2"; with one page, the number of channels) when the
+  names don't fit, rather than names cut into fragments (counts by kind, "In 6-7, PB 1-6", matched nothing in TotalMix FX, and "In" could be read
+  as "ln"; Adam, 2026-11-11[^test-24]), and where each send row goes
+  ("Top > Phones 1", "Mid > Phones 2"; "Top row >" ran most outputs' names off the
+  screen[^test-22]), which nothing else on the device shows (Adam, 2026-11-01). Whether the page's
+  line fits is estimated from character widths measured in photos of the screen (an
+  inference).[^test-22][^test-24] With **Meters** on (a setting, off by default: on the XL 3 the meters replace the text home screen,
+  and the Launch Control 3 hasn't been tried with them; Adam, 2026-11-11, on a review's advice), the home screen is a
+  picture instead: a meter for each strip, 45 pixels tall, with a finely dotted line across each bar at 0 dBFS (the top), no clip lights, a stereo channel's two bars one pixel
+  apart and the strips five apart, each bar with its peak held 2 s and then falling at 20 dB a second, as TotalMix FX's peaks drop
+  (Adam, 2026-11-11[^test-24]), shown even once its bar has emptied, until it meets the level (a
+  held peak not yet falling shows only over a bar, since a lone one at a channel's noise floor looked
+  like stray pixels[^test-22]), and no dB
+  marks; under each meter its place on the page, 1–8 (Adam, 2026-11-11[^test-24]), with one line
+  under each run of playbacks' numbers (one pixel thick; kept for now, Adam), and the screen's bottom
+  rows dark; Track shows the page and its first and last channels on the overlay, each with its
+  slot, the number under its meter, the first pushed left and the last right with spaces, since the
+  device centers each line ("Page 1 of 2", "1 Vox", "to" and "3 Gtr"; Adam, 2026-11-10 and 2026-11-11;
+  test 24 for the spaces; a page with one channel shows two lines, not yet seen on the device). Flagged for the UI review (Adam, 2026-11-11): a separator after the slot
+  number (a colon, an en dash, or an em dash, or a hyphen if the font has no dash), and "Pb" or "PB"
+  for an unlabeled playback.[^test-22][^test-24] How long a control's display stays up is the device's own
+  Display Timeout setting, in seconds (by eye), which applies in DAW mode too (that it covers the overlay as
+  well is an inference); 1 or 2 suits this layout (Adam, 2026-11-10).[^test-23] Every page keeps eight fixed slots, strip k in the kth, an empty slot marked by one dot on the top
+  row (centering a shorter page was tried and dropped).[^test-24] The eight names packed to
   four characters (arrangement 3, e.g., "ADI2SonoM1/2Tonv") were tried first and were unreadable
   (Adam, 2026-11-01); each strip's name shows on its control's display when the control moves.
   Page shows the new send on the overlay.
@@ -846,3 +894,277 @@ test 13), since 0–127 has no exact middle either.
 
 **Consequence.** No change. The XL 3 shows C only at 64 (`LaunchControlDriver.panSteps` maps 63 and 65
 to L02 and R02), and TotalMix FX showed C there from both sides.
+
+### Test 21 (2026-11-10): bitmaps
+
+**Setup.** Adam's XL 3 in DAW mode, `sbdev lcxl` on branch `lc-bitmap-probe` (`bitmap` and
+`bitmaprate`). Not logged beyond the Terminal lines Adam pasted; the screen seen by Adam.
+
+- **Run 1: target 20h**, `bitmap 20 frame`, then with `7f` (7Fh F7h at the end): no change on the
+  screen and no ready reply within 1 s, both times (seen).
+- **Run 2: target 35h**, `bitmap 35 frame`: the screen showed a border, a filled block at the top
+  left, and a diagonal from the top left toward the bottom right, as drawn (seen); the ready reply
+  came after 67.5 ms.
+- **Run 3: rate**, `bitmaprate 35 10`: 145 pictures in 10.1 s (14.4 a second), every one answered;
+  reply times 65.9–71.9 ms, median 68.4 ms. The bars moved smoothly (seen).
+- **Run 4: target 36h**, `bitmap 36 frame` over the last meter picture: the box picture replaced it
+  and stayed up (seen); reply after 68.7 ms. Then `bitmap 35 clear` blanked the screen (seen).
+- **Run 5: a control over a picture.** With `bitmap 35 frame` up, turning the bottom row's first
+  encoder showed its temporary display ("Tonverk", "Pan", "C": text the app had set in an earlier
+  session), and after a few seconds the box came back by itself (seen).
+- **Run 6: a control during pictures**, `bitmaprate 35 10` while turning the same encoder (8 steps
+  over 1.3 s, each with its touch reports): the temporary display stayed up over the moving bars
+  for a few seconds, then the bars came back (seen; they had stopped because the run had ended).
+  118 pictures in 10.0 s (11.8 a second), all answered; reply times 68.9–339.9 ms, median 71.6 ms.
+
+**Consequences.** Meters can be drawn as pictures on the stationary display (35h) at up to about
+14 a second, paced by the ready reply, without hiding a control's own temporary display. One reply
+took 340 ms while the encoder moved (inference: the device was busy with the temporary display),
+so a driver must wait for the reply rather than send on a timer. Not yet tried: whether 36h ever
+differs from 35h; the Launch Control 3. (That the text home screen returns when the driver stops
+sending pictures was seen in test 22.)
+
+### Test 22 (2026-11-10): meters on the home screen
+
+**Setup.** Adam's XL 3, `sbdev lcbridge --meters` on branch `lc-bitmap-probe` with TotalMix FX
+playing, one build per run. Seen in Adam's videos and photo, and his words; no MIDI log.
+
+- **Run 1:** a page line at the top in the E16's 5 × 7 font over meters 34 pixels tall. "That top
+  line of text is too small to read, even with glasses" (Adam). The page line was dropped, the
+  meters made the full 64 pixels, and the page put on Track's overlay.
+- **Run 2:** two-pixel dB ticks between the strips (and one at each edge) at −6, −20, and −40 dB,
+  and a peak line over each bar. The ticks read as a grid, 27 dashes with most strips silent, which
+  bothered Adam "a bit"; he found the peaks a little busy too, or perhaps only the two together.
+- **Run 3:** one-pixel ticks, no peaks. Adam: bring back the peaks; he doesn't love the grid; and
+  it is hard to see where one stereo pair stops and the next starts (both gaps were 2 pixels).
+- **Run 4:** no ticks; peaks back; a pair's bars one pixel apart and the strips five apart. The
+  bars and peaks followed the music; turning controls showed their temporary displays over the
+  meters ("Level −3.9 dB", "> Phones 2 −14.8 dB", "Pan L9"), and the meters came back afterward
+  (seen in the video). Adam has not yet said whether this version is final.
+- **Run 5:** `meters off`: the text home screen came back in place of the picture (photo). Its
+  lines were "In 1-3, PB 1-3", "Top row > ADI-2 3." (cut off at the screen's right edge), and "Mid
+  row > Phones 2" (the "2" cut off). The second and third lines started at the screen's left edge,
+  the first was centered.
+- **Run 6:** the build with "Top >" and "Mid >", without `--meters`: "In 1-3, PB 1-3", "Top >
+  ADI-2 3/4", and "Mid > Phones 2", all three whole and centered (photo).
+- **Run 7:** with the music stopped, two short lines stayed over strip 1's meter, at different
+  heights near the bottom (photo), and TotalMix FX showed a small level on that input (Adam).
+  Inference: these were the two sides' peak lines at the channel's noise floor, with the bars,
+  6 dB lower, too short to draw. A peak line now shows only over a bar. Adam also asked for the
+  channel numbers under the meters, with the playbacks' underlined, and declined dB marks at the
+  screen's side.
+- **Run 8:** the build with the numbers: "1 2 3 1 2 3" under the meters, the second three
+  underlined, readable in Adam's photo (the record writer's reading); with the music quiet, strip 2 showed a short pair
+  of bars with its peaks and strip 1 nothing, so no stray lines (Adam: "stray lines are gone").
+  The underlines were hard to make out as such (Adam): one pixel, one row under the digits, they
+  read as part of the number. A two-pixel line two rows below, one under each run of playbacks,
+  replaced them (Adam chose it from a mockup).
+- **Run 9:** that build: "1 2 3 1 2 3" with one line under the second three, clear in Adam's
+  photo (the record writer's reading). Adam then asked to try the line above the numbers, a little farther from the bars: now
+  three dark rows below the meters, the line, two dark rows, and the numbers. He also asked that a page
+  with fewer than eight strips be centered on the screen.
+- **Run 10** (asked before that build was tried on the device): Adam asked for the line back under
+  the numbers, with the screen's bottom row kept dark, since at an angle it is hard to read. Now:
+  the meters, two dark rows, the numbers, two dark rows, the line (two rows), and the dark bottom
+  row.
+- **Run 11:** that build: six strips centered on the screen, "1 2 3 1 2 3" with the line under
+  the second three, clear of the bottom row (Adam's photo). Adam then asked for one more dark row
+  above the numbers: the meters are now 45 pixels, with three dark rows under them.
+- **Run 12** (asked before that build was tried): Adam asked for an indicator at 0 dBFS and chose
+  both a fixed mark and a clip light: a hollow box three rows tall over each bar, filled for 2 s
+  after that side reaches 0 dBFS, a dark row, then the meters, 41 pixels.
+- **Run 13:** that build. Adam couldn't get a signal to 0 dBFS, and the boxes were too small to see
+  as boxes ("they need to be quite a bit taller and maybe a bit wider"). They are now five rows
+  tall and a pixel wider than the bar on its outer side, the meters 39 pixels, and he asked for a
+  one-pixel 0 dB mark at each side of the screen. `clip N` in `sbdev lcbridge` made strip N reach
+  0 dBFS once, and a clip counted every message at 0 dBFS, even one that a lower level replaced
+  before the next picture (`MixerMirror.overs`); both were removed with the clip boxes in run 15.
+- **Run 14:** the edge marks need to be more than one pixel wide, and possibly two tall (Adam).
+  They are now 2 × 2, on the meters' top two rows; wider would touch the outer strips' bars on a
+  full page.
+  Adam asked for room above 0 dBFS, up to +6, then withdrew it, since the meters show only
+  inputs and playbacks, whose levels are inferred to stop at 0 dBFS (an input's converter, a
+  playback's audio); the top of the meters stays 0 dBFS.
+- **Run 15** (asked before the 2 × 2 build was tried): Adam asked for wider 0 dBFS marks, and
+  disliked the clip boxes ("they look like tiny glyphs rather than boxes"), asking whether the
+  inputs' clipping is even reported reliably. Nothing in the record shows it is: TotalMix FX sends
+  peak levels in dB, only when they change, and no test has seen a level at 0 dBFS. The clip boxes
+  were dropped (meters 45 pixels again), and the gap between strips went from five pixels to
+  four, centering the eight strips with six dark pixels at each side, so the marks are 4 × 2 with
+  two dark pixels before the bars.
+- **Run 16** (asked before that build was tried): Adam suggested a finely dotted line on each
+  meter at 0 dBFS instead of the side marks: every other pixel of the top row over each bar. With
+  the side marks gone, the strips went back to five pixels apart (Adam).
+- **Run 17:** that build: a dotted line at the top over each of the six strips, the meters, "1 2 3
+  1 2 3", and the line under the playbacks (Adam's photo).
+  The line under the playbacks then went from two pixels to one (Adam asked for a recommendation:
+  the two-pixel line was the heaviest mark on the screen; he agreed to one; not yet seen on the
+  device).
+  Adam then asked for the 0 dBFS line "even more gray": the screen has one bit per pixel, so its
+  dots went from every other pixel to one in three, on one grid across the screen, which "looks
+  weirdly mottled" (Adam): the dots fell differently on each bar. Back to every other pixel from
+  each bar's left end, which is even and symmetric on a 5- or 11-pixel bar.
+
+**Screen size** (measured 2026-11-11). The makers' top-view photos (`controller-*.png`, 316 pixels
+tall), scaled by the published sizes (XL 3 250 × 239 mm;[^nov-xl3-page] E16 114 × 142 mm[^thomann-e16]), give the XL 3's screen window as about 28 × 17 mm and the E16's as about 51 × 24 mm, with
+the E16's blank panel visible inside it at about 35.3 × 17.5 mm. In run 17's photo, the dotted
+0 dBFS lines (91 screen pixels) put the XL 3's 128 pixels at about 75% of its window: about 21 mm
+wide. So the pixel pitch is about 0.16–0.17 mm on the XL 3 and 0.27 mm on the E16, about 1.6 times
+as large on the E16 in each direction. Both match common 0.96-inch and 1.54-inch 128 × 64 OLED panels
+(an inference; neither maker names its panel). At about ±1 photo pixel, the figures are good to
+about ±0.5 mm (E16) and ±0.75 mm (XL 3, from a slightly angled photo). This is why the E16's 5 × 7
+font reads and the same font didn't on the XL 3 (run 1): about 1.9 mm against 1.2 mm.
+Adam's playing distances (2026-11-11, tape measure, eye to screen): the XL 3 about 24–25 in (about
+620 mm), the E16 about 27 in (about 690 mm). In visual angle, the E16's names are about 9.4 arcmin,
+the XL 3's 5 × 7 text about 6.4 (unreadable, run 1), and the meter numbers' 11-pixel digits about 9.9
+(computed; readable in runs 8–17).
+
+**Consequences.** The meter layout is run 17's, with the line under the playbacks one pixel thick
+(not yet seen on the device) and the 0 dBFS line every other pixel. A review of the same day
+(Tier 1) found that the averages and peaks were updated only when a picture could go out, so a
+peak between two pictures was lost; they now follow every tick. Measured in the photo (about 11.8 of
+its pixels to one of the screen's, from the cut-off edge and the centered first line; an
+inference), capitals and digits take about 9 screen pixels with their gap, most lowercase letters
+nearly as many, "i" about 4, and a space about 3 (about 5, measured better in test 24); "Mid row >
+Phones 2" needs about 129 of the 128.
+The send rows' lines are "Top >" and "Mid >" again, since with "row" most outputs' names don't fit,
+and the driver estimates the first line's width from these figures (`LaunchControlDriver.screenWidth`)
+to decide between "Page 1/2: " and "1/2: ".
+
+### Test 23 (2026-11-10): Display Timeout
+
+**Setup.** Adam's XL 3 with `sbdev lcbridge --meters`. Novation's Settings page lists a **Display
+Timeout** setting, 1–10, default 3, for how long temporary messages stay on the screen, without
+units; the Settings page opens from a Custom Mode by holding both Track buttons, Page ▲▼ step
+through the settings, and the top-left encoder changes one; Mode leaves.[^nov-settings] A Custom
+Mode is chosen with Mode, one of the 16 buttons lit blue, and Mode again.[^nov-custom]
+
+**Findings** (seen):
+- Mode, a blue button, and Mode put the device in a Custom Mode (the screen named a new custom
+  mode); both Track buttons then opened the Settings page at "Global MIDI Channel 9"; Display
+  Timeout read 5 (not the default 3) and was turned down to 2; Mode left the Settings page with the
+  screen blank (the device still in the Custom Mode, which the driver doesn't draw).
+- Quitting and starting `sbdev lcbridge --meters` again put the device back in DAW mode with the
+  meters.
+- At 2, the pop-up after turning an encoder goes away soon enough ("yeah think so at 2", Adam);
+  he then judged 1 or 2 both good, and the setting's number to be seconds ("yeah, it's seconds",
+  by eye).
+
+**Consequences.** The setting applies to the temporary displays in DAW mode, so the driver needs no
+timer of its own. The Controls Guide says where the setting is. Whether Mode and a button can go
+back to DAW mode without restarting the host was not tried, so the guide says to quit and reopen
+(seen with `sbdev lcbridge`; the app starts the device the same way, `LaunchControlDriver.start`,
+an inference).
+The Launch Control 3 has a Settings page too; whether it has the same setting was not checked.
+
+### Test 24 (2026-11-11): numbering the meters
+
+**Setup.** Adam's XL 3 with `sbdev lcbridge --meters` and TotalMix FX, three inputs and three
+playbacks shown, all on page 1 at first, then with `pbpage on` (the playbacks on page 2). The
+question, from the UI review of 2026-11-10: which numbering under the meters lets him tell
+fastest which fader a moving meter is over. Playing distance measured first: the XL 3 about 24–25 in, the E16 about 27 in (eye to screen, tape measure).
+
+**Findings** (Adam's words where quoted):
+- The digits themselves: "very easy to read" (run 17's 11-pixel digits).
+- Six strips centered on the screen: mapping a meter to its fader took "a few seconds, since I had
+  to remember that only 6 channels are showing on the screen instead of 8." The page then kept
+  eight fixed slots with a dot on the top row of each empty one: "still somewhat slow: it's hard to
+  tell at a glance how many channels are to the left of the moving bars", since the dots are on the
+  top row, far from the bottom, where most of the motion is.
+- `numbers page` (1–8 by slot): "definitely faster."
+- `numbers kind` (1 2 3, then 1 2 3 for the playbacks): "a little slower than 1-8, because I had to
+  orient to the count restarting and there's nothing obvious causing the restarted numbering
+  (playback vs input is not obvious, and i didnt remember the meaning of the bar for a second)."
+- `numbers all` with the playbacks on page 2 (4, 5, 6 there): "the playback 1/2 starting with 4 is a
+  bit confusing, since I expect it to be the first such channel."
+- `numbers page` on page 2 (1, 2, 3): "Seeing 1 as the first channel makes sense."
+- Track's pop-up (the page and the channels counted by kind): "isn't very useful at all; it's not an 'overlay,' for one
+  thing--it's a screen that pops up and PB1-3 doesn't correspond to any channel numbers in TMFX."
+  Asked what it should show, he chose the page and the first and last channels' names, and to keep
+  the playbacks' line for now. He added that the mixed-case "In" of the counts could be read as
+  "ln".
+
+- The pop-up then showed "Page 2/2", the first channel's name, and "to" and the last's: better, but
+  "the 'to' is a little hard to make sense of within the 1 second the screen shows." He chose each
+  name with its slot ("1 Vox", "3 Gtr") and asked for the first line left-aligned and the second
+  right-aligned.
+
+**Consequences.** The meters are numbered 1–8 by slot on every page; the
+other numberings, the peak floor, and the bar fall were then removed (`sbdev lcbridge` keeps
+`peakfall`). Track's pop-up shows the page, then
+the first and last channels with their slots. The device centers each line, and the display
+arrangements this project uses (section 5) choose lines, not alignment, so the driver pushes the
+first channel left with trailing spaces and puts "to" at the left of the last line with the channel
+pushed right (`LaunchControlDriver.pushed`, `spread`), as far as the field's 20 characters and an
+estimated 118 of the screen's 128 pixels allow (runs 2–6 below). The text home
+screen's first line names the same two channels ("1/2: Vox to Gtr"), where there is more time to
+read, and falls back to the page alone when they don't fit.
+
+Run 2 (photos): Track's pop-up read "Page 1/2", "1 Tonverk" at the screen's left edge, and "3 ADAT
+5/" at its right, the "6" lost; on page 2, "Page 2/2", "1 PB 1/2" at the left, and "3 PB 5/6" at
+the right with part of its "6" cut off (Adam). So the firmware keeps leading and trailing spaces, and a line wider than the screen
+starts at the left edge and loses its end (with ten spaces in front of "3 ADAT 5/6", and twelve in
+front of "3 PB 5/6"). Measured
+in the photos, the first character of the right line sits twelve spaces (page 2) or ten (page 1)
+after the left line's, about 16.6 and 15.5 photo pixels a space, at about 3.25 photo pixels to a
+screen pixel (from the meter picture's known slot spacing, 16 pixels): a space is about 5 pixels,
+not test 22's 3. The width estimate now counts 5 for a space, and a pushed line keeps about 6 pixels
+to spare (an estimated 120 of the 128), since both lines came out wider than estimated: "3 ADAT
+5/6" by about 7 pixels, "3 PB 5/6" by about 10 (measured about 72 against 62). With these, "3 ADAT 5/6" gets eight spaces in front and
+"3 PB 5/6" eleven. The meter picture on page 2 showed 1 2 3 with the playbacks' line under all three.
+
+Run 3: with those spaces, both right lines fit ("yes it fits", Adam). He asked for "Page 1 of 2" in
+place of "Page 1/2": it fits and is faster to take in. The pop-up's first line, and the home
+screen's when it shows the page alone, now read that way; the home screen's "Page 1/2: " or "1/2: "
+in front of the names stays, since "of" would leave too little room for them. Not yet seen on the
+device.
+
+Run 4: "Page 2 of 2" reads well. Adam then suggested "Pb" for an unlabeled playback, which "may
+actually be easier to understand/remember than PB", and "to" at the far left of the last line now
+that it is pushed right. Both made: unlabeled playbacks are "Pb 1/2" on every hardware controller
+(the E16 draws them in capitals, its font having no lowercase), and the last line reads "to", spaces,
+then the channel ("to      3 Gtr", `LaunchControlDriver.spread`).
+
+Run 5 (photo, page 1 of 1, all six channels on one page): "Page 1 of 1", "1 Tonverk" at the left, and
+"to" at the left with "6 Pb 5/6" at the right, part of its last "6" cut off (Adam). "to" starts at
+the screen's left edge and "1" about 3 pixels right of it (measured): the last line was again wider
+than the screen, so it started at the edge, while the second, narrower, was centered. Measured in
+the photo (about 3.77 photo pixels to a screen pixel, from the left edge to the cut-off end): "Page 1
+of 1" about 76 screen pixels wide, against an estimated 84, and "6 Pb 5/6" at least 71, against an
+estimated 62; the eight spaces about 41, 5 each, as in run 2. So the estimate now counts digits as
+about 10.5 pixels and "1" as 8 (test 22's 9 for every digit was too small for 6 and too large for
+1), and a pushed line keeps about 10 pixels to spare (an estimated 118 of the 128). Most lowercase
+letters measured narrower than the estimate's 8.75 (about 7.5), and strings of capitals and digits
+still about 5 pixels wider than estimated, so the margin, more than the calibration, keeps a padded
+line on the screen (a review of 2026-11-11, from the same photos). The last line now
+gets seven spaces. Run 6 (photo): "6 Pb 5/6" whole, a few pixels from the right edge, and "to" and
+"1 Tonverk" starting at about the same place.
+
+Peaks (videos, `peaks bar` and `peaks floor`, quiet material on channel 1): the review's suggestion
+that a held peak also show alone above −40 dBFS after its bar has emptied. Adam "couldn't tell the
+difference"; in the frames the bars reach only a few pixels, so the case it covers (a loud hit, then
+silence) hardly came up. The default stayed: a held peak only over a bar (until the peak fall
+below, which shows a falling peak down to an empty bar).
+
+Fall (`fall 12`, `fall 20`, against TotalMix FX's own meters): "fall 12 is not good. the peaks just
+disappear rather than dropping like TMFX. 20 was harder to tell" (Adam). An inference from the
+code: with the bar falling slowly, it stays above the held peak once the 2 s hold ends, so the peak
+line vanishes into the bar. The default stays: the bar follows the averaged level.
+
+Peak fall (`peakfall 20` and `peakfall 40`): since TotalMix FX's peaks drop where these vanished, a
+held peak now falls after its 2 s hold, shown down to an empty bar. "either 20 or 40 was right", "20
+maybe closer", "but it's also hard to see the difference" (Adam). 20 dB a second is the default.
+
+Adam also saw "1 Tonverk" not quite at the left edge (run 5: its "1" starts about 3 screen pixels
+right of "to", measured). A line is centered unless it is wider than the screen. "1 Tonverk" with
+its 9 spaces (estimated 118 pixels; about 119 from its measured width) sits about 4 pixels in from
+each side, while the overfull last line started at the edge. In run 6 both lines are centered and
+start within about a pixel of each other. A shorter name sits a little further in ("1 Vox" with 15
+spaces, an estimated 114.5 pixels, about 7 in): an inference from the estimate, since no wider
+blank character is known to push it further.
+
+Adam then flagged two questions for a UI review rather than settling them: whether the slot number
+needs a separator after it ("1: Tonverk", "1 – Tonverk", or "1 — Tonverk"; a hyphen if the font
+has neither dash, which is "likely fine"), and "Pb" against "PB" for an unlabeled playback ("not
+sure").
+

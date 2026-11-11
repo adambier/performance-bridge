@@ -172,4 +172,43 @@ final class LaunchControlTests: XCTestCase {
         XCTAssertEqual(LaunchControlModel.lc3.dawPort(among: ["LC3 1 MIDI Out", "LC3 1 DAW Out"]), "LC3 1 DAW")
         XCTAssertNil(LaunchControlModel.xl3.dawPort(among: []))
     }
+
+    func testABitmapPacksSevenPixelsPerByteHighestBitLeftmost() {
+        var picture = LaunchControlBitmap()
+        XCTAssertEqual(picture.packed.count, 64 * 19)
+        XCTAssertTrue(picture.packed.allSatisfy { $0 == 0 })
+        picture[0, 0] = true
+        picture[6, 0] = true
+        picture[7, 0] = true
+        picture[127, 63] = true
+        let packed = picture.packed
+        XCTAssertEqual(packed[0], 0x41, "pixels 0 and 6: the highest and lowest of the seven bits")
+        XCTAssertEqual(packed[1], 0x40, "pixel 7 starts the second byte")
+        XCTAssertEqual(packed[63 * 19 + 18], 0x20, "pixel 127 is the second bit of a row's last byte; five bits unused")
+        XCTAssertTrue(packed.allSatisfy { $0 < 0x80 }, "SysEx data bytes")
+        picture[200, 0] = true
+        XCTAssertFalse(picture[200, 0], "off the screen is ignored")
+        var bar = LaunchControlBitmap()
+        bar.fill(x: 120, y: 60, width: 20, height: 20)
+        XCTAssertEqual(bar.pixels.filter { $0 }.count, 8 * 4, "clipped to the screen")
+        // Rectangles off the screen, or empty, are clipped away, not a crash (review of 2026-11-10).
+        var clipped = LaunchControlBitmap()
+        clipped.fill(x: -10, y: 0, width: 5, height: 1)
+        clipped.fill(x: 130, y: 0, width: 5, height: 1)
+        clipped.fill(x: 0, y: 70, width: 5, height: 1)
+        clipped.fill(x: 3, y: 3, width: -2, height: 1)
+        XCTAssertEqual(clipped, LaunchControlBitmap())
+    }
+
+    func testTheBitmapMessage() {
+        let message = LaunchControlOutgoing.bitmap(LaunchControlBitmap(), target: 0x20)
+        XCTAssertEqual(Array(message.prefix(8)), [0xF0, 0x00, 0x20, 0x29, 0x02, 0x15, 0x09, 0x20])
+        XCTAssertEqual(message.count, 6 + 2 + 1216 + 1)
+        XCTAssertEqual(message.last, 0xF7)
+        let extra = LaunchControlOutgoing.bitmap(LaunchControlBitmap(), target: 0x21, extraEnd: true, model: .lc3)
+        XCTAssertEqual(Array(extra.suffix(2)), [0x7F, 0xF7])
+        XCTAssertEqual(extra.count, 6 + 2 + 1216 + 2)
+        XCTAssertEqual(Array(extra.prefix(6)), LaunchControlModel.lc3.sysExHeader)
+    }
 }
+

@@ -85,12 +85,31 @@ public struct LaunchControlDriver: Sendable {
     /// setting that is off by default (Adam, 2026-11-02, from the Tier 3 review of that date).
     /// Pan encoders keep full brightness.
     public private(set) var levelBrightness: Bool
+    /// Whether the home screen (the stationary display) is a picture with a meter for each strip
+    /// instead of its text: a setting, off by default (Adam, 2026-11-10;
+    /// `LaunchControlMeters.swift`).
+    public internal(set) var showsMeters: Bool
+    /// How fast a held peak falls once its hold ends, in dB a second, down to an empty bar:
+    /// TotalMix FX's peaks drop, and these vanished (Adam, 2026-11-11). Next to TotalMix FX's meters
+    /// 20 and 40 both looked right, "20 maybe closer" (test 24). `nil` drops a peak to the level at
+    /// once.
+    public var meterPeakFall: Double? = 20
+    /// Each channel's held peak, in dBFS, and when it was reached, for `meterPeakFall`.
+    var meterPeakLevels: [ChannelRef: (db: Double, at: Double)] = [:]
+    /// Each channel's averaged level, in power, and when it was last updated (`showsMeters`).
+    var meterAverages: [ChannelRef: (power: Double, at: Double)] = [:]
+    /// Each channel's held peak, as a bar height, and when it was reached.
+    var meterPeaks: [ChannelRef: (height: Int, at: Double)] = [:]
+    /// When the last picture was sent, while its ready reply hasn't come (`bitmapTimeout`).
+    var bitmapSentAt: Double?
+    /// The last picture sent, packed, so an unchanged one isn't sent again.
+    var shownBitmap: [UInt8]?
     /// The send target (an index into `SurfaceHub.sendTargets`) each send row uses now, from
     /// `sendOutputs` (`resolveSends(_:)`); `nil` for none, or pan on the Launch Control 3.
     private var sendIndices: [Int?] = []
 
     private var connected = false
-    private var inCustomMode = false
+    private(set) var inCustomMode = false
     private var lastStart: Double?
     /// When the device last sent anything, and when the driver last asked it for its surface mode,
     /// for the presence check (`presenceInterval`).
@@ -161,12 +180,13 @@ public struct LaunchControlDriver: Sendable {
     /// A driver for one device. `name` starts the hub surfaces' names; `layout` is the model whose
     /// layout runs and `device` the model connected (by default the same).
     public init(name: String, layout: LaunchControlModel, device: LaunchControlModel? = nil, sendOutputs: [Int?] = [],
-                levelBrightness: Bool = false) {
+                levelBrightness: Bool = false, showsMeters: Bool = false) {
         self.name = name
         self.layout = layout
         self.device = device ?? layout
         self.sendRows = LaunchControlSendRows(layout: layout, choices: sendOutputs)
         self.levelBrightness = levelBrightness
+        self.showsMeters = showsMeters
     }
 
     /// Turns `levelBrightness` on or off, and returns the lights that change (none while the
@@ -264,6 +284,7 @@ public struct LaunchControlDriver: Sendable {
             blinkLit = lit
             step.midi += drawButtons(hub: hub)
         }
+        if connected, !inCustomMode, showsMeters { step.midi += drawMeterScreen(hub: hub, now: now) }
         // Not in a Custom Mode the user chose: whether the device answers the question there is
         // untested, and restarting would take it out of that mode (review of 2026-11-02).
         if connected, !inCustomMode, let heard = lastHeard, now - heard >= Self.presenceInterval {
@@ -300,6 +321,12 @@ public struct LaunchControlDriver: Sendable {
     private mutating func handle(_ event: LaunchControlEvent, hub: inout SurfaceHub, now: Double,
                                  into step: inout LaunchControlStep) {
         lastHeard = now
+        if case .bitmapReady = event {
+            // Ready for the next picture (docs/LAUNCH-CONTROL-XL3.md, test 21). It doesn't answer
+            // the presence check's mode question, which may still be on its way.
+            bitmapSentAt = nil
+            return
+        }
         // Anything else heard settles the question: the device is there (review of 2026-11-02).
         if case .mode = event {} else { awaitingModeReply = false }
         if case .dawMode(let on) = event {
@@ -463,6 +490,21 @@ public struct LaunchControlDriver: Sendable {
             }
         }
         take(output, hub: hub, into: &step)
+        // The meter screen has no page line (too small to read, Adam, 2026-11-10), so the page
+        // shows here, in the device's own text, as Page shows a send row's output: its number, then
+        // its first and last channels, each with its slot, the number under its meter ("1 Vox",
+        // "3 Gtr"), the first pushed left and the last right, with "to" at the left of its line
+        // (Adam, 2026-11-11; test 24: "Vox" and "to Gtr", centered, were slow to take in).
+        if showsMeters, connected, !inCustomMode {
+            // "Page 1 of 2", not "Page 1/2": it fits and is faster to take in (Adam, 2026-11-11).
+            let number = "Page \(pageNumber?.current ?? 1) of \(pageNumber?.of ?? 1)"
+            let ends = pageEnds().map { "\($0.slot) \($0.name)" }
+            switch ends.count {
+            case 0: step.midi += overlay(number, "No channels")
+            case 1: step.midi += overlay(number, Self.pushed(ends[0], to: .left))
+            default: step.midi += overlay(number, Self.pushed(ends[0], to: .left), Self.spread("to", ends[1]))
+            }
+        }
     }
 
     /// Resolves the send rows against the send targets now (`LaunchControlSendRows.indices`).
@@ -541,6 +583,8 @@ public struct LaunchControlDriver: Sendable {
         sentColors = [:]
         sentTexts = [:]
         sentConfig = [:]
+        shownBitmap = nil
+        bitmapSentAt = nil
         step.midi += LaunchControlOutgoing.selectMode(.dawMixer) ?? []
         // The XL 3's controls the simulated layout doesn't use stay dark.
         for element in device.elements where element.hasLight && control(for: element) == nil && switchControl(for: element) == nil {
@@ -553,8 +597,9 @@ public struct LaunchControlDriver: Sendable {
         for layer in layers { output.append(hub.resend(id(layer), now: now)) }
         take(output, hub: hub, into: &step)
         // Brings the stationary display up with what was just drawn on it (test 5 brought it up
-        // this way; whether it comes up by itself is untested).
-        step.midi += LaunchControlOutgoing.showDisplay(.stationary, true, model: device) ?? []
+        // this way; whether it comes up by itself is untested). With meters, the picture is
+        // drawn by `tick` instead.
+        if !showsMeters { step.midi += LaunchControlOutgoing.showDisplay(.stationary, true, model: device) ?? [] }
     }
 
     // MARK: - Modes
@@ -950,7 +995,7 @@ public struct LaunchControlDriver: Sendable {
         return ValueText.level(position: value)
     }
 
-    /// The stationary display (the home screen): what is on the page (`pageTitle`), then what isn't shown
+    /// The stationary display (the home screen): the page and its first and last channels (`pageLine`), then what isn't shown
     /// anywhere else on the device (Adam, 2026-11-01). XL 3: where each send row goes ("Top >
     /// Phones 1", "Mid > ADI-2 3/4"). Launch Control 3: the top row ("Top: Pan" or "Top > Phones 1")
     /// and the buttons ("Buttons: Mute" or "Buttons: PFL", or "PFL on, buttons Mute" while a channel's
@@ -958,13 +1003,14 @@ public struct LaunchControlDriver: Sendable {
     /// control's display when the control moves. (Four-letter names in two rows of four were tried
     /// first and were unreadable; docs/LAUNCH-CONTROL-XL3.md, test 5.)
     func stationaryLines(hub: SurfaceHub) -> [String] {
-        let title = Self.pageTitle((infos[layers[0]] ?? []).compactMap { $0?.channel },
-                                   order: hub.layout.channels(.sources, in: hub.mirror))
+        let title = Self.pageLine(pageNames(), count: pageChannelNames.count, pageNumber: pageNumber, fits: Self.fitsScreen)
         func row(_ prefix: String, _ index: Int?, none: String) -> String {
             guard let index, hub.sendTargets.indices.contains(index) else { return prefix + ": " + none }
             return prefix + " " + Self.sendLabel(sendName(index, hub: hub))
         }
         let send = { (row: Int) -> Int? in self.sendIndices.indices.contains(row) ? self.sendIndices[row] : nil }
+        // "Top" and "Mid", not "Top row" and "Mid row": with "row", most outputs' names ran off the
+        // screen ("Top row > ADI-2 3/4", "Mid row > Phones 2"; docs/LAUNCH-CONTROL-XL3.md, test 22).
         if layout == .xl3 {
             return [title, row("Top", send(0), none: "none"), row("Mid", send(1), none: "none")]
         }
@@ -974,31 +1020,95 @@ public struct LaunchControlDriver: Sendable {
         return [title, row("Top", send(0), none: "Pan"), buttons]
     }
 
-    /// The home screen's first line: what is on the page, each kind counted on its own in the
-    /// channel order (Adam, 2026-11-01), e.g., "Inputs 1-7", then "Playbacks 1-8" on the next page,
-    /// or "In 6-7, PB 1-6" for a page with both. Counting strips instead would count the blanks
-    /// left before the playbacks when they start a new page.
-    static func pageTitle(_ shown: [ChannelRef], order: [ChannelRef]) -> String {
-        func range(_ bus: TotalMixBus) -> (Int, Int)? {
-            let ofKind = order.filter { $0.bus == bus }
-            let numbers = shown.filter { $0.bus == bus }.compactMap { ref in ofKind.firstIndex(of: ref).map { $0 + 1 } }
-            guard let low = numbers.min(), let high = numbers.max() else { return nil }
-            return (low, high)
-        }
-        func text(_ range: (Int, Int)) -> String { range.0 == range.1 ? "\(range.0)" : "\(range.0)-\(range.1)" }
-        switch (range(.input), range(.playback)) {
-        case let (inputs?, playbacks?): return "In \(text(inputs)), PB \(text(playbacks))"
-        case let (inputs?, nil): return (inputs.0 == inputs.1 ? "Input " : "Inputs ") + text(inputs)
-        case let (nil, playbacks?): return (playbacks.0 == playbacks.1 ? "Playback " : "Playbacks ") + text(playbacks)
-        case (nil, nil): return "No channels"
-        }
+    /// The page's strips, as the first layer shows them (`nil` for a blank strip).
+    var stripInfos: [StripInfo?] { infos[layers[0]] ?? Array(repeating: nil, count: Self.stripCount) }
+
+    /// Forgets what the stationary display was last sent, so `drawStationary` sends it all again
+    /// (after pictures replaced it).
+    mutating func forgetStationaryText() {
+        guard let byte = LaunchControlDisplayTarget.stationary.byte else { return }
+        sentConfig[byte] = nil
+        for key in sentTexts.keys where key.hasPrefix("\(byte)/") { sentTexts[key] = nil }
+    }
+
+    /// The first and last channels' names on the page, as their controls' displays show them (the
+    /// app's label, or TotalMix FX's name), `last` `nil` with one channel.
+    func pageNames() -> (first: String, last: String?)? {
+        let names = pageChannelNames
+        guard let first = names.first else { return nil }
+        return (first, names.count > 1 ? names.last : nil)
+    }
+
+    /// The names of the page's channels, in order, blanks left out.
+    var pageChannelNames: [String] { stripInfos.compactMap { $0?.name } }
+
+    /// The page's first and last channels (one, with one channel), each with its slot, 1–8, as the
+    /// meters number them.
+    func pageEnds() -> [(slot: Int, name: String)] {
+        let named = stripInfos.enumerated().compactMap { index, info in info.map { (slot: index + 1, name: $0.name) } }
+        guard let first = named.first, let last = named.last else { return [] }
+        return named.count > 1 ? [first, last] : [first]
+    }
+
+    /// The estimated width (`screenWidth`) a pushed line may take (test 24).
+    static let pushedWidth = 118.0
+
+    /// A side of the screen, for `pushed(_:to:fits:)`.
+    enum Side { case left, right }
+
+    /// `text` pushed toward one side of the screen with spaces on the other, as far as the field's
+    /// 20 characters and `fits` allow. The device centers a line and keeps its spaces; a line wider
+    /// than the screen starts at its left edge and loses its end ("3 ADAT 5/6" with ten leading
+    /// spaces showed "3 ADAT 5/"; test 24). So the default leaves about 10 pixels to spare
+    /// (`pushedWidth`), since the widths are estimates, and some have come out several pixels short.
+    static func pushed(_ text: String, to side: Side,
+                       fits: (String) -> Bool = { $0.count <= fieldLength && screenWidth($0) <= pushedWidth }) -> String {
+        side == .left ? spread(text, "", fits: fits) : spread("", text, fits: fits)
+    }
+
+    /// `left` and `right` on one line, pushed apart with spaces as `pushed(_:to:fits:)` pushes one
+    /// text ("to        3 Gtr"). When the two don't fit with one space between them, `right`
+    /// alone: a line wider than the screen loses its end (test 24), which is where a pair's
+    /// numbers are.
+    static func spread(_ left: String, _ right: String,
+                       fits: (String) -> Bool = { $0.count <= fieldLength && screenWidth($0) <= pushedWidth }) -> String {
+        guard left.isEmpty || right.isEmpty || fits(left + " " + right) else { return spread("", right, fits: fits) }
+        var gap = left.isEmpty || right.isEmpty ? "" : " "
+        while fits(left + gap + " " + right) { gap += " " }
+        return left + gap + right
+    }
+
+    /// The page shown and the number of pages, or `nil` with only one page.
+    var pageNumber: (current: Int, of: Int)? {
+        let pages = max(1, (page.count + Self.stripCount - 1) / Self.stripCount)
+        guard pages > 1 else { return nil }
+        return (page.first / Self.stripCount + 1, pages)
+    }
+
+    /// The home screen's first line: the page, then its first and last channels by name ("1/2: Vox
+    /// to Gtr", or "Page 2/2: Pb 1/2" when "Page " fits), as the controls' displays name them. Counts by position ("In 1-3, PB 1-3")
+    /// matched nothing in TotalMix FX, and "In" could be read as "ln" (Adam, 2026-11-11; test 24).
+    /// "Page " goes when the line doesn't `fit`; then the names go, rather than being cut into
+    /// fragments, leaving the page ("Page 1 of 2") or, with one page, the number of channels, since the
+    /// Track pop-up and each control's display show the names in full.
+    static func pageLine(_ names: (first: String, last: String?)?, count: Int, pageNumber: (current: Int, of: Int)?,
+                         fits: (String) -> Bool) -> String {
+        let number = pageNumber.map { "\($0.current)/\($0.of)" }
+        let words = pageNumber.map { "Page \($0.current) of \($0.of)" }  // as Track's pop-up has it
+        guard let names else { return words ?? "No channels" }
+        let range = names.last.map { "\(names.first) to \($0)" } ?? names.first
+        let candidates = number.map { ["Page \($0): \(range)", "\($0): \(range)", words ?? "Page \($0)"] }
+            ?? [range, count == 1 ? "1 channel" : "\(count) channels"]
+        return candidates.first(where: fits) ?? candidates[candidates.count - 1]
     }
 
     /// Sends the home screen's lines that changed, and then brings the screen up again: Track >
     /// changed the text without changing what the screen showed (Adam, 2026-11-01), so the device
     /// seems to redraw the stationary display only when it is brought up (inference; at connect it
     /// is brought up the same way, test 5).
-    private mutating func drawStationary(hub: SurfaceHub) -> [UInt8] {
+    mutating func drawStationary(hub: SurfaceHub) -> [UInt8] {
+        // With meters, the home screen is a picture (`drawMeterScreen`, from `tick`).
+        guard !showsMeters else { return [] }
         var bytes = configure(.stationary, .titleNameAndValue, quiet: false)
         for (field, line) in stationaryLines(hub: hub).enumerated() { bytes += text(.stationary, field, line) }
         guard !bytes.isEmpty, connected else { return bytes }

@@ -53,7 +53,7 @@ small driver of its own.
 - **SurfaceCore** (`Sources/SurfaceCore/`). The aim is TotalMix FX as a performance mixer, for live use. Channel strips, each with:
   - a knob or fader: level, pan, or a send;
   - a switch: mute, PFL, or solo (off by default);
-  - a name, a color, and a meter. The name is the channel's label if the app gave it one (section 4, recorded exceptions), and otherwise TotalMix FX's name; playbacks without a label are named "PB 1/2" and so on, since an unnamed playback has its output's hardware name (test 15).
+  - a name, a color, and a meter. The name is the channel's label if the app gave it one (section 4, recorded exceptions), and otherwise TotalMix FX's name; playbacks without a label are named "Pb 1/2" and so on, since an unnamed playback has its output's hardware name (test 15).
 
   Around the strips:
   - two views: sources (inputs and playbacks) and outputs (the assigned monitoring outputs first, then the sends; a monitoring role with nothing assigned shows no strip). The hardware controllers show only the sources (Adam, 2026-11-01: outputs are set up in TotalMix FX and left alone during a performance); the outputs' order is the order the send controls step through them;
@@ -82,7 +82,7 @@ small driver of its own.
     - Rings, by the UI review of 2026-11-04 as changed in 1.1.1 (Adam, 2026-11-05): a level fills the ring at 0 dB and above; dark means no strip, unless marks turn on it: four marks a quarter ring apart, orange for mute and pink for PFL, interleaved when both (drawn with LED messages after the RING message, which hold until the next RING: test 5); a mute set while Mute Master is off shows its marks still, alternating with the level, or, with PFL on, turning with PFL's and blinking; a pan is red as soon as it is off center and stops at center when turned, however fast (a pause of 0.05 s, then held for the first 2 units one way, the next message moving it one step; test 10), drawn at least 1/16 of its range off the top (one LED at R1, test 7); TotalMix FX's colors remapped so they stay apart on the LEDs (gray as cyan).
     - Screen: host-drawn; the mode (or, in channel strips, send A's and B's outputs) at the left, a PFL on another page and the page at the right; names centered in their 32 px cells, no wider than 26 px, shortened as a set so that two names ending in a number or a pair don't come out the same (`fitSet`), a stereo pair keeping both numbers ("ADT3/4", "P15/16", "15/16"; only a three-digit pair is cut); values in fixed digit places, blank at rest; mute and PFL also marked on the name; drawn and packed only when something on it changed.
     - The E16's box in Settings → Connections has a Ring brightness slider, reading 1–100 for 3%–80% of the LEDs' output (the usable range Adam found on the device; a pressed Shift button is always full), default 55% (68 on the slider), live and saved. It is a must-have, since full brightness is unusable in a dark room. The colors and brightness are to be tuned by side-by-side comparison after 1.1.0, at Tier 1 (constants only).
-    - Two layouts from 1.2.0, a Settings choice that the Shift page's layout buttons also switch (saved either way): "16 channels" (above) and "Channel strips" (Adam, 2026-11-07, after the review: four channels a page, one column each: send A level, send B level, pan, main level, top to bottom; sends A and B are outputs chosen in Settings or on the Shift page, never the same, saved; a push of any encoder in a column mutes or PFLs that channel, shown on its level ring). Meters under the names are a Settings choice (off by default; TotalMix FX's "Send Level Data" on and "Peak Hold" off). Settings text stays minimal: what a control does is in the Controls Guide, not under the control (Adam, 2026-11-07).
+    - Two layouts from 1.2.0, a Settings choice that the Shift page's layout buttons also switch (saved either way): "16 channels" (above) and "Channel strips" (Adam, 2026-11-07, after the review: four channels a page, one column each: send A level, send B level, pan, main level, top to bottom; sends A and B are outputs chosen in Settings or on the Shift page, never the same, saved; a push of any encoder in a column mutes or PFLs that channel, shown on its level ring). Meters under the names are a Settings choice (on by default from the release after 1.2.1, also for users who never set it, off before; Adam, 2026-11-10 and 2026-11-11; TotalMix FX's "Send Level Data" on and "Peak Hold" off). Settings text stays minimal: what a control does is in the Controls Guide, not under the control (Adam, 2026-11-07).
   - **MackieControl** (on hold indefinitely, Adam, 2026-11-10; planned 2026-11-04 for 1.2.0, a number the E16's channel strips then took): a Mackie Control driver, to be tested on Adam's Behringer X-Touch (nine motorized touch faders, eight scribble strips, eight encoders with LED rings, meters, jog wheel; USB first, RTP MIDI over Ethernet maybe later). In order: `docs/MACKIE-CONTROL.md` from linkable sources (the Logic Control / Mackie Control reference, Behringer's X-Touch documents for its MC mode, and open implementations for the dialect questions), with a fresh-agent fact check; `sbdev mcu` as the probe; the driver on SurfaceCore, with the layout decided with Adam (open: what the ninth, master fader does, e.g., Main Out's volume; what Select means). New for the core: motor feedback under the hold rule, and meters on a surface that can show them. The X-Touch's mode (MC, HUI, Ctrl) is chosen on the device at power-on and kept, so the Setup Guide gets a step for it. Softube's Console 1 Fader Mk III was looked at (2026-11-04): Softube documents no native protocol, only MIDI CC, MCU, and HUI modes through its On-Screen Display app, so it would be an MCU device here, not a driver of its own. Written before the "more than one controller" item below, which it interacts with (an X-Touch next to the Roto-Control is the obvious case).
 - **Later (version 1.2.0 or after): more than one hardware controller at once** (Adam, 2026-11-02, from the Tier 3 review of that date). One at a time is enough for 1.0. The plan: a list in Settings → Connections with a "Use" checkbox per controller, opt-in only; a Launch Control is never connected automatically, since connecting leaves DAW mode and enters it again (`startBytes`), which would end a DAW's own session with the device. The one exception (Adam, 2026-11-02): in each launch, until a hardware controller has connected or the user has applied Settings, the app switches to a controller found plugged in (by its MIDI port names alone, `DetectedController`) when the chosen one isn't and exactly one other is. Flagged for a usability review (Adam, 2026-11-02).
 - **Later (version 1.2.0 or after): a DAW connection.** The Roto-Control's record-arm switches would arm and disarm tracks, and its transport switches would drive the transport, in the user's DAW, starting with Logic Pro and Bitwig Studio.
@@ -128,13 +128,54 @@ Where a surface has real detents (the Roto-Control's 0 dB indent), put the virtu
 points. Start there, tune on the device with a trial flag, and record the tuning
 (`docs/OXI-E16.md`, section 5: 0.05 s at a pan's center, 0.075 s between jumps).
 
+Design rule for screens (Adam, 2026-11-11; refined the same day): what a surface's screen shows at
+rest is set by what reads at playing distance, measured on the device, not by its pixel count.
+Whatever doesn't fit legibly at rest goes to the view shown while a control moves. That view uses
+the same sizes below: it gets more room by replacing the rest view, not by using smaller text.
+
+1. Measure each new surface's screen before designing for it, lit edge to edge (or showing a
+   one-pixel border) so the active area's edges show. Either photograph it straight down with a
+   ruler lying on the glass, or measure the lit active area and cross-check it against a top-down
+   photo and the maker's outer dimensions (shot square, from a distance with zoom, since the glass
+   and the enclosure's edges sit at different heights). Pitch is active width ÷ pixels across and
+   active height ÷ pixels down; check both, since some small panels' pixels aren't square.
+2. Set the surface's playing distance: eye to screen, in real use.
+3. Size text by visual angle: height in mm ≈ distance in mm × arcminutes × 0.000291, and pixels =
+   that height ÷ pitch, rounded up. Minimum cap heights: 16 arcmin for static labels, 20 for values
+   that change, and 30 for anything critical, for titles, and for dimmed or low-contrast text
+   (running text, rare here: an x-height of at least 16, ideally 22). These thresholds are Claude's
+   synthesis of ISO 9241-3, FHWA's in-vehicle display guidance, and the unadopted 2026 HFES 100
+   draft; ISO 9241-303 wasn't checked.
+4. Use the larger of that minimum and the smallest font the panel draws cleanly (strokes at least
+   one pixel; characters at least 4 pixels wide lowercase and 5 uppercase).
+5. Marks whose meaning comes from sequence or position rather than from being read (index numbers
+   under meters, separators) may go below the floor if they can be told apart on the device, in
+   context, at the playing distance; labels and values keep the floor (Adam, 2026-11-11). A known
+   sequence is recognized more than read; where it can't be predicted (a later page, two-digit
+   numbers, a count restarting), check that neighbors can still be told apart.
+
+Both screens so far are 128 × 64 and one bit, but the Launch Control XL 3's active area is about
+21 mm wide (0.16–0.17 mm pixels) and the E16's about 35 mm (0.27 mm pixels), measured from the
+makers' photos and Adam's (`docs/LAUNCH-CONTROL-XL3.md`, test 22). A 5 × 7 font is about 1.9 mm
+tall on the E16 and reads; on the XL 3 it is about 1.2 mm and doesn't (test 22, run 1). So the E16's
+rest view carries a page of names in that font, and the XL 3's meter picture carries only large
+shapes (meter bars, large digits); its text, at rest or while a control moves, stays in the
+firmware's own larger font.
+Playing distances (Adam, 2026-11-11, by tape measure, eye to screen): the XL 3 about 24–25 in
+(about 620 mm), the E16 about 27 in (about 690 mm). At those distances the E16's 5 × 7 names
+subtend about 9.4 arcmin and read; the XL 3's 5 × 7 text about 6.4 arcmin and didn't; the XL 3's
+meter digits (11 pixels, about 1.8 mm) about 9.9 arcmin. So for Adam, on these one-bit OLEDs with
+bold lit-on-dark glyphs, the line falls between about 6.4 and 9.4 arcmin, below step 3's 16 (two
+observations; an inference that the floor is cautious here, for names he knows). Step 3's figures
+stay the starting point for a new surface; check them on the device.
+
 Recorded exceptions:
 - **Labels** (Adam, 2026-11-01). The app can give any channel a label of its own, shown only on
   the hardware controllers; a channel without one shows TotalMix FX's name. The case: TotalMix FX's names
   serve TotalMix FX (routing, the matrix, recall), while a hardware controller's labels serve quick
   mixing on a small screen; and TotalMix FX's default playback names repeat its inputs' hardware names
   ("AES", "SPDIF", …; test 15), which Global OSC can't tell from names the user gave. A playback
-  without a label keeps showing "PB 1/2". The UI and its wording get a close look in the UI review
+  without a label keeps showing "Pb 1/2". The UI and its wording get a close look in the UI review
   and Adam's own (Adam, 2026-11-01).
 
 Safety interlock, decided but not yet buildable (Adam, 2026-11-02): while TotalMix FX's "Cue/PFL to" is

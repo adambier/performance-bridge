@@ -293,6 +293,14 @@ final class BridgeModel: ObservableObject {
     nonisolated private static let launchControlSendsKey = "launchControlSends"
     /// Whether a Launch Control shows levels by brightness (off by default; Adam, 2026-11-02).
     nonisolated private static let levelBrightnessKey = "launchControlLevelBrightness"
+    /// Whether a Launch Control's home screen shows meters (off by default; Adam, 2026-11-10).
+    nonisolated private static let launchControlMetersKey = "launchControlMeters"
+
+    /// Turns a Launch Control's home-screen meters on or off: at once, and saved.
+    func setLaunchControlMeters(_ on: Bool) {
+        UserDefaults.standard.set(on, forKey: Self.launchControlMetersKey)
+        engine.setLaunchControlMeters(on)
+    }
 
     /// Turns a Launch Control's level-by-brightness on or off: at once, and saved.
     func setLevelBrightness(_ on: Bool) {
@@ -310,7 +318,8 @@ final class BridgeModel: ObservableObject {
         engine.setE16Brightness(value)
     }
 
-    /// Whether the E16 shows meters under the names (off by default).
+    /// Whether the E16 shows meters under the names: on by default, also for anyone who never set it
+    /// (Adam, 2026-11-10 and 2026-11-11).
     nonisolated private static let e16MetersKey = "e16Meters"
 
     /// Turns the E16's meters on or off: at once, and saved.
@@ -509,7 +518,8 @@ final class BridgeModel: ObservableObject {
         }
         // The E16's layout, meters, and send rows, as chosen in Settings or on the E16's Shift page.
         settings.e16FourChannelStrips = UserDefaults.standard.bool(forKey: "e16FourChannelStrips")
-        settings.e16Meters = UserDefaults.standard.bool(forKey: e16MetersKey)
+        // On unless turned off (Adam, 2026-11-10).
+        settings.e16Meters = UserDefaults.standard.object(forKey: e16MetersKey) as? Bool ?? true
         if let saved = UserDefaults.standard.array(forKey: "e16Sends") as? [Int] {
             settings.e16Sends = saved.map { $0 < 0 ? nil : $0 }
         }
@@ -520,6 +530,7 @@ final class BridgeModel: ObservableObject {
             }
         }
         settings.launchControlLevelBrightness = UserDefaults.standard.bool(forKey: levelBrightnessKey)
+        settings.launchControlMeters = UserDefaults.standard.bool(forKey: launchControlMetersKey)
         return settings
     }
 

@@ -227,6 +227,9 @@ library's tests check it against the guide, not against a device.
 5. **Bitmap targets and message end.** The same discrepancies as the XL 3's guide, unresolved: 20h
    and 21h for the displays where "Configure displays" uses 35h and 36h; the message shown ending
    with 7Fh, not F7h; and the reply printed as F0h … 09h 7Fh, with no F7h.[^xl3-disagree]
+   Performance Bridge's meters on the home screen (the Meters setting, `showsMeters`) use the XL
+   3's findings (target 35h, the F7h end, the ready reply; LAUNCH-CONTROL-XL3.md, test 21); that
+   they hold on a Launch Control 3 is an inference, untested.
 6. **The global MIDI channel.** 00h–0Eh is given as 0–15, with 0Eh as channel 16, but 0Eh is 14.
    Performance Bridge leaves the setting alone.
 
