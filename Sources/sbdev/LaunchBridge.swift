@@ -42,6 +42,7 @@ let lcBridgeCommandHelp = """
     Commands:
       home N | home main   the home submix: output N (from 1), or TotalMix FX's Main Out
       pbpage on | pbpage off   start the first playback on a new page, or not
+      meters on | meters off   the home screen as meters, or as text
       sendall              ask TotalMix FX for its state again
       status               the layout, the home submix, the send targets, and each layer's strips
       quit                 leave DAW mode and stop
@@ -228,6 +229,15 @@ final class LaunchBridgeSession: @unchecked Sendable {
             var layout = hub.layout
             layout.playbacksOnNewPage = words[1] == "on"
             dispatch(hub.setLayout(layout, now: now))
+        case "meters":
+            guard words.count == 2, words[1] == "on" || words[1] == "off" else {
+                print("meters on or meters off")
+                return true
+            }
+            var step = LaunchControlStep()
+            step.midi = driver.setShowsMeters(words[1] == "on", hub: hub)
+            send(step)
+            log("Meters: \(driver.showsMeters ? "on" : "off")")
         case "sendall":
             dispatch(hub.connect(now: now))
         case "status":
