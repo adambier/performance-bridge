@@ -494,8 +494,9 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   under each run of playbacks' numbers (one pixel thick; kept for now, Adam), and the screen's bottom
   rows dark; Track shows the page and its first and last channels on the overlay, each with its
   slot, the number under its meter, the first pushed left and the last right with spaces, since the
-  device centers each line ("Page 1 of 2", "1 Vox", "3 Gtr"; Adam, 2026-11-10 and 2026-11-11;
-  test 24 for the spaces).[^test-22][^test-24] How long a control's display stays up is the device's own
+  device centers each line ("Page 1 of 2", "1 Vox", "to" and "3 Gtr"; Adam, 2026-11-10 and 2026-11-11;
+  test 24 for the spaces). Flagged for the UI review (Adam, 2026-11-11): a separator after the slot
+  number (a colon, an en dash, or an em dash), and "Pb" or "PB" for an unlabeled playback.[^test-22][^test-24] How long a control's display stays up is the device's own
   Display Timeout setting, in seconds (by eye), which applies in DAW mode too (that it covers the overlay as
   well is an inference); 1 or 2 suits this layout (Adam, 2026-11-10).[^test-23] Every page keeps eight fixed slots, strip k in the kth, an empty slot marked by one dot on the top
   row (centering a shorter page was tried and dropped).[^test-24] The eight names packed to
@@ -1114,5 +1115,26 @@ Run 4: "Page 2 of 2" reads well. Adam then suggested "Pb" for an unlabeled playb
 actually be easier to understand/remember than PB", and "to" at the far left of the last line now
 that it is pushed right. Both made: unlabeled playbacks are "Pb 1/2" on every hardware controller
 (the E16 draws them in capitals, its font having no lowercase), and the last line reads "to", spaces,
-then the channel ("to      3 Gtr", `LaunchControlDriver.spread`). Not yet seen on the device.
+then the channel ("to      3 Gtr", `LaunchControlDriver.spread`).
+
+Run 5 (photo, page 1 of 1, all six channels on one page): "Page 1 of 1", "1 Tonverk" at the left, and
+"to" at the left with "6 Pb 5/6" at the right, part of its last "6" cut off (Adam). "to" and "1"
+start at the same place, the screen's left edge: the line was again wider than the screen. Measured in
+the photo (about 3.77 photo pixels to a screen pixel, from the left edge to the cut-off end): "Page 1
+of 1" about 76 screen pixels wide, against an estimated 84, and "6 Pb 5/6" at least 71, against an
+estimated 62; the eight spaces about 41, 5 each, as in run 2. So the estimate now counts digits as
+about 10.5 pixels and "1" as 8 (test 22's 9 for every digit was too small for 6 and too large for
+1), and a pushed line keeps about 10 pixels to spare (an estimated 118 of the 128). The last line now
+gets seven spaces. Not yet seen on the device.
+
+Adam also saw "1 Tonverk" not quite at the left edge: its "1" starts about 3 screen pixels right
+of "to" (measured). A line is centered unless it is wider than the screen, and a field holds 20
+characters, so "1 Tonverk" with its 11 spaces is about 127 pixels wide and sits a pixel or so in
+from each side, while the overfull last line started at the edge. A shorter name sits further in
+("1 Vox" with 15 spaces, about 105 pixels, about 11 in): an inference from the measured widths,
+since no wider blank character is known to push it further.
+
+Adam then flagged two questions for a UI review rather than settling them: whether the slot number
+needs a separator after it ("1: Tonverk", "1 – Tonverk", or "1 — Tonverk"), and "Pb" against "PB"
+for an unlabeled playback ("not sure").
 

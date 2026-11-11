@@ -644,9 +644,13 @@ final class LaunchControlDriverTests: XCTestCase {
         // Test 24: ten leading spaces cut "3 ADAT 5/6" to "3 ADAT 5/"; twelve cut part of "3 PB 5/6"'s 6.
         let adat = LaunchControlDriver.pushed("3 ADAT 5/6", to: .right)
         XCTAssertLessThan(adat.count - "3 ADAT 5/6".count, 10, adat)
-        let playback = LaunchControlDriver.pushed("3 Pb 5/6", to: .right)
-        XCTAssertLessThan(playback.count - "3 Pb 5/6".count, 12, playback)
-        XCTAssertGreaterThanOrEqual(playback.count - "3 Pb 5/6".count, 9, playback)
+        let playback = LaunchControlDriver.pushed("3 PB 5/6", to: .right)
+        XCTAssertLessThan(playback.count - "3 PB 5/6".count, 12, playback)
+        XCTAssertGreaterThanOrEqual(playback.count - "3 PB 5/6".count, 8, playback)
+        // Run 5: "to", eight spaces, and "6 Pb 5/6" cut part of the last 6.
+        let last = LaunchControlDriver.spread("to", "6 Pb 5/6")
+        XCTAssertLessThan(last.count - "to6 Pb 5/6".count, 8, last)
+        XCTAssertLessThan(LaunchControlDriver.screenWidth("Page 1 of 1"), 84, "measured about 76; 84 before run 5")
     }
 
     func testSpreadingTwoTextsApart() {

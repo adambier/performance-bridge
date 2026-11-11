@@ -25,18 +25,20 @@ extension LaunchControlDriver {
     /// Roughly how wide a line of text is on the screen, in pixels of the 128, counting the gap
     /// after each character. The font is proportional and Novation doesn't give its widths, so these
     /// are estimates (an inference), measured from a photo of the XL 3's screen
-    /// (docs/LAUNCH-CONTROL-XL3.md, test 22): capitals and digits about 9 pixels (a capital I about
-    /// 5), most lowercase letters nearly as wide; a space about 5, from the spaces' offsets in two
-    /// photos of padded lines (test 24; test 22's 3 was too small).
+    /// (docs/LAUNCH-CONTROL-XL3.md, test 22): capitals about 9 pixels (a capital I about 5), most
+    /// lowercase letters nearly as wide. Measured again in test 24's photos of padded lines: a space
+    /// about 5 (test 22's 3 was too small), and digits about 10.5 but "1" about 8 (test 22's 9 for
+    /// all of them was too small for "6 Pb 5/6" and too large for "Page 1 of 1").
     public static func screenWidth(_ text: String) -> Double {
         text.reduce(0) { width, character in
             switch character {
             case "i", "l", "j", ",", ".", ":", ";", "!", "'", "|": return width + 4
             case "I": return width + 5
             case " ": return width + 5
+            case "1": return width + 8
             case "f", "t", "r", "(", ")", "-", "/", ">", "<": return width + 7
             case "m", "w", "M", "W": return width + 10.5
-            default: return width + (character.isUppercase || character.isNumber ? 9 : 8.75)
+            default: return width + (character.isNumber ? 10.5 : character.isUppercase ? 9 : 8.75)
             }
         }
     }
