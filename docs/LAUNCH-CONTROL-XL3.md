@@ -1087,7 +1087,8 @@ fastest which fader a moving meter is over. Playing distance measured first: the
   right-aligned.
 
 **Consequences.** The meters are numbered 1–8 by slot on every page (`MeterNumbering.page`); the
-other numberings stay in `sbdev` until the branch's cleanup. Track's pop-up shows the page, then
+other numberings, the peak floor, and the bar fall were then removed (`sbdev lcbridge` keeps
+`peakfall`). Track's pop-up shows the page, then
 the first and last channels with their slots. The device centers each line, and the display
 arrangements this project uses (section 5) choose lines, not alignment, so the driver pads the first with trailing spaces and the second with
 leading ones, up to the field's 20 characters (`LaunchControlDriver.pushed`). The text home
