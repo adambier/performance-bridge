@@ -928,6 +928,9 @@ playing, one build per run. Seen in Adam's videos and photo, and his words; no M
   6 dB lower, too short to draw. A peak line now shows only over a bar. Adam also asked for the
   channel numbers under the meters, with the playbacks' underlined, and declined dB marks at the
   screen's side.
+- **Run 8:** the build with the numbers: "1 2 3 1 2 3" under the meters, the second three
+  underlined, readable at a glance in Adam's photo; with the music quiet, strip 2 showed a short pair
+  of bars with its peaks and strip 1 nothing, so no stray lines.
 
 **Consequences.** The meter layout of run 4 is the driver's. Measured in the photo (about 11.8 of
 its pixels to one of the screen's, from the cut-off edge and the centered first line; an
