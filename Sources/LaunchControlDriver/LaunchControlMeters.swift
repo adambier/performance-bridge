@@ -1,13 +1,14 @@
 // Meters on a Launch Control's home screen (Adam, 2026-11-10): with `showsMeters` on, the
 // stationary display is a picture (SysEx 09h, target 35h; docs/LAUNCH-CONTROL-XL3.md, test 21):
 // a meter for each of the page's eight strips, the screen's full height, two bars for a stereo
-// channel. A page line in the E16's font was too small to read on the XL 3's screen (Adam,
+// channel, with no peak lines and one-pixel ticks (two-pixel ticks and peak lines looked busy on
+// the device; Adam, 2026-11-10). A page line in the E16's font was too small to read on the XL 3's screen (Adam,
 // 2026-11-10), so Track shows the page in the device's own text instead (`goToPage`). A new picture goes out only after the device's ready reply (or
 // `bitmapTimeout` without one), and only when it changed. A control's own temporary display shows
 // over the picture as usual (test 21), so the send rows' outputs still show on Page (the overlay)
 // and when an encoder turns.
 //
-// The averaging and peak hold are the E16's, tuned there by eye against TotalMix FX's own meters
+// The averaging is the E16's, tuned there by eye against TotalMix FX's own meters
 // (docs/OXI-E16.md, section 5); the scale is `MeterScale`, shared with the Roto-Control and the E16.
 
 import Foundation
@@ -32,16 +33,14 @@ extension LaunchControlDriver {
     public static let meterTop = 0
     /// The meters' height in pixels, from `meterTop` to the screen's bottom row.
     public static let meterHeight = LaunchControlBitmap.height - meterTop
-    /// Levels marked by short ticks between the strips, in dBFS: TotalMix FX's own channel-strip
-    /// marks (docs/TOTALMIX-OSC.md, "Meter colors"); dotted lines across the screen crowded it
-    /// (Adam, 2026-11-10), so ticks, his choice.
+    /// Levels marked by one-pixel ticks between the strips, in dBFS: TotalMix FX's own channel-strip
+    /// marks (docs/TOTALMIX-OSC.md, "Meter colors"); dotted lines across the screen crowded it, and
+    /// two-pixel ticks were still busy (Adam, 2026-11-10).
     public static let meterMarks: [Double] = [-6, -20, -40]
     /// The time constant of the average the bars follow, in seconds (the E16's, `E16Driver.meterAverage`).
     public static let meterAverage = 0.03
     /// How far below the averaged peaks a bar sits, in dB (the E16's, `E16Driver.meterOffset`).
     public static let meterOffset = 6.0
-    /// How long a peak holds before it drops to the level, in seconds (the E16's, `E16Driver.peakHold`).
-    public static let peakHold = 2.0
 
     /// Turns `showsMeters` on or off, and returns what changes on the device: with meters off, the
     /// text home screen is drawn again (that it then shows instead of the last picture is an
@@ -59,16 +58,14 @@ extension LaunchControlDriver {
     /// The picture for now, if it changed and the device is ready for one.
     mutating func drawMeterScreen(hub: SurfaceHub, now: Double) -> [UInt8] {
         if let sent = bitmapSentAt, now - sent < Self.bitmapTimeout { return [] }
-        var levels: [[Int]] = [], peaks: [[Int]] = []
-        let strips = stripInfos
-        for info in strips {
-            guard let info else { levels.append([]); peaks.append([]); continue }
+        var levels: [[Int]] = []
+        for info in stripInfos {
+            guard let info else { levels.append([]); continue }
             var refs = [info.channel]
             if info.stereo { refs.append(ChannelRef(info.channel.bus, info.channel.channel + 1)) }
             levels.append(refs.map { averagedHeight($0, hub: hub, now: now) })
-            peaks.append(refs.map { heldPeak($0, hub: hub, now: now) })
         }
-        let picture = Self.meterPicture(levels: levels, peaks: peaks)
+        let picture = Self.meterPicture(levels: levels)
         let packed = picture.packed
         guard packed != shownBitmap else { return [] }
         shownBitmap = packed
@@ -92,26 +89,16 @@ extension LaunchControlDriver {
         return average.power > 0 ? Self.meterHeight(db: 10 * log10(average.power) - Self.meterOffset) : 0
     }
 
-    private mutating func heldPeak(_ ref: ChannelRef, hub: SurfaceHub, now: Double) -> Int {
-        let height = Self.meterHeight(db: hub.mirror.meters[ref] ?? -.infinity)
-        if let held = meterPeaks[ref], held.height >= height, now - held.at < Self.peakHold { return held.height }
-        meterPeaks[ref] = (height, now)
-        return height
-    }
-
     /// The home screen as a picture: one 16-pixel column per strip, left to right, with one bar 12
-    /// pixels wide for a mono channel or two 6 pixels wide for a stereo one (`levels` and `peaks`
-    /// give one or two heights per strip, empty for no channel), each with its held peak as a line,
-    /// and two-pixel ticks between the columns (one at each edge) at `meterMarks`.
-    public static func meterPicture(levels: [[Int]], peaks: [[Int]]) -> LaunchControlBitmap {
+    /// pixels wide for a mono channel or two 6 pixels wide for a stereo one (`levels` gives one or
+    /// two heights per strip, empty for no channel), and a one-pixel tick between the columns at
+    /// `meterMarks`.
+    public static func meterPicture(levels: [[Int]]) -> LaunchControlBitmap {
         var picture = LaunchControlBitmap()
         let bottom = LaunchControlBitmap.height - 1
         for mark in meterMarks {
             let y = bottom - meterHeight(db: mark) + 1
-            picture[0, y] = true
-            picture[LaunchControlBitmap.width - 1, y] = true
             for column in 1..<stripCount {
-                picture[column * 16 - 1, y] = true
                 picture[column * 16, y] = true
             }
         }
@@ -121,10 +108,6 @@ extension LaunchControlDriver {
             for (bar, (x, width)) in zip(bars.indices, bars) where heights.indices.contains(bar) {
                 let height = min(max(heights[bar], 0), meterHeight)
                 picture.fill(x: x, y: bottom - height + 1, width: width, height: height)
-                let peaksHere = peaks.indices.contains(column) ? peaks[column] : []
-                if peaksHere.indices.contains(bar), peaksHere[bar] > height, peaksHere[bar] > 0 {
-                    picture.fill(x: x, y: bottom - min(peaksHere[bar], meterHeight) + 1, width: width, height: 1)
-                }
             }
         }
         return picture

@@ -937,20 +937,19 @@ final class LaunchControlDriverTests: XCTestCase {
     }
 
     func testTheMeterPicture() {
-        let picture = LaunchControlDriver.meterPicture(levels: [[10], [20, 30], []], peaks: [[15], [20, 40], []])
+        let picture = LaunchControlDriver.meterPicture(levels: [[10], [20, 30], []])
         let bottom = 63
         let tick = bottom - LaunchControlDriver.meterHeight(db: -20) + 1
-        XCTAssertTrue(picture[15, tick] && picture[16, tick], "a two-pixel tick between strips 1 and 2 at −20 dB")
-        XCTAssertTrue(picture[0, tick] && picture[127, tick], "and one pixel at each edge")
+        XCTAssertTrue(picture[16, tick] && !picture[15, tick], "a one-pixel tick between strips 1 and 2 at −20 dB")
+        XCTAssertFalse(picture[0, tick] || picture[127, tick], "none at the edges")
         XCTAssertFalse(picture[40, tick], "nothing across a blank strip")
-        // Strip 1, mono: one bar 12 pixels wide (x 2–13), 10 tall, its peak 15 pixels up.
+        // Strip 1, mono: one bar 12 pixels wide (x 2–13), 10 tall, with no peak line above it.
         XCTAssertTrue(picture[2, bottom] && picture[13, bottom] && !picture[14, bottom])
         XCTAssertTrue(picture[7, bottom - 9] && !picture[7, bottom - 10])
-        XCTAssertTrue(picture[7, bottom - 14], "the peak line")
+        XCTAssertFalse((10..<64).contains { picture[7, bottom - $0] }, "no peak line")
         // Strip 2, stereo: two bars 6 pixels wide (x 17–22 and 25–30), 20 and 30 tall.
         XCTAssertTrue(picture[17, bottom - 19] && !picture[17, bottom - 20])
         XCTAssertTrue(picture[25, bottom - 29] && !picture[23, bottom], "a gap between the two bars")
-        XCTAssertTrue(picture[25, bottom - 39], "the right side's peak")
         // Strip 3 is blank.
         XCTAssertFalse(picture[34, bottom])
     }
