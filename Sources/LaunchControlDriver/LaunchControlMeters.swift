@@ -58,8 +58,9 @@ extension LaunchControlDriver {
     /// The top row of the channel numbers: three dark rows below the meters (Adam, 2026-11-10: one
     /// more than the first try), 11 rows tall.
     static let numberTop = 48
-    /// The top row of the line under the playbacks' numbers: two dark rows below them, two rows
-    /// tall, leaving the screen's bottom row dark.
+    /// The row of the line under the playbacks' numbers: two dark rows below them, one pixel thick
+    /// (two at first; with the gap above it, one reads; Adam, 2026-11-10), leaving the screen's bottom
+    /// two rows dark.
     static let playbackLineTop = 61
     /// The time constant of the average the bars follow, in seconds (the E16's, `E16Driver.meterAverage`).
     public static let meterAverage = 0.03
@@ -201,7 +202,7 @@ extension LaunchControlDriver {
             guard number.marked else { continue }
             let joinsLeft = column > 0 && numbers[column - 1]?.marked == true
             picture.fill(x: left(column) - (joinsLeft ? stripGap : 0), y: playbackLineTop,
-                         width: stripWidth + (joinsLeft ? stripGap : 0), height: 2)
+                         width: stripWidth + (joinsLeft ? stripGap : 0), height: 1)
         }
         for (column, heights) in levels.enumerated() {
             let x0 = left(column)

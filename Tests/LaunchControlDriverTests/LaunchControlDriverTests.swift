@@ -990,12 +990,12 @@ final class LaunchControlDriverTests: XCTestCase {
         // The numbers, from row 48, three dark rows under the meters: "1" (x 4–9, its stem at 7–8).
         XCTAssertTrue(picture[7, 48] && picture[8, 58] && !picture[9, 58])
         XCTAssertFalse((48..<64).contains { picture[3, $0] }, "the 1 is centered")
-        // The line under the playbacks' numbers, rows 61–62: under strip 2 alone (x 18–28), and one
-        // line from strip 5's meter to strip 6's (x 66–92), not under the inputs.
-        XCTAssertTrue((18...28).allSatisfy { picture[$0, 61] && picture[$0, 62] } && !picture[17, 61] && !picture[29, 61])
-        XCTAssertTrue((66...92).allSatisfy { picture[$0, 61] && picture[$0, 62] } && !picture[65, 61] && !picture[93, 61])
+        // The line under the playbacks' numbers, row 61, one pixel: under strip 2 alone (x 18–28), and
+        // one line from strip 5's meter to strip 6's (x 66–92), not under the inputs.
+        XCTAssertTrue((18...28).allSatisfy { picture[$0, 61] } && !picture[17, 61] && !picture[29, 61])
+        XCTAssertTrue((66...92).allSatisfy { picture[$0, 61] } && !picture[65, 61] && !picture[93, 61])
         XCTAssertFalse((0..<16).contains { picture[$0, 61] } || (48..<64).contains { picture[$0, 61] })
-        XCTAssertFalse([45, 46, 47, 59, 60, 63].contains { y in (0..<128).contains { picture[$0, y] } }, "dark rows, the bottom one included")
+        XCTAssertFalse([45, 46, 47, 59, 60, 62, 63].contains { y in (0..<128).contains { picture[$0, y] } }, "dark rows, the bottom one included")
         // "100" in narrow digits (x 49–62): its last "0" at x 59–62.
         XCTAssertTrue((48..<59).contains { picture[59, $0] } && (48..<59).contains { picture[62, $0] })
         XCTAssertFalse((48..<64).contains { picture[48, $0] || picture[63, $0] })
