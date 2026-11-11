@@ -917,6 +917,8 @@ playing, one build per run. Seen in Adam's videos and photo, and his words; no M
   lines were "In 1-3, PB 1-3", "Top row > ADI-2 3." (cut off at the screen's right edge), and "Mid
   row > Phones 2" (the "2" cut off). The second and third lines started at the screen's left edge,
   the first was centered.
+- **Run 6:** the build with "Top >" and "Mid >", without `--meters`: "In 1-3, PB 1-3", "Top >
+  ADI-2 3/4", and "Mid > Phones 2", all three whole and centered (photo).
 
 **Consequences.** The meter layout of run 4 is the driver's. Measured in the photo (about 11.8 of
 its pixels to one of the screen's, from the cut-off edge and the centered first line; an
