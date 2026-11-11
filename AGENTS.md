@@ -128,16 +128,37 @@ Where a surface has real detents (the Roto-Control's 0 dB indent), put the virtu
 points. Start there, tune on the device with a trial flag, and record the tuning
 (`docs/OXI-E16.md`, section 5: 0.05 s at a pan's center, 0.075 s between jumps).
 
-Design rule for screens (Adam, 2026-11-11): what a surface's screen shows at rest is set by what
-reads at playing distance, measured in millimeters on the device, not by its pixel count. Whatever
-doesn't fit legibly at rest goes to the view shown while a control moves. Both screens so far are
-128 × 64 and one bit, but the Launch Control XL 3's active area is about 21 mm wide (0.16–0.17 mm
-pixels) and the E16's about 35 mm (0.27 mm pixels), measured from the makers' photos and Adam's
-(`docs/LAUNCH-CONTROL-XL3.md`, test 22). A 5 × 7 font is about 1.9 mm tall on the E16 and reads; on the XL 3
-it is about 1.2 mm and doesn't (test 22, run 1). So the E16's rest view carries a page of names in that
-font, and the XL 3's carries only large shapes (meter bars, large digits), its names waiting for the
-firmware's own larger font while a control moves. Measure each new surface's screen this way
-(active area, pixel pitch, a photo with something lit) before designing for it.
+Design rule for screens (Adam, 2026-11-11; refined the same day): what a surface's screen shows at
+rest is set by what reads at playing distance, measured on the device, not by its pixel count.
+Whatever doesn't fit legibly at rest goes to the view shown while a control moves. That view uses
+the same sizes below: it gets more room by replacing the rest view, not by using smaller text.
+
+1. Measure each new surface's screen before designing for it, lit edge to edge (or showing a
+   one-pixel border) so the active area's edges show. Either photograph it straight down with a
+   ruler lying on the glass, or measure the lit active area and cross-check it against a top-down
+   photo and the maker's outer dimensions (shot square, from a distance with zoom, since the glass
+   and the enclosure's edges sit at different heights). Pitch is active width ÷ pixels across and
+   active height ÷ pixels down; check both, since some small panels' pixels aren't square.
+2. Set the surface's playing distance: eye to screen, in real use.
+3. Size text by visual angle: height in mm ≈ distance in mm × arcminutes × 0.000291, and pixels =
+   that height ÷ pitch, rounded up. Minimum cap heights: 16 arcmin for static labels, 20 for values
+   that change, and 30 for anything critical, for titles, and for dimmed or low-contrast text
+   (running text, rare here: an x-height of at least 16, ideally 22). These thresholds are Claude's
+   synthesis of ISO 9241-3, FHWA's in-vehicle display guidance, and the unadopted 2026 HFES 100
+   draft; ISO 9241-303 wasn't checked.
+4. Use the larger of that minimum and the smallest font the panel draws cleanly (strokes at least
+   one pixel; characters at least 4 pixels wide lowercase and 5 uppercase).
+
+Both screens so far are 128 × 64 and one bit, but the Launch Control XL 3's active area is about
+21 mm wide (0.16–0.17 mm pixels) and the E16's about 35 mm (0.27 mm pixels), measured from the
+makers' photos and Adam's (`docs/LAUNCH-CONTROL-XL3.md`, test 22). A 5 × 7 font is about 1.9 mm
+tall on the E16 and reads; on the XL 3 it is about 1.2 mm and doesn't (test 22, run 1). So the E16's
+rest view carries a page of names in that font, and the XL 3's carries only large shapes (meter
+bars, large digits), its names waiting for the firmware's own larger font while a control moves.
+Neither surface's playing distance is recorded yet. By step 3, the E16's 1.9 mm names meet the
+16 arcmin floor only at about 410 mm or closer; they read on the device, so either Adam plays that
+close or the floor is cautious for names he knows (an inference, not tested). Record the distance
+before designing to the floor.
 
 Recorded exceptions:
 - **Labels** (Adam, 2026-11-01). The app can give any channel a label of its own, shown only on
