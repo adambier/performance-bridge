@@ -966,6 +966,35 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(gap[42, bottom] && !gap[60, bottom] && gap[74, bottom])
     }
 
+    func testTheTrialNumberings() {
+        typealias Driver = LaunchControlDriver
+        let order = [ChannelRef(.input, 0), ChannelRef(.input, 2), ChannelRef(.playback, 4), ChannelRef(.input, 6), ChannelRef(.playback, 0)]
+        XCTAssertEqual(Driver.meterNumber(ChannelRef(.playback, 0), order: order, numbering: .acrossSources), .init(number: 5, marked: true),
+                       "one count across inputs and playbacks")
+        XCTAssertEqual(Driver.meterNumber(ChannelRef(.input, 6), order: order, numbering: .acrossSources), .init(number: 4, marked: false))
+        // No numbers: the meters 58 rows tall, no digits, the playbacks' line kept.
+        let picture = Driver.meterPicture(levels: [[58], [10]], peaks: [[], []],
+                                          numbers: [.init(number: 1, marked: false), .init(number: 2, marked: true)], showsNumbers: false)
+        // Two strips, centered: the first at x 50–60, the second at 66–76.
+        XCTAssertTrue(picture[55, 1] && picture[55, 57] && !picture[55, 58], "a full bar fills rows 0–57")
+        XCTAssertFalse((58..<61).contains { y in (0..<128).contains { picture[$0, y] } }, "three dark rows above the line")
+        XCTAssertTrue(picture[66, 61] && picture[76, 61] && !picture[60, 61], "the playbacks' line")
+        XCTAssertFalse((59..<61).contains { picture[55, $0] }, "no digits")
+        XCTAssertFalse((0..<128).contains { picture[$0, 62] || picture[$0, 63] })
+        XCTAssertEqual(Driver.barHeight(db: 0, height: Driver.tallMeterHeight), Driver.tallMeterHeight)
+        // The driver redraws when the numbering changes.
+        var hub = loadedHub()
+        var driver = LaunchControlDriver(name: "lc", layout: .xl3, showsMeters: true)
+        _ = driver.start(hub: &hub, now: 0)
+        _ = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0)
+        let header = LaunchControlModel.xl3.sysExHeader + [0x09, 0x35]
+        XCTAssertTrue(driver.tick(hub: &hub, now: 0.1).midi.contains(header))
+        _ = driver.receive(LaunchControlModel.xl3.sysExHeader + [0x09, 0xF7], hub: &hub, now: 0.17)
+        XCTAssertFalse(driver.tick(hub: &hub, now: 0.2).midi.contains(header), "nothing changed")
+        driver.meterNumbering = .acrossSources
+        XCTAssertTrue(driver.tick(hub: &hub, now: 0.25).midi.contains(header), "a new picture for the new numbering")
+    }
+
     func testMeterNumbersCountEachKind() {
         let order = [ChannelRef(.input, 0), ChannelRef(.input, 2), ChannelRef(.playback, 4), ChannelRef(.input, 6), ChannelRef(.playback, 0)]
         XCTAssertEqual(LaunchControlDriver.meterNumber(ChannelRef(.input, 6), order: order), .init(number: 3, marked: false),

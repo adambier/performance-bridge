@@ -53,6 +53,9 @@ extension LaunchControlDriver {
     public static let bitmapTimeout = 0.5
     /// The meters' height in pixels, from the screen's top row (0 dBFS); the channel numbers go below.
     public static let meterHeight = 45
+    /// The meters' height with no numbers under them (`MeterNumbering.none`): to three dark rows
+    /// above the playbacks' line.
+    public static let tallMeterHeight = 58
     /// A strip's width in pixels: one bar 11 wide, or two 5 wide one pixel apart.
     static let stripWidth = 11
     /// The dark pixels between two strips.
@@ -92,7 +95,7 @@ extension LaunchControlDriver {
         let order = hub.layout.channels(.sources, in: hub.mirror)
         for info in stripInfos {
             guard let info else { levels.append([]); peaks.append([]); numbers.append(nil); continue }
-            numbers.append(Self.meterNumber(info.channel, order: order))
+            numbers.append(Self.meterNumber(info.channel, order: order, numbering: meterNumbering))
             var refs = [info.channel]
             if info.stereo { refs.append(ChannelRef(info.channel.bus, info.channel.channel + 1)) }
             levels.append(refs.map { averagedHeight($0, hub: hub, now: now) })
@@ -100,7 +103,8 @@ extension LaunchControlDriver {
         }
         // The averages and held peaks above follow every tick; only the sending waits for the device.
         if let sent = bitmapSentAt, now - sent < Self.bitmapTimeout { return [] }
-        let picture = Self.meterPicture(levels: levels, peaks: peaks, numbers: numbers)
+        let picture = Self.meterPicture(levels: levels, peaks: peaks, numbers: numbers,
+                                        showsNumbers: meterNumbering != .none)
         let packed = picture.packed
         guard packed != shownBitmap else { return [] }
         shownBitmap = packed
@@ -109,8 +113,8 @@ extension LaunchControlDriver {
     }
 
     /// A level as a bar height on `MeterScale`.
-    static func barHeight(db: Double) -> Int {
-        Int((Double(MeterScale.value(peakDB: db)) / Double(MeterScale.fullScale) * Double(meterHeight)).rounded())
+    static func barHeight(db: Double, height: Int = meterHeight) -> Int {
+        Int((Double(MeterScale.value(peakDB: db)) / Double(MeterScale.fullScale) * Double(height)).rounded())
     }
 
     private mutating func averagedHeight(_ ref: ChannelRef, hub: SurfaceHub, now: Double) -> Int {
@@ -121,18 +125,36 @@ extension LaunchControlDriver {
         average.power += (power - average.power) * (1 - exp(-dt / Self.meterAverage))
         average.at = now
         meterAverages[ref] = average
-        return average.power > 0 ? Self.barHeight(db: 10 * log10(average.power) - Self.meterOffset) : 0
+        return average.power > 0 ? Self.barHeight(db: 10 * log10(average.power) - Self.meterOffset, height: meterRows) : 0
     }
 
-    /// A strip's number under its meter: the channel's place among its kind in `order`, as the
-    /// text home screen counts (`pageTitle`), marked for a playback.
-    static func meterNumber(_ channel: ChannelRef, order: [ChannelRef]) -> MeterNumber? {
-        guard let index = order.filter({ $0.bus == channel.bus }).firstIndex(of: channel) else { return nil }
+    /// How the strips under the meters are numbered. The default counts each kind on its own, as
+    /// the text home screen's first line does; the others are for a trial on the device (the Tier 1
+    /// review of 2026-11-10 asked whether a number reads as a place in the layout or as TotalMix
+    /// FX's own channel number).
+    public enum MeterNumbering: String, CaseIterable, Sendable {
+        /// Each kind counted on its own in the channel order ("In 1-3, PB 1-3" gives 1 2 3 1 2 3).
+        case byKind = "kind"
+        /// One count across inputs and playbacks in the channel order (1 2 3 4 5 6).
+        case acrossSources = "all"
+        /// No numbers: the meters taller (`tallMeterHeight`), the playbacks' line kept.
+        case none
+    }
+
+    /// The meters' height for the numbering in use.
+    var meterRows: Int { meterNumbering == .none ? Self.tallMeterHeight : Self.meterHeight }
+
+    /// A strip's number under its meter: the channel's place among its kind in `order` (or among
+    /// all of `order`, `numbering` `.acrossSources`), as the text home screen counts (`pageTitle`),
+    /// marked for a playback.
+    static func meterNumber(_ channel: ChannelRef, order: [ChannelRef], numbering: MeterNumbering = .byKind) -> MeterNumber? {
+        let counted = numbering == .acrossSources ? order : order.filter { $0.bus == channel.bus }
+        guard let index = counted.firstIndex(of: channel) else { return nil }
         return MeterNumber(number: index + 1, marked: channel.bus == .playback)
     }
 
     private mutating func heldPeak(_ ref: ChannelRef, hub: SurfaceHub, now: Double) -> Int {
-        let height = Self.barHeight(db: hub.mirror.meters[ref] ?? -.infinity)
+        let height = Self.barHeight(db: hub.mirror.meters[ref] ?? -.infinity, height: meterRows)
         if let held = meterPeaks[ref], held.height >= height, now - held.at < Self.peakHold { return held.height }
         meterPeaks[ref] = (height, now)
         return height
@@ -192,9 +214,12 @@ extension LaunchControlDriver {
     /// held peak as a line while the bar shows; the strip's number under it (`numbers`, `nil` for
     /// none); a line under each run of marked numbers, from the first one's meter to the last
     /// one's; and over each bar a dotted line at 0 dBFS, the meters' top row (every other pixel).
-    public static func meterPicture(levels: [[Int]], peaks: [[Int]], numbers: [MeterNumber?] = []) -> LaunchControlBitmap {
+    /// With `showsNumbers` false, the digits are left out and the meters are `tallMeterHeight` tall.
+    public static func meterPicture(levels: [[Int]], peaks: [[Int]], numbers: [MeterNumber?] = [],
+                                    showsNumbers: Bool = true) -> LaunchControlBitmap {
         var picture = LaunchControlBitmap()
-        let bottom = meterHeight - 1
+        let rows = showsNumbers ? meterHeight : tallMeterHeight
+        let bottom = rows - 1
         let used = (0..<max(levels.count, numbers.count)).last {
             (levels.indices.contains($0) && !levels[$0].isEmpty) || (numbers.indices.contains($0) && numbers[$0] != nil)
         }.map { $0 + 1 } ?? 0
@@ -203,7 +228,7 @@ extension LaunchControlDriver {
         func left(_ column: Int) -> Int { start + column * (stripWidth + stripGap) }
         for (column, number) in numbers.prefix(stripCount).enumerated() {
             guard let number else { continue }
-            drawNumber(number, left: left(column), in: &picture)
+            if showsNumbers { drawNumber(number, left: left(column), in: &picture) }
             guard number.marked else { continue }
             let joinsLeft = column > 0 && numbers[column - 1]?.marked == true
             picture.fill(x: left(column) - (joinsLeft ? stripGap : 0), y: playbackLineTop,
@@ -215,10 +240,10 @@ extension LaunchControlDriver {
             let peaksHere = peaks.indices.contains(column) ? peaks[column] : []
             for (bar, (x, width)) in zip(bars.indices, bars) where heights.indices.contains(bar) {
                 for dot in stride(from: x, to: x + width, by: 2) { picture[dot, 0] = true }
-                let height = min(max(heights[bar], 0), meterHeight)
+                let height = min(max(heights[bar], 0), rows)
                 picture.fill(x: x, y: bottom - height + 1, width: width, height: height)
                 if height > 0, peaksHere.indices.contains(bar), peaksHere[bar] > height {
-                    picture.fill(x: x, y: bottom - min(peaksHere[bar], meterHeight) + 1, width: width, height: 1)
+                    picture.fill(x: x, y: bottom - min(peaksHere[bar], rows) + 1, width: width, height: 1)
                 }
             }
         }

@@ -89,6 +89,11 @@ public struct LaunchControlDriver: Sendable {
     /// instead of its text: a setting, off by default (Adam, 2026-11-10;
     /// `LaunchControlMeters.swift`).
     public internal(set) var showsMeters: Bool
+    /// How the meters' strips are numbered (`MeterNumbering`): each kind counted on its own, the
+    /// default; the alternatives are for a trial on the device (`sbdev lcbridge --numbers`).
+    public var meterNumbering = MeterNumbering.byKind {
+        didSet { if meterNumbering != oldValue { shownBitmap = nil; meterPeaks = [:] } }
+    }
     /// Each channel's averaged level, in power, and when it was last updated (`showsMeters`).
     var meterAverages: [ChannelRef: (power: Double, at: Double)] = [:]
     /// Each channel's held peak, as a bar height, and when it was reached.
