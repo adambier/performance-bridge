@@ -8,6 +8,7 @@
 // whatever its name.)
 
 import AppKit
+import Combine
 import ServiceManagement
 import SwiftUI
 
