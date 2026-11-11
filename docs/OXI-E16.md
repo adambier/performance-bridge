@@ -303,7 +303,7 @@ Everything below applies to both unless it says otherwise.
   outline was tried and met the meter line under the name); inversion is kept for "selected",
   on the Shift page (Adam, 2026-11-07) and a PFL adds a 3×3 square after it (the two centered together); a PFL on a channel not on
   this page shows as "■" before the page in the title's tail (1.1.x never showed one).
-- **Meters** (from 1.2.0, a Settings choice, off by default): a 1-pixel bar under each name, two
+- **Meters** (from 1.2.0, a Settings choice, off by default until 1.2.1 and on by default after it; Adam, 2026-11-10): a 1-pixel bar under each name, two
   blank lines below it, 26 pixels at full scale on TotalMix FX's fader law (`MeterScale`, shared
   with the Roto-Control); in channel strips a stereo channel's right side on the line below its left, in 16 channels one
   line, the louder side (from the review of 2026-11-07, so each meter sits nearer its own

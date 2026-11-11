@@ -133,7 +133,7 @@ on a Launch Control 3, the number being the device ID). With more than one Launc
 connected, it uses the one with the lowest device ID.
 
 With the E16 chosen, a second box below shows its **Layout** (16 channels or channel strips), **Send A** and
-**Send B** for channel strips, **Meters**, and **Ring brightness**. Each takes effect at once, without
+**Send B** for channel strips, **Meters** (on by default), and **Ring brightness**. Each takes effect at once, without
 Apply; the layout and sends also follow a change made on the E16 (Step 6).
 
 With a Launch Control chosen, a second box below shows its send rows, **Levels: Show by brightness** (off

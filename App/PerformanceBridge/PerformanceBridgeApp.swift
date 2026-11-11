@@ -517,7 +517,8 @@ final class BridgeModel: ObservableObject {
         }
         // The E16's layout, meters, and send rows, as chosen in Settings or on the E16's Shift page.
         settings.e16FourChannelStrips = UserDefaults.standard.bool(forKey: "e16FourChannelStrips")
-        settings.e16Meters = UserDefaults.standard.bool(forKey: e16MetersKey)
+        // On unless turned off (Adam, 2026-11-10).
+        settings.e16Meters = UserDefaults.standard.object(forKey: e16MetersKey) as? Bool ?? true
         if let saved = UserDefaults.standard.array(forKey: "e16Sends") as? [Int] {
             settings.e16Sends = saved.map { $0 < 0 ? nil : $0 }
         }

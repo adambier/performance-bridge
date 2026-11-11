@@ -112,21 +112,21 @@ final class BridgeEngineTests: XCTestCase {
         engine.onE16LayoutChange = { saved.layouts.append($0) }
         engine.onE16SendsChange = { saved.sends.append($0) }
         XCTAssertFalse(engine.status.e16FourChannelStrips, "16 channels unless saved otherwise")
-        XCTAssertFalse(engine.status.e16Meters)
+        XCTAssertTrue(engine.status.e16Meters, "the E16's meters are on unless turned off")
         engine.setE16Layout(fourChannelStrips: true)
         engine.setE16Layout(fourChannelStrips: true)
         XCTAssertTrue(engine.status.e16FourChannelStrips)
         XCTAssertEqual(saved.layouts, [true], "passed on once, when it changes")
-        engine.setE16Meters(true)
-        XCTAssertTrue(engine.status.e16Meters)
+        engine.setE16Meters(false)
+        XCTAssertFalse(engine.status.e16Meters)
         engine.setE16Send(row: 0, to: 4)
         XCTAssertTrue(saved.sends.isEmpty, "not a send target (TotalMix FX hasn't answered): refused")
         var fromSaved = BridgeSettings()
         fromSaved.e16FourChannelStrips = true
-        fromSaved.e16Meters = true
+        fromSaved.e16Meters = false
         let restored = BridgeEngine(settings: fromSaved)
         XCTAssertTrue(restored.status.e16FourChannelStrips, "a saved setting is taken up")
-        XCTAssertTrue(restored.status.e16Meters)
+        XCTAssertFalse(restored.status.e16Meters)
     }
 
     func testMonitoringChoicesInOutputOrderWithNamesAndRoles() {

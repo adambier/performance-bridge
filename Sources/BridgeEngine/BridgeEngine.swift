@@ -113,8 +113,9 @@ public struct BridgeSettings: Equatable, Sendable {
     /// The E16's layout: channel strips rather than 16 channels (Adam, 2026-11-05/06), as saved
     /// by the app (`e16FourChannelStrips`), from Settings or the E16's Shift page.
     public var e16FourChannelStrips = false
-    /// Whether the E16 shows meters under the names (`E16Driver.showsMeters`; `e16Meters`).
-    public var e16Meters = false
+    /// Whether the E16 shows meters under the names (`E16Driver.showsMeters`; `e16Meters`): on unless
+    /// the user turned them off (Adam, 2026-11-10).
+    public var e16Meters = true
     /// The 4-channel layout's send rows' outputs (A, B), 0-based (`E16Driver.sendOutputs`;
     /// `e16Sends`; the app saves `nil` as -1), as saved by the app, from Settings or the E16's Shift page.
     public var e16Sends: [Int?] = []
@@ -206,7 +207,7 @@ public struct BridgeStatus: Equatable, Sendable {
     /// Whether the E16 uses channel strips rather than 16 channels, connected or not.
     public var e16FourChannelStrips = false
     /// Whether the E16 shows meters under the names.
-    public var e16Meters = false
+    public var e16Meters = true
     /// The output each of the 4-channel layout's send rows (A, B) feeds now, whether or not the
     /// E16 is connected, from the send targets TotalMix FX has shown; `nil` for none.
     public var e16Sends: [Int?] = []
