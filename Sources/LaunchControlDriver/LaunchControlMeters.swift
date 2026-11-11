@@ -5,7 +5,7 @@
 // - dB ticks between the strips read as a grid, with or without the peaks, so there are none;
 // - with equal gaps everywhere a stereo pair's two bars couldn't be told from two strips, so a
 //   pair's bars are one pixel apart and the strips five (four was tried, to make room for side
-//   marks, and went back to five with them);
+//   marks, and went back to five once the side marks were dropped);
 // - a peak line with no bar under it, at a channel's noise floor, looked like stray pixels, so a
 //   peak shows only over a bar;
 // - 0 dBFS marks at the screen's sides (one pixel, then 2 × 2, then 4 × 2) gave way to a finely
@@ -26,8 +26,10 @@
 // only when it changed. A control's own temporary display shows over the picture as usual (test
 // 21), so the send rows' outputs still show on Page (the overlay) and when an encoder turns.
 //
-// The averaging and peak hold are the E16's, tuned there by eye against TotalMix FX's own meters
-// (docs/OXI-E16.md, section 5); the scale is `MeterScale`, shared with the Roto-Control and the E16,
+// The averaging and peak hold use the E16's constants, tuned there by eye at 25 screens a second
+// (docs/OXI-E16.md, section 5); that they suit the XL 3's slower pictures (about 14 a second) is an
+// inference, not yet compared with TotalMix FX's meters. They are updated on every tick, not only
+// when a picture goes out, so a peak between two pictures is held. The scale is `MeterScale`, shared with the Roto-Control and the E16,
 // with 0 dBFS at the top: the meters show only inputs and playbacks, whose levels are inferred to
 // stop at 0 dBFS (Adam considered room up to +6 dB and dropped it).
 
@@ -59,8 +61,8 @@ extension LaunchControlDriver {
     /// more than the first try), 11 rows tall.
     static let numberTop = 48
     /// The row of the line under the playbacks' numbers: two dark rows below them, one pixel thick
-    /// (two at first; with the gap above it, one reads; Adam, 2026-11-10), leaving the screen's bottom
-    /// two rows dark.
+    /// (two at first, the heaviest mark on the screen; Adam chose one on a recommendation,
+    /// 2026-11-10; not yet seen on the device), leaving the screen's bottom two rows dark.
     static let playbackLineTop = 61
     /// The time constant of the average the bars follow, in seconds (the E16's, `E16Driver.meterAverage`).
     public static let meterAverage = 0.03
@@ -77,14 +79,15 @@ extension LaunchControlDriver {
         showsMeters = on
         shownBitmap = nil
         bitmapSentAt = nil
-        guard isConnected, !on else { return [] }
+        // Nothing is written in a Custom Mode (the user may change Display Timeout there); `connect`
+        // draws the home screen on the way back to DAW mode.
+        guard isConnected, !inCustomMode, !on else { return [] }
         forgetStationaryText()
         return drawStationary(hub: hub)
     }
 
     /// The picture for now, if it changed and the device is ready for one.
     mutating func drawMeterScreen(hub: SurfaceHub, now: Double) -> [UInt8] {
-        if let sent = bitmapSentAt, now - sent < Self.bitmapTimeout { return [] }
         var levels: [[Int]] = [], peaks: [[Int]] = [], numbers: [MeterNumber?] = []
         let order = hub.layout.channels(.sources, in: hub.mirror)
         for info in stripInfos {
@@ -95,6 +98,8 @@ extension LaunchControlDriver {
             levels.append(refs.map { averagedHeight($0, hub: hub, now: now) })
             peaks.append(refs.map { heldPeak($0, hub: hub, now: now) })
         }
+        // The averages and held peaks above follow every tick; only the sending waits for the device.
+        if let sent = bitmapSentAt, now - sent < Self.bitmapTimeout { return [] }
         let picture = Self.meterPicture(levels: levels, peaks: peaks, numbers: numbers)
         let packed = picture.packed
         guard packed != shownBitmap else { return [] }
@@ -104,7 +109,7 @@ extension LaunchControlDriver {
     }
 
     /// A level as a bar height on `MeterScale`.
-    static func meterHeight(db: Double) -> Int {
+    static func barHeight(db: Double) -> Int {
         Int((Double(MeterScale.value(peakDB: db)) / Double(MeterScale.fullScale) * Double(meterHeight)).rounded())
     }
 
@@ -116,7 +121,7 @@ extension LaunchControlDriver {
         average.power += (power - average.power) * (1 - exp(-dt / Self.meterAverage))
         average.at = now
         meterAverages[ref] = average
-        return average.power > 0 ? Self.meterHeight(db: 10 * log10(average.power) - Self.meterOffset) : 0
+        return average.power > 0 ? Self.barHeight(db: 10 * log10(average.power) - Self.meterOffset) : 0
     }
 
     /// A strip's number under its meter: the channel's place among its kind in `order`, as the
@@ -127,7 +132,7 @@ extension LaunchControlDriver {
     }
 
     private mutating func heldPeak(_ ref: ChannelRef, hub: SurfaceHub, now: Double) -> Int {
-        let height = Self.meterHeight(db: hub.mirror.meters[ref] ?? -.infinity)
+        let height = Self.barHeight(db: hub.mirror.meters[ref] ?? -.infinity)
         if let held = meterPeaks[ref], held.height >= height, now - held.at < Self.peakHold { return held.height }
         meterPeaks[ref] = (height, now)
         return height
@@ -196,7 +201,7 @@ extension LaunchControlDriver {
         let count = max(min(used, stripCount), 1)
         let start = (LaunchControlBitmap.width - (count * stripWidth + (count - 1) * stripGap)) / 2
         func left(_ column: Int) -> Int { start + column * (stripWidth + stripGap) }
-        for (column, number) in numbers.enumerated() {
+        for (column, number) in numbers.prefix(stripCount).enumerated() {
             guard let number else { continue }
             drawNumber(number, left: left(column), in: &picture)
             guard number.marked else { continue }
@@ -204,7 +209,7 @@ extension LaunchControlDriver {
             picture.fill(x: left(column) - (joinsLeft ? stripGap : 0), y: playbackLineTop,
                          width: stripWidth + (joinsLeft ? stripGap : 0), height: 1)
         }
-        for (column, heights) in levels.enumerated() {
+        for (column, heights) in levels.prefix(stripCount).enumerated() {
             let x0 = left(column)
             let bars: [(x: Int, width: Int)] = heights.count > 1 ? [(x0, 5), (x0 + 6, 5)] : [(x0, stripWidth)]
             let peaksHere = peaks.indices.contains(column) ? peaks[column] : []

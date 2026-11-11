@@ -636,6 +636,14 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertEqual(lc3.currentSendOutputs(hub: lc3Hub), [nil], "back to pan")
     }
 
+    func testThePagePrefixShortensTheKindsWhenNeeded() {
+        // "2/2: Playbacks 1-8" would run off the screen (review of 2026-11-10).
+        XCTAssertEqual(LaunchControlDriver.withPage("Playbacks 1-8", pageNumber: (2, 2), fits: LaunchControlDriver.fitsScreen), "2/2: PB 1-8")
+        XCTAssertEqual(LaunchControlDriver.withPage("Inputs 1-8", pageNumber: (1, 2), fits: LaunchControlDriver.fitsScreen), "1/2: Inputs 1-8")
+        XCTAssertEqual(LaunchControlDriver.withPage("Input 1", pageNumber: (1, 2), fits: LaunchControlDriver.fitsScreen), "Page 1/2: Input 1")
+        XCTAssertEqual(LaunchControlDriver.withPage("Inputs 1-8", pageNumber: nil, fits: LaunchControlDriver.fitsScreen), "Inputs 1-8")
+    }
+
     func testTheScreenWidthEstimate() {
         // docs/LAUNCH-CONTROL-XL3.md, test 22: both of these ran off the XL 3's screen.
         XCTAssertFalse(LaunchControlDriver.fitsScreen("Top row > ADI-2 3/4"))
@@ -1036,5 +1044,43 @@ final class LaunchControlDriverTests: XCTestCase {
                       "the text home screen again")
         XCTAssertTrue(off.contains(LaunchControlOutgoing.showDisplay(.stationary, true, model: .xl3) ?? []))
         XCTAssertFalse(driver.tick(hub: &hub, now: 3).midi.contains(header), "no pictures with meters off")
+    }
+
+    func testAPeakBetweenTwoPicturesIsHeld() {
+        // A level that comes and goes while a picture waits for its reply still shows as a peak line
+        // in the next picture (review of 2026-11-10).
+        var hub = loadedHub()
+        var driver = LaunchControlDriver(name: "lc", layout: .xl3, showsMeters: true)
+        _ = driver.start(hub: &hub, now: 0)
+        _ = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0)
+        let header = LaunchControlModel.xl3.sysExHeader + [0x09, 0x35]
+        _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -40), now: 0.05)
+        XCTAssertTrue(driver.tick(hub: &hub, now: 0.1).midi.contains(header))
+        _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -3), now: 0.12)
+        XCTAssertFalse(driver.tick(hub: &hub, now: 0.13).midi.contains(header), "waiting for the reply")
+        _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -40), now: 0.14)
+        _ = driver.receive(LaunchControlModel.xl3.sysExHeader + [0x09, 0xF7], hub: &hub, now: 0.17)
+        let next = driver.tick(hub: &hub, now: 0.18).midi
+        guard next.count >= header.count,
+              let start = (0...(next.count - header.count)).first(where: { Array(next[$0..<($0 + header.count)]) == header }) else {
+            return XCTFail("no picture")
+        }
+        let packed = Array(next[(start + header.count)..<(start + header.count + 64 * LaunchControlBitmap.bytesPerRow)])
+        let peakRow = LaunchControlDriver.meterHeight - LaunchControlDriver.barHeight(db: -3)
+        let row = packed[(peakRow * LaunchControlBitmap.bytesPerRow)..<((peakRow + 1) * LaunchControlBitmap.bytesPerRow)]
+        XCTAssertTrue(row.contains { $0 != 0 }, "the −3 dB peak's line")
+    }
+
+    func testTurningMetersOffInACustomModeWritesNothing() {
+        var hub = loadedHub()
+        var driver = LaunchControlDriver(name: "lc", layout: .xl3, showsMeters: true)
+        _ = driver.start(hub: &hub, now: 0)
+        _ = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0)
+        _ = driver.receive([0xB6, 0x1E, 0x06], hub: &hub, now: 1)  // a Custom Mode chosen on the device
+        XCTAssertTrue(driver.inCustomMode)
+        XCTAssertEqual(driver.setShowsMeters(false, hub: hub), [], "nothing written into the Custom Mode")
+        let back = driver.receive([0xB6, 0x1E, 0x01], hub: &hub, now: 2)  // DAW Mixer again
+        XCTAssertTrue(back.midi.contains(LaunchControlOutgoing.showDisplay(.stationary, true, model: .xl3) ?? []),
+                      "the text home screen drawn on the way back")
     }
 }

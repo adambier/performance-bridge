@@ -47,9 +47,9 @@ Checked on screen with TotalMix FX "2.10 (1)" on a Mac (2026-10-31); the screens
 
    <img src="../App/PerformanceBridge/Resources/totalmix-osc-tab.png" width="380" alt="Mixer Settings, OSC tab: controller 1 in use, ports 7001 and 9001, host localhost, Global OSC">
 
-6. In the OSC tab's **Options** group, check **Send Level Data** for meters on the Roto-Control or the E16 (the
-   Launch Controls have no meters); leave **Peak Hold** unchecked, or the levels TotalMix FX sends hold at their
-   peaks and the E16's meters move slowly. Leave **Lock Remote to Submix** off (Performance Bridge chooses submixes itself). The effect of **Number of faders per bank** on
+6. In the OSC tab's **Options** group, check **Send Level Data** for meters on the Roto-Control, the E16, or a
+   Launch Control (each with its meters on); leave **Peak Hold** unchecked, or the levels TotalMix FX sends hold at
+   their peaks and the meters move slowly (seen on the E16). Leave **Lock Remote to Submix** off (Performance Bridge chooses submixes itself). The effect of **Number of faders per bank** on
    the app has not been tested.
 7. Click **Details**, which opens "Gobal OSC - Detailed Settings" (TotalMix FX's spelling), and check **Send
    changes** and **Send status**. The other settings shown are the ones used in the tests: "Send all data on
@@ -320,13 +320,13 @@ The E16 has two layouts. In the **16-channel layout**, each encoder is one chann
 
 - The two send rows never feed the same output: stepping one skips the output the other has.
 - The screen shows the page and the channels on it, counted in the order of **Settings… → Channel Layout** with a
-  stereo pair counting once, and where each send row goes (e.g., "Page 1/2: In 1-6", "Top > Phones 1",
-  "Mid > Phones 2"). With **Meters** on in Settings, it shows a meter for each channel instead, with its number under it and a line under the playbacks' numbers, two bars
-  for a stereo channel, and Track shows the page; meters need TotalMix FX's **Send Level Data** on.
+  stereo pair counting once, and where each send row goes (e.g., "1/2: Inputs 1-8", "Top > Phones 1",
+  "Mid > Phones 2"). With **Meters: Show on the home screen** on (Settings… → Connections), it shows a meter for each channel instead, two bars
+  for a stereo channel, with the channel's number under it, inputs and playbacks each counted as in the first line, and a line under the playbacks' numbers; Track shows the page, and the send rows' outputs show only on Page and when an encoder turns. Meters need TotalMix FX's **Send Level Data** on and **Peak Hold** off (see the Setup Guide).
 - Moving a control shows its channel, what it does, and its value.
 - How long that stays up, in seconds, is the XL 3's own **Display Timeout** setting. To change
   it, switch to a Custom Mode (**Mode**, a blue button, **Mode**), hold **Track <** and **Track >** together, press
-  **Page ▼** to Display Timeout, and turn the top-left encoder; then press **Mode**, and quit and reopen
+  **Page ▼** until the screen shows Display Timeout, and turn the top-left encoder; then press **Mode**, and quit and reopen
   Performance Bridge to go back to its layout.
 - After each Page press the screen names the row and its new output, and each send row's lights take the color
   of the output it feeds: its color in TotalMix FX, or, for an output left white, teal (a blue-green) for the

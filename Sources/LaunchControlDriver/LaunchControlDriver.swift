@@ -102,7 +102,7 @@ public struct LaunchControlDriver: Sendable {
     private var sendIndices: [Int?] = []
 
     private var connected = false
-    private var inCustomMode = false
+    private(set) var inCustomMode = false
     private var lastStart: Double?
     /// When the device last sent anything, and when the driver last asked it for its surface mode,
     /// for the presence check (`presenceInterval`).
@@ -315,8 +315,9 @@ public struct LaunchControlDriver: Sendable {
                                  into step: inout LaunchControlStep) {
         lastHeard = now
         if case .bitmapReady = event {
-            bitmapSentAt = nil  // ready for the next picture (docs/LAUNCH-CONTROL-XL3.md, test 21)
-            awaitingModeReply = false
+            // Ready for the next picture (docs/LAUNCH-CONTROL-XL3.md, test 21). It doesn't answer
+            // the presence check's mode question, which may still be on its way.
+            bitmapSentAt = nil
             return
         }
         // Anything else heard settles the question: the device is there (review of 2026-11-02).
@@ -1027,12 +1028,17 @@ public struct LaunchControlDriver: Sendable {
     }
 
     /// The home screen's first line with the page in front (Adam, 2026-11-10): "Page 1/2: " when the
-    /// line still `fits` (`fitsScreen`), else "1/2: "; the title alone with only one page.
+    /// line still `fits` (`fitsScreen`), else "1/2: ", with "In" and "PB" for the kinds if it still
+    /// doesn't fit; the title alone with only one page.
     static func withPage(_ title: String, pageNumber: (current: Int, of: Int)?, fits: (String) -> Bool) -> String {
         guard let pageNumber else { return title }
         let number = "\(pageNumber.current)/\(pageNumber.of)"
-        let long = "Page \(number): " + title
-        return fits(long) ? long : number + ": " + title
+        // The kinds shortened as the mixed form shortens them ("In", "PB"), so the range's end stays
+        // on the screen ("2/2: Playbacks 1-8" would run off it; review of 2026-11-10).
+        let short = title.replacingOccurrences(of: "Playbacks ", with: "PB ").replacingOccurrences(of: "Playback ", with: "PB ")
+            .replacingOccurrences(of: "Inputs ", with: "In ").replacingOccurrences(of: "Input ", with: "In ")
+        for line in ["Page \(number): " + title, number + ": " + title] where fits(line) { return line }
+        return number + ": " + short
     }
 
     /// The home screen's first line: what is on the page, each kind counted on its own in the

@@ -191,6 +191,13 @@ final class LaunchControlTests: XCTestCase {
         var bar = LaunchControlBitmap()
         bar.fill(x: 120, y: 60, width: 20, height: 20)
         XCTAssertEqual(bar.pixels.filter { $0 }.count, 8 * 4, "clipped to the screen")
+        // Rectangles off the screen, or empty, are clipped away, not a crash (review of 2026-11-10).
+        var clipped = LaunchControlBitmap()
+        clipped.fill(x: -10, y: 0, width: 5, height: 1)
+        clipped.fill(x: 130, y: 0, width: 5, height: 1)
+        clipped.fill(x: 0, y: 70, width: 5, height: 1)
+        clipped.fill(x: 3, y: 3, width: -2, height: 1)
+        XCTAssertEqual(clipped, LaunchControlBitmap())
     }
 
     func testTheBitmapMessage() {

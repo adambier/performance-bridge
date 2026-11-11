@@ -229,8 +229,8 @@ and Shift on channel 7.
     bit leftmost. The device answers when it is ready for the next one. It holds one bitmap at a
     time.[^prg-bitmap] On the device, the target is 35h (the stationary display, as "Configure
     displays" numbers it; the guide's 20h drew nothing), the message ends with F7h, a set bit
-    lights a pixel, and the first byte is the top left; the reply took 66–72 ms, so about 14
-    pictures a second; a control's own temporary display shows over the picture and the picture
+    lights a pixel, and the first byte is the top left; the reply took 66–72 ms (once 340 ms while a
+    control moved), so about 14 pictures a second at most; a control's own temporary display shows over the picture and the picture
     returns after it; pictures sent meanwhile are answered as usual.[^test-21] A picture sent to 36h
     replaced the one on the screen and stayed up; whether 36h differs from 35h at all is not yet
     known.[^test-21]
@@ -484,9 +484,9 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   picture instead: a meter for each strip, 45 pixels tall, with a finely dotted line across each bar at 0 dBFS (the top), no clip lights, a stereo channel's two bars one pixel
   apart and the strips five apart, each bar with its peak held 2 s while the bar shows, and no dB
   marks; under each meter the channel's number, counted within its kind as the first line counts
-  ("In 1-3, PB 1-3" gives 1 2 3 1 2 3), with one line under each run of playbacks' numbers, and the screen's bottom row dark; Track shows the page on the
+  ("In 1-3, PB 1-3" gives 1 2 3 1 2 3), with one line under each run of playbacks' numbers (one pixel thick, not yet seen on the device), and the screen's bottom rows dark; numbers of three digits are drawn 4 pixels wide with one-pixel strokes (not yet seen on the device); Track shows the page on the
   overlay (Adam, 2026-11-10).[^test-22] How long a control's display stays up is the device's own
-  Display Timeout setting, in seconds, which applies in DAW mode too (that it covers the overlay as
+  Display Timeout setting, in seconds (by eye), which applies in DAW mode too (that it covers the overlay as
   well is an inference); 1 or 2 suits this layout (Adam, 2026-11-10).[^test-23] Whether that numbering is intuitive next to TotalMix FX's
   own channel numbers is flagged for the UI review (Adam, 2026-11-10). A page with fewer than eight
   strips is centered (Adam, 2026-11-10). The eight names packed to
@@ -939,14 +939,14 @@ playing, one build per run. Seen in Adam's videos and photo, and his words; no M
   channel numbers under the meters, with the playbacks' underlined, and declined dB marks at the
   screen's side.
 - **Run 8:** the build with the numbers: "1 2 3 1 2 3" under the meters, the second three
-  underlined, readable at a glance in Adam's photo; with the music quiet, strip 2 showed a short pair
+  underlined, readable in Adam's photo (the record writer's reading); with the music quiet, strip 2 showed a short pair
   of bars with its peaks and strip 1 nothing, so no stray lines (Adam: "stray lines are gone").
   The underlines were hard to make out as such (Adam): one pixel, one row under the digits, they
   read as part of the number. A two-pixel line two rows below, one under each run of playbacks,
   replaced them (Adam chose it from a mockup).
 - **Run 9:** that build: "1 2 3 1 2 3" with one line under the second three, clear in Adam's
-  photo. Adam then asked to try the line above the numbers, a little further from the bars: now
-  three dark rows below the meters, the line, two dark rows, and the numbers He also asked that a page
+  photo (the record writer's reading). Adam then asked to try the line above the numbers, a little farther from the bars: now
+  three dark rows below the meters, the line, two dark rows, and the numbers. He also asked that a page
   with fewer than eight strips be centered on the screen.
 - **Run 10** (asked before that build was tried on the device): Adam asked for the line back under
   the numbers, with the screen's bottom row kept dark, since at an angle it is hard to read. Now:
@@ -961,9 +961,9 @@ playing, one build per run. Seen in Adam's videos and photo, and his words; no M
 - **Run 13:** that build. Adam couldn't get a signal to 0 dBFS, and the boxes were too small to see
   as boxes ("they need to be quite a bit taller and maybe a bit wider"). They are now five rows
   tall and a pixel wider than the bar on its outer side, the meters 39 pixels, and he asked for a
-  one-pixel 0 dB mark at each side of the screen. `clip N` in `sbdev lcbridge` makes strip N reach
-  0 dBFS once. A clip now counts every message at 0 dBFS, even one a lower level replaces before
-  the next picture (`MixerMirror.overs`).
+  one-pixel 0 dB mark at each side of the screen. `clip N` in `sbdev lcbridge` made strip N reach
+  0 dBFS once, and a clip counted every message at 0 dBFS, even one that a lower level replaced
+  before the next picture (`MixerMirror.overs`); both were removed with the clip boxes in run 15.
 - **Run 14:** the edge marks need to be more than one pixel wide, and possibly two tall (Adam).
   They are now 2 × 2, on the meters' top two rows; wider would touch the outer strips' bars on a
   full page.
@@ -982,14 +982,18 @@ playing, one build per run. Seen in Adam's videos and photo, and his words; no M
   the side marks gone, the strips went back to five pixels apart (Adam).
 - **Run 17:** that build: a dotted line at the top over each of the six strips, the meters, "1 2 3
   1 2 3", and the line under the playbacks (Adam's photo).
-  The line under the playbacks then went from two pixels to one (asked how it looked, I said it was
-  the heaviest mark on the screen; Adam agreed to one).
+  The line under the playbacks then went from two pixels to one (Adam asked for a recommendation:
+  the two-pixel line was the heaviest mark on the screen; he agreed to one; not yet seen on the
+  device).
   Adam then asked for the 0 dBFS line "even more gray": the screen has one bit per pixel, so its
   dots went from every other pixel to one in three, on one grid across the screen, which "looks
   weirdly mottled" (Adam): the dots fell differently on each bar. Back to every other pixel from
   each bar's left end, which is even and symmetric on a 5- or 11-pixel bar.
 
-**Consequences.** The meter layout of run 4 is the driver's. Measured in the photo (about 11.8 of
+**Consequences.** The meter layout is run 17's, with the line under the playbacks one pixel thick
+(not yet seen on the device) and the 0 dBFS line every other pixel. A review of the same day
+(Tier 1) found that the averages and peaks were updated only when a picture could go out, so a
+peak between two pictures was lost; they now follow every tick. Measured in the photo (about 11.8 of
 its pixels to one of the screen's, from the cut-off edge and the centered first line; an
 inference), capitals and digits take about 9 screen pixels with their gap, most lowercase letters
 nearly as many, "i" about 4, and a space about 3; "Mid row > Phones 2" needs about 129 of the 128.
@@ -1018,6 +1022,8 @@ Mode is chosen with Mode, one of the 16 buttons lit blue, and Mode again.[^nov-c
 
 **Consequences.** The setting applies to the temporary displays in DAW mode, so the driver needs no
 timer of its own. The Controls Guide says where the setting is. Whether Mode and a button can go
-back to DAW mode without restarting the host was not tried, so the guide says to quit and reopen.
+back to DAW mode without restarting the host was not tried, so the guide says to quit and reopen
+(seen with `sbdev lcbridge`; the app starts the device the same way, `LaunchControlDriver.start`,
+an inference).
 The Launch Control 3 has a Settings page too; whether it has the same setting was not checked.
 

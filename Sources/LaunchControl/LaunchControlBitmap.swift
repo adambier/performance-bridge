@@ -42,10 +42,10 @@ public struct LaunchControlBitmap: Equatable, Sendable {
 
     /// Sets (or clears) every pixel in a rectangle, clipped to the screen.
     public mutating func fill(x: Int, y: Int, width: Int, height: Int, _ on: Bool = true) {
-        for row in max(0, y)..<min(Self.height, y + height) {
-            for column in max(0, x)..<min(Self.width, x + width) {
-                pixels[row * Self.width + column] = on
-            }
+        let left = max(0, x), right = min(Self.width, x + width), top = max(0, y), bottom = min(Self.height, y + height)
+        guard left < right, top < bottom else { return }
+        for row in top..<bottom {
+            for column in left..<right { pixels[row * Self.width + column] = on }
         }
     }
 

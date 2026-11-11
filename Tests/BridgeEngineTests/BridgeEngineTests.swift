@@ -519,7 +519,10 @@ final class BridgeEngineTests: XCTestCase {
         var launchControlOnly = status
         launchControlOnly.rotoEnabled = false
         XCTAssertNil(SetupChecklist.steps(status: launchControlOnly, settings: BridgeSettings()).first { $0.id == "meters" },
-                     "no meters step for a Launch Control: it shows no meters")
+                     "no meters step for a Launch Control with its meters off")
+        launchControlOnly.launchControlMeters = true
+        XCTAssertNotNil(SetupChecklist.steps(status: launchControlOnly, settings: BridgeSettings()).first { $0.id == "meters" },
+                        "a meters step for a Launch Control with its meters on")
         XCTAssertEqual(withLaunchControl[SetupChecklist.startIndex(of: withLaunchControl,
                                                                    openFor: SetupWatch.Reason.launchControlNotConnecting.stepID)].id,
                        "launchcontrol", "a Launch Control problem opens at its step")
