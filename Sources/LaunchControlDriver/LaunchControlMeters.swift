@@ -9,8 +9,9 @@
 // pixels, so a peak shows only over a bar. Above each bar is a box marking 0 dBFS, hollow, and
 // filled for `clipHold` after that side reaches 0 dBFS (Adam, 2026-11-10: a fixed mark and a clip
 // light, both; three rows tall and as wide as the bar were too small to see, so five rows, and a
-// pixel wider than the bar on each side). And one pixel at each edge of the screen marks 0 dBFS,
-// the meters' top row (Adam, 2026-11-10).
+// pixel wider than the bar on each side). And a mark at each edge of the screen at 0 dBFS, the
+// meters' top two rows, two pixels wide (Adam, 2026-11-10: one pixel was too small); wider would
+// touch the outer strips' bars on a full page, which start at the third pixel.
 //
 // The numbers count each kind in the channel order, as the text home screen's first line does
 // ("In 1-3, PB 1-3" gives 1 2 3 1 2 3), with one line under each run of playbacks (Adam,
@@ -195,8 +196,8 @@ extension LaunchControlDriver {
     /// give one or two heights per strip, empty for no channel), each with its held peak as a line
     /// while the bar shows; the strip's number under it (`numbers`, `nil` for none); and a line
     /// under each run of marked numbers, from the first one's meter to the last one's. Over each bar
-    /// is its clip box, filled where `clips` says so, and a pixel at each edge of the screen marks
-    /// 0 dBFS. A page with
+    /// is its clip box, filled where `clips` says so, and a 2 × 2 mark at each edge of the screen
+    /// at 0 dBFS. A page with
     /// fewer than eight strips is centered (Adam, 2026-11-10): the screen sits to the left of the
     /// controls, so a meter's place never lined up with its fader anyway (seen in Adam's photos).
     public static func meterPicture(levels: [[Int]], peaks: [[Int]], clips: [[Bool]] = [],
@@ -207,8 +208,8 @@ extension LaunchControlDriver {
             (levels.indices.contains($0) && !levels[$0].isEmpty) || (numbers.indices.contains($0) && numbers[$0] != nil)
         }.map { $0 + 1 } ?? 0
         let shift = (stripCount - min(used, stripCount)) * 8
-        picture[0, meterTop] = true
-        picture[LaunchControlBitmap.width - 1, meterTop] = true
+        picture.fill(x: 0, y: meterTop, width: 2, height: 2)
+        picture.fill(x: LaunchControlBitmap.width - 2, y: meterTop, width: 2, height: 2)
         for (column, number) in numbers.enumerated() {
             guard let number else { continue }
             drawNumber(number, left: shift + column * 16, in: &picture)

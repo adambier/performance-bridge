@@ -952,7 +952,7 @@ final class LaunchControlDriverTests: XCTestCase {
                                                      numbers: [Number(number: 1, marked: false), Number(number: 2, marked: false), Number(number: 3, marked: false)])
         let bottom = LaunchControlDriver.meterTop + LaunchControlDriver.meterHeight - 1
         XCTAssertTrue(three[42, bottom] && !three[41, bottom] && three[84, bottom] && !three[85, bottom])
-        XCTAssertFalse((1..<41).contains { x in (0..<64).contains { three[x, $0] } }, "nothing at the left but the 0 dBFS mark")
+        XCTAssertFalse((2..<41).contains { x in (0..<64).contains { three[x, $0] } }, "nothing at the left but the 0 dBFS mark")
         XCTAssertTrue(three[0, LaunchControlDriver.meterTop] && three[127, LaunchControlDriver.meterTop], "the 0 dBFS marks stay at the edges")
         // A blank strip inside the page keeps its place; only trailing blanks count as missing.
         let gap = LaunchControlDriver.meterPicture(levels: [[10], [], [10]], peaks: [[], [], []])
@@ -996,9 +996,10 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue((24...29).allSatisfy { x in (0...4).allSatisfy { picture[x, $0] } } && !picture[30, 2])
         XCTAssertFalse((0..<128).contains { picture[$0, 5] }, "a dark row under the boxes")
         XCTAssertFalse((0...4).contains { picture[40, $0] }, "no box over a blank strip")
-        // 0 dBFS: one pixel at each edge, on the meters' top row.
-        XCTAssertTrue(picture[0, LaunchControlDriver.meterTop] && picture[127, LaunchControlDriver.meterTop])
-        XCTAssertFalse(picture[0, LaunchControlDriver.meterTop + 1] || picture[1, LaunchControlDriver.meterTop])
+        // 0 dBFS: a 2 × 2 mark at each edge, on the meters' top two rows.
+        let top = LaunchControlDriver.meterTop
+        XCTAssertTrue([0, 1, 126, 127].allSatisfy { x in picture[x, top] && picture[x, top + 1] })
+        XCTAssertFalse(picture[0, top + 2] || picture[0, top - 1])
         // The numbers, from row 48: "1" (x 4–9, its stem at 7–8); "12" (x 17–29).
         XCTAssertTrue(picture[7, 48] && picture[8, 58] && !picture[9, 58])
         XCTAssertFalse((48..<64).contains { picture[2, $0] }, "the 1 is centered")
