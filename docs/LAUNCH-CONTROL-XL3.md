@@ -980,6 +980,8 @@ playing, one build per run. Seen in Adam's videos and photo, and his words; no M
 - **Run 16** (asked before that build was tried): Adam suggested a finely dotted line on each
   meter at 0 dBFS instead of the side marks: every other pixel of the top row over each bar. With
   the side marks gone, the strips went back to five pixels apart (Adam).
+- **Run 17:** that build: a dotted line at the top over each of the six strips, the meters, "1 2 3
+  1 2 3", and the line under the playbacks (Adam's photo).
 
 **Consequences.** The meter layout of run 4 is the driver's. Measured in the photo (about 11.8 of
 its pixels to one of the screen's, from the cut-off edge and the centered first line; an
