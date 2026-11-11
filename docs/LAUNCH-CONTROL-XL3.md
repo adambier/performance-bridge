@@ -86,6 +86,10 @@ seen").
 [^nov-settings]: Novation, "Launch Control XL 3's Settings page", Launch Control XL 3 user guide
     (online), <https://userguides.novationmusic.com/hc/en-gb/articles/26190532189330-Launch-Control-XL-3-s-Settings-page>,
     read 2026-11-10.
+[^nov-xl3-page]: Novation, "Launch Control XL" product page, <https://novationmusic.com/launch/launch-control-xl>, read
+    2026-11-11 (dimensions; 128 × 64 monochrome OLED).
+[^thomann-e16]: Thomann, "OXI Instruments E16" listing, <https://www.thomann.co.uk/oxi_instruments_e16.htm>, read
+    2026-11-11 (dimensions; OXI's own page was not checked).
 [^nov-custom]: Novation, "Using Custom Modes on the Launch Control XL 3", Launch Control XL 3 user
     guide (online), <https://userguides.novationmusic.com/hc/en-gb/articles/26190535820562-Using-Custom-Modes-on-the-Launch-Control-XL-3>,
     read 2026-11-10.
@@ -991,8 +995,7 @@ playing, one build per run. Seen in Adam's videos and photo, and his words; no M
   each bar's left end, which is even and symmetric on a 5- or 11-pixel bar.
 
 **Screen size** (measured 2026-11-11). The makers' top-view photos (`controller-*.png`, 316 pixels
-tall), scaled by the published sizes (XL 3 250 × 239 mm, Novation; E16 114 × 142 mm, Thomann's
-listing), give the XL 3's screen window as about 28 × 17 mm and the E16's as about 51 × 24 mm, with
+tall), scaled by the published sizes (XL 3 250 × 239 mm;[^nov-xl3-page] E16 114 × 142 mm[^thomann-e16]), give the XL 3's screen window as about 28 × 17 mm and the E16's as about 51 × 24 mm, with
 the E16's blank panel visible inside it at about 35.3 × 17.5 mm. In run 17's photo, the dotted
 0 dBFS lines (91 screen pixels) put the XL 3's 128 pixels at about 75% of its window: about 21 mm
 wide. So the pixel pitch is about 0.16–0.17 mm on the XL 3 and 0.27 mm on the E16, about 1.6 times
