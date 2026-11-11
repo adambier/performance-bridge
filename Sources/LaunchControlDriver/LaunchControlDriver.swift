@@ -85,6 +85,18 @@ public struct LaunchControlDriver: Sendable {
     /// setting that is off by default (Adam, 2026-11-02, from the Tier 3 review of that date).
     /// Pan encoders keep full brightness.
     public private(set) var levelBrightness: Bool
+    /// Whether the home screen (the stationary display) is a picture with a meter for each strip
+    /// instead of its text: a setting, off by default (Adam, 2026-11-10;
+    /// `LaunchControlMeters.swift`).
+    public internal(set) var showsMeters: Bool
+    /// Each channel's averaged level, in power, and when it was last updated (`showsMeters`).
+    var meterAverages: [ChannelRef: (power: Double, at: Double)] = [:]
+    /// Each channel's held peak, as a bar height, and when it was reached.
+    var meterPeaks: [ChannelRef: (height: Int, at: Double)] = [:]
+    /// When the last picture was sent, while its ready reply hasn't come (`bitmapTimeout`).
+    var bitmapSentAt: Double?
+    /// The last picture sent, packed, so an unchanged one isn't sent again.
+    var shownBitmap: [UInt8]?
     /// The send target (an index into `SurfaceHub.sendTargets`) each send row uses now, from
     /// `sendOutputs` (`resolveSends(_:)`); `nil` for none, or pan on the Launch Control 3.
     private var sendIndices: [Int?] = []
@@ -161,12 +173,13 @@ public struct LaunchControlDriver: Sendable {
     /// A driver for one device. `name` starts the hub surfaces' names; `layout` is the model whose
     /// layout runs and `device` the model connected (by default the same).
     public init(name: String, layout: LaunchControlModel, device: LaunchControlModel? = nil, sendOutputs: [Int?] = [],
-                levelBrightness: Bool = false) {
+                levelBrightness: Bool = false, showsMeters: Bool = false) {
         self.name = name
         self.layout = layout
         self.device = device ?? layout
         self.sendRows = LaunchControlSendRows(layout: layout, choices: sendOutputs)
         self.levelBrightness = levelBrightness
+        self.showsMeters = showsMeters
     }
 
     /// Turns `levelBrightness` on or off, and returns the lights that change (none while the
@@ -264,6 +277,7 @@ public struct LaunchControlDriver: Sendable {
             blinkLit = lit
             step.midi += drawButtons(hub: hub)
         }
+        if connected, !inCustomMode, showsMeters { step.midi += drawMeterScreen(hub: hub, now: now) }
         // Not in a Custom Mode the user chose: whether the device answers the question there is
         // untested, and restarting would take it out of that mode (review of 2026-11-02).
         if connected, !inCustomMode, let heard = lastHeard, now - heard >= Self.presenceInterval {
@@ -300,6 +314,11 @@ public struct LaunchControlDriver: Sendable {
     private mutating func handle(_ event: LaunchControlEvent, hub: inout SurfaceHub, now: Double,
                                  into step: inout LaunchControlStep) {
         lastHeard = now
+        if case .bitmapReady = event {
+            bitmapSentAt = nil  // ready for the next picture (docs/LAUNCH-CONTROL-XL3.md, test 21)
+            awaitingModeReply = false
+            return
+        }
         // Anything else heard settles the question: the device is there (review of 2026-11-02).
         if case .mode = event {} else { awaitingModeReply = false }
         if case .dawMode(let on) = event {
@@ -541,6 +560,8 @@ public struct LaunchControlDriver: Sendable {
         sentColors = [:]
         sentTexts = [:]
         sentConfig = [:]
+        shownBitmap = nil
+        bitmapSentAt = nil
         step.midi += LaunchControlOutgoing.selectMode(.dawMixer) ?? []
         // The XL 3's controls the simulated layout doesn't use stay dark.
         for element in device.elements where element.hasLight && control(for: element) == nil && switchControl(for: element) == nil {
@@ -553,8 +574,9 @@ public struct LaunchControlDriver: Sendable {
         for layer in layers { output.append(hub.resend(id(layer), now: now)) }
         take(output, hub: hub, into: &step)
         // Brings the stationary display up with what was just drawn on it (test 5 brought it up
-        // this way; whether it comes up by itself is untested).
-        step.midi += LaunchControlOutgoing.showDisplay(.stationary, true, model: device) ?? []
+        // this way; whether it comes up by itself is untested). With meters, the picture is
+        // drawn by `tick` instead.
+        if !showsMeters { step.midi += LaunchControlOutgoing.showDisplay(.stationary, true, model: device) ?? [] }
     }
 
     // MARK: - Modes
@@ -958,20 +980,51 @@ public struct LaunchControlDriver: Sendable {
     /// control's display when the control moves. (Four-letter names in two rows of four were tried
     /// first and were unreadable; docs/LAUNCH-CONTROL-XL3.md, test 5.)
     func stationaryLines(hub: SurfaceHub) -> [String] {
-        let title = Self.pageTitle((infos[layers[0]] ?? []).compactMap { $0?.channel },
-                                   order: hub.layout.channels(.sources, in: hub.mirror))
+        let title = Self.withPage(pageTitle(hub: hub), pageNumber: pageNumber, fits: { $0.count <= Self.fieldLength })
         func row(_ prefix: String, _ index: Int?, none: String) -> String {
             guard let index, hub.sendTargets.indices.contains(index) else { return prefix + ": " + none }
             return prefix + " " + Self.sendLabel(sendName(index, hub: hub))
         }
         let send = { (row: Int) -> Int? in self.sendIndices.indices.contains(row) ? self.sendIndices[row] : nil }
         if layout == .xl3 {
-            return [title, row("Top", send(0), none: "none"), row("Mid", send(1), none: "none")]
+            return [title, row("Top row", send(0), none: "none"), row("Mid row", send(1), none: "none")]
         }
         // "PFL on" when a channel's PFL is on while the buttons are mute, since nothing else would
         // show it once Function is released (UI review of 2026-11-02); 20 characters at most.
         let buttons = buttonsArePFL ? "Buttons: PFL" : Self.anyPFL(hub) ? "PFL on, buttons Mute" : "Buttons: Mute"
-        return [title, row("Top", send(0), none: "Pan"), buttons]
+        return [title, row("Top row", send(0), none: "Pan"), buttons]
+    }
+
+    /// The page's strips, as the first layer shows them (`nil` for a blank strip).
+    var stripInfos: [StripInfo?] { infos[layers[0]] ?? Array(repeating: nil, count: Self.stripCount) }
+
+    /// Forgets what the stationary display was last sent, so `drawStationary` sends it all again
+    /// (after pictures replaced it).
+    mutating func forgetStationaryText() {
+        guard let byte = LaunchControlDisplayTarget.stationary.byte else { return }
+        sentConfig[byte] = nil
+        for key in sentTexts.keys where key.hasPrefix("\(byte)/") { sentTexts[key] = nil }
+    }
+
+    /// What is on the page (`pageTitle(_:order:)`), for this driver's strips.
+    func pageTitle(hub: SurfaceHub) -> String {
+        Self.pageTitle((infos[layers[0]] ?? []).compactMap { $0?.channel }, order: hub.layout.channels(.sources, in: hub.mirror))
+    }
+
+    /// The page shown and the number of pages, or `nil` with only one page.
+    var pageNumber: (current: Int, of: Int)? {
+        let pages = max(1, (page.count + Self.stripCount - 1) / Self.stripCount)
+        guard pages > 1 else { return nil }
+        return (page.first / Self.stripCount + 1, pages)
+    }
+
+    /// The home screen's first line with the page in front (Adam, 2026-11-10): "Page 1/2: " when the
+    /// line still `fits`, else "1/2: "; the title alone with only one page.
+    static func withPage(_ title: String, pageNumber: (current: Int, of: Int)?, fits: (String) -> Bool) -> String {
+        guard let pageNumber else { return title }
+        let number = "\(pageNumber.current)/\(pageNumber.of)"
+        let long = "Page \(number): " + title
+        return fits(long) ? long : number + ": " + title
     }
 
     /// The home screen's first line: what is on the page, each kind counted on its own in the
@@ -998,7 +1051,9 @@ public struct LaunchControlDriver: Sendable {
     /// changed the text without changing what the screen showed (Adam, 2026-11-01), so the device
     /// seems to redraw the stationary display only when it is brought up (inference; at connect it
     /// is brought up the same way, test 5).
-    private mutating func drawStationary(hub: SurfaceHub) -> [UInt8] {
+    mutating func drawStationary(hub: SurfaceHub) -> [UInt8] {
+        // With meters, the home screen is a picture (`drawMeterScreen`, from `tick`).
+        guard !showsMeters else { return [] }
         var bytes = configure(.stationary, .titleNameAndValue, quiet: false)
         for (field, line) in stationaryLines(hub: hub).enumerated() { bytes += text(.stationary, field, line) }
         guard !bytes.isEmpty, connected else { return bytes }

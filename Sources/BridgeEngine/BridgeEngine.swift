@@ -97,6 +97,9 @@ public struct BridgeSettings: Equatable, Sendable {
     /// Whether a Launch Control's level and send encoders show their level by brightness
     /// (`LaunchControlDriver.levelBrightness`); off by default (Adam, 2026-11-02).
     public var launchControlLevelBrightness = false
+    /// Whether a Launch Control's home screen shows meters (`LaunchControlDriver.showsMeters`); off
+    /// by default (Adam, 2026-11-10).
+    public var launchControlMeters = false
     /// Whether to connect the Roto-Control. The app uses one hardware controller at a time (Adam,
     /// 2026-11-01), so it turns this off when a Launch Control or the E16 is chosen.
     public var rotoEnabled = true
@@ -190,6 +193,8 @@ public struct BridgeStatus: Equatable, Sendable {
     public var launchControlSends: [LaunchControlModel: [Int?]] = [:]
     /// Whether a Launch Control's level and send encoders show their level by brightness.
     public var launchControlLevelBrightness = false
+    /// Whether a Launch Control's home screen shows meters.
+    public var launchControlMeters = false
     /// Whether the engine uses an OXI E16 (`BridgeSettings.e16Enabled`).
     public var e16Enabled = false
     /// Whether the E16's MIDI port is open (it is plugged in).
@@ -307,6 +312,8 @@ public final class BridgeEngine: @unchecked Sendable {
     private var sendRows: [LaunchControlModel: LaunchControlSendRows]
     /// Whether a Launch Control shows levels by brightness, kept like `sendRows`.
     private var levelBrightness: Bool
+    /// Whether a Launch Control's home screen shows meters, kept like `sendRows`.
+    private var lcMetersOn: Bool
     private var e16Driver: E16Driver?
     /// The E16's layout (channel strips or 16 channels), as saved, then as switched on the device or in
     /// the app; kept across a reconnection and while no device is connected.
@@ -336,6 +343,7 @@ public final class BridgeEngine: @unchecked Sendable {
         }
         self.sendRows = rows
         self.levelBrightness = settings.launchControlLevelBrightness
+        self.lcMetersOn = settings.launchControlMeters
         self.e16Brightness = Self.clampedBrightness(settings.e16Brightness)
         self.e16FourStrips = settings.e16FourChannelStrips
         self.e16SendRows = SendRows(rowCount: 2, fillsEmptyRows: true, choices: settings.e16Sends)
@@ -536,7 +544,7 @@ public final class BridgeEngine: @unchecked Sendable {
             lcMIDI = connection
             var lc = LaunchControlDriver(name: "launchcontrol", layout: setting.layout, device: setting.device,
                                          sendOutputs: sendRows[setting.layout]?.choices ?? [],
-                                         levelBrightness: levelBrightness)
+                                         levelBrightness: levelBrightness, showsMeters: lcMetersOn)
             let started = lc.start(hub: &hub, now: now)
             sendToLaunchControl(started.midi)
             lcDriver = lc
@@ -761,6 +769,20 @@ public final class BridgeEngine: @unchecked Sendable {
         levelBrightness = on
         if var lc = lcDriver {
             let bytes = lc.setLevelBrightness(on, hub: hub)
+            lcDriver = lc
+            sendToLaunchControl(bytes)
+        }
+        lock.unlock()
+        publishStatusIfChanged()
+    }
+
+    /// Turns a Launch Control's home-screen meters on or off, from the app: at once on a connected
+    /// device, and kept for the next one otherwise.
+    public func setLaunchControlMeters(_ on: Bool) {
+        lock.lock()
+        lcMetersOn = on
+        if var lc = lcDriver {
+            let bytes = lc.setShowsMeters(on, hub: hub)
             lcDriver = lc
             sendToLaunchControl(bytes)
         }
@@ -1049,6 +1071,7 @@ public final class BridgeEngine: @unchecked Sendable {
             status.launchControlSends[layout] = rows.outputs(targets: hub.sendTargets)
         }
         status.launchControlLevelBrightness = levelBrightness
+        status.launchControlMeters = lcMetersOn
         status.e16Enabled = settings.e16Enabled
         status.e16Found = e16MIDI != nil
         status.e16Connected = e16Driver?.isConnected ?? false

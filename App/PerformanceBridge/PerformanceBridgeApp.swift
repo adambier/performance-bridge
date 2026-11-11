@@ -293,6 +293,14 @@ final class BridgeModel: ObservableObject {
     nonisolated private static let launchControlSendsKey = "launchControlSends"
     /// Whether a Launch Control shows levels by brightness (off by default; Adam, 2026-11-02).
     nonisolated private static let levelBrightnessKey = "launchControlLevelBrightness"
+    /// Whether a Launch Control's home screen shows meters (off by default; Adam, 2026-11-10).
+    nonisolated private static let launchControlMetersKey = "launchControlMeters"
+
+    /// Turns a Launch Control's home-screen meters on or off: at once, and saved.
+    func setLaunchControlMeters(_ on: Bool) {
+        UserDefaults.standard.set(on, forKey: Self.launchControlMetersKey)
+        engine.setLaunchControlMeters(on)
+    }
 
     /// Turns a Launch Control's level-by-brightness on or off: at once, and saved.
     func setLevelBrightness(_ on: Bool) {
@@ -520,6 +528,7 @@ final class BridgeModel: ObservableObject {
             }
         }
         settings.launchControlLevelBrightness = UserDefaults.standard.bool(forKey: levelBrightnessKey)
+        settings.launchControlMeters = UserDefaults.standard.bool(forKey: launchControlMetersKey)
         return settings
     }
 

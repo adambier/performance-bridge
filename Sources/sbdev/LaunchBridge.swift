@@ -13,7 +13,7 @@ import LaunchControlDriver
 let lcBridgeUsage = """
     Usage:
       sbdev lcbridge [--layout xl3 | lc3 | lc3-sim] [--host H] [--in-port P]
-                     [--out-port P] [--port NAME] [--home N] [--verbose]
+                     [--out-port P] [--port NAME] [--home N] [--meters] [--verbose]
           Connects TotalMix FX and a Launch Control through SurfaceCore and the Launch Control
           driver, as the app will. Prints what is sent to TotalMix FX, with the time since starting;
           --verbose also prints every MIDI message to and from the device. Then reads commands
@@ -24,6 +24,8 @@ let lcBridgeUsage = """
           "LC3 n DAW" with the lowest device ID n).
           --host, --in-port, and --out-port are TotalMix FX's, as for monitor. --home is the home
           submix's output number, counting from 1 (default: TotalMix FX's Main Out).
+          --meters draws the home screen as a picture with a meter for each strip (TotalMix FX's
+          "Send Level Data" on).
           Stop sbdev monitor, sbdev bridge, and the app first: they need the same ports.
 
       On the device: Track < and > move by eight channels (with Shift, to the first or last
@@ -52,6 +54,7 @@ struct LaunchBridgeOptions {
     var portName: String?
     var home: Int?
     var verbose = false
+    var meters = false
 }
 
 func parseLaunchBridgeOptions(_ arguments: ArraySlice<String>) -> LaunchBridgeOptions {
@@ -82,6 +85,7 @@ func parseLaunchBridgeOptions(_ arguments: ArraySlice<String>) -> LaunchBridgeOp
             guard let number = Int(value(argument)), number >= 1 else { fail("--home needs an output number from 1.") }
             options.home = number - 1
         case "--verbose": options.verbose = true
+        case "--meters": options.meters = true
         case "-h", "--help": print(lcBridgeUsage); exit(0)
         default: fail("Unknown option \(argument).\n\n\(lcBridgeUsage)")
         }
@@ -102,7 +106,7 @@ final class LaunchBridgeSession: @unchecked Sendable {
 
     init(options: LaunchBridgeOptions) {
         self.options = options
-        driver = LaunchControlDriver(name: "lc", layout: options.layout, device: options.device)
+        driver = LaunchControlDriver(name: "lc", layout: options.layout, device: options.device, showsMeters: options.meters)
     }
 
     private var now: Double { Date().timeIntervalSince(start) }

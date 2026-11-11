@@ -365,10 +365,10 @@ final class LaunchControlDriverTests: XCTestCase {
         var driver = LaunchControlDriver(name: "lc", layout: .xl3)
         _ = driver.start(hub: &hub, now: 0)
         _ = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0)
-        XCTAssertEqual(driver.stationaryLines(hub: hub)[0], "Inputs 1-3")
+        XCTAssertEqual(driver.stationaryLines(hub: hub)[0], "Page 1/2: Inputs 1-3", "the page in front (Adam, 2026-11-10)")
         let track = driver.receive([0xB0, 0x66, 0x7F], hub: &hub, now: 1)
-        XCTAssertEqual(driver.stationaryLines(hub: hub)[0], "Playback 1", "not 'Channels 9-9'")
-        XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.stationary, field: 0, "Playback 1") ?? []))
+        XCTAssertEqual(driver.stationaryLines(hub: hub)[0], "Page 2/2: Playback 1", "not 'Channels 9-9'")
+        XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.text(.stationary, field: 0, "Page 2/2: Playback 1") ?? []))
         XCTAssertTrue(track.midi.contains(LaunchControlOutgoing.showDisplay(.stationary, true, model: .xl3) ?? []),
                       "the home screen brought up again with its new title")
     }
@@ -624,7 +624,7 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertEqual(driver.currentSendOutputs(hub: hub), [2, 6])
         XCTAssertEqual(driver.sendOutputs, [2, 6], "the top row kept its output")
         XCTAssertTrue(step.midi.contains(LaunchControlOutgoing.text(.overlay, field: 1, "> ADAT 3/4") ?? []))
-        XCTAssertTrue(step.midi.contains(LaunchControlOutgoing.text(.stationary, field: 2, "Mid > ADAT 3/4") ?? []))
+        XCTAssertTrue(step.midi.contains(LaunchControlOutgoing.text(.stationary, field: 2, "Mid row > ADAT 3/4") ?? []))
         XCTAssertTrue(driver.setSendOutput(row: 0, to: 6, hub: &hub, now: 2).midi.isEmpty, "the other row's output is refused")
         XCTAssertTrue(driver.setSendOutput(row: 0, to: nil, hub: &hub, now: 2).midi.isEmpty, "no pan on the XL 3")
         XCTAssertTrue(driver.setSendOutput(row: 0, to: 99, hub: &hub, now: 2).midi.isEmpty, "not a send target")
@@ -638,19 +638,19 @@ final class LaunchControlDriverTests: XCTestCase {
 
     func testTheHomeScreenShowsWhereTheRowsGo() {
         var (driver, hub, midi) = connected(layout: .xl3, outputs: [(4, "ADAT 1/2"), (6, "ADAT 3/4")])
-        XCTAssertEqual(driver.stationaryLines(hub: hub), ["In 1-3, PB 1", "Top > Phones", "Mid > ADAT 1/2"])
-        XCTAssertTrue(midi.contains(LaunchControlOutgoing.text(.stationary, field: 1, "Top > Phones") ?? []))
+        XCTAssertEqual(driver.stationaryLines(hub: hub), ["In 1-3, PB 1", "Top row > Phones", "Mid row > ADAT 1/2"])
+        XCTAssertTrue(midi.contains(LaunchControlOutgoing.text(.stationary, field: 1, "Top row > Phones") ?? []))
         _ = driver.receive([0xB6, 0x3F, 0x7F], hub: &hub, now: 1)
         let shiftPage = driver.receive([0xB0, 0x6B, 0x7F], hub: &hub, now: 1)
-        XCTAssertEqual(driver.stationaryLines(hub: hub)[2], "Mid > ADAT 3/4")
-        XCTAssertTrue(shiftPage.midi.contains(LaunchControlOutgoing.text(.stationary, field: 2, "Mid > ADAT 3/4") ?? []),
+        XCTAssertEqual(driver.stationaryLines(hub: hub)[2], "Mid row > ADAT 3/4")
+        XCTAssertTrue(shiftPage.midi.contains(LaunchControlOutgoing.text(.stationary, field: 2, "Mid row > ADAT 3/4") ?? []),
                       "the home screen follows the row")
 
         var (lc3, lc3Hub, _) = connected(layout: .lc3)
-        XCTAssertEqual(lc3.stationaryLines(hub: lc3Hub), ["In 1-3, PB 1", "Top: Pan", "Buttons: Mute"])
+        XCTAssertEqual(lc3.stationaryLines(hub: lc3Hub), ["In 1-3, PB 1", "Top row: Pan", "Buttons: Mute"])
         _ = lc3.receive([0xB0, 0x6B, 0x7F], hub: &lc3Hub, now: 1)
         let function = lc3.receive([0xB0, 0x42, 0x7F], hub: &lc3Hub, now: 2)
-        XCTAssertEqual(lc3.stationaryLines(hub: lc3Hub), ["In 1-3, PB 1", "Top > Phones", "Buttons: PFL"])
+        XCTAssertEqual(lc3.stationaryLines(hub: lc3Hub), ["In 1-3, PB 1", "Top row > Phones", "Buttons: PFL"])
         XCTAssertTrue(function.midi.contains(LaunchControlOutgoing.text(.stationary, field: 2, "Buttons: PFL", model: .lc3) ?? []))
     }
 
@@ -927,4 +927,56 @@ final class LaunchControlDriverTests: XCTestCase {
         _ = driver.receive([0xB0, 0x68, 0x7F], hub: &hub, now: 4)   // the Novation button
         XCTAssertEqual(first(), 0, "the Novation button does nothing")
     }
+
+    func testTheHomeScreenPutsThePageFirstWhenItFits() {
+        XCTAssertEqual(LaunchControlDriver.withPage("Inputs 1-3", pageNumber: nil, fits: { _ in true }), "Inputs 1-3",
+                       "no page with only one")
+        XCTAssertEqual(LaunchControlDriver.withPage("Inputs 1-3", pageNumber: (1, 2), fits: { $0.count <= 20 }), "Page 1/2: Inputs 1-3")
+        XCTAssertEqual(LaunchControlDriver.withPage("In 11-12, PB 1-6", pageNumber: (2, 3), fits: { $0.count <= 20 }), "2/3: In 11-12, PB 1-6",
+                       "the word Page dropped when the line is too long")
+    }
+
+    func testTheMeterPicture() {
+        let picture = LaunchControlDriver.meterPicture(title: "Page 1/2", levels: [[10], [20, 30], []], peaks: [[15], [20, 40], []])
+        XCTAssertTrue((0..<128).contains { x in (0..<7).contains { picture[x, $0] } }, "the title is drawn at the top")
+        let bottom = 63
+        // Strip 1, mono: one bar 12 pixels wide (x 2–13), 10 tall, its peak 15 pixels up.
+        XCTAssertTrue(picture[2, bottom] && picture[13, bottom] && !picture[14, bottom])
+        XCTAssertTrue(picture[7, bottom - 9] && !picture[7, bottom - 10])
+        XCTAssertTrue(picture[7, bottom - 14], "the peak line")
+        // Strip 2, stereo: two bars 6 pixels wide (x 17–22 and 25–30), 20 and 30 tall.
+        XCTAssertTrue(picture[17, bottom - 19] && !picture[17, bottom - 20])
+        XCTAssertTrue(picture[25, bottom - 29] && !picture[23, bottom], "a gap between the two bars")
+        XCTAssertTrue(picture[25, bottom - 39], "the right side's peak")
+        // Strip 3 is blank: only the dotted marks.
+        XCTAssertFalse(picture[34, bottom])
+    }
+
+    func testMetersAreSentAsPicturesPacedByTheReadyReply() {
+        var hub = loadedHub()
+        var driver = LaunchControlDriver(name: "lc", layout: .xl3, showsMeters: true)
+        _ = driver.start(hub: &hub, now: 0)
+        let answer = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0)
+        XCTAssertFalse(answer.midi.contains(LaunchControlOutgoing.showDisplay(.stationary, true, model: .xl3) ?? []),
+                       "no text home screen with meters")
+        let header = LaunchControlModel.xl3.sysExHeader + [0x09, 0x35]
+        let first = driver.tick(hub: &hub, now: 0.1)
+        XCTAssertTrue(first.midi.contains(header), "the first picture, on the stationary display's target")
+        _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -6), now: 0.15)
+        XCTAssertFalse(driver.tick(hub: &hub, now: 0.2).midi.contains(header), "not before the ready reply")
+        _ = driver.receive(LaunchControlModel.xl3.sysExHeader + [0x09, 0x7F, 0xF7], hub: &hub, now: 0.25)
+        XCTAssertTrue(driver.tick(hub: &hub, now: 0.3).midi.contains(header), "the level changed, and the device is ready")
+        _ = driver.receive(LaunchControlModel.xl3.sysExHeader + [0x09, 0xF7], hub: &hub, now: 0.35)
+        _ = driver.tick(hub: &hub, now: 0.4)  // the average settles
+        _ = driver.receive(LaunchControlModel.xl3.sysExHeader + [0x09, 0xF7], hub: &hub, now: 0.45)
+        XCTAssertFalse(driver.tick(hub: &hub, now: 0.5).midi.contains(header), "nothing changed")
+        _ = hub.handle(.level(bus: .input, channel: 2, peakDB: -30), now: 0.55)
+        XCTAssertTrue(driver.tick(hub: &hub, now: 2.6).midi.contains(header), "sent without a reply after the timeout")
+        let off = driver.setShowsMeters(false, hub: hub)
+        XCTAssertTrue(off.contains(LaunchControlOutgoing.text(.stationary, field: 1, "Top row > Phones") ?? []),
+                      "the text home screen again")
+        XCTAssertTrue(off.contains(LaunchControlOutgoing.showDisplay(.stationary, true, model: .xl3) ?? []))
+        XCTAssertFalse(driver.tick(hub: &hub, now: 3).midi.contains(header), "no pictures with meters off")
+    }
 }
+

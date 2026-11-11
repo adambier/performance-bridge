@@ -136,9 +136,10 @@ With the E16 chosen, a second box below shows its **Layout** (16 channels or cha
 **Send B** for channel strips, **Meters**, and **Ring brightness**. Each takes effect at once, without
 Apply; the layout and sends also follow a change made on the E16 (Step 6).
 
-With a Launch Control chosen, a second box below shows its send rows and **Levels: Show by brightness** (off
+With a Launch Control chosen, a second box below shows its send rows, **Levels: Show by brightness** (off
 by default), which dims each level and send encoder's light with its level, from full at the top to dim at
-the bottom and dark at −oo. Each takes effect at once, without Apply (Step 6).
+the bottom and dark at −oo, and **Meters: Show on the home screen** (off by default). Each takes effect at
+once, without Apply (Step 6).
 
 ### Open at login
 
@@ -318,9 +319,10 @@ The E16 has two layouts. In the **16-channel layout**, each encoder is one chann
 | **Shift + turn an encoder** | Reset it: a pan to the center, a send to −oo (release Shift, then Shift + turn it again to bring it back). Hold Shift for a moment (0.3 s) first; after Page or Track in the same hold, turning does nothing. |
 
 - The two send rows never feed the same output: stepping one skips the output the other has.
-- The screen shows the channels on the page, counted in the order of **Settings… → Channel Layout** with a
-  stereo pair counting once, and where each send row goes (e.g., "Inputs 1-7", "Top > Phones 1", "Mid > Phones
-  2").
+- The screen shows the page and the channels on it, counted in the order of **Settings… → Channel Layout** with a
+  stereo pair counting once, and where each send row goes (e.g., "Page 1/2: Inputs 1-7", "Top row > Phones 1",
+  "Mid row > Phones 2"). With **Meters** on in Settings, it shows the page line and a meter for each channel
+  instead, two bars for a stereo channel; meters need TotalMix FX's **Send Level Data** on.
 - Moving a control shows its channel, what it does, and its value.
 - After each Page press the screen names the row and its new output, and each send row's lights take the color
   of the output it feeds: its color in TotalMix FX, or, for an output left white, teal (a blue-green) for the
@@ -360,7 +362,7 @@ The E16 has two layouts. In the **16-channel layout**, each encoder is one chann
 | **Shift + turn an encoder** | Reset it: a pan to the center, a level above 0 dB down to 0 dB (one at or below 0 dB stays), a send to −oo (release Shift, then Shift + turn it again to bring it back). Hold Shift for a moment (0.3 s) first; after Page or Track in the same hold, turning does nothing. |
 
 - The screen shows the channels on the page, counted in the order of **Settings… → Channel Layout** with a
-  stereo pair counting once, the top row's function (e.g., "Top: Pan"), and the buttons' ("Buttons: Mute", or
+  stereo pair counting once, the top row's function (e.g., "Top row: Pan"), and the buttons' ("Buttons: Mute", or
   "PFL on, buttons Mute" while a PFL is on; "Buttons: PFL" while Function is held).
 - Moving a control shows its channel, what it does, and its value.
 - After each Page press the screen names the top row's new function. As a send, the row's lights take the

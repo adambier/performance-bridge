@@ -55,7 +55,7 @@ var targets: [Target] = [
     .target(name: "UDPTransport"),
     .target(name: "SurfaceCore", dependencies: ["OSCCodec", "TotalMixOSC"]),
     .target(name: "RotoDriver", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "SurfaceCore"]),
-    .target(name: "LaunchControlDriver", dependencies: ["OSCCodec", "TotalMixOSC", "LaunchControl", "SurfaceCore"]),
+    .target(name: "LaunchControlDriver", dependencies: ["OSCCodec", "TotalMixOSC", "LaunchControl", "SurfaceCore", "OXIE16"]),
     .target(name: "OXIE16"),
     .target(name: "E16Driver", dependencies: ["OSCCodec", "TotalMixOSC", "OXIE16", "SurfaceCore"]),
     .target(name: "BridgeEngine", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "MIDITransport", "UDPTransport",
@@ -95,7 +95,7 @@ if includeTests {
     targets.append(.testTarget(name: "SurfaceCoreTests", dependencies: ["SurfaceCore", "TotalMixOSC", "OSCCodec"]))
     targets.append(.testTarget(name: "BridgeEngineTests", dependencies: ["BridgeEngine", "SurfaceCore", "TotalMixOSC", "OSCCodec", "UDPTransport",
                                                                    "LaunchControl", "LaunchControlDriver", "MIDITransport"]))
-    targets.append(.testTarget(name: "LaunchControlDriverTests", dependencies: ["LaunchControlDriver", "LaunchControl", "SurfaceCore", "TotalMixOSC", "OSCCodec"]))
+    targets.append(.testTarget(name: "LaunchControlDriverTests", dependencies: ["LaunchControlDriver", "LaunchControl", "SurfaceCore", "TotalMixOSC", "OSCCodec", "OXIE16"]))
     targets.append(.testTarget(name: "RotoDriverTests", dependencies: ["RotoDriver", "RotoControl", "SurfaceCore", "TotalMixOSC", "OSCCodec"]))
     targets.append(.testTarget(name: "OXIE16Tests", dependencies: ["OXIE16"]))
     targets.append(.testTarget(name: "E16DriverTests", dependencies: ["E16Driver", "OXIE16", "SurfaceCore", "TotalMixOSC", "OSCCodec"]))
