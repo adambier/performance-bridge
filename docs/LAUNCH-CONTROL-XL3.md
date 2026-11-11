@@ -485,7 +485,9 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   apart and the strips five apart, each bar with its peak held 2 s while the bar shows, and no dB
   marks; under each meter the channel's number, counted within its kind as the first line counts
   ("In 1-3, PB 1-3" gives 1 2 3 1 2 3), with one line under each run of playbacks' numbers, and the screen's bottom row dark; Track shows the page on the
-  overlay (Adam, 2026-11-10).[^test-22] Whether that numbering is intuitive next to TotalMix FX's
+  overlay (Adam, 2026-11-10).[^test-22] How long a control's or the overlay's display stays up is
+  the device's own Display Timeout setting, which applies in DAW mode too; 1 or 2 suits this
+  layout (Adam, 2026-11-10).[^test-23] Whether that numbering is intuitive next to TotalMix FX's
   own channel numbers is flagged for the UI review (Adam, 2026-11-10). A page with fewer than eight
   strips is centered (Adam, 2026-11-10). The eight names packed to
   four characters (arrangement 3, e.g., "ADI2SonoM1/2Tonv") were tried first and were unreadable
@@ -976,7 +978,8 @@ Mode is chosen with Mode, one of the 16 buttons lit blue, and Mode again.[^nov-c
   screen blank (the device still in the Custom Mode, which the driver doesn't draw).
 - Quitting and starting `sbdev lcbridge --meters` again put the device back in DAW mode with the
   meters.
-- At 2, the pop-up after turning an encoder goes away soon enough ("yeah think so at 2", Adam).
+- At 2, the pop-up after turning an encoder goes away soon enough ("yeah think so at 2", Adam);
+  he then judged 1 or 2 both good.
 
 **Consequences.** The setting applies to the temporary displays in DAW mode, so the driver needs no
 timer of its own. The Controls Guide says where the setting is. Whether Mode and a button can go
