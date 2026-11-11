@@ -42,8 +42,9 @@ extension LaunchControlDriver {
     /// Replies took 66–72 ms, once 340 ms while a control moved (test 21).
     public static let bitmapTimeout = 0.5
     /// The meters' height in pixels, from the screen's top row; the channel numbers go below.
-    public static let meterHeight = 46
-    /// The top row of the channel numbers: two dark rows below the meters, 11 rows tall.
+    public static let meterHeight = 45
+    /// The top row of the channel numbers: three dark rows below the meters (Adam, 2026-11-10: one
+    /// more than the first try), 11 rows tall.
     static let numberTop = 48
     /// The top row of the line under the playbacks' numbers: two dark rows below them, two rows
     /// tall, leaving the screen's bottom row dark.
