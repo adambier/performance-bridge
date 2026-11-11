@@ -1126,7 +1126,8 @@ of 1" about 76 screen pixels wide, against an estimated 84, and "6 Pb 5/6" at le
 estimated 62; the eight spaces about 41, 5 each, as in run 2. So the estimate now counts digits as
 about 10.5 pixels and "1" as 8 (test 22's 9 for every digit was too small for 6 and too large for
 1), and a pushed line keeps about 10 pixels to spare (an estimated 118 of the 128). The last line now
-gets seven spaces. Not yet seen on the device.
+gets seven spaces. Run 6 (photo): "6 Pb 5/6" whole, a few pixels from the right edge, and "to" and
+"1 Tonverk" starting at about the same place.
 
 Adam also saw "1 Tonverk" not quite at the left edge: its "1" starts about 3 screen pixels right
 of "to" (measured). A line is centered unless it is wider than the screen, and a field holds 20
