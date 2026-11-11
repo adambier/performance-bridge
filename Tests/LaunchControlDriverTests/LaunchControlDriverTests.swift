@@ -945,9 +945,20 @@ final class LaunchControlDriverTests: XCTestCase {
                        "the word Page dropped when the line is too long")
     }
 
+    func testMeterNumbersCountEachKind() {
+        let order = [ChannelRef(.input, 0), ChannelRef(.input, 2), ChannelRef(.playback, 4), ChannelRef(.input, 6), ChannelRef(.playback, 0)]
+        XCTAssertEqual(LaunchControlDriver.meterNumber(ChannelRef(.input, 6), order: order), .init(number: 3, underlined: false),
+                       "the third input in the channel order, whatever TotalMix FX's own number")
+        XCTAssertEqual(LaunchControlDriver.meterNumber(ChannelRef(.playback, 0), order: order), .init(number: 2, underlined: true))
+        XCTAssertNil(LaunchControlDriver.meterNumber(ChannelRef(.input, 9), order: order))
+    }
+
     func testTheMeterPicture() {
-        let picture = LaunchControlDriver.meterPicture(levels: [[10], [20, 30], []], peaks: [[15], [20, 40], []])
-        let bottom = 63
+        typealias Number = LaunchControlDriver.MeterNumber
+        let picture = LaunchControlDriver.meterPicture(levels: [[10], [20, 30], [], [0]], peaks: [[15], [20, 40], [], [5]],
+                                                       numbers: [Number(number: 1, underlined: false), Number(number: 12, underlined: true), nil,
+                                                                 Number(number: 100, underlined: false)])
+        let bottom = LaunchControlDriver.meterHeight - 1
         // Strip 1, mono: one bar 11 pixels wide (x 2–12), 10 tall, its peak 15 pixels up.
         XCTAssertTrue(picture[2, bottom] && picture[12, bottom] && !picture[1, bottom] && !picture[13, bottom])
         XCTAssertTrue(picture[7, bottom - 9] && !picture[7, bottom - 10])
@@ -958,8 +969,17 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertFalse((13...17).contains { picture[$0, bottom] }, "five between the strips")
         XCTAssertTrue(picture[24, bottom - 39], "the right side's peak")
         XCTAssertFalse((0..<64).contains { picture[16, $0] }, "no ticks")
+        // Strip 4: no bar, so no peak line, though the peak is above it (a noise floor).
+        XCTAssertFalse((0..<LaunchControlDriver.meterHeight).contains { y in (50...60).contains { picture[$0, y] } })
+        // The numbers, from row 51: "1" (x 4–9, its stem at 7–8), not underlined; "12" (x 17–29), underlined.
+        XCTAssertTrue(picture[7, 51] && picture[8, 61] && !picture[9, 61] && !picture[7, 63])
+        XCTAssertFalse((51..<64).contains { picture[2, $0] }, "the 1 is centered")
+        XCTAssertTrue((17...29).allSatisfy { picture[$0, 63] } && !picture[16, 63] && !picture[30, 63], "the playback's underline")
+        // "100" in narrow digits stays inside its column (x 49–62): its last "0" at x 59–62.
+        XCTAssertTrue((51..<62).contains { picture[59, $0] } && (51..<62).contains { picture[62, $0] })
+        XCTAssertFalse((51..<64).contains { picture[48, $0] || picture[63, $0] })
         // Strip 3 is blank.
-        XCTAssertFalse(picture[34, bottom])
+        XCTAssertFalse(picture[34, bottom] || (51..<64).contains { picture[40, $0] })
     }
 
     func testMetersAreSentAsPicturesPacedByTheReadyReply() {
