@@ -348,8 +348,8 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   controls (Adam, 2026-11-01): its 54 detents from −63.5 to +6 dB (docs/TOTALMIX-OSC.md, test 19),
   spread over the encoder's values so that 0 dB is at 101, as on the faders. That is about 0.2 dB a
   value from −5 to +5 dB, 0.4 dB from −15 to −5, and up to 1.3 dB at the bottom; value 0 is off.
-- **Pan encoders.** They are centered at 64, which TotalMix FX shows as C from either side,[^test-20] and land on TotalMix FX's whole pan steps (L100 to
-  R100), about 1.6 steps a value, so they move in steps of 1 or 2. Each value is sent a quarter step to the right of
+- **Pan encoders.** They are centered at 64, which TotalMix FX has been observed to show as C from
+  either side,[^test-20] and land on TotalMix FX's whole pan steps (L100 to R100), about 1.6 steps a value, so they move in steps of 1 or 2. Each value is sent a quarter step to the right of
   its whole step, so that TotalMix FX's window shows the same step as the encoder's display. TotalMix FX
   has been observed to show the whole step below a fractional pan, toward L (Adam, 2026-11-01):
   with plain values, one value right of center (R1.6) showed R01 in TotalMix FX and R2 on the device;
@@ -839,9 +839,10 @@ Adam tried yellow one step dimmer (10, 7, 0) and went back to 16, 11, 0.
 seen by Adam. Asked after the Roto-Control's center stop showed L01 in TotalMix FX (`docs/ROTO-CONTROL.md`,
 test 13), since 0–127 has no exact middle either.
 
-- **Run 1: from the left.** Bottom 1 (In 1's pan) turned a little left, then slowly right until the
-  XL 3's screen showed C. TotalMix FX showed C for In 1's pan in Main Out's mix (seen).
+- **Run 1: from the left.** Bottom 1 (the first channel's pan) turned a little left, then slowly
+  right until the XL 3's screen showed C. TotalMix FX showed that pan as C (seen).
 - **Run 2: from the right.** The same, turned a little right, then slowly left to C. TotalMix FX
   showed C (seen).
 
-**Consequence.** No change: the driver's center at 64 is TotalMix FX's C from both sides.
+**Consequence.** No change. The XL 3 shows C only at 64 (`LaunchControlDriver.panSteps` maps 63 and 65
+to L02 and R02), and TotalMix FX showed C there from both sides.

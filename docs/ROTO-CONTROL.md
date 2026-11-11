@@ -56,8 +56,13 @@ words ("inference", "untested").
     (2026-11-04), section 9; firmware 3.3.0.
 [^test-14]: [Test 14](#test-14-2026-11-10-mode-then-mix) (2026-11-10), section 9; firmware not
     rechecked since test 12.
+[^totalmix-test-5]: Test 5 (2026-10-28) of the TotalMix FX tests,
+    [docs/TOTALMIX-OSC.md](TOTALMIX-OSC.md#test-5-2026-10-28-does-totalmix-fx-echo-a-command),
+    section 6.
+[^totalmix-meters]: [docs/TOTALMIX-OSC.md](TOTALMIX-OSC.md#3-addresses-this-project-uses),
+    section 3, "Meter colors".
 
-**Status.** Twelve tests so far (section 9), with firmware 3.3.0. Section 8 lists what is still
+**Status.** Fourteen tests so far (section 9), with firmware 3.3.0. Section 8 lists what is still
 open.
 
 ## 1. Two interfaces
@@ -434,8 +439,8 @@ marked "seen".
 - **PLUGIN mode with no plugins** (run 7): answered with NUM PLUGINS 0, FIRST PLUGIN 0, and PLUGIN
   DETAILS END, the Roto-Control sent SET PLUGIN MODE once each time the user chose PLUGIN mode
   and nothing more. Seen: the knob screens black, the MENU window blue with "---" on top and the
-  selected track's name below, and no flicker or cycling. MODE, then MIX, returns to the
-  channels.[^test-14]
+  selected track's name below, and no flicker or cycling. MODE, then MIX, has been observed to
+  return to the channels.[^test-14]
 - **Meter colors** (`sbdev roto`, after run 7, seen): with thresholds 126 and 127, meter 1 at 125
   was green almost to its end, at 126 much the same (any yellow was at most a pixel or two), and
   at 127 full with a red last pixel. So a meter shows red at the red threshold itself. A yellow
@@ -646,7 +651,7 @@ the first three.
   (seen). Section 6's rule is confirmed. The Mute Master button's place in TotalMix FX's window was
   not checked on screen before the run; Adam found it.
 - **Run 4: the MENU screen.** After the knob mode was changed to pan with SEL, the small screen
-  above MODE read "MIX-TRACKS >" on its first line and "KNOBS-PAN" on its second (seen): it shows
+  above LEARN (written "above MODE" until test 14 placed it) read "MIX-TRACKS >" on its first line and "KNOBS-PAN" on its second (seen): it shows
   the track set and the knob mode without holding SEL.
 
 **Consequences.** The Controls Guide names the tape button and the (+) button, says Mute Master
@@ -679,12 +684,13 @@ TotalMix FX's pan steps from 1.2.0.
 installed), in MIX mode. Not logged; seen by Adam. The Controls Guide's MODE row ("press **MODE**, then
 MIX, to return to it") had no test record of its own.
 
-- **Run 1: to PLUGIN.** MODE, then PLUGIN: the main screen turned blue with "---" on its top line and
-  its bottom line dark; every track screen was dark (seen). That is PLUGIN mode with no plugins, as
-  the driver answers it. (In test 4, run 7, the MENU window's bottom line showed the
+- **Run 1: to PLUGIN.** MODE, then PLUGIN: the MENU window turned blue with "---" on its top line and
+  its bottom line dark; every track screen was dark (seen). That this is PLUGIN mode with no plugins,
+  as the driver answers it, is an inference from test 4, run 7. (In test 4, run 7, the MENU window's bottom line showed the
   selected track's name; why it was dark this time is not known.)
-- **Run 2: back to MIX.** MODE, then MIX: the small screen read "MIX-TRACKS" and "KNOBS-PAN", and the
-  track screens showed the page's channels in their colors (Tonverk red, ADAT 3/4, ADAT 5/6, PB 1/2
-  purple, PB 3/4 gray, PB 5/6 orange), each switch labeled MUTE (seen).
+- **Run 2: back to MIX.** MODE, then MIX: the small screen above LEARN read "MIX-TRACKS" and
+  "KNOBS-PAN", and the track screens showed channel names again; Adam read six, across: Tonverk
+  (red), ADAT 3/4, ADAT 5/6, PB 1/2 (purple), PB 3/4 (gray), and PB 5/6 (orange), each switch labeled
+  MUTE (seen).
 
 **Consequence.** The guide's MODE row stands as written.

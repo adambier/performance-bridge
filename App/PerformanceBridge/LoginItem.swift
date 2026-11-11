@@ -98,6 +98,10 @@ struct OpenAtLoginToggle: View {
         // 2026-11-10). Turning it off there has been observed to end the app with SIGTERM
         // ("zsh: terminated"), so the note for that case shows from the next launch.
         .onReceive(ticks) { _ in
+            // A closed window keeps its content (Windows.show), so check only while one of the
+            // app's titled windows shows; the menu-bar item's own window is untitled (inference).
+            // Tier 2 review, 2026-11-10.
+            guard NSApp.windows.contains(where: { $0.isVisible && $0.styleMask.contains(.titled) }) else { return }
             model.refreshLoginItem("timer")
         }
     }

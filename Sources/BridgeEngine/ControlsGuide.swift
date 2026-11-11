@@ -151,7 +151,7 @@ public struct ControlsGuide: Equatable, Sendable {
         ],
         notes: [
             "A mute that is on flashes while TotalMix FX's Mute Master is off.",
-            "The knob and switch modes, and the track set, are the Roto-Control's own and are kept between sessions; Performance Bridge follows them and can't set them, so a session can start with the knobs on a send. The small screen above MODE shows both (e.g., \"MIX-TRACKS\" and \"KNOBS-VOL\").",
+            "The knob and switch modes, and the track set, are the Roto-Control's own and are kept between sessions; Performance Bridge follows them and can't set them, so a session can start with the knobs on a send. The small screen above LEARN shows both (e.g., \"MIX-TRACKS\" and \"KNOBS-VOL\").",
         ])
 
     static let e16 = ControlsGuide(
