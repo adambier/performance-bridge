@@ -318,7 +318,8 @@ final class BridgeModel: ObservableObject {
         engine.setE16Brightness(value)
     }
 
-    /// Whether the E16 shows meters under the names (off by default).
+    /// Whether the E16 shows meters under the names: on by default, also for anyone who never set it
+    /// (Adam, 2026-11-10 and 2026-11-11).
     nonisolated private static let e16MetersKey = "e16Meters"
 
     /// Turns the E16's meters on or off: at once, and saved.

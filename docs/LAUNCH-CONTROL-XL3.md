@@ -487,7 +487,8 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   ("Top > Phones 1", "Mid > Phones 2"; "Top row >" ran most outputs' names off the
   screen[^test-22]), which nothing else on the device shows (Adam, 2026-11-01). Whether the page's
   line fits is estimated from character widths measured in photos of the screen (an
-  inference).[^test-22][^test-24] With **Meters** on (a setting, off by default), the home screen is a
+  inference).[^test-22][^test-24] With **Meters** on (a setting, off by default: on the XL 3 the meters replace the text home screen,
+  and the Launch Control 3 hasn't been tried with them; Adam, 2026-11-11, on a review's advice), the home screen is a
   picture instead: a meter for each strip, 45 pixels tall, with a finely dotted line across each bar at 0 dBFS (the top), no clip lights, a stereo channel's two bars one pixel
   apart and the strips five apart, each bar with its peak held 2 s and then falling at 20 dB a second, as TotalMix FX's peaks drop
   (Adam, 2026-11-11[^test-24]), shown even once its bar has emptied, until it meets the level (a

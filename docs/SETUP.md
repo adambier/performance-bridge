@@ -13,7 +13,7 @@
 
 Open **Performance Bridge** from the Applications folder. It runs in the menu bar, with no Dock icon. Its
 Setup Guide follows these steps one page at a time, with **Back** and **Continue**, and checks each one live where
-it can: whether TotalMix FX answers, whether it has sent its channels, whether meters arrive (Roto-Control, or E16 with meters on), and whether
+it can: whether TotalMix FX answers, whether it has sent its channels, whether meters arrive (Roto-Control, or E16 or Launch Control with meters on), and whether
 the hardware controller is connected. The marks across its top show every step at a glance (green when done);
 click one to go to its page, done or not. A finished page can still show its setup instructions: click **Show
 Instructions**. It opens at the first step not done (or at the first note, once every check is done), by itself the first time the app runs; after
