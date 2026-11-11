@@ -937,19 +937,18 @@ final class LaunchControlDriverTests: XCTestCase {
     }
 
     func testTheMeterPicture() {
-        let picture = LaunchControlDriver.meterPicture(levels: [[10], [20, 30], []])
+        let picture = LaunchControlDriver.meterPicture(levels: [[10], [20, 30], []], peaks: [[15], [20, 40], []])
         let bottom = 63
-        let tick = bottom - LaunchControlDriver.meterHeight(db: -20) + 1
-        XCTAssertTrue(picture[16, tick] && !picture[15, tick], "a one-pixel tick between strips 1 and 2 at −20 dB")
-        XCTAssertFalse(picture[0, tick] || picture[127, tick], "none at the edges")
-        XCTAssertFalse(picture[40, tick], "nothing across a blank strip")
-        // Strip 1, mono: one bar 12 pixels wide (x 2–13), 10 tall, with no peak line above it.
-        XCTAssertTrue(picture[2, bottom] && picture[13, bottom] && !picture[14, bottom])
+        // Strip 1, mono: one bar 11 pixels wide (x 2–12), 10 tall, its peak 15 pixels up.
+        XCTAssertTrue(picture[2, bottom] && picture[12, bottom] && !picture[1, bottom] && !picture[13, bottom])
         XCTAssertTrue(picture[7, bottom - 9] && !picture[7, bottom - 10])
-        XCTAssertFalse((10..<64).contains { picture[7, bottom - $0] }, "no peak line")
-        // Strip 2, stereo: two bars 6 pixels wide (x 17–22 and 25–30), 20 and 30 tall.
-        XCTAssertTrue(picture[17, bottom - 19] && !picture[17, bottom - 20])
-        XCTAssertTrue(picture[25, bottom - 29] && !picture[23, bottom], "a gap between the two bars")
+        XCTAssertTrue(picture[7, bottom - 14] && !picture[7, bottom - 13], "the peak line")
+        // Strip 2, stereo: two bars 5 pixels wide (x 18–22 and 24–28), 20 and 30 tall, one pixel apart.
+        XCTAssertTrue(picture[18, bottom - 19] && !picture[18, bottom - 20])
+        XCTAssertTrue(picture[24, bottom - 29] && picture[28, bottom] && !picture[23, bottom], "one pixel between a pair's bars")
+        XCTAssertFalse((13...17).contains { picture[$0, bottom] }, "five between the strips")
+        XCTAssertTrue(picture[24, bottom - 39], "the right side's peak")
+        XCTAssertFalse((0..<64).contains { picture[16, $0] }, "no ticks")
         // Strip 3 is blank.
         XCTAssertFalse(picture[34, bottom])
     }
