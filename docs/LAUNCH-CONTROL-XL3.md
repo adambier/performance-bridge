@@ -1229,7 +1229,7 @@ as in Mode Select, even when `sbdev` was restarted):
 So leaving Mode Select puts the device's own "0" over the picture, while the lights stay as drawn,
 and tells the host nothing. The driver now sends an unchanged picture again every second
 (`pictureRefresh`), about a kilobyte of SysEx each, so the meters return within a second. Seen in
-run 4. Whether the text home screen (meters off) also gives way to "0" was not tried.
+run 4. Whether the text home screen (meters off) also gives way to "0" was tried in run 6.
 
 Review of runs 1–3 (Adam asked whether the earlier changes were needed): the "0" after run 2's
 redraw came from leaving Mode Select, which follows any redraw, so leaving and entering DAW mode
@@ -1274,4 +1274,26 @@ So a Custom Mode and back needs no restart of the host: Mode, Mute/Select, and M
 layout, with the screen back within a second. The Controls Guide's Display Timeout steps now end
 that way instead of "quit and reopen" (seen with `sbdev lcbridge`; the app runs the same driver, an
 inference).
+
+Run 6 (meters off: `sbdev lcbridge --verbose`, the XL 3 power-cycled first; one press at a time):
+- At the start: the text home screen ("6 channels", "Top > ADI-2 3/4", "Mid > Phones 2"), the
+  layout's lights.
+- Mode: "Mode Select DAW Mixer", then blank; both button rows blue. Nothing sent to the host; the
+  presence check's questions every 5 s were each answered `B6 1E 01`.
+- Mute/Select: no change on the device; the device reported DAW Mixer unasked (148.762 s).
+- Mode: the text home screen, with no "0" seen. So the device keeps its text fields across Mode
+  Select, and the plain round trip needs nothing from the driver with meters off.
+- From a Custom Mode and back: Mode, button 1 (Custom 1 reported, 230.262 s), and Mode, then Mode and
+  Mute/Select (DAW Mixer reported, 298.259 s; the driver drew everything 8 ms later, and the text home
+  screen showed with both button rows blue). Mode then left the screen blank and the rows blue, with
+  Mode bright; a further Mode brought back the text home screen and the layout's lights. So this time
+  it took one press more than in run 5.
+
+Run 7 (the same, the XL 3 power-cycled and `sbdev` restarted first; Adam noting the Mode button after
+each press): Mode bright in Mode Select and dim outside it, at each step. After Mute/Select the text
+home screen showed while Mode stayed bright and both rows blue (Mode Select still open, so the
+driver's own DAW Mixer message doesn't close it); Mode then went dim, the text home screen stayed,
+and the rows went back to dim yellow and orange. So Mode, Mute/Select, and Mode return from a Custom
+Mode with meters off too, and run 6's extra press was not repeated; why it happened is not known
+(that a press didn't register is a guess).
 
