@@ -1195,7 +1195,16 @@ driver's layout. Adam pressed Mode, Mute/Select, and Mode.
   firmware since, is an inference.
 
 **Consequences.** The driver took the report as nothing new, since it was already connected and not
-in a Custom Mode. It now draws everything again on a DAW Mixer or DAW Control report it didn't ask
-for: not the answer to its presence question, and not within 1 s of its own `selectMode`, which the
-device also answers (test 6). Not yet seen on the device.
+in a Custom Mode.
+
+Run 2 (`--verbose`, commit `a160c10`, which drew everything again on such a report): the report came
+unasked at 10.261 s; the driver sent every light, display, and the meter picture 10 ms later, and
+the device answered the picture as received (`F0 … 09 F7`, 10.377 s). But the screen still showed
+"0" (Adam). Its start, which leaves DAW mode and enters it again (`startBytes`), had brought the
+picture up in the same session.
+
+So the driver now leaves DAW mode and enters it again on a DAW Mixer or DAW Control report it didn't
+ask for (not the answer to its presence question, and not within 1 s of its own `selectMode`, which
+the device also answers: test 6), and on one that ends a Custom Mode, as it does when it starts.
+That this brings the screen back is an inference from the start; not yet seen on the device.
 

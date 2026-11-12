@@ -358,14 +358,19 @@ public struct LaunchControlDriver: Sendable {
             case .custom:
                 inCustomMode = true
             case .dawMixer, .dawControl:
-                // A DAW mode chosen on the device (Mode, Mute/Select, Mode) resets its lights and
-                // screen to Novation's own, and is reported unasked (B6 1E 01; test 25): draw
-                // everything again. The report that answers the driver's own `selectMode` (test 6)
-                // or its presence question is not one.
+                // A DAW mode chosen on the device (Mode, Mute/Select, Mode, or from a Custom Mode)
+                // resets its lights and screen to Novation's own, and is reported unasked (B6 1E 01;
+                // test 25). Drawing everything again left the screen showing the device's own "0",
+                // so the driver leaves DAW mode and enters it again, as when it starts, which
+                // brings the picture back (an inference from the start, to see on the device). The
+                // report that answers the driver's own `selectMode` (test 6) or its presence
+                // question is not such a choice.
                 let echo = modeEchoUntil.map { now <= $0 } ?? false
-                if inCustomMode || !connected || (!answer && !echo) {
+                if !connected {
                     inCustomMode = false
                     connect(hub: &hub, now: now, into: &step)
+                } else if inCustomMode || (!answer && !echo) {
+                    restart(now: now, into: &step)
                 }
             }
             return

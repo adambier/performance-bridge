@@ -269,7 +269,9 @@ final class LaunchControlDriverTests: XCTestCase {
         let change = hub.handle(.mix(bus: .input, channel: 0, output: 0, parameter: "faderlin", value: .number(0.25)), now: 2)
         XCTAssertTrue(driver.take(change, hub: &hub, now: 2).midi.isEmpty, "nothing drawn in a Custom Mode")
         let back = driver.receive([0xB6, 0x1E, 0x01], hub: &hub, now: 3)
-        XCTAssertTrue(back.midi.contains([0xBF, 0x05, LaunchControlDriver.faderValue(0.25)]), "everything sent again")
+        XCTAssertTrue(back.midi.contains(LaunchControlOutgoing.dawMode(true)), "DAW mode entered again, as at the start")
+        let drawn = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 3.01)
+        XCTAssertTrue(drawn.midi.contains([0xBF, 0x05, LaunchControlDriver.faderValue(0.25)]), "everything sent again")
     }
 
     func testDAWMixerChosenOnTheDeviceDrawsAgain() {
@@ -279,7 +281,13 @@ final class LaunchControlDriverTests: XCTestCase {
         let change = hub.handle(.mix(bus: .input, channel: 0, output: 0, parameter: "faderlin", value: .number(0.25)), now: 2)
         _ = driver.take(change, hub: &hub, now: 2)
         let back = driver.receive([0xB6, 0x1E, 0x01, 0xB6, 0x1F, 0x01], hub: &hub, now: 3)
-        XCTAssertTrue(back.midi.contains([0xBF, 0x05, LaunchControlDriver.faderValue(0.25)]), "everything sent again")
+        XCTAssertEqual(back.midi, LaunchControlOutgoing.dawMode(false) + LaunchControlOutgoing.dawMode(true)
+                       + LaunchControlOutgoing.touchEvents(true) + [0xB6, 0x45, 0x00, 0xB6, 0x48, 0x00, 0xB6, 0x49, 0x00]
+                       + LaunchControlOutgoing.faderPickup(true), "left and entered again, as at the start (the screen kept showing \"0\" when only redrawn)")
+        // The device's answers on the way: Custom 1 and its leaving, then the echo.
+        _ = driver.receive([0xB6, 0x1E, 0x06, 0xB6, 0x1F, 0x06, 0x9F, 0x0C, 0x00], hub: &hub, now: 3.01)
+        let drawn = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 3.01)
+        XCTAssertTrue(drawn.midi.contains([0xBF, 0x05, LaunchControlDriver.faderValue(0.25)]), "everything sent again")
         let echo = driver.receive([0xB6, 0x1E, 0x01], hub: &hub, now: 3.02)
         XCTAssertTrue(echo.midi.isEmpty, "the answer to its own selectMode is not a new choice")
         XCTAssertEqual(driver.tick(hub: &hub, now: 8.1).midi, LaunchControlOutgoing.queryFeature(0x1E))
@@ -936,7 +944,8 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(driver.isConnected)
         XCTAssertTrue(driver.tick(hub: &hub, now: 16).midi.isEmpty, "no question in a Custom Mode")
         XCTAssertTrue(driver.tick(hub: &hub, now: 30).midi.isEmpty, "and no restart")
-        _ = driver.receive([0xB6, 0x1E, 0x01], hub: &hub, now: 31)   // back to DAW Mixer: drawn again
+        _ = driver.receive([0xB6, 0x1E, 0x01], hub: &hub, now: 31)   // back to DAW Mixer: entered again
+        _ = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 31.01)  // and drawn
 
         // Silence through two questions: asks for DAW mode again.
         XCTAssertEqual(driver.tick(hub: &hub, now: 36.02).midi, query)
@@ -1176,7 +1185,8 @@ final class LaunchControlDriverTests: XCTestCase {
         _ = driver.receive([0xB6, 0x1E, 0x06], hub: &hub, now: 1)  // a Custom Mode chosen on the device
         XCTAssertTrue(driver.inCustomMode)
         XCTAssertEqual(driver.setShowsMeters(false, hub: hub), [], "nothing written into the Custom Mode")
-        let back = driver.receive([0xB6, 0x1E, 0x01], hub: &hub, now: 2)  // DAW Mixer again
+        _ = driver.receive([0xB6, 0x1E, 0x01], hub: &hub, now: 2)  // DAW Mixer again: entered again
+        let back = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 2.01)
         XCTAssertTrue(back.midi.contains(LaunchControlOutgoing.showDisplay(.stationary, true, model: .xl3) ?? []),
                       "the text home screen drawn on the way back")
     }
