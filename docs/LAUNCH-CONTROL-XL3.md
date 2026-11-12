@@ -498,12 +498,11 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   under each run of playbacks' numbers (one pixel thick; kept for now, Adam), and the screen's bottom
   rows dark; Track shows the page and its first and last channels on the overlay, each with its
   slot, the number under its meter, the first pushed left and the last right with spaces, since the
-  device centers each line ("Page 1 of 2", "1 Vox", "to" and "3 Gtr"; Adam, 2026-11-10 and 2026-11-11;
-  test 24 for the spaces; a page with one channel shows two lines, not yet seen on the device). Flagged for the UI review (Adam, 2026-11-11): a separator after the slot
-  number (a colon, an en dash, or an em dash, or a hyphen if the font has no dash), and "Pb" or "PB"
-  for an unlabeled playback. The screen's characters are ASCII plus four symbols (section 5), so a
-  dash goes out as a hyphen; the trial is a space, a colon, a hyphen, or a spaced hyphen (`sbdev
-  lcbridge`: `sep`, and `pbname` for "Pb" or "PB").[^test-22][^test-24] How long a control's display stays up is the device's own
+  device centers each line ("Page 1 of 2", "1: Vox", "to" and "3: Gtr"; Adam, 2026-11-10 and 2026-11-11;
+  test 24 for the spaces; a page with one channel shows two lines, not yet seen on the device). The
+  colon after the slot and "PB" for an unlabeled playback were chosen by trial on the device
+  (Adam, 2026-11-11; test 24, run 7). While Mode Select is open, and for up to a second after it
+  closes (the device's own "0" covers the picture), the picture is resent every second (test 25).[^test-22][^test-24] How long a control's display stays up is the device's own
   Display Timeout setting, in seconds (by eye), which applies in DAW mode too (that it covers the overlay as
   well is an inference); 1 or 2 suits this layout (Adam, 2026-11-10).[^test-23] Every page keeps eight fixed slots, strip k in the kth, an empty slot marked by one dot on the top
   row (centering a shorter page was tried and dropped).[^test-24] The eight names packed to
@@ -1054,9 +1053,8 @@ Mode is chosen with Mode, one of the 16 buttons lit blue, and Mode again.[^nov-c
 
 **Consequences.** The setting applies to the temporary displays in DAW mode, so the driver needs no
 timer of its own. The Controls Guide says where the setting is. Whether Mode and a button can go
-back to DAW mode without restarting the host was not tried, so the guide says to quit and reopen
-(seen with `sbdev lcbridge`; the app starts the device the same way, `LaunchControlDriver.start`,
-an inference).
+back to DAW mode without restarting the host was not tried then, so the guide said to quit and
+reopen; test 25 showed Mode, Mute/Select, and Mode going back, and the guide now says so.
 The Launch Control 3 has a Settings page too; whether it has the same setting was not checked.
 
 ### Test 24 (2026-11-11): numbering the meters
@@ -1253,4 +1251,21 @@ each time, and needs nothing from the driver. The button presses (CC 66) and mis
 runs before the power cycle, and the Novation lights in the photo, came while the device was in the
 state the power cycle cleared, with its button rows staying blue across a restart of `sbdev`; how it
 got there is not known.
+
+Run 5 (the same session, from a Custom Mode and back; one press at a time):
+- Mode, button 1 ("Tonverk Mixer"), Mode: button 1 reported Custom 1 when pressed in Mode Select
+  (`B6 1E 06`, `B6 1F 06`, 332.404 s), and the driver stopped drawing; Mode then left Mode Select for
+  the Custom Mode's own lights (encoder rows cyan, blue, and yellow-green; the top button row dark,
+  the bottom teal). The screen kept the last meter picture, frozen: the driver writes nothing into a
+  Custom Mode (review of 2026-11-10).
+- Mode: Mode Select ("Mode Select" for a moment, then dark), button 1 white, the rest blue. Nothing
+  sent.
+- Mute/Select: the device reported DAW Mixer (573.541 s), and the driver drew everything 11 ms later
+  and resumed the pictures; the meters showed and moved, Mode Select still open.
+- Mode: "0", then the meters; the layout's lights. Nothing sent.
+
+So a Custom Mode and back needs no restart of the host: Mode, Mute/Select, and Mode return to the
+layout, with the screen back within a second. The Controls Guide's Display Timeout steps now end
+that way instead of "quit and reopen" (seen with `sbdev lcbridge`; the app runs the same driver, an
+inference).
 

@@ -45,11 +45,6 @@ let lcBridgeCommandHelp = """
       meters on | meters off   the home screen as meters, or as text
       peakfall N | off     let a held peak fall at N dB a second after its 2 s hold (20, the
                            default), or drop it to the level at once
-      sep none | colon | hyphen | spaced
-                           Track's pop-up: "1 Tonverk" (the default), "1: Tonverk", "1-Tonverk", or
-                           "1 - Tonverk" (a trial for the UI review)
-      pbname Pb | PB       label every unlabeled playback "Pb 1/2" (the default) or "PB 1/2", for
-                           this run only (a trial for the UI review)
       order                the sources in the channel order, numbered from 1, with their names
       move A B             move the source at place A in that order to place B
       sendall              ask TotalMix FX for its state again
@@ -262,30 +257,6 @@ final class LaunchBridgeSession: @unchecked Sendable {
                 let name = hub.layout.label(for: ref) ?? hub.mirror.channels[ref]?.name ?? ""
                 print("  \(index + 1). \(ref.bus == .playback ? "playback" : "input") \(ref.channel + 1): \(name)")
             }
-        case "sep":
-            let separators = ["none": " ", "colon": ": ", "hyphen": "-", "spaced": " - "]
-            guard words.count == 2, let separator = separators[words[1]] else {
-                print("sep none, colon, hyphen, or spaced")
-                return true
-            }
-            driver.slotSeparator = separator
-            log("Slot separator: \"1\(separator)Tonverk\"; press Track to see it")
-        case "pbname":
-            guard words.count == 2, words[1] == "Pb" || words[1] == "PB" else {
-                print("pbname Pb or pbname PB")
-                return true
-            }
-            var layout = hub.layout
-            for ref in hub.layout.channels(.sources, in: hub.mirror) where ref.bus == .playback {
-                let name = SurfaceHub.stripName(ref, hub.mirror.channels[ref])
-                if words[1] == "PB", name.hasPrefix("Pb ") {
-                    layout.labels[ref] = "PB " + name.dropFirst(3)
-                } else if words[1] == "Pb", let label = layout.labels[ref], label.hasPrefix("PB ") {
-                    layout.labels[ref] = nil
-                }
-            }
-            dispatch(hub.setLayout(layout, now: now))
-            log("Unlabeled playbacks: \(words[1]) 1/2 and so on (this run only)")
         case "move":
             let order = hub.layout.channels(.sources, in: hub.mirror)
             guard words.count == 3, let from = Int(words[1]), let to = Int(words[2]),

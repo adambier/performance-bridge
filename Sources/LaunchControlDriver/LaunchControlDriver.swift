@@ -94,11 +94,11 @@ public struct LaunchControlDriver: Sendable {
     /// 20 and 40 both looked right, "20 maybe closer" (test 24). `nil` drops a peak to the level at
     /// once.
     public var meterPeakFall: Double? = 20
-    /// What goes between a slot number and its channel's name on Track's pop-up ("1 Tonverk"):
-    /// a space, the default, or a trial for the UI review (Adam, 2026-11-11: a colon or a dash). The
-    /// screen's characters are ASCII plus four symbols (section 5 of docs/LAUNCH-CONTROL-XL3.md),
-    /// so an en or em dash is sent as a hyphen (`LaunchControlText`).
-    public var slotSeparator = " "
+    /// What goes between a slot number and its channel's name on Track's pop-up ("1: Tonverk"): a
+    /// colon, "definitely better than without" one and "clearer" than a spaced hyphen (Adam,
+    /// 2026-11-11; docs/LAUNCH-CONTROL-XL3.md, test 24, run 7). The screen's characters are ASCII
+    /// plus four symbols, so a dash was not an option.
+    static let slotSeparator = ": "
     /// Each channel's held peak, in dBFS, and when it was reached, for `meterPeakFall`.
     var meterPeakLevels: [ChannelRef: (db: Double, at: Double)] = [:]
     /// Each channel's averaged level, in power, and when it was last updated (`showsMeters`).
@@ -505,7 +505,7 @@ public struct LaunchControlDriver: Sendable {
         if showsMeters, connected, !inCustomMode {
             // "Page 1 of 2", not "Page 1/2": it fits and is faster to take in (Adam, 2026-11-11).
             let number = "Page \(pageNumber?.current ?? 1) of \(pageNumber?.of ?? 1)"
-            let ends = pageEnds().map { "\($0.slot)\(slotSeparator)\($0.name)" }
+            let ends = pageEnds().map { "\($0.slot)\(Self.slotSeparator)\($0.name)" }
             switch ends.count {
             case 0: step.midi += overlay(number, "No channels")
             case 1: step.midi += overlay(number, Self.pushed(ends[0], to: .left))
@@ -1093,7 +1093,7 @@ public struct LaunchControlDriver: Sendable {
     }
 
     /// The home screen's first line: the page, then its first and last channels by name ("1/2: Vox
-    /// to Gtr", or "Page 2/2: Pb 1/2" when "Page " fits), as the controls' displays name them. Counts by position ("In 1-3, PB 1-3")
+    /// to Gtr", or "Page 2/2: PB 1/2" when "Page " fits), as the controls' displays name them. Counts by position ("In 1-3, PB 1-3")
     /// matched nothing in TotalMix FX, and "In" could be read as "ln" (Adam, 2026-11-11; test 24).
     /// "Page " goes when the line doesn't `fit`; then the names go, rather than being cut into
     /// fragments, leaving the page ("Page 1 of 2") or, with one page, the number of channels, since the

@@ -151,7 +151,7 @@ public struct LayoutItem: Equatable, Sendable {
     public var channel: ChannelRef
     /// The name a strip shows (see `SurfaceHub.stripName`): the label if there is one.
     public var name: String
-    /// The name a strip shows without a label: TotalMix FX's name, or "Pb 1/2" for a playback.
+    /// The name a strip shows without a label: TotalMix FX's name, or "PB 1/2" for a playback.
     public var defaultName: String
     /// The label chosen in the app, if any.
     public var label: String?

@@ -203,8 +203,8 @@ Choose **Settings…** from the menu and open the **Channel Layout** tab.
   them on the hardware controllers. The **Control Room** outputs (those assigned in TotalMix FX's control room:
   Phones, and so on) and the **Hardware Outputs** are ordered in their own sections, since control room outputs
   always come first.
-- Click a channel's name, or the pencil that appears beside it when the pointer is over its row, to give it a **label** for the hardware controllers, e.g., a short name for mixing. The label shows only on the hardware controllers; the name the strip would show without it (TotalMix FX's name, or "Pb 1/2" and so on for a playback) is shown dimmed beside the label. Clear the label, or click the **x** beside it, to go back to that name.
-- A software playback channel without a label entered here shows as "Pb 1/2" and so on, whatever its name in TotalMix FX; in TotalMix FX, an unnamed playback carries the hardware name of the output channel with the same number (e.g., "SPDIF"), and so it could be difficult to distinguish from often identically named hardware inputs. Give a playback a label to name it on the hardware controllers. A note under the Sources list says so.
+- Click a channel's name, or the pencil that appears beside it when the pointer is over its row, to give it a **label** for the hardware controllers, e.g., a short name for mixing. The label shows only on the hardware controllers; the name the strip would show without it (TotalMix FX's name, or "PB 1/2" and so on for a playback) is shown dimmed beside the label. Clear the label, or click the **x** beside it, to go back to that name.
+- A software playback channel without a label entered here shows as "PB 1/2" and so on, whatever its name in TotalMix FX; in TotalMix FX, an unnamed playback carries the hardware name of the output channel with the same number (e.g., "SPDIF"), and so it could be difficult to distinguish from often identically named hardware inputs. Give a playback a label to name it on the hardware controllers. A note under the Sources list says so.
 - The order and the labels are kept when Performance Bridge restarts.
 - **Restore TotalMix FX Order** puts the view back in TotalMix FX's order. It is dimmed when the order is already TotalMix FX's.
 - To take a channel off the hardware controllers, hide it in TotalMix FX (Step 2). The layout has no hide setting of its own.
@@ -327,8 +327,8 @@ The E16 has two layouts. In the **16-channel layout**, each encoder is one chann
 - Moving a control shows its channel, what it does, and its value.
 - How long that stays up, in seconds, is the XL 3's own **Display Timeout** setting. To change
   it, switch to a Custom Mode (**Mode**, a blue button, **Mode**), hold **Track <** and **Track >** together, press
-  **Page ▼** until the screen shows Display Timeout, and turn the top-left encoder; then press **Mode**, and quit and reopen
-  Performance Bridge to go back to its layout.
+  **Page ▼** until the screen shows Display Timeout, and turn the top-left encoder; then press **Mode** to leave the
+  settings, and **Mode**, **Mute/Select**, and **Mode** to go back to Performance Bridge's layout.
 - After each Page press the screen names the row and its new output, and each send row's lights take the color
   of the output it feeds: its color in TotalMix FX, or, for an output left white, teal (a blue-green) for the
   top row and magenta for the middle row.

@@ -273,7 +273,7 @@ final class E16DriverTests: XCTestCase {
         _ = driver.tick(hub: &hub, now: 11.5)
         let short = driver.receive([0x80, 3, 0x00], hub: &hub, now: 11.6)
         XCTAssertEqual(short.core.messages.map(\.address), ["/playback/0/mute"])
-        XCTAssertEqual(short.midi.lastTitle, "Pb 1/2 MUTE ON", "drawn in capitals")
+        XCTAssertEqual(short.midi.lastTitle, "PB 1/2 MUTE ON", "drawn in capitals")
         XCTAssertEqual(short.midi.leds[3]?.count, 4, "the mute's marks, no arc")
         XCTAssertEqual(short.midi.leds[3]?.first?.g, E16Driver.muteRGB.1, "orange")
         // A second short push turns mute off, and the level is back.

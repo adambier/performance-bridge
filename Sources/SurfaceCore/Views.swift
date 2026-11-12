@@ -33,7 +33,7 @@ public struct PerformanceLayout: Hashable, Codable, Sendable {
     /// the inputs before it (Adam, 2026-10-30). Off by default.
     public var playbacksOnNewPage: Bool
     /// Labels chosen in the app for the hardware controllers, by channel; a channel without one shows
-    /// TotalMix FX's name (or "Pb 1/2" for a playback). An exception to "configure it only in TotalMix FX"
+    /// TotalMix FX's name (or "PB 1/2" for a playback). An exception to "configure it only in TotalMix FX"
     /// (AGENTS.md section 4; Adam, 2026-11-01): TotalMix FX's names serve TotalMix FX, while a hardware
     /// controller's labels serve quick mixing on a small screen, and TotalMix FX's default playback
     /// names repeat its inputs' hardware names (test 15).
