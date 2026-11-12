@@ -28,7 +28,7 @@
 // eight can be counted.
 //
 // A new picture goes out only after the device's ready reply (or `bitmapTimeout` without one), and
-// only when it changed. A control's own temporary display shows over the picture as usual (test
+// only when it changed or `pictureRefresh` has passed (test 25). A control's own temporary display shows over the picture as usual (test
 // 21), so the send rows' outputs still show on Page (the overlay) and when an encoder turns.
 //
 // The averaging and peak hold use the E16's constants, tuned there by eye at 25 screens a second

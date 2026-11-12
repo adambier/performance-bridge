@@ -1138,6 +1138,22 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(driver.tick(hub: &hub, now: 1.1).midi.contains(header), "unchanged for a second: sent again")
     }
 
+    func testThePresenceCheckRunsWithMetersOn() {
+        // The pictures' acknowledgments, one a second with meters on, don't count as hearing from
+        // the device (review of 2026-11-11).
+        var hub = loadedHub()
+        var driver = LaunchControlDriver(name: "lc", layout: .xl3, showsMeters: true)
+        _ = driver.start(hub: &hub, now: 0)
+        _ = driver.receive([0x9F, 0x0C, 0x7F], hub: &hub, now: 0)
+        var asked = false
+        for step in 1...60 {
+            let now = Double(step) / 10
+            if driver.tick(hub: &hub, now: now).midi.contains(LaunchControlOutgoing.queryFeature(0x1E)) { asked = true }
+            _ = driver.receive(LaunchControlModel.xl3.sysExHeader + [0x09, 0xF7], hub: &hub, now: now + 0.05)
+        }
+        XCTAssertTrue(asked, "asked within 6 s, acknowledgments notwithstanding")
+    }
+
     func testAPeakBetweenTwoPicturesIsHeld() {
         // A level that comes and goes while a picture waits for its reply still shows as a peak line
         // in the next picture (review of 2026-11-10).

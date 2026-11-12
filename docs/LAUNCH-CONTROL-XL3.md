@@ -84,6 +84,7 @@ seen").
 [^test-22]: Test 22 (2026-11-10), section [10](#test-22-2026-11-10-meters-on-the-home-screen).
 [^test-23]: Test 23 (2026-11-10), section [10](#test-23-2026-11-10-display-timeout).
 [^test-24]: Test 24 (2026-11-11), section [10](#test-24-2026-11-11-numbering-the-meters).
+[^test-25]: Test 25 (2026-11-11), section [10](#test-25-2026-11-11-choosing-daw-mixer-on-the-device).
 [^nov-settings]: Novation, "Launch Control XL 3's Settings page", Launch Control XL 3 user guide
     (online), <https://userguides.novationmusic.com/hc/en-gb/articles/26190532189330-Launch-Control-XL-3-s-Settings-page>,
     read 2026-11-10.
@@ -151,9 +152,11 @@ the choice to the user; test 2 checks both settings.
 - **What the modes change.** On the device, Mode plus Mute/Select or Solo/Arm chooses between
   them. The user guide gives the pairing both ways round (section 7). For Ableton Live, Logic
   Pro, Cubase, and Bitwig Studio the faders and buttons stay the same, and only what the encoders
-  control changes; in FL Studio the modes change the buttons too.[^ug-daw-chapters] In DAW mode
-  the device doesn't switch them by itself: it names the mode and passes the press on, and the
-  host decides.[^test-6]
+  control changes; in FL Studio the modes change the buttons too.[^ug-daw-chapters] In test 6 the
+  device named the mode and passed the press on (CC 65 or 66) with no report; in test 25, Mute/Select
+  in Mode Select reported DAW Mixer (CC 30 and 31) each time and sent no CC 66, except in two runs on
+  a device in a state a power cycle cleared. Why the two tests differ is not known (the firmware may
+  have changed; an inference). Solo/Arm was not tried again.[^test-6][^test-25]
 
 ## 4. The controls
 
@@ -278,8 +281,8 @@ Each is resolved here as stated, until the device settles it.
 3. **Which button chooses which DAW mode.** The user guide says Mode plus Mute/Select is DAW Mixer
    and Solo/Arm is DAW Control six times, in the Ableton Live, Logic Pro, Cubase, and Bitwig
    Studio chapters. Twice, in the DAW Control tips, it says the reverse. Mode plus Solo/Arm
-   shows "DAW Control" on the screen, so the six are right; but the device doesn't switch by
-   itself.[^test-6]
+   shows "DAW Control" on the screen, so the six are right; whether the device reports the mode
+   differs between tests 6 and 25 (section 3).[^test-6][^test-25]
 4. **Display targets for names.** The programmer's reference guide's note on arrangements mentions
    targets that only set names, 22h–28h (34–40), a range that overlaps encoder targets (34–36) and
    button numbers (37–40). The target list gives no such range.
@@ -413,8 +416,8 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   2026-11-02). A button that is off shows a dim shade of its color, so the two rows stay
   recognizable (Adam, 2026-11-02): by exact RGB, yellow 16, 11, 0 and orange 12, 4, 0, dimmer than
   the palette's dimmest shades (15 and 11), for more contrast with a button that is on.[^test-19]
-  The bright shades have been observed to look as bright as full RGB values.[^test-13] Solo/Arm and Mute/Select do nothing for now: in DAW mode
-  the device leaves them to the host.[^test-6]
+  The bright shades have been observed to look as bright as full RGB values.[^test-13] Solo/Arm and Mute/Select do nothing for now; after
+  Mode, Mute/Select chooses DAW Mixer on the device (section 3).[^test-6][^test-25]
 - **Paging and views.** Track < and > move by eight strips, as the panel's labels say, and with
   Shift to the first or last page. (Novation's integrations move one track, and eight with Shift.
   Here the order is set in the app, so moving one strip gains nothing, and pages stay on multiples
@@ -501,8 +504,9 @@ Adam (Adam asked for its efficiency and intuitiveness to be assessed).
   device centers each line ("Page 1 of 2", "1: Vox", "to" and "3: Gtr"; Adam, 2026-11-10 and 2026-11-11;
   test 24 for the spaces; a page with one channel shows two lines, not yet seen on the device). The
   colon after the slot and "PB" for an unlabeled playback were chosen by trial on the device
-  (Adam, 2026-11-11; test 24, run 7). While Mode Select is open, and for up to a second after it
-  closes (the device's own "0" covers the picture), the picture is resent every second (test 25).[^test-22][^test-24] How long a control's display stays up is the device's own
+  (Adam, 2026-11-11; test 24, run 7). An unchanged picture is sent again every second (about 1.2 kB),
+  since leaving Mode Select puts the device's own "0" over the picture and tells the host nothing; the
+  meters return within a second.[^test-22][^test-24][^test-25] How long a control's display stays up is the device's own
   Display Timeout setting, in seconds (by eye), which applies in DAW mode too (that it covers the overlay as
   well is an inference); 1 or 2 suits this layout (Adam, 2026-11-10).[^test-23] Every page keeps eight fixed slots, strip k in the kth, an empty slot marked by one dot on the top
   row (centering a shorter page was tried and dropped).[^test-24] The eight names packed to
@@ -1189,8 +1193,8 @@ driver's layout. Adam pressed Mode, Mute/Select, and Mode.
 - The device sent, unasked, `B6 1E 01` and `B6 1F 01` (DAW Mixer on CC 30 and 31) when DAW Mixer was
   chosen, at 24.962 s; the presence check's questions at 20.187 and 29.976 s (`B7 1E 00`) were each
   answered `B6 1E 01` 2 ms later. Nothing else (log pasted by Adam). Test 6 had seen no report for
-  Mode then Solo/Arm or Mute/Select; that this differs with Mode pressed again to leave, or with the
-  firmware since, is an inference.
+  Mode then Solo/Arm or Mute/Select; that the firmware changed since is an inference; the report
+  comes at the Mute/Select press, before Mode is pressed again (runs 3 and 4).
 
 **Consequences.** The driver took the report as nothing new, since it was already connected and not
 in a Custom Mode.
@@ -1201,10 +1205,11 @@ the device answered the picture as received (`F0 … 09 F7`, 10.377 s). But the 
 "0" (Adam). Its start, which leaves DAW mode and enters it again (`startBytes`), had brought the
 picture up in the same session.
 
-So the driver now leaves DAW mode and enters it again on a DAW Mixer or DAW Control report it didn't
-ask for (not the answer to its presence question, and not within 1 s of its own `selectMode`, which
-the device also answers: test 6), and on one that ends a Custom Mode, as it does when it starts.
-That this brings the screen back is an inference from the start.
+So the driver was changed (`3334af2`) to leave DAW mode and enter it again on a DAW Mixer or DAW
+Control report it didn't ask for (not the answer to its presence question, and not within 1 s of its
+own `selectMode`, which the device also answers: test 6), and on one that ends a Custom Mode, as it
+does when it starts. That this would bring the screen back was an inference from the start; it was
+taken out after run 3 (below).
 
 Run 3 (`--verbose`, commit `3334af2`, one press at a time, Adam reporting the device and the log
 after each; the XL 3 power-cycled first, since after the earlier runs its button rows stayed blue,
@@ -1223,8 +1228,8 @@ as in Mode Select, even when `sbdev` was restarted):
 
 So leaving Mode Select puts the device's own "0" over the picture, while the lights stay as drawn,
 and tells the host nothing. The driver now sends an unchanged picture again every second
-(`pictureRefresh`), about a kilobyte of SysEx each, so the meters return within a second. Not yet
-seen on the device. Whether the text home screen (meters off) also gives way to "0" was not tried.
+(`pictureRefresh`), about a kilobyte of SysEx each, so the meters return within a second. Seen in
+run 4. Whether the text home screen (meters off) also gives way to "0" was not tried.
 
 Review of runs 1–3 (Adam asked whether the earlier changes were needed): the "0" after run 2's
 redraw came from leaving Mode Select, which follows any redraw, so leaving and entering DAW mode
@@ -1246,11 +1251,12 @@ power-cycled first; one press at a time):
   and orange, and Solo/Arm and Mute/Select dark. Nothing sent to the host.
 
 So on a device started cleanly, Mode, Mute/Select, Mode leaves the layout's lights as they were and
-only covers the picture, which the resend restores; choosing DAW Mixer in Mode Select is reported
-each time, and needs nothing from the driver. The button presses (CC 66) and missing reports of the
-runs before the power cycle, and the Novation lights in the photo, came while the device was in the
-state the power cycle cleared, with its button rows staying blue across a restart of `sbdev`; how it
-got there is not known.
+only covers the picture, which the resend restores; choosing DAW Mixer in Mode Select was reported
+at each of the 16 presses in runs 3–5, and needs nothing from the driver. The button presses (CC 66) and missing reports of the
+two runs before the power cycle came while the device was in a state the power cycle cleared, with
+its button rows staying blue across a restart of `sbdev`; how it got there is not known. That the
+Novation lights in the photo came from the same state is an inference: that sequence (a Custom Mode's
+button, then Mute/Select, without leaving Mode Select between) was not tried again.
 
 Run 5 (the same session, from a Custom Mode and back; one press at a time):
 - Mode, button 1 ("Tonverk Mixer"), Mode: button 1 reported Custom 1 when pressed in Mode Select

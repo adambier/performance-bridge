@@ -13,10 +13,12 @@
 
 Open **Performance Bridge** from the Applications folder. It runs in the menu bar, with no Dock icon. Its
 Setup Guide follows these steps one page at a time, with **Back** and **Continue**, and checks each one live where
-it can: whether TotalMix FX answers, whether it has sent its channels, whether meters arrive (Roto-Control, or E16 or Launch Control with meters on), and whether
+it can: whether TotalMix FX answers, whether it has sent its channels, whether meters arrive (with the Roto-Control, or with the E16 or a Launch Control that has its meters on), and whether
 the hardware controller is connected. The marks across its top show every step at a glance (green when done);
 click one to go to its page, done or not. A finished page can still show its setup instructions: click **Show
-Instructions**. It opens at the first step not done (or at the first note, once every check is done), by itself the first time the app runs; after
+Instructions**.
+
+It opens at the first step not done (or at the first note, once every check is done), by itself the first time the app runs; after
 that, choose **Setup Guide…** from the menu.
 
 ## Step 1: Turn on Global OSC in TotalMix FX
@@ -47,9 +49,9 @@ Checked on screen with TotalMix FX "2.10 (1)" on a Mac (2026-10-31); the screens
 
    <img src="../App/PerformanceBridge/Resources/totalmix-osc-tab.png" width="380" alt="Mixer Settings, OSC tab: controller 1 in use, ports 7001 and 9001, host localhost, Global OSC">
 
-6. In the OSC tab's **Options** group, check **Send Level Data** for meters on the Roto-Control, the E16, or a
-   Launch Control (each with its meters on); leave **Peak Hold** unchecked, or the levels TotalMix FX sends hold at
-   their peaks and the meters move slowly (seen on the E16). Leave **Lock Remote to Submix** off (Performance Bridge chooses submixes itself). The effect of **Number of faders per bank** on
+6. In the OSC tab's **Options** group, check **Send Level Data** for meters on the Roto-Control, or on the E16 or a
+   Launch Control with its meters on; leave **Peak Hold** unchecked, or the levels TotalMix FX sends hold at their
+   peaks, which has been observed to make the E16's meters move slowly. Leave **Lock Remote to Submix** off (Performance Bridge chooses submixes itself). The effect of **Number of faders per bank** on
    the app has not been tested.
 7. Click **Details**, which opens "Gobal OSC - Detailed Settings" (TotalMix FX's spelling), and check **Send
    changes** and **Send status**. The other settings shown are the ones used in the tests: "Send all data on
@@ -136,10 +138,10 @@ With the E16 chosen, a second box below shows its **Layout** (16 channels or cha
 **Send B** for channel strips, **Meters** (on by default), and **Ring brightness**. Each takes effect at once, without
 Apply; the layout and sends also follow a change made on the E16 (Step 6).
 
-With a Launch Control chosen, a second box below shows its send rows, **Levels: Show by brightness** (off
-by default), which dims each level and send encoder's light with its level, from full at the top to dim at
-the bottom and dark at −oo, and **Meters: Show on the home screen** (off by default). Each takes effect at
-once, without Apply (Step 6).
+With a Launch Control chosen, a second box below shows its send rows, **Levels: Show by brightness**, and
+**Meters: Show on the home screen**, both off by default. **Levels** dims each level and send encoder's light
+with its level, from full at the top to dim at the bottom and dark at −oo. Each takes effect at once, without
+Apply (Step 6).
 
 ### Open at login
 
@@ -291,7 +293,7 @@ The E16 has two layouts. In the **16-channel layout**, each encoder is one chann
 - A small square before the page number at the top right means a channel not on this page has PFL on.
 - A dark ring with no lights on it has no channel. In the channel-strip layout, a muted channel's send rings are dark too.
 - A pan shows as an arc from the top: in the channel's color at center and red as soon as it moves off center, however little. Turning a pan stops at center, however fast; to move past it, pause, then turn a little further.
-- The layout, the sends, meters, and ring brightness can be set in **Settings… → Connections**; meters need TotalMix FX's **Send Level Data** on (see the Setup Guide).
+- The layout, the sends, meters, and ring brightness can be set in **Settings… → Connections**; meters need **Send Level Data** checked and **Peak Hold** unchecked in TotalMix FX's **Options → Mixer Settings… → OSC** (see the Setup Guide).
 - Levels and pans are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so TotalMix FX's window shows the levels and pans set here only while Main Out's output is selected in its bottom row.
 - The E16 needs firmware 1.3.0 or later (Remote Mode doesn't work before 1.3.0). When Performance Bridge quits, it gives the E16 back to its own firmware; if the E16 is ever left blank, switch it off and on.
 - Details and the test records are in [`docs/OXI-E16.md`](OXI-E16.md).
@@ -319,16 +321,10 @@ The E16 has two layouts. In the **16-channel layout**, each encoder is one chann
 | **Shift + turn an encoder** | Reset it: a pan to the center, a send to −oo (release Shift, then Shift + turn it again to bring it back). Hold Shift for a moment (0.3 s) first; after Page or Track in the same hold, turning does nothing. |
 
 - The two send rows never feed the same output: stepping one skips the output the other has.
-- The screen shows the page's first and last channels and where each send row goes (e.g., "1/2: Vox to
-  Gtr", "Top > Phones 1", "Mid > Phones 2"), with the page number when there is more than one page. With **Meters: Show on the home screen** on
-  (Settings… → Connections), it shows a meter for each channel instead, two bars for a stereo channel, numbered 1–8
-  by its place on the page, with a line under the playbacks' numbers; Track shows the page and its first and last
-  channels with their numbers, and the send rows' outputs show only on Page and when an encoder turns. Meters need TotalMix FX's **Send Level Data** on and **Peak Hold** off (see the Setup Guide).
+- The home screen shows the page's first and last channels when their names fit (e.g., "1/2: Vox to Gtr" for page 1 of 2), and otherwise the page ("Page 1 of 2") or, with one page, the number of channels, and where each send row goes ("Top > Phones 1", "Mid > Phones 2").
+- With **Meters: Show on the home screen** on (Settings… → Connections), the home screen shows a meter for each channel instead: two bars for a stereo channel, and under each meter the channel's place on the page, 1–8, with a line under the playbacks' numbers. **Track <** and **Track >** then show the page and its first and last channels with those numbers. The send rows' outputs show only after a Page press and while an encoder turns. Meters need **Send Level Data** checked and **Peak Hold** unchecked in TotalMix FX's **Options → Mixer Settings… → OSC** (see the Setup Guide).
 - Moving a control shows its channel, what it does, and its value.
-- How long that stays up, in seconds, is the XL 3's own **Display Timeout** setting. To change
-  it, switch to a Custom Mode (**Mode**, a blue button, **Mode**), hold **Track <** and **Track >** together, press
-  **Page ▼** until the screen shows Display Timeout, and turn the top-left encoder; then press **Mode** to leave the
-  settings, and **Mode**, **Mute/Select**, and **Mode** to go back to Performance Bridge's layout.
+- How long a control's display stays up, in seconds, is the XL 3's own **Display Timeout** setting. To change it, switch to a Custom Mode (press **Mode**, a blue button, and **Mode**), hold **Track <** and **Track >** together, press **Page ▼** until the screen shows Display Timeout, and turn the top-left encoder. Press **Mode** to leave the settings. To go back to Performance Bridge's layout, press **Mode**, **Mute/Select**, and **Mode**.
 - After each Page press the screen names the row and its new output, and each send row's lights take the color
   of the output it feeds: its color in TotalMix FX, or, for an output left white, teal (a blue-green) for the
   top row and magenta for the middle row.
@@ -342,8 +338,7 @@ The E16 has two layouts. In the **16-channel layout**, each encoder is one chann
 - The **Novation button** brings TotalMix FX's window to the front. Press it again while TotalMix FX is in
   front to go back to the app you were in (if TotalMix FX came to the front some other way, the press hides it
   instead).
-- Solo/Arm, Mute/Select, Record, and Play do nothing in this release; they are kept free for later uses (e.g.,
-  a connection to a DAW).
+- Solo/Arm, Mute/Select, Record, and Play do nothing in this release; they are kept free for later uses (e.g., a connection to a DAW). **Mute/Select** after **Mode** chooses the device's mode, as in the Display Timeout note.
 - Levels and pans are Main Out's. In TotalMix FX each submix has its own level and pan for every channel, so
   TotalMix FX's window shows the levels and pans set here only while Main Out's output is selected in its
   bottom row.
@@ -366,8 +361,8 @@ The E16 has two layouts. In the **16-channel layout**, each encoder is one chann
 | **Page ▲** / **Page ▼** | Change what the top encoder row does: Pan, then each output in the Outputs list, in order. |
 | **Shift + turn an encoder** | Reset it: a pan to the center, a level above 0 dB down to 0 dB (one at or below 0 dB stays), a send to −oo (release Shift, then Shift + turn it again to bring it back). Hold Shift for a moment (0.3 s) first; after Page or Track in the same hold, turning does nothing. |
 
-- The screen shows the page with its first and last channels' names, the top row's function (e.g., "Top: Pan"), and the buttons' ("Buttons: Mute", or
-  "PFL on, buttons Mute" while a PFL is on; "Buttons: PFL" while Function is held).
+- The home screen shows the page's first and last channels when their names fit (e.g., "1/2: Vox to Gtr" for page 1 of 2), and otherwise the page ("Page 1 of 2") or, with one page, the number of channels; the top row's function (e.g., "Top: Pan"); and the buttons' ("Buttons: Mute", or "PFL on, buttons Mute" while a PFL is on; "Buttons: PFL" while Function is held).
+- With **Meters: Show on the home screen** on (Settings… → Connections), the home screen shows a meter for each channel instead: two bars for a stereo channel, and under each meter the channel's place on the page, 1–8, with a line under the playbacks' numbers. **Track <** and **Track >** then show the page and its first and last channels with those numbers. Meters need **Send Level Data** checked and **Peak Hold** unchecked in TotalMix FX's **Options → Mixer Settings… → OSC** (see the Setup Guide).
 - Moving a control shows its channel, what it does, and its value.
 - After each Page press the screen names the top row's new function. As a send, the row's lights take the
   color of the output it feeds: its color in TotalMix FX, or teal (a blue-green) for an output left white.
