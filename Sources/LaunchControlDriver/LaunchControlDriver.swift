@@ -125,8 +125,6 @@ public struct LaunchControlDriver: Sendable {
     private var blinkLit = true
     private var lastQuery: Double?
     private var awaitingModeReply = false
-    /// Until when a DAW mode report is the device's answer to the driver's own `selectMode` (test 6).
-    private var modeEchoUntil: Double?
 
     /// How long the device may stay silent before the driver asks for its surface mode (feature
     /// control 30, which the XL 3 has answered: docs/LAUNCH-CONTROL-XL3.md, test 6), in seconds.
@@ -360,19 +358,9 @@ public struct LaunchControlDriver: Sendable {
             case .custom:
                 inCustomMode = true
             case .dawMixer, .dawControl:
-                // A DAW mode chosen on the device (Mode, Mute/Select, Mode, or from a Custom Mode)
-                // resets its lights and screen to Novation's own, and is reported unasked (B6 1E 01;
-                // test 25). Drawing everything again left the screen showing the device's own "0",
-                // so the driver leaves DAW mode and enters it again, as when it starts, which
-                // brings the picture back (an inference from the start, to see on the device). The
-                // report that answers the driver's own `selectMode` (test 6) or its presence
-                // question is not such a choice.
-                let echo = modeEchoUntil.map { now <= $0 } ?? false
-                if !connected {
+                if inCustomMode || !connected {
                     inCustomMode = false
                     connect(hub: &hub, now: now, into: &step)
-                } else if inCustomMode || (!answer && !echo) {
-                    restart(now: now, into: &step)
                 }
             }
             return
@@ -604,7 +592,6 @@ public struct LaunchControlDriver: Sendable {
         sentConfig = [:]
         shownBitmap = nil
         bitmapSentAt = nil
-        modeEchoUntil = now + 1
         step.midi += LaunchControlOutgoing.selectMode(.dawMixer) ?? []
         // The XL 3's controls the simulated layout doesn't use stay dark.
         for element in device.elements where element.hasLight && control(for: element) == nil && switchControl(for: element) == nil {

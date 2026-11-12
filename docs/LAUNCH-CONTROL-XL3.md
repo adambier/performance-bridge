@@ -1228,3 +1228,11 @@ and tells the host nothing. The driver now sends an unchanged picture again ever
 (`pictureRefresh`), about a kilobyte of SysEx each, so the meters return within a second. Not yet
 seen on the device. Whether the text home screen (meters off) also gives way to "0" was not tried.
 
+Review of runs 1–3 (Adam asked whether the earlier changes were needed): the "0" after run 2's
+redraw came from leaving Mode Select, which follows any redraw, so leaving and entering DAW mode
+again (`3334af2`) could not have helped. And the only sign that the lights are reset was the photo
+after a sequence that also chose a Custom Mode's button; in run 3 the driver had already redrawn
+when the lights were seen. Both report-handling changes (`a160c10`, `3334af2`) were taken out, the
+driver again ignores an unasked DAW Mixer report while connected, and the plain case is to be
+tried again with only the picture resent.
+
