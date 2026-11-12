@@ -53,7 +53,7 @@ small driver of its own.
 - **SurfaceCore** (`Sources/SurfaceCore/`). The aim is TotalMix FX as a performance mixer, for live use. Channel strips, each with:
   - a knob or fader: level, pan, or a send;
   - a switch: mute, PFL, or solo (off by default);
-  - a name, a color, and a meter. The name is the channel's label if the app gave it one (section 4, recorded exceptions), and otherwise TotalMix FX's name; playbacks without a label are named "Pb 1/2" and so on, since an unnamed playback has its output's hardware name (test 15).
+  - a name, a color, and a meter. The name is the channel's label if the app gave it one (section 4, recorded exceptions), and otherwise TotalMix FX's name; playbacks without a label are named "PB 1/2" and so on, since an unnamed playback has its output's hardware name (test 15).
 
   Around the strips:
   - two views: sources (inputs and playbacks) and outputs (the assigned monitoring outputs first, then the sends; a monitoring role with nothing assigned shows no strip). The hardware controllers show only the sources (Adam, 2026-11-01: outputs are set up in TotalMix FX and left alone during a performance); the outputs' order is the order the send controls step through them;
@@ -175,7 +175,7 @@ Recorded exceptions:
   serve TotalMix FX (routing, the matrix, recall), while a hardware controller's labels serve quick
   mixing on a small screen; and TotalMix FX's default playback names repeat its inputs' hardware names
   ("AES", "SPDIF", …; test 15), which Global OSC can't tell from names the user gave. A playback
-  without a label keeps showing "Pb 1/2". The UI and its wording get a close look in the UI review
+  without a label keeps showing "PB 1/2". The UI and its wording get a close look in the UI review
   and Adam's own (Adam, 2026-11-01).
 
 Safety interlock, decided but not yet buildable (Adam, 2026-11-02): while TotalMix FX's "Cue/PFL to" is

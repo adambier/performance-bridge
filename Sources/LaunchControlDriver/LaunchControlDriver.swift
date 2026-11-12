@@ -94,6 +94,11 @@ public struct LaunchControlDriver: Sendable {
     /// 20 and 40 both looked right, "20 maybe closer" (test 24). `nil` drops a peak to the level at
     /// once.
     public var meterPeakFall: Double? = 20
+    /// What goes between a slot number and its channel's name on Track's pop-up ("1: Tonverk"): a
+    /// colon, "definitely better than without" one and "clearer" than a spaced hyphen (Adam,
+    /// 2026-11-11; docs/LAUNCH-CONTROL-XL3.md, test 24, run 7). The screen's characters are ASCII
+    /// plus four symbols, so a dash was not an option.
+    static let slotSeparator = ": "
     /// Each channel's held peak, in dBFS, and when it was reached, for `meterPeakFall`.
     var meterPeakLevels: [ChannelRef: (db: Double, at: Double)] = [:]
     /// Each channel's averaged level, in power, and when it was last updated (`showsMeters`).
@@ -102,8 +107,10 @@ public struct LaunchControlDriver: Sendable {
     var meterPeaks: [ChannelRef: (height: Int, at: Double)] = [:]
     /// When the last picture was sent, while its ready reply hasn't come (`bitmapTimeout`).
     var bitmapSentAt: Double?
-    /// The last picture sent, packed, so an unchanged one isn't sent again.
+    /// The last picture sent, packed, so an unchanged one isn't sent again before `pictureRefresh`.
     var shownBitmap: [UInt8]?
+    /// When the last picture went out, for `pictureRefresh`.
+    var shownBitmapAt: Double?
     /// The send target (an index into `SurfaceHub.sendTargets`) each send row uses now, from
     /// `sendOutputs` (`resolveSends(_:)`); `nil` for none, or pan on the Launch Control 3.
     private var sendIndices: [Int?] = []
@@ -320,13 +327,16 @@ public struct LaunchControlDriver: Sendable {
 
     private mutating func handle(_ event: LaunchControlEvent, hub: inout SurfaceHub, now: Double,
                                  into step: inout LaunchControlStep) {
-        lastHeard = now
         if case .bitmapReady = event {
             // Ready for the next picture (docs/LAUNCH-CONTROL-XL3.md, test 21). It doesn't answer
-            // the presence check's mode question, which may still be on its way.
+            // the presence check's mode question, which may still be on its way, and isn't taken as
+            // hearing from the device: with meters on one comes every second (`pictureRefresh`),
+            // which would keep the question from ever being asked, and whether a device that lost
+            // DAW mode still sends it is untested (review of 2026-11-11).
             bitmapSentAt = nil
             return
         }
+        lastHeard = now
         // Anything else heard settles the question: the device is there (review of 2026-11-02).
         if case .mode = event {} else { awaitingModeReply = false }
         if case .dawMode(let on) = event {
@@ -492,13 +502,13 @@ public struct LaunchControlDriver: Sendable {
         take(output, hub: hub, into: &step)
         // The meter screen has no page line (too small to read, Adam, 2026-11-10), so the page
         // shows here, in the device's own text, as Page shows a send row's output: its number, then
-        // its first and last channels, each with its slot, the number under its meter ("1 Vox",
-        // "3 Gtr"), the first pushed left and the last right, with "to" at the left of its line
+        // its first and last channels, each with its slot, the number under its meter ("1: Vox",
+        // "3: Gtr"), the first pushed left and the last right, with "to" at the left of its line
         // (Adam, 2026-11-11; test 24: "Vox" and "to Gtr", centered, were slow to take in).
         if showsMeters, connected, !inCustomMode {
             // "Page 1 of 2", not "Page 1/2": it fits and is faster to take in (Adam, 2026-11-11).
             let number = "Page \(pageNumber?.current ?? 1) of \(pageNumber?.of ?? 1)"
-            let ends = pageEnds().map { "\($0.slot) \($0.name)" }
+            let ends = pageEnds().map { "\($0.slot)\(Self.slotSeparator)\($0.name)" }
             switch ends.count {
             case 0: step.midi += overlay(number, "No channels")
             case 1: step.midi += overlay(number, Self.pushed(ends[0], to: .left))
@@ -1067,7 +1077,7 @@ public struct LaunchControlDriver: Sendable {
     }
 
     /// `left` and `right` on one line, pushed apart with spaces as `pushed(_:to:fits:)` pushes one
-    /// text ("to        3 Gtr"). When the two don't fit with one space between them, `right`
+    /// text ("to        3: Gtr"). When the two don't fit with one space between them, `right`
     /// alone: a line wider than the screen loses its end (test 24), which is where a pair's
     /// numbers are.
     static func spread(_ left: String, _ right: String,
@@ -1086,7 +1096,7 @@ public struct LaunchControlDriver: Sendable {
     }
 
     /// The home screen's first line: the page, then its first and last channels by name ("1/2: Vox
-    /// to Gtr", or "Page 2/2: Pb 1/2" when "Page " fits), as the controls' displays name them. Counts by position ("In 1-3, PB 1-3")
+    /// to Gtr", or "Page 2/2: PB 1/2" when "Page " fits), as the controls' displays name them. Counts by position ("In 1-3, PB 1-3")
     /// matched nothing in TotalMix FX, and "In" could be read as "ln" (Adam, 2026-11-11; test 24).
     /// "Page " goes when the line doesn't `fit`; then the names go, rather than being cut into
     /// fragments, leaving the page ("Page 1 of 2") or, with one page, the number of channels, since the

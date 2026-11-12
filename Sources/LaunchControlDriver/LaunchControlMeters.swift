@@ -28,7 +28,7 @@
 // eight can be counted.
 //
 // A new picture goes out only after the device's ready reply (or `bitmapTimeout` without one), and
-// only when it changed. A control's own temporary display shows over the picture as usual (test
+// only when it changed or `pictureRefresh` has passed (test 25). A control's own temporary display shows over the picture as usual (test
 // 21), so the send rows' outputs still show on Page (the overlay) and when an encoder turns.
 //
 // The averaging and peak hold use the E16's constants, tuned there by eye at 25 screens a second
@@ -113,11 +113,19 @@ extension LaunchControlDriver {
         if let sent = bitmapSentAt, now - sent < Self.bitmapTimeout { return [] }
         let picture = Self.meterPicture(levels: levels, peaks: peaks, numbers: numbers, falling: falling)
         let packed = picture.packed
-        guard packed != shownBitmap else { return [] }
+        // An unchanged picture goes out again after `pictureRefresh`: leaving Mode Select, the XL 3
+        // shows its own "0" over the picture and sends nothing (test 25, run 3).
+        let due = shownBitmapAt.map { now - $0 >= Self.pictureRefresh } ?? true
+        guard packed != shownBitmap || due else { return [] }
         shownBitmap = packed
+        shownBitmapAt = now
         bitmapSentAt = now
         return LaunchControlOutgoing.bitmap(picture, target: Self.bitmapTarget, model: device)
     }
+
+    /// How often an unchanged picture is sent again, in seconds (test 25, run 3): soon enough that
+    /// the device's own screen after Mode Select doesn't linger, at about a kilobyte of SysEx each.
+    static let pictureRefresh = 1.0
 
     /// A level as a bar height on `MeterScale`.
     static func barHeight(db: Double, height: Int = meterHeight) -> Int {
@@ -191,6 +199,8 @@ extension LaunchControlDriver {
     /// Draws `number` centered under the meter that starts at `left`: digits 6 pixels
     /// wide one pixel apart, or, for three digits, 4 pixels wide (each digit's second and fifth
     /// columns left out), so a number stays within a pixel of its meter's width (or two, for three digits).
+    /// The driver numbers strips by slot, 1–8, so it draws only one digit; the wider numbers are
+    /// kept for `meterPicture`'s other callers and tests.
     static func drawNumber(_ number: MeterNumber, left: Int, in picture: inout LaunchControlBitmap) {
         let text = String(number.number).compactMap { $0.wholeNumberValue }
         let columns = text.count > 2 ? [0, 2, 3, 5] : Array(0..<6)

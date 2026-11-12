@@ -113,7 +113,7 @@ struct LayoutView: View {
                 // longer playback notes were cut; how to hide channels is in the Setup Guide).
                 Text("Channels hidden from Performance Bridge’s OSC Controller in TotalMix FX aren’t listed. The Setup Guide says how to hide and show them.")
                 if view == .sources {
-                    Text("A software playback without a label shows as \u{201C}Pb 1/2\u{201D} and so on.")
+                    Text("A software playback without a label shows as \u{201C}PB 1/2\u{201D} and so on.")
                 }
             }
             .font(.callout)
@@ -238,7 +238,7 @@ struct LayoutRow: View {
 }
 
 /// A channel's label for the hardware controllers, edited in place. Without a label it shows the
-/// name the strip would show anyway, dimmed (TotalMix FX's name, or "Pb 1/2" for a playback). The label
+/// name the strip would show anyway, dimmed (TotalMix FX's name, or "PB 1/2" for a playback). The label
 /// is saved when Return is pressed or the field loses focus; an empty field removes it.
 struct LabelField: View {
     let item: LayoutItem

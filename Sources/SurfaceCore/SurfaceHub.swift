@@ -463,15 +463,16 @@ public struct SurfaceHub: Sendable {
     }
 
     /// The name a strip shows: the label chosen in the app, if any (`PerformanceLayout.labels`).
-    /// Otherwise playbacks show "Pb 1/2" (or "Pb 3" for a mono channel), because an unnamed playback
+    /// Otherwise playbacks show "PB 1/2" (or "PB 3" for a mono channel), because an unnamed playback
     /// arrives with its output's hardware name (test 15), which makes playbacks hard to tell from
-    /// inputs; other channels show TotalMix FX's name. "Pb", not "PB" (Adam, 2026-11-11: easier to
-    /// take in; the E16 draws it in capitals, since its font has none other).
+    /// inputs; other channels show TotalMix FX's name. "PB", not "Pb": tried
+    /// both on a Launch Control XL 3, "PB reads better" (Adam, 2026-11-11; docs/LAUNCH-CONTROL-XL3.md,
+    /// test 24, run 7).
     public static func stripName(_ ref: ChannelRef, _ state: ChannelState?, label: String? = nil) -> String {
         if let label, !label.isEmpty { return label }
         if ref.bus == .playback {
             let first = ref.channel + 1
-            return state?.stereo == true ? "Pb \(first)/\(first + 1)" : "Pb \(first)"
+            return state?.stereo == true ? "PB \(first)/\(first + 1)" : "PB \(first)"
         }
         return state?.name ?? ref.description
     }
