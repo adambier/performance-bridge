@@ -1236,3 +1236,21 @@ when the lights were seen. Both report-handling changes (`a160c10`, `3334af2`) w
 driver again ignores an unasked DAW Mixer report while connected, and the plain case is to be
 tried again with only the picture resent.
 
+Run 4 (`--verbose`, commit `47a1bcc`: the picture resent every second, the reports ignored; the XL 3
+power-cycled first; one press at a time):
+- At the start: the meters, the layout's lights (encoder rows in their colors, the button rows yellow
+  and orange, Page ▼ lit, Shift and Mode dim).
+- Mode: "Mode Select DAW Mixer"; the encoders and Page ▼ unchanged; both button rows blue; Mode and
+  Mute/Select bright, Solo/Arm and Shift dim. Nothing sent to the host; the pictures went on being
+  sent and acknowledged.
+- Mute/Select, pressed 14 times: no change on the device; each press sent `B6 1E 01`, `B6 1F 01`.
+- Mode: the screen showed "0", then the meters "within a second"; the button rows went back to yellow
+  and orange, and Solo/Arm and Mute/Select dark. Nothing sent to the host.
+
+So on a device started cleanly, Mode, Mute/Select, Mode leaves the layout's lights as they were and
+only covers the picture, which the resend restores; choosing DAW Mixer in Mode Select is reported
+each time, and needs nothing from the driver. The button presses (CC 66) and missing reports of the
+runs before the power cycle, and the Novation lights in the photo, came while the device was in the
+state the power cycle cleared, with its button rows staying blue across a restart of `sbdev`; how it
+got there is not known.
+
