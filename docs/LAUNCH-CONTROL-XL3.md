@@ -1170,3 +1170,32 @@ needs a separator after it ("1: Tonverk", "1 – Tonverk", or "1 — Tonverk"; a
 has neither dash, which is "likely fine"), and "Pb" against "PB" for an unlabeled playback ("not
 sure").
 
+Run 7 (the evening, `sbdev lcbridge` on branch `lc-separator-trial`, `sep` and `pbname`): the screen's
+characters are ASCII plus four symbols (section 5), so a dash would go out as a hyphen. "1: Tonverk"
+was "definitely better than without" a separator, and the colon "clearer" than "1 - Tonverk"; "1-Tonverk"
+was not tried. With the colon, "6: PB 5/6" "reads better" than "6: Pb 5/6" (Adam). The falling peak,
+after the review's change (a lone peak only while falling), "looks good", with no stray pixels at
+the bottom of quiet channels (Adam).
+
+### Test 25 (2026-11-11): choosing DAW Mixer on the device
+
+**Setup.** Adam's XL 3 with `sbdev lcbridge --meters --verbose`, the device in DAW mode with the
+driver's layout. Adam pressed Mode, Mute/Select, and Mode.
+
+**Findings:**
+- Mode showed "Mode Select"; a top-row button chose "Tonverk Mixer" (Custom 1) and Mute/Select
+  "DAW Mixer", each named on the screen; Mode then left Mode Select (seen; the device's screen
+  showed "0" before and after, its own reading).
+- Back in DAW Mixer, the device showed Novation's own DAW lights (blue and green encoders, teal
+  Mute/Select row) and no picture: the driver's layout was gone (photo).
+- The device sent, unasked, `B6 1E 01` and `B6 1F 01` (DAW Mixer on CC 30 and 31) when DAW Mixer was
+  chosen, at 24.962 s; the presence check's questions at 20.187 and 29.976 s (`B7 1E 00`) were each
+  answered `B6 1E 01` 2 ms later. Nothing else (log pasted by Adam). Test 6 had seen no report for
+  Mode then Solo/Arm or Mute/Select; that this differs with Mode pressed again to leave, or with the
+  firmware since, is an inference.
+
+**Consequences.** The driver took the report as nothing new, since it was already connected and not
+in a Custom Mode. It now draws everything again on a DAW Mixer or DAW Control report it didn't ask
+for: not the answer to its presence question, and not within 1 s of its own `selectMode`, which the
+device also answers (test 6). Not yet seen on the device.
+

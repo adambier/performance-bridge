@@ -272,6 +272,21 @@ final class LaunchControlDriverTests: XCTestCase {
         XCTAssertTrue(back.midi.contains([0xBF, 0x05, LaunchControlDriver.faderValue(0.25)]), "everything sent again")
     }
 
+    func testDAWMixerChosenOnTheDeviceDrawsAgain() {
+        // Mode, Mute/Select, Mode on the device: it stays in DAW mode with Novation's own lights, and
+        // reports DAW Mixer unasked (test 25).
+        var (driver, hub, _) = connected(layout: .xl3)
+        let change = hub.handle(.mix(bus: .input, channel: 0, output: 0, parameter: "faderlin", value: .number(0.25)), now: 2)
+        _ = driver.take(change, hub: &hub, now: 2)
+        let back = driver.receive([0xB6, 0x1E, 0x01, 0xB6, 0x1F, 0x01], hub: &hub, now: 3)
+        XCTAssertTrue(back.midi.contains([0xBF, 0x05, LaunchControlDriver.faderValue(0.25)]), "everything sent again")
+        let echo = driver.receive([0xB6, 0x1E, 0x01], hub: &hub, now: 3.02)
+        XCTAssertTrue(echo.midi.isEmpty, "the answer to its own selectMode is not a new choice")
+        XCTAssertEqual(driver.tick(hub: &hub, now: 8.1).midi, LaunchControlOutgoing.queryFeature(0x1E))
+        XCTAssertTrue(driver.receive([0xB6, 0x1E, 0x01], hub: &hub, now: 8.2).midi.isEmpty,
+                      "nor is the answer to the presence question")
+    }
+
     func testStopLeavesDAWModeAndTheHub() {
         var (driver, hub, _) = connected(layout: .xl3)
         XCTAssertEqual(driver.stop(hub: &hub), [0x9F, 0x0C, 0x00])
