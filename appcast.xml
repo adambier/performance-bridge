@@ -3,6 +3,26 @@
     <channel>
         <title>Performance Bridge</title>
         <item>
+            <title>1.2.2</title>
+            <pubDate>Wed, 11 Nov 2026 21:20:27 -0800</pubDate>
+            <sparkle:version>695</sparkle:version>
+            <sparkle:shortVersionString>1.2.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[**Meters on the Launch Control XL 3:** the home screen can show a meter for each channel on the page instead of the page's text. Turn on **Meters: Show on the home screen** in the Launch Control's box in **Settings… → Connections**; it's off by default. A stereo channel's meter has two bars; each meter has a dotted line at 0 dBFS and a peak that holds for 2 seconds and then falls. Under each meter is the channel's place on the page, 1–8, with a line under the playbacks' numbers. Meters need **Send Level Data** checked and **Peak Hold** unchecked in TotalMix FX's **Options → Mixer Settings… → OSC**; the Setup Guide shows them.
+
+**Launch Control XL 3 screen:** with meters on, **Track <** and **Track >** show the page and its first and last channels (e.g., "Page 1 of 2", "1: Vox", and "to 3: Gtr"). With meters off, the home screen's first line now names the page's first and last channels when their names fit (e.g., "1/2: Vox to Gtr"), instead of counting them (e.g., "Inputs 1-7"). With meters on, the meters come back within a second after the device's Mode Select screen.
+
+**Custom Modes:** to go back to Performance Bridge's layout from one of the XL 3's Custom Modes, press **Mode**, **Mute/Select**, and **Mode**; there's no need to quit and reopen Performance Bridge. The Controls Guide now says how to change the XL 3's **Display Timeout** (how long a control's display stays up) and how to go back afterward.
+
+**OXI E16:** meters under the names are now on by default, so they appear after this update unless you turned them off. They need **Send Level Data** checked and **Peak Hold** unchecked in TotalMix FX's **Options → Mixer Settings… → OSC**; the Setup Guide shows them. Turn the meters off in the E16's box in **Settings… → Connections**.
+
+**Channel Layout:** the instruction at the top now reads "Click a channel name to change how it displays on a hardware controller screen."
+
+**Internal:** device tests recorded for the XL 3's screen (tests 21–25: the meter picture, its size at playing distance, Display Timeout, the numbering, and choosing DAW Mixer on the device); code improvements and a fix for build warnings with the Xcode 27.2 SDK.
+]]></description>
+            <enclosure url="https://github.com/adambier/performance-bridge/releases/download/v1.2.2/Performance-Bridge-1.2.2.zip" length="6425460" type="application/octet-stream" sparkle:edSignature="Sj55wVHxuP4BDY2WRdZ0mZE9SgWaoNYf4l8li6RBmkqxMy/EfMsDcnKH4c26srCnyN+KgFDhd6+361WX9KT0DA=="/>
+        </item>
+        <item>
             <title>1.2.1</title>
             <pubDate>Tue, 10 Nov 2026 16:20:48 -0800</pubDate>
             <sparkle:version>613</sparkle:version>
