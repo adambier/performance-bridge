@@ -113,11 +113,19 @@ extension LaunchControlDriver {
         if let sent = bitmapSentAt, now - sent < Self.bitmapTimeout { return [] }
         let picture = Self.meterPicture(levels: levels, peaks: peaks, numbers: numbers, falling: falling)
         let packed = picture.packed
-        guard packed != shownBitmap else { return [] }
+        // An unchanged picture goes out again after `pictureRefresh`: leaving Mode Select, the XL 3
+        // shows its own "0" over the picture and sends nothing (test 25, run 3).
+        let due = shownBitmapAt.map { now - $0 >= Self.pictureRefresh } ?? true
+        guard packed != shownBitmap || due else { return [] }
         shownBitmap = packed
+        shownBitmapAt = now
         bitmapSentAt = now
         return LaunchControlOutgoing.bitmap(picture, target: Self.bitmapTarget, model: device)
     }
+
+    /// How often an unchanged picture is sent again, in seconds (test 25, run 3): soon enough that
+    /// the device's own screen after Mode Select doesn't linger, at about a kilobyte of SysEx each.
+    static let pictureRefresh = 1.0
 
     /// A level as a bar height on `MeterScale`.
     static func barHeight(db: Double, height: Int = meterHeight) -> Int {

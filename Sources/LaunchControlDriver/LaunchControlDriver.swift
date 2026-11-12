@@ -107,8 +107,10 @@ public struct LaunchControlDriver: Sendable {
     var meterPeaks: [ChannelRef: (height: Int, at: Double)] = [:]
     /// When the last picture was sent, while its ready reply hasn't come (`bitmapTimeout`).
     var bitmapSentAt: Double?
-    /// The last picture sent, packed, so an unchanged one isn't sent again.
+    /// The last picture sent, packed, so an unchanged one isn't sent again before `pictureRefresh`.
     var shownBitmap: [UInt8]?
+    /// When the last picture went out, for `pictureRefresh`.
+    var shownBitmapAt: Double?
     /// The send target (an index into `SurfaceHub.sendTargets`) each send row uses now, from
     /// `sendOutputs` (`resolveSends(_:)`); `nil` for none, or pan on the Launch Control 3.
     private var sendIndices: [Int?] = []

@@ -1206,5 +1206,25 @@ picture up in the same session.
 So the driver now leaves DAW mode and enters it again on a DAW Mixer or DAW Control report it didn't
 ask for (not the answer to its presence question, and not within 1 s of its own `selectMode`, which
 the device also answers: test 6), and on one that ends a Custom Mode, as it does when it starts.
-That this brings the screen back is an inference from the start; not yet seen on the device.
+That this brings the screen back is an inference from the start.
+
+Run 3 (`--verbose`, commit `3334af2`, one press at a time, Adam reporting the device and the log
+after each; the XL 3 power-cycled first, since after the earlier runs its button rows stayed blue,
+as in Mode Select, even when `sbdev` was restarted):
+- At the start: the meters, the encoder rows in the layout's colors, the top button row yellow and
+  the bottom orange; Page ▼, Shift, and Mode lit.
+- Mode: the screen went blank; the encoders unchanged; Shift and Mode lit (Mode bright), Solo/Arm
+  lit, Mute/Select bright, both button rows blue. Nothing sent to the host.
+- Mute/Select: no change on the screen. The device sent `B6 1E 01`, `B6 1F 01` unasked (168.964 s;
+  not the button's own CC 66, which the two runs before the power cycle had sent instead, with no
+  report). The driver left DAW mode and entered it again and drew everything, the picture
+  acknowledged at 169.122 s.
+- Mode: the screen showed "0"; the encoders as before; the top button row yellow, the bottom orange
+  (the layout's); Shift and Mode dim; Solo/Arm and Mute/Select dark. Nothing sent to the host.
+- A note played: the meters came back (the picture, changed, went out at 252.983 s).
+
+So leaving Mode Select puts the device's own "0" over the picture, while the lights stay as drawn,
+and tells the host nothing. The driver now sends an unchanged picture again every second
+(`pictureRefresh`), about a kilobyte of SysEx each, so the meters return within a second. Not yet
+seen on the device. Whether the text home screen (meters off) also gives way to "0" was not tried.
 
