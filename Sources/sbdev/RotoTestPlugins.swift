@@ -69,7 +69,7 @@ let testPlugins: [TestPlugin] = [
 /// whether the Roto-Control shows eight named, positioned knobs with no learning on the device.
 /// With `wait`, the message sequence follows a reading of Melbourne Instruments' Bitwig
 /// integration; without it, LEARN PARAM is sent unasked, which is this project's own variant.
-/// Both are untested on the device.
+/// With `wait` it worked on the device (docs/ROTO-CONTROL.md, test 15); without it is untested.
 struct MacroTest {
     /// The plugin's name on the device.
     static let pluginName = "Macro Test"

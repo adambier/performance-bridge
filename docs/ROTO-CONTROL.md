@@ -56,6 +56,8 @@ words ("inference", "untested").
     (2026-11-04), section 9; firmware 3.3.0.
 [^test-14]: [Test 14](#test-14-2026-11-10-mode-then-mix) (2026-11-10), section 9; firmware not
     rechecked since test 12.
+[^test-15]: [Test 15](#test-15-2026-11-14-a-macro-plugin-and-a-relay-to-bitwig-studio)
+    (2026-11-14), section 9; firmware 3.3.0.
 [^totalmix-test-5]: Test 5 (2026-10-28) of the TotalMix FX tests,
     [docs/TOTALMIX-OSC.md](TOTALMIX-OSC.md#test-5-2026-10-28-does-totalmix-fx-echo-a-command),
     section 6.
@@ -94,7 +96,7 @@ asks for the Roto-Control's firmware version (`0A 0D`).[^bitwig]
 integration answers `01`, Bitwig's `02`, and Logic's `03`.[^ableton][^bitwig][^logic] Some of the
 Roto-Control's behavior depends on the type:
 
-- With Logic, the Roto-Control sends page-left and page-right commands in MIX mode while a single track is in focus, expects transport status as CCs instead of SysEx, and reserves CCs 81–127.[^sysex-1.6] Ableton's code also handles the two page commands.[^ableton]
+- With Logic, the Roto-Control sends page-left and page-right commands in MIX mode while a single track is in focus, expects transport status as CCs instead of SysEx, and reserves CCs 81–127.[^sysex-1.6] Ableton's code also handles the two page commands.[^ableton] With type `02` they have been observed in PLUGIN mode, when the arrows paged a macro plugin.[^test-15]
 - Between Ableton and Bitwig, the SysEx doc names differences only in PLUGIN mode (two fields the Roto-Control ignores for Ableton), and none in MIX mode or in the general commands.[^sysex-1.6] In use they differ in MIX mode too[^test-3]:
   - With `01`, level knobs have a 0 dB indent at 13926 (0.85 of the range, where Live puts 0 dB), and the Roto-Control sends CC 64 when a knob lands in it (section 5).
   - With `02` there is no indent at 13926 and no CC 64[^test-3]; there is an indent lower down, felt where a TotalMix FX fader reads "-0.8 dB", about 0.79 of the range (seen, 2026-10-30, with `sbdev bridge`). The inference is that it is Bitwig's 0 dB, which on a volume law of twice the cube of the position is at 0.5 raised to 1/3, 0.794 (count 13003); that law is from memory of Bitwig, not from Melbourne Instruments' code. Test 5 measured it at 13004. With `RotoDriver`'s scale bent to put 0.794 at TotalMix FX's 0 dB (below), the indent was felt at 0.0 dB (seen, 2026-10-30), which fits the inferred position to within what a hand can feel. The indent caught the knob at 0 dB reliably (seen).
@@ -204,7 +206,7 @@ with type `03` PLUGIN mode never settled.[^test-3]
 **What test 2 found** (type `02`)[^test-2]:
 
 - PLUGIN DETAILS and this project's hashes are accepted: holding SEL shows the plugin names, and selecting one sends ROTO SELECT PLUGIN.
-- An unmapped control sends its touch CC and nothing else, and SET PLUGIN CONTROL DETAILS does not name it. Every control has to be learned before it does anything.
+- An unmapped control sends its touch CC and nothing else, and SET PLUGIN CONTROL DETAILS does not name it. Every control of an ordinary plugin has to be learned before it does anything; a macro plugin's knobs were not learned in test 15 (below).
 - Learning works in the order the Bitwig guide gives: LEARN, then the control (its screen shows LEARNING), then LEARN PARAM from the host. CONTROL LEARNED came back 44–161 ms after LEARN PARAM. While learn mode is on, touching a knob sent no touch CC. (Test 2 recorded "touches"; test 3 found that turning is what counts.)
 - On leaving learn mode, and after the host selects a plugin with mappings (DAW SELECT PLUGIN, including after the host restarts), the Roto-Control sends CONTROL MAPPED for every mapped control on the page. Once it also sent them with no message from the host before them (235.558 s).[^test-2] The mappings are stored on the Roto-Control.
 - A center detent settles the knob at 8191, the middle of the range (the host sent 8192).
@@ -219,6 +221,40 @@ with type `03` PLUGIN mode never settled.[^test-3]
 - **A knob on a stepped parameter.** Mapped to a parameter with three steps, the knob moved in three haptic steps (seen) and sent only 0, 8191, and 16383. No step names showed, on the knob or, as in test 2, on a switch (seen).
 - **SET PLUGIN MODE's data byte** was `00` in all 300 SET PLUGIN MODE messages in the eleven logs of tests 2 and 3, with either of two plugins selected. Its meaning is still unknown.
 - **Type `03`.** Claiming Logic, the Roto-Control sent SET PLUGIN MODE 292 times in 61 seconds, every 185–281 ms (median 207 ms), each time after `sbdev`'s plugin page, and never sent CONTROL MAPPED; the screens flickered between the MENU window and screens 1–3 (seen). The inference was that it waits for something Logic's integration sends. Reading that integration (section 8, item 2) shows its answers go through Logic itself, so `sbdev` can't imitate them.
+
+**Macro plugins** (with DAW type `02`)[^test-15]. PLUGIN DETAILS ends with a type byte and a number of
+pages. A plugin sent with type `01` (a "macro" plugin, as Bitwig's integration calls it[^bitwig])
+was shown with eight named, positioned knobs and no learning during the test:
+
+- After DAW SELECT PLUGIN, the Roto-Control sends CONTROL MAPPED for all eight knobs by itself,
+  each with the macro flag, parameter indexes 1–8, and one fixed hash per knob. The hashes are the
+  ones Bitwig's integration computes (SHA-1 of "Macro 1" to "Macro 8", 6 bytes, each masked to 7
+  bits; `RotoHash.macroParameter`).[^bitwig]
+- The host answers each with LEARN PARAM carrying the macro flag, a name, and a position. The
+  name shows on the knob's screen and the knob moves to the position (seen).
+- The arrow buttons page through the plugin's pages: the Roto-Control sends ROTO PAGE RIGHT or
+  LEFT (`0A 15`, `0A 14`), MACRO PLUGIN PAGE INDEX (`0B 10`), and then the eight CONTROL MAPPED
+  messages again, with the same indexes and hashes on every page. So the host keeps track of the
+  page, and answers with that page's names and positions.
+- A LEARN PARAM sent later for a macro knob moves it to the new position (seen).
+- Sent while the Roto-Control is in MIX mode, the plugin list drew no answer; the CONTROL MAPPED
+  messages came once it was in PLUGIN mode and the list was sent again.
+
+All of this is from one run with this project's own stand-in plugin, answering as Bitwig's code
+does. One thing the run can't rule out: the stand-in carries the same plugin hash as Bitwig's
+macro plugin, and Bitwig's integration was already set up for this Roto-Control in Bitwig
+Studio, so the CONTROL MAPPED messages could have come from mappings the device had stored
+earlier and not from the plugin's type. Bitwig's code is written as if none are needed[^bitwig]; a macro plugin under a
+hash the device has never seen would settle it (section 8, item 9). Sending LEARN PARAM without
+waiting for CONTROL MAPPED is untested.
+
+**The MENU window in PLUGIN mode.** Its top line shows the selected plugin's name, from PLUGIN
+DETAILS ("Polysynth >" with Bitwig as the host; what the ">" marks was not found out), or "--"
+when the selected track has no plugin; its bottom line showed the selected track's name in the
+track's color while Bitwig was the host (seen).[^test-15] With a
+host that sent no DAW SELECT TRACK the bottom line was dark (seen; `docs/ARTURIA.md`, test 2), and
+SET CURRENT TRACK NAME put nothing there. Bitwig sent the track's name both in DAW SELECT TRACK
+and in the track page, so which of the two fills the line is not known (section 8, item 7).
 
 **What PLUGIN mode lacks.** The meter CCs are listed for MIX mode only, and the per-track screens
 and track paging are MIX-mode features.[^sysex-1.6]
@@ -315,6 +351,19 @@ and step names.
    (section 3). So: check the pan knobs; ask Melbourne Instruments for indents on send knobs
    (and on pans, if missing); add a host-side detent only if a way is found that doesn't feel like
    the magnet. The knobs don't push, so push-and-turn jumps have no counterpart.
+
+7. **The MENU window's bottom line in PLUGIN mode** (test 15). Which message fills it: DAW SELECT
+   TRACK, or the track page's TRACK DETAILS for the selected track? `sbdev roto` can send each
+   by itself in PLUGIN mode. The answer decides how a host with no tracks (e.g., a standalone
+   instrument's driver) can show a second line of text there.
+8. **What Bitwig sends for its remote controls** (test 15). The knob names appeared only once
+   Show Remote Controls was on in Bitwig Studio. The plugin had been sent as an ordinary one
+   (type `00`) when it was added, and what was sent after that was not logged. Whether they came as answers to CONTROL MAPPED
+   for mappings stored earlier, or another way, is open; repeat test 15's run 2 with the whole log
+   kept.
+9. **Does a macro plugin need stored mappings?** (test 15, run 1). Offer a macro plugin (type
+   `01`) under a plugin hash the device has never been sent, and see whether CONTROL MAPPED still
+   comes for all eight knobs.
 
 ## 9. Tests
 
@@ -694,3 +743,84 @@ MIX, to return to it") had no test record of its own.
   MUTE (seen).
 
 **Consequence.** The guide's MODE row stands as written.
+
+### Test 15 (2026-11-14): a macro plugin, and a relay to Bitwig Studio
+
+**Setup.** Adam's Roto-Control, firmware 3.3.0 (commit `eaa37b0`), SysEx API 1.6, as it reported
+them at the start of run 1. Branch `vport-probe` at `044c4b1`, the first time this code ran on a
+Mac or with a device. Run 1 with `sbdev roto` (claiming `02`); run 2 with `sbdev relay --device
+"Roto-Control"` and Bitwig Studio (version not recorded). These are tests R1, R2, and R4 of
+`docs/PLUGIN-MODE-PLAN.md`. Adam's notes are marked "seen". The logs are kept outside this
+repository, and the counts below come from a script over them. Run 1's log is whole to 243.9 s;
+the two mode changes after that were not copied. Run 2's log covers 0–130.1 s, 14 lines at
+212.7–212.9 s, and 848.3–866.0 s; the rest was cleared from the Terminal window before it was
+copied, so everything in run 2 between those spans rests on what Adam saw.
+
+**Run 1: a macro plugin** (`macro 2 --wait`: one plugin, "Macro Test", type `01`, two pages).
+
+- **In MIX mode.** The plugin list (NUM PLUGINS, FIRST PLUGIN, PLUGIN DETAILS, PLUGIN DETAILS
+  END, DAW SELECT PLUGIN) was sent at 27.97 s with the Roto-Control in MIX mode. Nothing came
+  back in the 74 s before the mode was changed.
+- **On entering PLUGIN mode** (MODE, then PLUGIN): SET PLUGIN MODE at 102.041 s; `sbdev` sent the
+  list again; 43 ms after its DAW SELECT PLUGIN the Roto-Control sent CONTROL MAPPED for knobs
+  1–8, each with the macro flag and with parameter index 1–8. `sbdev` answered each with LEARN
+  PARAM (macro flag, a name, a position). Seen: "Macro Test" and the eight names on the screens,
+  and the knobs at eight rising positions, as sent (1820 to 14563). Nothing was learned on the
+  device during the run. Whether it held mappings for this plugin hash from earlier use with
+  Bitwig Studio is not known (section 4a).
+- **The hashes** in the eight CONTROL MAPPED messages are the ones `RotoHash.macroParameter`
+  computes for 1–8. All 32 CONTROL MAPPED messages of the run carried the macro flag, and each
+  knob's hash was the same every time.
+- **Turning knob 1:** 111 position reports, from 1827 (LEARN PARAM had set 1820) up to 9947, a
+  median of 11 ms apart.
+- **A new position from the host** (`macropos 3 0.9`: LEARN PARAM with position 14745, then the
+  knob's CCs): knob 3 moved to about 4 o'clock (seen).
+- **Pages.** The right arrow sent ROTO PAGE RIGHT (`0A 15`) and MACRO PLUGIN PAGE INDEX 1, and
+  the eight CONTROL MAPPED messages followed 51 ms later, with the same indexes and hashes as on page
+  1; `sbdev` answered with the second page's names and positions, which showed, and the knobs
+  moved (seen). The left arrow (ROTO PAGE LEFT, index 0) and the right again did the same (51 and 52 ms). Four sets of eight CONTROL
+  MAPPED messages in all.
+- **MIX and back** (seen; not in the log): MODE, then MIX, showed Track 1 to Track 8; MODE, then
+  PLUGIN, showed "Macro Test" again, on its second page.
+
+**Run 2: the relay, with Bitwig Studio.**
+
+- **Starting.** With the default device name, "Roto", `sbdev relay` stopped with "No single MIDI
+  port matches": it had published "PB Roto Relay" before looking for the device. Named in full
+  (`--device "Roto-Control"`) it connected, and the Roto-Control reported PLUGIN mode. (`sbdev
+  relay` now opens the device first.)
+- **Bitwig's own connection.** Bitwig Studio's controller settings already held the "Melbourne
+  Instruments Roto-Control" controller, on the ports named "Roto-Control" (seen). The Roto-Control
+  sent PING DAW again at 24.2 s, 126.3 s, and 129.9 s, and the relay's handshake ran again each
+  time. The inference is that Bitwig's integration sent DAW STARTED straight to the device when
+  Bitwig started and when each of its two port menus was changed; the times were not noted
+  against those actions.
+- **Through the relay.** With both menus set to "PB Roto Relay" (seen), the integration's DAW
+  STARTED reached the relay at 130.013 s and was dropped; the relay sent it SET PLUGIN MODE, and
+  its first message followed within 1 ms. It sent 122 messages in 67 ms (18 SysEx, 104 control
+  changes): no plugins, the selected track ("Inst 1"), two tracks, and one send.
+- **A plugin** (Polysynth added to the track, 212.7 s): NUM PLUGINS 1, PLUGIN DETAILS "Polysynth"
+  with type `00` and a hash that is not the macro plugin's, DAW SELECT PLUGIN, DAW SELECT TRACK,
+  then the send names, the track page (track 0 now named "Polysynth", color scheme 15), and DAW
+  SELECT TRACK again with "Polysynth". Seen: the MENU window with "Polysynth >" in blue on top and
+  "Polysynth" in orange below. With the track "Audio 2" selected: "--" in blue on top and "Audio
+  2" in brown below (seen; not in the log).
+- **Knobs** (seen; not in the log). The knob screens were blank until Show Remote Controls was
+  turned on in Bitwig Studio; then they showed eight names (Osc1Pitch, Sync1, Uni1, OSC1 Pan,
+  Shape1, PW1, Sub1, Sub PW1). Moving Osc1Pitch in Bitwig moved knob 1, a little jumpily near
+  0, and knob 1 moved Osc1Pitch, with a detent felt near zero. Knob 5 moved Shape1 and followed
+  it, with a detent felt at noon.
+- **MIX and back** (seen; not in the log): MODE, then MIX, showed the relay's stand-in tracks;
+  MODE, then PLUGIN, showed the Polysynth page again.
+- **Transport, in MIX mode.** The tape button sent REQUEST TRANSPORT STATUS (853.847 s), which
+  the relay passed on; Bitwig answered within 8 ms with eight switch lights, which the relay
+  dropped, and TRANSPORT STATUS (all off), which it passed. The first transport switch (858.858 s)
+  reached Bitwig, which started playing (seen) and lit switches 1 and 2 56 ms later. The second
+  (861.938 s) stopped it (seen), and both lights went off 38 ms later. The tape button again sent
+  SET MIX ALL TRACKS MODE (865.921 s), and the relay drew its own page.
+
+**Consequences.** A host can show eight named, positioned knobs by sending a macro plugin and
+answering CONTROL MAPPED, with no learning step in this run (section 4a, with its one caveat).
+One program can own the device and hand
+PLUGIN mode, and the transport switches, to Bitwig's integration through a virtual port. Still
+open: section 8, items 7 and 8, and a repeat of run 2 with the whole log kept.

@@ -3,13 +3,18 @@
 This is a plan, not a record. It sets out how Performance Bridge could use the Roto-Control's
 PLUGIN mode, what is known, and the tests that decide each part. Nothing here is in the app. What
 exists is for the tests: the probe (`sbdev vport`), the `ArturiaControl` library, and three
-prototypes that have run on no device (`sbdev roto`'s macro commands, `sbdev relay`, and `sbdev
-arturia`). Statements about the Roto-Control rest on
+prototypes (`sbdev roto`'s macro commands, `sbdev relay`, and `sbdev arturia`), each run once on
+Adam's Roto-Control, on 2026-11-14 (section 7). Statements about the Roto-Control rest on
 `docs/ROTO-CONTROL.md`, and those about Arturia's instruments on `docs/ARTURIA.md`; statements
 about Melbourne Instruments' Bitwig Studio and Logic Pro integrations come from reading their code
 in [roto_control](https://github.com/Melbourne-Instruments/roto_control) (commit 2d43a72) on
 2026-11-13 (the Bitwig integration by two readers, the second checking the first) and have not
 been tested unless a test is named. Everything else is a proposal.
+
+**Where it stands (2026-11-14).** Tests R1 (with a caveat, R6), R2, and R4 passed, and the Arturia prototype kept
+Pigments and the Roto-Control in step both ways (`docs/ROTO-CONTROL.md`, test 15;
+`docs/ARTURIA.md`, test 2). One run each; parts of R2 and of the Pigments run rest on what Adam
+saw, since their logs were not kept whole. R3 (Logic) and A1–A6 are not done.
 
 ## 1. The aim
 
@@ -58,18 +63,28 @@ From the integration's code:
   never the track page or the send names, which Performance Bridge's own MIX page has
   overwritten; the relay keeps Bitwig's last ones and sends them again.
 - **Bitwig reloading its integration.** A new instance sends nothing until it is told the mode
-  again, so on its DAW STARTED the relay tells it (untested).
+  again, so on its DAW STARTED the relay tells it. Seen once, in PLUGIN mode: the integration's
+  plugin list followed within 1 ms (test 15).
 - **Going back to MIX mode.** Bitwig writes its own track list to the device while in PLUGIN
   mode, so Performance Bridge must draw its page again. It already does on SET MIX ALL TRACKS
   MODE.
 - **Ports.** The integration looks for ports named "Roto-Control" but has no check of its own on
   the name; Melbourne Instruments' guide says the ports can be chosen by hand in Bitwig's
-  controller settings. The inference is that Bitwig will also add the integration on the device's
-  real ports by itself, and that the user must remove that one.
+  controller settings. In test 15 Bitwig already had the integration on the device's real
+  ports, and talked to the device directly until both of its port menus were set to the relay's
+  port (seen); the menus have to be set back to use Bitwig without the relay. For the app this
+  means a Setup Guide page, and a way to notice a second host on the device (it shows as a new
+  PING DAW).
+- **The relay's port name.** "PB Roto Relay" contains "Roto", the name `sbdev` and the engine
+  look for the device by, and `sbdev relay` could not find the device until it opened the device
+  first. The app needs a name that can't be taken for the device, or an exact match.
 
 What the user gets is what Bitwig's integration gives: remote-control pages mapped to the eight
 knobs with no learning, or learned mappings stored on the device, with names, motor positions, and
-value text. An Arturia plugin in Bitwig is reached this way, with 14-bit knobs.
+value text. An Arturia plugin in Bitwig is reached this way, with 14-bit knobs. In test 15 the
+eight knobs showed Polysynth's remote controls and worked both ways through the relay (seen),
+but only once Show Remote Controls was on in Bitwig; which messages carried them was not logged,
+so "no learning" is still from the code reading (`docs/ROTO-CONTROL.md`, section 8, item 8).
 
 ## 4. Transport, for Bitwig
 
@@ -78,7 +93,9 @@ TotalMix FX has no transport and the integration's transport switches work apart
 Forward REQUEST TRANSPORT STATUS and CCs 28–37; pass back TRANSPORT STATUS and CCs 28–35; drop the
 rest. Two things to know: the loop and punch-in flags in the integration's TRANSPORT STATUS are
 filled from the wrong settings (an apparent bug in its code; the lights it sends as CCs afterward
-are right), and its stop light is lit while playing.
+are right), and its stop light is lit while playing. Test 15 ran this through the relay: play
+and stop reached Bitwig from MIX mode, both lights lit while it played, and leaving transport
+mode gave the page back to the relay.
 
 ## 5. Logic Pro: later, and differently
 
@@ -123,6 +140,21 @@ as one plugin.
   instrument at a time is enough, are for Adam.
 - **The name.** "KeyLab 25" (Adam doesn't own one) rather than "KeyLab 61", if test A3 passes.
 
+What the first run of the prototype showed (`docs/ARTURIA.md`, test 2), and what follows from it:
+
+- **It works both ways** on all nine controls of Pigments, with the layout proposed above.
+- **Steps.** The knobs follow in 128 visible steps. The driver could glide the motor between
+  values instead of jumping (a proposal; it hides the steps and adds no resolution).
+- **The preset's name.** Adam, 2026-11-14: the plugin's name in the MENU window's top line and
+  the preset's name in its bottom line. SET CURRENT TRACK NAME, which the prototype sends, put
+  nothing there. With Bitwig as the host the bottom line showed the selected track's name, so the
+  driver should send the preset as a selected track's name, once it is known which message fills
+  the line (`docs/ROTO-CONTROL.md`, section 8, item 7).
+- **Values on connecting** came in this run and not in test 1, so "not knowing a value" above
+  still stands until A1 says which is the rule.
+- **Names.** "Param 1" to "Param 4" tell the user nothing; reading the instrument's files for
+  the real names matters more than it seemed (knob 5 was Filter 1's cutoff in one preset).
+
 ## 7. Tests, in order
 
 Arturia (each a few minutes with `sbdev vport`):
@@ -138,22 +170,33 @@ Roto-Control:
 
 - **R1.** From `sbdev roto`: a macro plugin with no learning on the device, first as Bitwig does it
   (`macro --wait`: LEARN PARAM only in answer to CONTROL MAPPED), then unasked (`macro`). Do names
-  and positions show, and do the knobs then send?
-- **R2.** A relay in `sbdev` between the device and Bitwig Studio, in PLUGIN mode only.
+  and positions show, and do the knobs then send? **Passed as Bitwig does it (test 15, run 1);
+  unasked was not tried.**
+- **R2.** A relay in `sbdev` between the device and Bitwig Studio, in PLUGIN mode only. **Passed
+  (test 15, run 2), largely on what Adam saw; to be repeated with the whole log kept
+  (`swift run sbdev relay 2>&1 | tee relay.log`, and no clearing of the Terminal window).**
 - **R3.** A new handshake as `03` and back to `02` without unplugging: does the device change
   type cleanly, and how long does it take?
 - **R4.** Transport to Bitwig Studio while in MIX mode. Watch what the device sends on leaving
   transport mode: the relay ends transport only on SET PLUGIN MODE or a MIX-mode message.
+  **Passed (test 15, run 2): leaving sent SET MIX ALL TRACKS MODE.**
+- **R5.** In PLUGIN mode from `sbdev roto`: DAW SELECT TRACK by itself, then a track page by
+  itself. Which one fills the MENU window's bottom line?
+- **R6.** A macro plugin under a plugin hash the device has never been sent. R1 used the hash of
+  Bitwig's macro plugin, on a device that has been used with Bitwig, so it can't show that no
+  stored mapping was involved. The Arturia driver should not rest on that hash until this passes.
 
-If R1 passes, `sbdev arturia` puts the two halves together: the Roto-Control's PLUGIN mode on a
-standalone instrument, with values marked unknown until the instrument reports them.
+`sbdev arturia` puts the two halves together: the Roto-Control's PLUGIN mode on a standalone
+instrument, with values marked unknown until the instrument reports them. Its first run is
+`docs/ARTURIA.md`, test 2.
 
 ## 8. Order of work
 
-1. Tests A1–A6 and R1: they settle whether the Arturia driver is worth building and how.
-2. The Bitwig relay in `sbdev` (R2, R4), then in the app, with a setting for the virtual port and
-   a Setup Guide page for Bitwig's controller settings.
-3. The Arturia driver, if step 1 says so.
+1. Tests A1–A6 and R1: they settle whether the Arturia driver is worth building and how. R1 is
+   done; A1–A6 are not, and R5 and R6 join them.
+2. The Bitwig relay in `sbdev` (R2 and R4, done once; R2 again with its log), then in the app,
+   with a setting for the virtual port and a Setup Guide page for Bitwig's controller settings.
+3. The Arturia driver, if step 1 says so. Its first run says it is worth building for Pigments.
 4. Logic (R3 first).
 
 Each step merges only after the review its tier calls for; until then it lives on a test branch.
@@ -163,7 +206,8 @@ Each step merges only after the review its tier calls for; until then it lives o
 The reading of Bitwig's integration found things section 4a doesn't have yet. They are code
 readings, to be added with their source once a second reader or a test has confirmed them:
 
-- the macro plugin path (section 6 above), against 4a's "every control has to be learned";
+- the macro plugin path (section 6 above), against 4a's "every control has to be learned":
+  **confirmed by test 15 and now in section 4a**;
 - that Bitwig does not send the track page on SET PLUGIN MODE, as Ableton does;
 - that Bitwig also takes its hashes from SHA-1, of the device's name and the parameter's full ID;
 - that in PLUGIN mode Bitwig reads and lights a switch as a 0–127 value, not only as on and off;

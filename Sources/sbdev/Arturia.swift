@@ -1,8 +1,8 @@
 // sbdev arturia: a prototype that shows a standalone Arturia instrument on the Roto-Control's
 // PLUGIN mode (docs/PLUGIN-MODE-PLAN.md, section 6). sbdev opens the device and runs the
 // handshake as type 02, publishes a virtual port under a first KeyLab keyboard's name for the
-// instrument, and runs the ArturiaRotoDriver library between the two. Nothing here has been
-// tested on the device or with an instrument.
+// instrument, and runs the ArturiaRotoDriver library between the two. Run once, with Pigments
+// (docs/ARTURIA.md, test 2).
 
 import Foundation
 import RotoControl
@@ -20,21 +20,22 @@ let arturiaUsage = """
                    shown as Param 1–4 (their real names are not known to this tool)
           page 2   knob 1: Volume
         In MIX mode sbdev shows a page of stand-in tracks, as `sbdev relay` does.
-        This is a prototype for a test. Whether it works is what the test is to find out.
+        This is a prototype for a test (docs/ARTURIA.md, test 2, is its one run so far).
 
         To try it:
           1. Quit Performance Bridge and every other sbdev tool.
           2. Start `sbdev arturia`, then the instrument.
           3. In the instrument's audio and MIDI settings window, turn on the port under MIDI
-             Devices (the window's labels have not been recorded).
+             Devices (the window's labels have not been recorded). In test 2 Pigments then
+             sent every value.
           4. Press MODE, then PLUGIN, on the Roto-Control.
         A control's name ends in "?" until the instrument reports its value. To make it
         report, move the control in the instrument's window, or load a preset.
 
         --wait sends LEARN PARAM only in answer to CONTROL MAPPED, which is the order of
         Melbourne Instruments' Bitwig integration; try it first. Without --wait, LEARN PARAM
-        is sent unasked, which is this project's own variant. (Use whichever of
-        `sbdev roto`'s `macro --wait` and `macro` test R1 found to work.)
+        is sent unasked, which is this project's own variant. (--wait worked in test R1 and
+        in test 2; without it is untested.)
 
         --device matches the Roto-Control's source and destination by name (default "Roto");
         --in and --out name them separately. --gap is the pause after each SysEx message sent

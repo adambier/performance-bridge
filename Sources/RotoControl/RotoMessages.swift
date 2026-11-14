@@ -64,9 +64,11 @@ public enum RotoIncoming: Equatable, Sendable {
     case firmwareVersion(major: Int, minor: Int, patch: Int, commit: String)
     /// ROTO SYSEX API VERSION (`0A 10`).
     case sysExAPIVersion(major: Int, minor: Int)
-    /// ROTO PAGE LEFT (`0A 14`); sent only to a host that claims to be Logic.
+    /// ROTO PAGE LEFT (`0A 14`). The SysEx doc lists it for a host that claims to be Logic; with
+    /// type `02` it has been observed when the arrows paged a macro plugin (docs/ROTO-CONTROL.md,
+    /// test 15).
     case pageLeft
-    /// ROTO PAGE RIGHT (`0A 15`); sent only to a host that claims to be Logic.
+    /// ROTO PAGE RIGHT (`0A 15`); as ROTO PAGE LEFT.
     case pageRight
     /// SET PLUGIN MODE (`0B 01`): the Roto-Control is in PLUGIN mode. It has been observed to carry
     /// one data byte, which the SysEx doc does not list (docs/ROTO-CONTROL.md, test 1).

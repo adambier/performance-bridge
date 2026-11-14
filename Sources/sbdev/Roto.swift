@@ -48,8 +48,9 @@ let rotoCommandHelp = """
       ctl K NAME        SET PLUGIN CONTROL DETAILS: name knob K (1–64)
       ctlsw K NAME      the same for switch K
       unmap K           UNMAP CONTROL knob K;  unmapsw K for switch K
-    A macro plugin (test R1; from a reading of Melbourne Instruments' Bitwig integration,
-    untested on the device). Try `macro --wait` first: it is the integration's order.
+    A macro plugin (test R1; from a reading of Melbourne Instruments' Bitwig integration).
+    `macro --wait`, the integration's order, worked on the device (docs/ROTO-CONTROL.md,
+    test 15); plain `macro` is untested.
       macro [PAGES] --wait
                         replace the plugin list with one macro plugin, "Macro Test", with PAGES
                         macro pages (default 1), and send NUM PLUGINS, FIRST PLUGIN, PLUGIN

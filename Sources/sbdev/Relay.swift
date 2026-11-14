@@ -1,8 +1,8 @@
 // sbdev relay: a prototype relay between a Roto-Control and Bitwig Studio's Roto-Control
 // integration, for tests R2 and R4 of docs/PLUGIN-MODE-PLAN.md. sbdev opens the device and runs
 // the handshake as type 02, publishes a virtual port pair for Bitwig Studio, and passes messages
-// between the two by the rules in the RotoRelay library. Nothing here has been tested on the
-// device or with Bitwig Studio.
+// between the two by the rules in the RotoRelay library. Run once with a Roto-Control and Bitwig
+// Studio (docs/ROTO-CONTROL.md, test 15).
 
 import Foundation
 import RotoControl
@@ -19,18 +19,20 @@ let relayUsage = """
           MIX mode      sbdev has it (a page of stand-in tracks, as `sbdev roto` shows), and
                         the program's messages are dropped, except transport while the
                         transport switches are active
-        This is a prototype for a test. Whether it works is what the test is to find out.
+        This is a prototype for a test (docs/ROTO-CONTROL.md, test 15, is its one run so far).
 
-        Before the test, in Bitwig Studio's controller settings:
-          1. Remove any Roto-Control controller that Bitwig Studio added by itself on the
-             Roto-Control's own ports.
-          2. Add the Melbourne Instruments Roto-Control controller by hand.
-          3. Set its MIDI input port and its MIDI output port to the relay's port
-             ("PB Roto Relay", or the name given with --port).
+        Before the test, in Bitwig Studio (Settings, Controllers; as seen in test 15):
+          1. Find the "Melbourne Instruments Roto-Control" controller. Bitwig Studio has been
+             observed to have it already, on the Roto-Control's own ports.
+          2. Set both of its port menus (input and output) to the relay's port
+             ("PB Roto Relay", or the name given with --port). Don't add the controller a
+             second time from the list below it.
+          3. After the test, set both menus back to "Roto-Control".
         Start `sbdev relay` first, so that the port exists. Quit every other program that
         opens the Roto-Control's ports (Performance Bridge, `sbdev roto`, `sbdev bridge`).
         The relay learns the mode from what the Roto-Control sends. If it has sent none yet,
-        press MIX on the Roto-Control, then PLUGIN.
+        press MODE, then MIX, on the Roto-Control, then MODE, then PLUGIN. In Bitwig Studio,
+        knob names have been observed to show only once Show Remote Controls is on.
 
         --device matches the Roto-Control's source and destination by name (default "Roto");
         --in and --out name them separately. --gap is the pause after each SysEx message sbdev
@@ -163,11 +165,14 @@ final class RelaySession: @unchecked Sendable {
         lock.lock()
         defer { lock.unlock() }
         do {
-            port = try VirtualMIDIPort(clientName: "sbdev relay", name: options.portName) { [weak self] bytes in
-                self?.fromHost(bytes)
-            }
+            // The device first: the relay's own port ("PB Roto Relay") also matches the default
+            // device name, "Roto", and once it exists the match is no longer a single port
+            // (seen 2026-11-14: "No single MIDI port matches"). Input waits for the lock.
             device = try MIDIConnection(clientName: "sbdev relay", sourceName: options.inName, destinationName: options.outName) { [weak self] bytes in
                 self?.fromDevice(bytes)
+            }
+            port = try VirtualMIDIPort(clientName: "sbdev relay", name: options.portName) { [weak self] bytes in
+                self?.fromHost(bytes)
             }
         } catch {
             fail("\(error)")

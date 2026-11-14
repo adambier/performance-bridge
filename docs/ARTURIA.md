@@ -3,16 +3,19 @@
 This is a working reference for one question: whether a program can control Arturia's standalone
 instruments (Pigments, MiniFreak V, the V Collection) in both directions, so that a motorized
 controller such as the Roto-Control can follow them. It records what has been found, with the
-evidence for each statement. Nothing in Performance Bridge uses it yet; the `ArturiaControl`
-library holds the message formats, and `sbdev vport` is the probe. It is written in this project's
+evidence for each statement. Nothing in the Performance Bridge app uses it yet; the
+`ArturiaControl` library holds the message formats, `sbdev vport` is the probe, and `sbdev
+arturia` is a prototype that puts an instrument on the Roto-Control (test 2). It is written in this project's
 own words, and nothing from Arturia's files is copied here. This project is not affiliated with or
 endorsed by Arturia.
 
-**The short answer.** Probably, within limits. In one test, Pigments, finding a MIDI port named
-like one of Arturia's first KeyLab keyboards, reported changes to Macro 1 to it as they happened
-and took a plain control change from it.[^test-1] Other instruments share the profile file but
-are untested. The limits: nine useful controls an instrument, 7-bit values, no value text, and no
-way yet known to ask for the values on connecting (sections 3 and 5).
+**The short answer.** Yes for Pigments, in two tests, within limits. Pigments, finding a MIDI
+port named like one of Arturia's first KeyLab keyboards, reported changes to its macros to it as
+they happened and took plain control changes from it[^test-1][^test-2]; in the second test a
+prototype kept a Roto-Control's knobs and Pigments' controls in step in both directions.[^test-2]
+Other instruments share the profile file but are untested. The limits: nine useful controls an
+instrument, 7-bit values, no value text, and no way yet known to ask for the values (sections 3
+and 5).
 
 **How sure each statement is.** A plain statement describes what was found. A statement that rests
 on a source has a footnote: a test with the instrument running, described in section 6, or a
@@ -22,6 +25,8 @@ has not been checked, the text says so in words ("inference", "untested").
 
 [^test-1]: [Test 1](#test-1-2026-11-13-pigments-and-a-virtual-keylab-61) (2026-11-13), section 6;
     Pigments 7.0.1 standalone.
+[^test-2]: [Test 2](#test-2-2026-11-14-pigments-and-a-roto-control-through-sbdev-arturia)
+    (2026-11-14), section 6; Pigments standalone, version not rechecked since test 1.
 [^files]: The files Arturia's installers put on Adam's Mac, read on 2026-11-13 by two AI agents
     working through a read-only view of the folders (section 1). Their reports and scripts are
     kept outside this repository. The reading was not repeated by a second reader.
@@ -31,7 +36,7 @@ has not been checked, the text says so in words ("inference", "untested").
 
 ## 1. Sources
 
-- **Tests** with an instrument running, in section 6. One so far.
+- **Tests** with an instrument running, in section 6. Two so far, both with Pigments.
 - **Installed files** (Pigments 7.0.1.6772, MiniFreak V 5.1.1.6945, Analog Lab V 5.12.6.6914, and
   about 45 V Collection and Augmented instruments, as their bundles give their versions).[^files]
   Each instrument has, among its resources:
@@ -59,6 +64,9 @@ headers.[^code]
 - It then showed "KeyLab" as both its MIDI Controller and its MIDI Config, without being
   told to (seen by Adam).[^test-1] Its saved controller before the test was "KeyLab mk3"[^files];
   whether the change is saved is not known.
+- The day after test 1, the port was listed under MIDI Devices again but turned off (seen).[^test-2]
+  So Pigments either doesn't keep that setting or drops it when the port goes away; which is not
+  known.
 - Pigments' MIDI Config menu lists three factory configurations: Generic, KeyLab (marked as the
   default), and Empty (seen).[^test-1]
 - A profile cannot be added without changing Arturia's files[^files], which this project does not
@@ -89,19 +97,25 @@ the "KeyLab" profile's format the next two bytes are `7F 42`.
   untested: a preset change reports only the controls whose values changed. Item 1's value in the new preset
   was not recorded and items 2–9 had not been reported before, so the burst fits other rules too.
 - **No echo.** A control change sent to Pigments moved the control and drew no message back in
-  the 7.9 s before the next change made in the window.[^test-1]
+  the 7.9 s before the next change made in the window.[^test-1] In test 2, 231 control changes
+  sent over 22 s moved Macro 1 (seen) and drew none.[^test-2] So a controller has to keep the
+  values it sends.
 - **Text.** The fields seen were tag 1 with the instrument's name ("Pigments"), tag 2 with the
   preset's name behind an asterisk, tag 3 with a second word about the preset ("Bells",
   "Template"), and tag 4 empty. The message came twice each time, when the controller was first
   found and after the preset change.[^test-1] What the asterisk means is not known; it was there
   on a preset just loaded. No text came with a value: a parameter's name and its value in words
   (e.g., "50%") have not been seen.
-- **Nothing on connecting.** The profile declares that current values are sent just after
-  connecting[^files], but when the port was turned on with Pigments already running, only the
-  text came.[^test-1] Whether the values come when an instrument starts with the port already
-  turned on is untested.
-- **Resolution.** The value message carries 7 bits. Ten times (once in the first drag, nine in
-  the second) a message repeated the value before it[^test-1], several just after a pause. The
+- **On connecting: sometimes.** The profile declares that current values are sent just after
+  connecting.[^files] When the port was turned on in test 1, only the text came[^test-1]; in test
+  2 the same action brought all nine values within 46 ms, and then the text.[^test-2] What
+  differed is not known (in test 1 Pigments was started after the port existed; in test 2 it may
+  have been running already). Whether the values come when an instrument starts with the port
+  already turned on is untested.
+- **Resolution.** The value message carries 7 bits, and a motorized knob following it moves in
+  visible steps (seen).[^test-2] Ten times in test 1 (once in the first drag, nine in the second)
+  a message repeated the value before it[^test-1], several just after a pause; in test 2's five
+  logged drags, 145 of 480 did.[^test-2] The
   inference, unconfirmed, is that the parameter moved by less than one step in 127; a message for
   each movement of the mouse would look the same. The code has a 14-bit value message, but
   no profile Arturia installs asks for it.[^files][^code]
@@ -117,7 +131,8 @@ the "KeyLab" profile's format the next two bytes are `7F 42`.
 
   Control change 74 on channel 1 with value 100 moved Pigments' Macro 1 to about three quarters
   (seen), and the next value Pigments reported for item 1 was 102, from a drag that began
-  there.[^test-1]
+  there.[^test-1] In test 2, control change 93 changed Filter 1's cutoff in the preset then
+  loaded, and control change 17 the master volume (seen; neither logged).[^test-2]
 - **What the controls are.** 48 of the 49 instruments with factory MIDI configurations have one
   named "KeyLab".[^files] In those:
   - 74, 71, 76, and 77 are macros 1–4 (in the Augmented instruments, their four macro parameters
@@ -142,8 +157,9 @@ the "KeyLab" profile's format the next two bytes are `7F 42`.
 
 ## 5. Open questions
 
-1. Do the values come when an instrument starts with the port already turned on? If not, a
-   controller knows a control's value only after it changes or a preset loads.
+1. Do the values come when an instrument starts with the port already turned on, and why did
+   turning the port on bring them in test 2 and not in test 1? Until that is known, a controller
+   can count on a control's value only after it changes or a preset loads.
 2. Do MiniFreak V, Analog Lab V, and a V Collection instrument behave as Pigments does? Users have
    reported trouble with MiniFreak V's MIDI learn on
    [Arturia's forum](https://forum.arturia.com/t/bug-minifreak-v-midi-learn-not-quite-working/2615);
@@ -153,7 +169,8 @@ the "KeyLab" profile's format the next two bytes are `7F 42`.
 4. Does a parameter assigned by MIDI learn report under its control change's item?
 5. Does the change of controller and configuration persist, and does it disturb a real KeyLab mk3
    used with the same instrument afterward? After test 1, Adam set MIDI Controller back to
-   "KeyLab mk3" by hand; MIDI Config stayed on "KeyLab", the factory default.
+   "KeyLab mk3" by hand; MIDI Config stayed on "KeyLab", the factory default. What Pigments
+   showed there before and after test 2 was not recorded.
 6. Can a control be driven, or reported, with more than 7 bits (NRPN in; the newer controllers'
    message family out)?
 7. Is the plugin, in a DAW, reachable the same way? The reading suggests the controller code is
@@ -164,7 +181,8 @@ the "KeyLab" profile's format the next two bytes are `7F 42`.
 Run with `sbdev vport <port name>` (macOS), which publishes a virtual MIDI source and destination
 under that name and prints every message sent to the destination with the time since starting.
 The times are when `sbdev` received each message. The version used for test 1 did not yet print
-decoded lines.
+decoded lines. Test 2 used `sbdev arturia`, which publishes the same kind of port and runs the
+`ArturiaRotoDriver` prototype between it and a Roto-Control.
 
 ### Test 1 (2026-11-13): Pigments and a virtual "KeyLab 61"
 
@@ -201,3 +219,46 @@ own KeyLab 61 mk3 goes by another port name; whether it was plugged in was not r
 
 **Not tested.** Any other instrument; any other port name; a control other than Macro 1 moved by
 hand; the lights; starting Pigments with the port already on.
+
+### Test 2 (2026-11-14): Pigments and a Roto-Control, through `sbdev arturia`
+
+**Setup.** Adam's Mac; Pigments standalone (7.0.1 in test 1; not rechecked); his Roto-Control,
+firmware 3.3.0; `sbdev arturia --wait` on branch `vport-probe` at `044c4b1`, with the port named
+"KeyLab 61". The prototype offers the Roto-Control one macro plugin (`docs/ROTO-CONTROL.md`,
+section 4a): knobs 1–4 on items 1–4 (macros 1–4), knobs 5–8 on items 9, 5, 6, and 7, and, on a
+second page, knob 1 on item 8 (the volume). The log is kept outside this repository, and the
+counts below come from a script over it. It is whole from 0 to 182.2 s and has two later pieces
+(207.6–209.1 s and 249.9–276.1 s); what happened after 276 s was not copied. Adam's notes are
+marked "seen".
+
+**Findings:**
+
+- **Before the port was turned on.** Pigments may have been running before `sbdev` started (Adam
+  was not sure). Nothing arrived from it in the first 84.5 s.
+- **Turning the port on.** "KeyLab 61" was listed under MIDI Devices and turned off (seen); Adam
+  turned it on. Eleven value messages arrived in 46 ms (84.561–84.607 s), covering all nine items
+  (items 8 and 3 came twice), and then the text message, once: "Pigments", "*Hang Me Some Me",
+  "Bells", and an empty fourth field. The values were 0 for items 1, 2, 3, 5, and 7; 59 for item
+  4; 127 for items 6 and 9; and 87 for item 8.
+- **On the Roto-Control** (seen): the plugin's name in the top line of the MENU window became
+  "Pigments", with the bottom line dark; the eight knob names lost the "?" that marks an unknown
+  value. The preset's name, which the prototype sent with SET CURRENT TRACK NAME, showed nowhere,
+  in PLUGIN mode or, after MODE and MIX, in MIX mode.
+- **Knob 1 turned by hand,** three times (160.2–182.2 s): 341 position reports from the
+  Roto-Control, from 138 to 16028, became 231 control changes for controller 74, with values 1 to
+  124. Pigments' Macro 1 moved and the percentage showed on the knob's screen (seen). Pigments
+  sent nothing in those 22 s.
+- **Drags in Pigments' window** (seen; five in the log, of Macro 1 and Macro 2): 480 value
+  messages, a median of 16 or 17 ms apart in each drag, 145 of them repeating the value before.
+  The prototype sent 333 knob positions, each within 6 ms of its value message, and the knobs
+  followed (seen): evenly, but in visible steps. A step of 1 in 127 is 129 of the knob's 16,383
+  positions.
+- **A preset change** (seen; not in the log): the knobs moved to new positions.
+- **Knob 5** (seen; not in the log): changed Filter 1's cutoff. The preset's name was not
+  recorded.
+- **The second page** (seen; not in the log): knob 1 moved Pigments' master volume; the other
+  seven screens were dark.
+
+**Not tested.** Any other instrument or port name; `sbdev arturia` without `--wait`; starting
+Pigments with the port already on; a real KeyLab used afterward. What Pigments' MIDI tab showed
+before and after was not recorded.

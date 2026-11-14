@@ -387,8 +387,9 @@ public struct RotoRelay: Sendable {
     /// in MIX mode without them.
     ///
     /// The reason is from the integration's code: a new instance drops every SysEx message until
-    /// it receives SET PLUGIN MODE, SET MIX ALL TRACKS MODE, or REQUEST TRANSPORT STATUS. Untested
-    /// with Bitwig Studio. The macro page byte is 0, since the relay does not follow the page (an
+    /// it receives SET PLUGIN MODE, SET MIX ALL TRACKS MODE, or REQUEST TRANSPORT STATUS. Seen
+    /// once with Bitwig Studio, in PLUGIN mode: its plugin list followed within 1 ms
+    /// (docs/ROTO-CONTROL.md, test 15). The macro page byte is 0, since the relay does not follow the page (an
     /// inference that the integration then asks for nothing more).
     var sentToHostOnDAWStarted: [[UInt8]] {
         var messages: [[UInt8]] = []

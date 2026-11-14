@@ -282,8 +282,9 @@ public struct ArturiaRotoDriver: Sendable {
         return messages
     }
 
-    /// SET CURRENT TRACK NAME with the preset's name. What the device shows for it in PLUGIN mode
-    /// is untested.
+    /// SET CURRENT TRACK NAME with the preset's name. The MENU window showed nothing for it in
+    /// PLUGIN mode (seen once: docs/ARTURIA.md, test 2), so this needs another message
+    /// (docs/PLUGIN-MODE-PLAN.md, section 6).
     private mutating func trackName(onlyIfChanged: Bool) -> [ArturiaRotoDeviceMessage] {
         guard let name = presetName, !(onlyIfChanged && name == lastTrackNameSent) else { return [] }
         lastTrackNameSent = name
