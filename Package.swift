@@ -15,6 +15,8 @@ import Foundation
 //   LaunchControl  Novation Launch Control XL 3 and Launch Control 3: DAW mode's controls, colors,
 //                  screen, and feature controls, from Novation's programmer's reference guides;
 //                  Foundation only
+//   ArturiaControl what an Arturia instrument sends a controller it takes for a first KeyLab, and
+//                  what the controller sends back (docs/ARTURIA.md); Foundation only
 //   MIDITransport  a MIDI connection through CoreMIDI (macOS only; elsewhere it lists no ports and
 //                  throws), and the conversion between MIDI 1.0 bytes and CoreMIDI's packets
 //   UDPTransport   a small UDP socket for talking to TotalMix FX (POSIX on macOS and Linux; not yet
@@ -51,6 +53,7 @@ var targets: [Target] = [
     .target(name: "TotalMixOSC", dependencies: ["OSCCodec"]),
     .target(name: "RotoControl"),
     .target(name: "LaunchControl"),
+    .target(name: "ArturiaControl"),
     .target(name: "MIDITransport"),
     .target(name: "UDPTransport"),
     .target(name: "SurfaceCore", dependencies: ["OSCCodec", "TotalMixOSC"]),
@@ -60,7 +63,7 @@ var targets: [Target] = [
     .target(name: "E16Driver", dependencies: ["OSCCodec", "TotalMixOSC", "OXIE16", "SurfaceCore"]),
     .target(name: "BridgeEngine", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "MIDITransport", "UDPTransport",
                                                  "SurfaceCore", "RotoDriver", "LaunchControl", "LaunchControlDriver", "OXIE16", "E16Driver"]),
-    .executableTarget(name: "sbdev", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "LaunchControl", "MIDITransport", "UDPTransport",
+    .executableTarget(name: "sbdev", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "LaunchControl", "ArturiaControl", "MIDITransport", "UDPTransport",
                                                    "SurfaceCore", "RotoDriver", "LaunchControlDriver", "OXIE16", "E16Driver"]),
 ]
 let products: [Product] = [
@@ -68,6 +71,7 @@ let products: [Product] = [
     .library(name: "TotalMixOSC", targets: ["TotalMixOSC"]),
     .library(name: "RotoControl", targets: ["RotoControl"]),
     .library(name: "LaunchControl", targets: ["LaunchControl"]),
+    .library(name: "ArturiaControl", targets: ["ArturiaControl"]),
     .library(name: "MIDITransport", targets: ["MIDITransport"]),
     .library(name: "UDPTransport", targets: ["UDPTransport"]),
     .library(name: "SurfaceCore", targets: ["SurfaceCore"]),
@@ -90,6 +94,7 @@ if includeTests {
     targets.append(.testTarget(name: "TotalMixOSCTests", dependencies: ["OSCCodec", "TotalMixOSC"]))
     targets.append(.testTarget(name: "RotoControlTests", dependencies: ["RotoControl"]))
     targets.append(.testTarget(name: "LaunchControlTests", dependencies: ["LaunchControl"]))
+    targets.append(.testTarget(name: "ArturiaControlTests", dependencies: ["ArturiaControl"]))
     targets.append(.testTarget(name: "MIDITransportTests", dependencies: ["MIDITransport", "RotoControl"]))
     targets.append(.testTarget(name: "UDPTransportTests", dependencies: ["UDPTransport"]))
     targets.append(.testTarget(name: "SurfaceCoreTests", dependencies: ["SurfaceCore", "TotalMixOSC", "OSCCodec"]))

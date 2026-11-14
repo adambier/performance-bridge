@@ -125,6 +125,7 @@ Command Line Tools are enough; the first build downloads Sparkle). Open it with
 - **[`docs/ROTO-CONTROL.md`](docs/ROTO-CONTROL.md)**: what this project relies on in the Roto-Control's protocol, the evidence for each statement, and the questions still to settle by testing.
 - **[`docs/LAUNCH-CONTROL-XL3.md`](docs/LAUNCH-CONTROL-XL3.md)** and **[`docs/LAUNCH-CONTROL-3.md`](docs/LAUNCH-CONTROL-3.md)**: the same for the Launch Control XL 3 and the Launch Control 3.
 - **[`docs/OXI-E16.md`](docs/OXI-E16.md)**: the same for the OXI E16's Remote Mode.
+- **[`docs/ARTURIA.md`](docs/ARTURIA.md)**: what has been found about controlling Arturia's standalone instruments in both directions (not used by the app yet).
 - **[`AGENTS.md`](AGENTS.md)**: an orientation for AI coding tools and for anyone working on the code.
 
 ## License
