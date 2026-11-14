@@ -26,16 +26,17 @@ with a real KeyLab.
 | Port names | "KeyLab 25", "49", "61", "88" | "KeyLab mkII 49", "61", "88", each also with " MIDI" or " (1)" after it | "KeyLab 49 mk3 MIDI", "61", "88" (matched as part of the name) |
 | Message family | version 2 | version 2 | version 3 |
 | Knobs reported | 11 | 9 | 9 |
-| A control's name and value in words | no (seen, tests 1–3) | yes, when changed from the controller (seen, test 4) | yes, likewise (seen, test 5) |
-| Per-preset labels | no | Analog Lab V only (seen, test 4) | not from Pigments (seen, test 5); Analog Lab V untested |
-| Resolution of reported values | 7 bits (seen) | 7 bits (seen) | 7 bits (seen, test 5) |
+| A control's name and value in words | no (seen, tests 1–3) | yes, when changed from the controller (seen, test 4) | yes, likewise (seen, tests 5 and 6) |
+| Per-preset labels | no | Analog Lab V only (seen, test 4) | Analog Lab V only (seen, test 6) |
+| Resolution of reported values | 7 bits (seen) | 7 bits (seen) | 7 bits (seen, tests 5 and 6) |
 | Previous and next preset | no | controllers 28 and 29 (declared) | no; browse and validate only (declared) |
 | Save, Undo, and Redo | no | no | controllers 53, 54, and 55, with lights (declared) |
-| Chosen by the instrument by itself | Pigments (seen, test 1); Analog Lab V showed it, how it was chosen not recorded (test 3) | Analog Lab V; in Pigments, chosen by hand (seen, test 4) | Pigments (seen, test 5) |
+| Chosen by the instrument by itself | Pigments (seen, test 1); Analog Lab V showed it, how it was chosen not recorded (test 3) | Analog Lab V; in Pigments, chosen by hand (seen, test 4) | Pigments and Analog Lab V (seen, tests 5 and 6) |
 
 For a controller with its own displays and no KeyLab screen, the mkII's profile is the one to
 imitate: the first KeyLab's sends no names, and the mk3's adds only what belongs to the mk3's
-panel, in a second message format.
+panel, in a second message format. Neither the mkII's nor the mk3's sends a knob's label before
+the knob is moved from the controller (tests 4 and 6).
 
 ## 2. Finding the controller
 
@@ -44,7 +45,9 @@ turns the port on in the instrument's Audio MIDI Settings window, under MIDI por
 that went away was no longer turned on afterward (test 5), and one that came back the next day
 came back turned off (test 2). The
 instrument's Midi Controller setting has been observed to follow the port by itself, except
-Pigments with the mkII port (test 4); after the port went away, Pigments kept the setting (test 5).
+Pigments with the mkII port (test 4); after the port went away, Pigments and Analog Lab V kept the
+setting (tests 5 and 6). Analog Lab V also recognized the mk3's port by its name before anything
+was exchanged, and offered to update "your KeyLab 61 mk3" to a newer firmware (test 6; declined).
 
 ## 3. Knobs
 
@@ -99,26 +102,33 @@ All are SysEx beginning `F0 00 20 6B 7F 42` and ending `F7`. After that header:
 
 ## 5. Version 3 messages (KeyLab mk3)
 
-Seen from Pigments only (test 5). SysEx beginning `F0 00 20 6B 7F 42 00 <id>`, where `<id>` was
-`0D` (13, the number the shared profile gives; Analog Lab V's profile gives 1), then a subcommand:
+Seen from Pigments (test 5) and Analog Lab V (test 6). SysEx beginning `F0 00 20 6B 7F 42 00 <id>`,
+where `<id>` was `0D` from Pigments and `01` from Analog Lab V (the numbers their profiles give),
+then a subcommand:
 
 | Message | Bytes after the id | Evidence |
 |---|---|---|
-| A knob's value | `00 <item> 01 <value> 00` | seen: 137 messages, the last byte always 0 |
+| A knob's value | `00 <item> 01 <value> 00` | seen: 137 messages from Pigments and 146 from Analog Lab V in drags, the last byte always 0 |
+| Another property | `00 <item> 02 <value> 00` | seen from Analog Lab V on connecting: items 51–54, value 0 |
+| Not known | `03 <byte> <byte> <byte> <byte> 00` | seen from Analog Lab V only: `03 0D 11 11 11` after a control change in, `03 0F 01 01 01` at a preset change and at the first edit |
 | A screen | `04 <screen>`, then fields: a tag byte, bytes, a 0 byte | seen |
 | Connect, disconnect | `05 01`, `05 00` | seen on connecting (01, 00, 01) |
 
 - **Screen `10` hex** is the preset: its name with an asterisk after it, its type, and a color
   among other small fields.
-- **Screens `01`–`08`** came as a set of eight, the first four with an icon number and a color,
-  the last four empty. That they are the mk3's eight display buttons is an inference from the
+- **Screens `01`–`08`** came as a set of eight. From Pigments the first four had an icon number
+  and a color and the last four were empty; from Analog Lab V screens 1–4 and 8 had them. That they are the mk3's eight display buttons is an inference from the
   count and the profile.
 - **Screen `1C` hex** followed a control change from the controller: the value in words
-  ("0.551"), the control's name ("Macro 1"), the raw value, and two more small fields; three
-  times, with the preset and the eight screens sent again 2 s later.
+  ("0.551"), the control's name, the raw value, and two more small fields, the same bytes from
+  both apps; three times, with the preset and the screens sent again 2 s later. The name was
+  Pigments' fixed one ("Macro 1") and Analog Lab V's per-preset label ("Color").
+- **Knob values** came from Analog Lab V on connecting (all nine, three times) and at a preset
+  change; from Pigments, not on connecting (test 5; a preset change was not tried).
 - The profile also declares a "soft connect" (subcommand 8), lights with three colors each for
-  Save, Undo, and Redo (items 15, 13, and 12), and, in Analog Lab V, a second property for four
-  part buttons and lights for transpose and octave. None was seen.
+  Save, Undo, and Redo (items 15, 13, and 12), and, in Analog Lab V, lights for transpose and
+  octave. None was seen. Analog Lab V's second property (items 51–54) is its four part buttons,
+  by the profile.
 - Not every field has been worked out, and nothing was sent in this format to the instrument.
 
 ## 6. Buttons and other controls (declared; none tested)
@@ -145,8 +155,10 @@ since it could overwrite a preset.
 
 ## 7. Per-preset labels
 
-Analog Lab V sends the label the preset gives a control ("Color", "Chorus Mix"). Pigments sends
-its parameter's fixed name ("Macro 1") where its window shows the preset's label ("Timbre"), under
-both the mkII's and the mk3's profiles (tests 4 and 5). Pigments' preset files hold the four
+Analog Lab V sends the label the preset gives a control ("Color", "Chorus Mix"), under both the
+mkII's and the mk3's profiles, but only when that control is moved from the controller: not on
+connecting, not at a preset change, and not when it is moved in the window (tests 4 and 6).
+Pigments sends its parameter's fixed name ("Macro 1") where its window shows the preset's label
+("Timbre"), under both profiles (tests 4 and 5). Pigments' preset files hold the four
 macro labels as named fields (one factory preset read), so a controller that knows the instrument
 and the preset could look them up; see ARTURIA.md, section 4, for what is open.

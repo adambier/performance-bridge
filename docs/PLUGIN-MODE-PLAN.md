@@ -164,8 +164,10 @@ them:
   knob's name the first time the knob is turned, and shows the instrument's own value text
   ("1448 Hz") in place of a percentage. The item numbers differ, and the port is "KeyLab mkII
   61" (or 49 or 88).
-- **Not the mk3.** Its profile was probed too (test 5): for the knobs it gives what the mkII's
-  gives, in a second message format, plus Save, Undo, and Redo, which could go on switches later.
+- **Not the mk3.** Its profile was probed too, with Pigments and Analog Lab V (tests 5 and 6): for
+  the knobs it gives what the mkII's gives, in a second message format, plus Save, Undo, and
+  Redo, which could go on switches later. Neither profile brings Analog Lab V's labels before a
+  knob is turned from the controller.
   `docs/ARTURIA-KEYLAB.md` sets the three generations side by side.
 - **More on the mkII's profile, untested:** previous and next preset on control changes 28 and
   29, which the Roto-Control's switches could send, and nine more controls (the faders'), which

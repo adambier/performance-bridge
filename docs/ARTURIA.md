@@ -45,6 +45,8 @@ has not been checked, the text says so in words ("inference", "untested").
     (2026-11-14), section 6; Analog Lab V and Pigments standalone, versions not read that day.
 [^test-5]: [Test 5](#test-5-2026-11-14-a-virtual-keylab-61-mk3-midi-with-pigments) (2026-11-14),
     section 6; Pigments standalone, version not read that day.
+[^test-6]: [Test 6](#test-6-2026-11-14-a-virtual-keylab-61-mk3-midi-with-analog-lab-v) (2026-11-14),
+    section 6; Analog Lab V standalone, version not read that day.
 [^files-2]: The controller profile files and one preset file, read directly on Adam's Mac
     (read-only) on 2026-11-14: `controllers-common.prefmidi.xml` in Pigments' resources,
     `controllers.prefmidi.xml` in Analog Lab V's, and Pigments' factory preset "Hanging Threads".
@@ -73,7 +75,9 @@ has not been checked, the text says so in words ("inference", "untested").
 Arturia publishes none of this as a protocol. The profile for Arturia's newer controllers (KeyLab
 mk3 and others) uses a second message family; test 5 shows what Pigments sends in it, and
 [ARTURIA-KEYLAB.md](ARTURIA-KEYLAB.md), section 5, describes it.[^code][^test-5] It gave nothing
-for the knobs that the mkII's profile doesn't: the same fixed names, and 7-bit values.
+for the knobs that the mkII's profile doesn't: the same fixed names, and 7-bit values. Test 6
+shows Analog Lab V in it: its per-preset labels, again only after a turn from the
+controller.[^test-6]
 
 ## 2. How an instrument finds a controller
 
@@ -435,3 +439,38 @@ Adam's notes and a screenshot are marked "seen".
 **Not tested.** Analog Lab V under this profile; the Save, Undo, Redo, Back, and display button
 control changes (Save could overwrite a preset); anything sent to Pigments in this format; a
 real KeyLab mk3 beside the virtual port.
+
+### Test 6 (2026-11-14): a virtual "KeyLab 61 mk3 MIDI", with Analog Lab V
+
+**Setup.** Adam's Mac, with his real KeyLab 61 mk3 unplugged and Pigments quit; Analog Lab V
+standalone, already running with the preset "Fiber Lines" and Midi Controller "Generic 9 Knobs";
+then `sbdev vport "KeyLab 61 mk3 MIDI"`, with its output also written to a file. The log (240
+messages) is whole and is kept outside this repository; the counts below come from a script over
+it. Adam's notes and screenshots are marked "seen".
+
+- **Before the port was turned on** (seen): Analog Lab V showed a "Controller Setup" window, "Let's
+  set up your KeyLab 61 mk3", offering a firmware update to version 1.5.1. Nothing had arrived on
+  the port. Adam chose "Cancel & close". The port was listed under MIDI ports, turned off.
+- **Turning the port on** (seen): Midi Controller changed to "KeyLab mk3" by itself, a "Fader Mode"
+  setting (None) appeared under it, and a row of faders appeared under the knobs. In 0.19 s
+  (203.996–204.188 s) came 50 messages, all with the header `7F 42 00 01`: three connect messages
+  (on, off, on); 29 knob values, all nine three times over (two more for items 6 and 7), matching
+  the window (Color 90, Morph 64, Time 127, Master 109, …); four messages setting a second
+  property of items 51–54 to 0; screens 1–8, some twice; and the preset screen, "Fiber Lines*" and
+  "Poly Lead".
+- **A control change in** (`cc 1 74 70`): Color moved from about 0.7 to about 0.55 (seen). 28 ms
+  later an undecoded `03 0D 11 11 11 00`, then a screen with "0.551", **"Color"**, and the value 70,
+  three times, in the same bytes as Pigments' "Macro 1" screen; 2.0 s later the preset screen and
+  screens 1–4 and 8.
+- **Stepping to the next preset** with the window's arrow, to "00 SYNTH (Sweep with Glide)", whose
+  first four knobs read Brightness, Timbre, Time, and Movement (seen): in 0.12 s, 32 messages,
+  the old and new preset screens, `03 0F 01 01 01 00`, 19 knob values (item 0 three times: 0, then
+  127 twice), and the button screens twice. None of the four labels.
+- **A drag of Brightness in the window** (seen): 146 value messages for item 0 in 1.4 s (66
+  different values, 6–127, the last byte always 0), the preset screen with an asterisk added, and
+  `03 0F 01 01 01 00` again. No label.
+- **Removing the port** with Analog Lab V running (seen): nothing was turned on under MIDI ports
+  afterward, and Midi Controller still read "KeyLab mk3".
+
+**Not tested.** A preset change from the controller (control changes 114 and 115); the faders;
+the Save, Undo, Redo, Back, and display button control changes; anything sent in this format.
