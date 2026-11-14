@@ -173,8 +173,8 @@ them:
   preset file is read. Open: whether sending each control's current value back to the instrument
   on a preset change would draw all nine names without changing anything.
 - **The plugins are a separate question** (Adam, 2026-11-14). In a DAW the names come through
-  the plugin interface, where Analog Lab V is seen to rename its parameters per preset and the
-  single instruments are not. None of the above has been tried with a plugin.
+  the plugin interface, where Adam has seen Analog Lab V's parameters renamed per preset and the
+  single instruments' not (which DAW integration, he did not say). None of the above has been tried with a plugin.
 
 ## 7. Tests, in order
 

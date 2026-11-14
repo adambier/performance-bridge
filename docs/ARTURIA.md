@@ -233,12 +233,12 @@ the "KeyLab" profile's format the next two bytes are `7F 42`.
    showed there before and after test 2 was not recorded.
 6. Can a control be driven, or reported, with more than 7 bits (NRPN in; the newer controllers'
    message family out)?
+7. Is the plugin, in a DAW, reachable the same way? The reading suggests the controller code is
+   in the plugin[^code], but a DAW has its own, better path to a plugin's parameters.
 8. Do Arturia's apps share their MIDI settings, and does that explain why the same step went
    differently from run to run (Adam, 2026-11-14)? Where each app saves them has not been read.
 9. Which control change makes Analog Lab V send all its values under the mkII profile, and does
    it work?
-7. Is the plugin, in a DAW, reachable the same way? The reading suggests the controller code is
-   in the plugin[^code], but a DAW has its own, better path to a plugin's parameters.
 
 ## 6. Tests
 
