@@ -139,3 +139,14 @@ final class MIDIEndpointMatchTests: XCTestCase {
     }
     #endif
 }
+
+#if !canImport(CoreMIDI)
+final class VirtualMIDIPortTests: XCTestCase {
+    /// Off macOS there is no MIDI: publishing a virtual port throws, as opening a connection does.
+    func testThrowsWhereMIDIIsNotImplemented() {
+        XCTAssertThrowsError(try VirtualMIDIPort(clientName: "test", name: "test") { _ in }) { error in
+            XCTAssertEqual(error as? MIDIConnectionError, .unsupportedPlatform)
+        }
+    }
+}
+#endif

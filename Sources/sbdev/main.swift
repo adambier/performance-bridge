@@ -43,6 +43,7 @@ let usage = """
       sbdev curve --table
       sbdev roto ports
       sbdev midi <port name>    prints what a MIDI device sends (e.g., an ARC USB's keys)
+      sbdev vport <port name>   publishes virtual MIDI ports and prints what programs send to them
       sbdev roto [options]      (sbdev roto --help for the options)
       sbdev bridge [options]    (sbdev bridge --help for the options)
       sbdev lcxl [options]      talks to a Launch Control XL 3 (sbdev lcxl --help)
@@ -307,6 +308,7 @@ case "curve": curve(Array(arguments.dropFirst()))
 case "roto": roto(arguments.dropFirst())
 case "bridge": bridge(arguments.dropFirst())
 case "midi": midiMonitor(arguments.dropFirst())
+case "vport": virtualPort(arguments.dropFirst())
 case "lcxl": launchControl(arguments.dropFirst())
 case "lcbridge": launchBridge(arguments.dropFirst())
 case "e16": e16(arguments.dropFirst())
