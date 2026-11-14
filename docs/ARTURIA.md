@@ -13,9 +13,10 @@ endorsed by Arturia.
 port named like one of Arturia's first KeyLab keyboards, reported changes to its macros to it as
 they happened and took plain control changes from it[^test-1][^test-2]; in the second test a
 prototype kept a Roto-Control's knobs and Pigments' controls in step in both directions.[^test-2]
-Other instruments share the profile file but are untested. The limits: nine useful controls an
-instrument, 7-bit values, no value text, and no way yet known to ask for the values (sections 3
-and 5).
+Analog Lab V, in one test with the probe, reported to the same port and took a control change
+from it.[^test-3] The other instruments share the profile file but are untested. The limits:
+nine useful controls an instrument (eleven in Analog Lab V), 7-bit values, no value text, no
+names for the controls, and no way yet known to ask for the values (sections 3 and 5).
 
 **How sure each statement is.** A plain statement describes what was found. A statement that rests
 on a source has a footnote: a test with the instrument running, described in section 6, or a
@@ -27,6 +28,8 @@ has not been checked, the text says so in words ("inference", "untested").
     Pigments 7.0.1 standalone.
 [^test-2]: [Test 2](#test-2-2026-11-14-pigments-and-a-roto-control-through-sbdev-arturia)
     (2026-11-14), section 6; Pigments standalone, version not rechecked since test 1.
+[^test-3]: [Test 3](#test-3-2026-11-14-analog-lab-v-and-a-virtual-keylab-61) (2026-11-14),
+    section 6; Analog Lab V standalone, version not read that day.
 [^files]: The files Arturia's installers put on Adam's Mac, read on 2026-11-13 by two AI agents
     working through a read-only view of the folders (section 1). Their reports and scripts are
     kept outside this repository. The reading was not repeated by a second reader.
@@ -36,7 +39,8 @@ has not been checked, the text says so in words ("inference", "untested").
 
 ## 1. Sources
 
-- **Tests** with an instrument running, in section 6. Two so far, both with Pigments.
+- **Tests** with an instrument running, in section 6. Three so far: two with Pigments and one
+  with Analog Lab V.
 - **Installed files** (Pigments 7.0.1.6772, MiniFreak V 5.1.1.6945, Analog Lab V 5.12.6.6914, and
   about 45 V Collection and Augmented instruments, as their bundles give their versions).[^files]
   Each instrument has, among its resources:
@@ -82,7 +86,7 @@ the "KeyLab" profile's format the next two bytes are `7F 42`.
 |---|---|---|
 | A control's value | `02 <p> 00 <item> <value>` | seen[^test-1] |
 | The display's text | `04 <p> 60`, then fields: a tag byte, ASCII text, a 0 byte | seen[^test-1] |
-| A light | `02 <p> 10 <item> <value>` | code only[^code] |
+| A light | `02 <p> 10 <item> <value>` | seen, from Analog Lab V[^test-3] |
 | A light's color | `02 <p> 11 <item> <value>` | code only[^code] |
 | A 14-bit value | `0A <p> <b> <item> <high 7 bits> <low 7 bits>` | code only[^code] |
 
@@ -100,11 +104,18 @@ the "KeyLab" profile's format the next two bytes are `7F 42`.
   the 7.9 s before the next change made in the window.[^test-1] In test 2, 231 control changes
   sent over 22 s moved Macro 1 (seen) and drew none.[^test-2] So a controller has to keep the
   values it sends.
+- **Analog Lab V** sent every value when the port was turned on and again at a preset change,
+  with lights and the text; its text's first field named the instrument the preset comes from
+  ("Pigments", "Augmented VOICES"), not Analog Lab. Its window names its controls differently
+  for each preset (e.g., "Filters", "Density", "Time", and "FX", then "Color", "Morph", "Time",
+  and "Motion"; seen), and none of those names was sent, on connecting, at the preset change, or
+  while four of the controls were dragged.[^test-3]
 - **Text.** The fields seen were tag 1 with the instrument's name ("Pigments"), tag 2 with the
   preset's name behind an asterisk, tag 3 with a second word about the preset ("Bells",
   "Template"), and tag 4 empty. The message came twice each time, when the controller was first
   found and after the preset change.[^test-1] What the asterisk means is not known; it was there
-  on a preset just loaded. No text came with a value: a parameter's name and its value in words
+  on a preset just loaded, and in test 3 on a preset whose name had none in Analog Lab V's
+  window.[^test-3] No text came with a value: a parameter's name and its value in words
   (e.g., "50%") have not been seen.
 - **On connecting: sometimes.** The profile declares that current values are sent just after
   connecting.[^files] When the port was turned on in test 1, only the text came[^test-1]; in test
@@ -144,7 +155,9 @@ the "KeyLab" profile's format the next two bytes are `7F 42`.
 
   So nine controls an instrument are of use. Analog Lab V differs: its "KeyLab" configuration is
   in another file and assigns the controls to parameters of its own that stand for whatever the
-  loaded preset maps.[^files]
+  loaded preset maps.[^files] In test 3 it reported all eleven items, with item 48 (control
+  change 7) at a value that fits its Master knob, an inference; items 1–4 moved as its first four
+  knobs were dragged, and control change 74 moved the first (seen).[^test-3]
 - **Parameters the user assigns.** The reports follow the control change number, not the
   parameter.[^files] The inference, untested, is that a parameter the user assigns to one of the
   eleven control change numbers with the instrument's MIDI learn would be reported under that
@@ -160,7 +173,9 @@ the "KeyLab" profile's format the next two bytes are `7F 42`.
 1. Do the values come when an instrument starts with the port already turned on, and why did
    turning the port on bring them in test 2 and not in test 1? Until that is known, a controller
    can count on a control's value only after it changes or a preset loads.
-2. Do MiniFreak V, Analog Lab V, and a V Collection instrument behave as Pigments does? Users have
+2. Do MiniFreak V and a V Collection instrument behave as Pigments does? (Analog Lab V: test
+   3.) Does any profile carry Analog Lab V's per-preset control names? The newer controllers'
+   message family, not yet read, is the place to look. Users have
    reported trouble with MiniFreak V's MIDI learn on
    [Arturia's forum](https://forum.arturia.com/t/bug-minifreak-v-midi-learn-not-quite-working/2615);
    nothing here has been tried with it.
@@ -262,3 +277,40 @@ marked "seen".
 **Not tested.** Any other instrument or port name; `sbdev arturia` without `--wait`; starting
 Pigments with the port already on; a real KeyLab used afterward. What Pigments' MIDI tab showed
 before and after was not recorded.
+
+### Test 3 (2026-11-14): Analog Lab V and a virtual "KeyLab 61"
+
+**Setup.** Adam's Mac; Analog Lab V standalone (5.12.6 in the file reading of 2026-11-13; not
+read again); `sbdev vport "KeyLab 61"` on branch `vport-probe` (its `vport` unchanged since
+`044c4b1`), with its output also written to a file. The log (712 lines) is whole and is kept
+outside this repository; the counts below come from a script over it. Adam's notes and two
+screenshots of Analog Lab V's window are marked "seen". The question was whether Analog Lab V
+sends the names it gives its controls for each preset.
+
+**Findings:**
+
+- **Turning the port on.** Analog Lab V was opened after the port was published; "KeyLab 61" was
+  listed under MIDI Devices, turned off (seen), and Adam turned it on. In 86 ms (62.506–62.594 s)
+  came 31 value messages covering eleven items (1–10 and 48), 11 light messages for five lights
+  (items `12`, `13`, `14`, `1E`, and `1F` hex), and the text once: "Pigments", "*Fever Keys",
+  "Lofi Keys", and an empty fourth field. The window showed the preset "Fever Keys*", from the
+  instrument Pigments, with MIDI Controller "KeyLab" (seen).
+- **The values against the window.** Items 1–4 were 51, 100, 67, and 46, and item 48 was 109; the
+  window's first four knobs were labeled Filters, Density, Time, and FX, beside a Master knob
+  (seen). That item 48 is the Master is an inference from its value and the knob's position.
+- **Four drags** of knobs in the window (seen in the log as items 1, 2, 3, and 4, in that order;
+  which knob each was, was not noted): 338 value messages, a median of 6 to 8 ms apart, 204 of
+  them repeating the value before. No text and no light came with them.
+- **Another preset** ("Fiber Lines", from Augmented VOICES): 20 value messages in 20 ms for nine
+  items (1–8 and 48; not 9 or 10), four light messages, and the text twice: "Augmented VOICES",
+  "*Fiber Lines", "Poly Lead". The window showed "Fiber Lines" with no asterisk and the first
+  four knobs as Color, Morph, Time, and Motion (seen). Items 2 and 3 were 64 and 127, which fits
+  Morph at the middle and Time at full in the screenshot.
+- **Names.** None of the knob names in the window appears in any message of the log.
+- **The nine faders** in the window were not reported under any item.
+- **A control change in** (`cc 1 74 64`, at 519.4 s): the Color knob jumped to about the middle
+  (seen). Nothing came back before the log ends.
+
+**Not tested.** Whether items 5–10 are the window's other knobs; the faders moved by hand; the
+lights' meaning; what Analog Lab V's MIDI tab showed before the test, and whether its setting
+changed.
