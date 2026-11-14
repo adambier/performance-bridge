@@ -369,6 +369,13 @@ public struct ArturiaRotoDriver: Sendable {
         if !text.name.isEmpty { names[item] = text.name }
         if !text.valueText.isEmpty { instrumentText[item] = (value, text.valueText) }
         if values[item] != value {
+            if isInPluginMode, let knob = knob(forItem: item), let control = control(knob),
+               let moved = lastKnobMove[knob], now - moved < Self.holdSeconds {
+                // A late answer to an earlier step of a knob still being turned (the instrument
+                // has been seen to answer up to about 50 ms behind: test A7): its name is kept,
+                // its value is not, so the knob isn't moved back when it is let go.
+                return nameChanged ? [renamed(knob, control)] : []
+            }
             // A control change the driver didn't send: handled as a value report, which renames a
             // knob whose value was unknown and shows the text.
             let wasUnknown = values[item] == nil

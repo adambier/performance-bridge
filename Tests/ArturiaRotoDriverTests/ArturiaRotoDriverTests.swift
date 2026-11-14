@@ -331,4 +331,19 @@ final class ArturiaRotoDriverTests: XCTestCase {
         XCTAssertEqual(next, [rename(1, "Macro 1"), .message(.currentTrackName("00 ZENNY 1"))])
         XCTAssertNil(driver.name(forItem: 1))
     }
+
+    func testALateAnswerWhileTheKnobTurnsIsNotTakenForAChange() {
+        var driver = driverInPluginMode()
+        _ = driver.fromInstrument(controlText("Brightness", "0.528", controller: 74, value: 67), now: 0.5)
+        // The knob sends 75, then 74; the instrument's answer to 75 comes after the 74 was sent.
+        _ = driver.fromDevice(.control(.knob(0, position: ArturiaRotoDriver.position(forValue: 75))), now: 1.00)
+        XCTAssertEqual(driver.fromDevice(.control(.knob(0, position: ArturiaRotoDriver.position(forValue: 74))), now: 1.02).toInstrument,
+                       [[0xB0, 74, 74]])
+        XCTAssertTrue(driver.fromInstrument(controlText("Brightness", "0.591", controller: 74, value: 75), now: 1.04).isEmpty)
+        XCTAssertEqual(driver.value(forItem: 1), 74)
+        XCTAssertEqual(driver.fromInstrument(controlText("Brightness", "0.583", controller: 74, value: 74), now: 1.07).toDevice,
+                       [show(0, "0.583")])
+        // Let go: the knob is not moved.
+        XCTAssertTrue(driver.tick(now: 1.5).isEmpty)
+    }
 }
