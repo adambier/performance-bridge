@@ -346,4 +346,17 @@ final class ArturiaRotoDriverTests: XCTestCase {
         // Let go: the knob is not moved.
         XCTAssertTrue(driver.tick(now: 1.5).isEmpty)
     }
+
+    func testAHeldBackTextWaitsForTheInstrumentsText() {
+        var driver = driverInPluginMode()
+        _ = driver.fromInstrument(controlText("Brightness", "0.480", controller: 74, value: 61), now: 1.00)
+        // A second text within 1/12 s is held back.
+        _ = driver.fromDevice(.control(.knob(0, position: ArturiaRotoDriver.position(forValue: 62))), now: 1.01)
+        XCTAssertTrue(driver.fromInstrument(controlText("Brightness", "0.488", controller: 74, value: 62), now: 1.03).isEmpty)
+        // The knob moves on to 60 before the held-back text is due: no percentage at the tick.
+        _ = driver.fromDevice(.control(.knob(0, position: ArturiaRotoDriver.position(forValue: 60))), now: 1.05)
+        XCTAssertTrue(driver.tick(now: 1.09).isEmpty)
+        XCTAssertEqual(driver.fromInstrument(controlText("Brightness", "0.472", controller: 74, value: 60), now: 1.10).toDevice,
+                       [show(0, "0.472")])
+    }
 }

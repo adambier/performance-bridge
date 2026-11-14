@@ -499,9 +499,13 @@ public struct ArturiaRotoDriver: Sendable {
                     knobValue[knob] = value
                 }
             }
-            if let turned = awaitingText[knob], now - turned >= Self.textWaitSeconds {
-                awaitingText[knob] = nil
-                messages += valueText(knob, now: now)
+            if let turned = awaitingText[knob] {
+                // While the instrument's text is awaited, a held-back text waits too, or it would
+                // show a percentage for a moment (seen in test A7).
+                if now - turned >= Self.textWaitSeconds {
+                    awaitingText[knob] = nil
+                    messages += valueText(knob, now: now)
+                }
             } else if valueTextPending[knob], let last = lastValueText[knob], now - last >= Self.valueTextInterval {
                 messages += valueText(knob, now: now)
             }
