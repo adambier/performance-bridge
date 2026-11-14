@@ -98,7 +98,8 @@ All are SysEx beginning `F0 00 20 6B 7F 42` and ending `F7`. After that header:
 - **Lights seen from Analog Lab V** match its profile: as a first KeyLab, items 18–20 (its three
   control tabs) and 30 and 31 (Sound and Multi); as a mkII, items 31–33 (tabs), 24 and 25
   (browsing by category or by preset), and 34–42 (nine lights for the browsing filter). Pigments
-  as a mkII sent items 24, 25, and 34–42.
+  as a mkII sent items 24, 25, and 34–42. Items 31–33 so tell Analog Lab V from an instrument
+  (four logs), which the text does not.
 
 ## 5. Version 3 messages (KeyLab mk3)
 

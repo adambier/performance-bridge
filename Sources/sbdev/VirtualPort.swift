@@ -53,6 +53,8 @@ func vportDescribe(_ message: ArturiaInstrumentMessage, profile: ArturiaKeyLabPr
         return "text      " + fields.map { "\($0.tag): \"\($0.text)\"" }.joined(separator: "  ")
     case .controlText(let text):
         return "control   CC \(text.controller) = \(text.value): \"\(text.name)\", \"\(text.valueText)\""
+    case .light(let item, let value):
+        return "light     item \(item) = \(value)"
     case .other:
         return nil
     }

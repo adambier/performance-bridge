@@ -62,6 +62,10 @@ public enum ArturiaInstrumentMessage: Equatable, Sendable {
     /// two bytes, and ";" (seen, test 4). How a value of 0 is sent has not been seen; it is read
     /// here as the same two bytes, not as the end of the field.
     case controlText(ArturiaControlText)
+    /// A light, 0–127: `7F 42 02 <p> 10 <item> <value>`. Seen under the mkII's profile: items 24,
+    /// 25, and 34–42 from Pigments and Analog Lab V, and items 31–33 (its three control tabs) from
+    /// Analog Lab V alone (tests 4 and 7).
+    case light(item: Int, value: Int)
     /// Any other Arturia SysEx message, whole, from `F0` to `F7`.
     case other([UInt8])
 
@@ -78,6 +82,8 @@ public enum ArturiaInstrumentMessage: Equatable, Sendable {
         switch (body[2], body[4]) {
         case (0x02, 0x00) where body.count == 7:
             return .value(item: Int(body[5]), value: Int(body[6]))
+        case (0x02, 0x10) where body.count == 7:
+            return .light(item: Int(body[5]), value: Int(body[6]))
         case (0x04, 0x60):
             var fields: [ArturiaTextField] = []
             var control: (controller: Int, value: Int)?

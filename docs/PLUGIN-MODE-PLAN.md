@@ -200,9 +200,17 @@ Arturia (each a few minutes with `sbdev vport`):
   yet run.**
 - **A9.** Names before any turn, from the instrument's own files (`docs/ARTURIA.md`, section 4):
   read Pigments' MIDI configuration and parameter-name files and name knobs 5–8 on entering
-  PLUGIN mode; then a V Collection instrument; then where MIDI-learn changes are kept.
+  PLUGIN mode; then a V Collection instrument; then where MIDI-learn changes are kept. **Built
+  for Pigments (`sbdev arturia`, and `sbdev arturia-files` to see what is read); to run: with
+  "Hanging Threads", knobs 1–8 should read Timbre, Time, Inharmonicit, Delay, F1 Cutoff, F1
+  Resonance, F2 Cutoff, and F2 Resonance before any is turned, and with the "Welcome" template
+  Timbre, Time, Unison, and Reverb.**
+- **A10.** Analog Lab V: do a preset's first four controls follow its file's macro labels, in
+  order (`docs/ARTURIA.md`, section 5, item 11)? Until then no files are read for it.
 - **A8.** The preset-file lookup for macro labels: a second instrument, a user preset, and two
-  presets of one name.
+  presets of one name. **Built for Pigments (2026-11-14; `docs/ARTURIA.md`, section 4): the file
+  is found by the preset's name, type, and values, which leaves 2 of Pigments' 9,392 factory
+  presets open. Not yet run with the device; a user preset and a second instrument are untried.**
 - **A4.** Assign another parameter to control change 74 by MIDI learn. Does it report as item 1?
 - **A5.** Two instruments at once, on two port names.
 - **A6.** Adam's KeyLab 61 mk3 with the same instrument afterward: does it still work as before?

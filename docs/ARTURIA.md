@@ -24,8 +24,9 @@ Lab V and Pigments each sent the control's name and its value in words (e.g., "F
 "1448 Hz").[^test-4] Analog Lab V sent the name the preset gives the control; Pigments sent its
 parameter's fixed name ("Macro 1", where its window shows "Timbre"). In test 7 a prototype on
 this profile showed those names and values on a Roto-Control's knobs once each knob had been
-turned.[^test-7] Pigments' fixed names can also be read, before any turn, from two of its own
-files (section 4).[^files-3] Everything here is about
+turned.[^test-7] Pigments' fixed names, and each preset's labels for its four macros, can also
+be read before any turn from Pigments' own files (section 4; built, not yet run with the
+device).[^files-3] Everything here is about
 the standalone apps. Nothing has been tested with the plugins in a DAW, and nothing found here
 should be assumed to hold there (Adam, 2026-11-14).
 
@@ -52,8 +53,11 @@ has not been checked, the text says so in words ("inference", "untested").
     section 6; Analog Lab V standalone, version not read that day.
 [^test-7]: [Test 7](#test-7-2026-11-14-a-roto-control-on-the-keylab-mkiis-profile-through-sbdev-arturia)
     (2026-11-14), section 6; Analog Lab V and Pigments standalone, versions not read that day.
-[^files-3]: Pigments' `plugin.prefmidi.xml` and `Reference_ParamNames.xml`, in
-    `/Library/Arturia/Pigments/resources/`, read directly on Adam's Mac (read-only) on 2026-11-14.
+[^files-3]: Read directly on Adam's Mac (read-only) on 2026-11-14, under `/Library/Arturia/`:
+    each instrument's `resources/plugin.prefmidi.xml` and `resources/Reference_ParamNames.xml`;
+    every file under `Presets/Pigments/` (9,595, by script) and one preset file each of ten
+    other instruments; and the `tmp` folders of Pigments and Analog Lab V. None is copied into
+    this repository.
 [^files-2]: The controller profile files and one preset file, read directly on Adam's Mac
     (read-only) on 2026-11-14: `controllers-common.prefmidi.xml` in Pigments' resources,
     `controllers.prefmidi.xml` in Analog Lab V's, and Pigments' factory preset "Hanging Threads".
@@ -215,10 +219,8 @@ the "KeyLab" profile's format the next two bytes are `7F 42`.
   knobs were dragged, and control change 74 moved the first (seen).[^test-3]
 - **Per-preset names.** Pigments' window labels its four macros per preset, and its factory
   preset file holds those labels as four named fields ("Hanging Threads": Timbre, Time,
-  Inharmonicity, and Delay, as the window showed).[^files-2][^test-4] So a controller that knows
-  the instrument and the preset (the text message gives both) could read the labels from the
-  preset's file. Untested, and open: two presets of one name, where user presets are kept,
-  whether other instruments store the labels the same way, and a label changed but not saved.
+  Inharmonicity, and Delay, as the window showed).[^files-2][^test-4] "Names from the
+  instrument's own files", below, says how a controller can find the file.
 - **Parameters the user assigns.** The reports follow the control change number, not the
   parameter.[^files] The inference, untested, is that a parameter the user assigns to one of the
   eleven control change numbers with the instrument's MIDI learn would be reported under that
@@ -229,16 +231,70 @@ the "KeyLab" profile's format the next two bytes are `7F 42`.
 - **Finer control.** Every assignment in the installed configurations is a 7-bit control change.
   The code also takes NRPN and RPN, but how one would be assigned was not found.[^files][^code]
 
-**Names from the instrument's own files** (Pigments only, read on 2026-11-14).[^files-3] Its
-MIDI configuration file has a "KeyLab" set tying each control change to a parameter number (93
-to 165, 18 to 166, 19 to 183, 16 to 184, 74 to 1, 17 to 0), and its parameter-name file lists
-each parameter's internal and display names. Counted by position in that list, from 0, those
-numbers are "F1 Cutoff", "F1 Resonance", "F2 Cutoff", "F2 Resonance", "Macro 1", and "Master
-Volume": the names Pigments sent in test 7. That a parameter number is its position in the list
-is an inference from those six. 81 folders under `/Library/Arturia/` hold a parameter-name file,
-which suggests, untested, that the same works for other instruments. Where an instrument keeps
-assignments the user changes by MIDI learn has not been found; the files above hold the factory
-set.
+### Names from the instrument's own files
+
+Read on Adam's Mac on 2026-11-14, read-only.[^files-3] `ArturiaParameterFiles`, `ArturiaPresetFile`,
+and `ArturiaPresetMatch` (in `Sources/ArturiaControl/`) read them, and `sbdev arturia-files` prints
+what they give. Used so far only by `sbdev arturia`, for Pigments, and not yet run with the
+device.
+
+**A control's parameter.** An instrument's `resources/plugin.prefmidi.xml` has a "KeyLab" set of
+assignments, each a control change number and a parameter number, and its
+`resources/Reference_ParamNames.xml` lists each parameter's internal and display names. In
+Pigments, counting the first list from 0, the parameters of control changes 93, 18, 19, 16, 74,
+and 17 are "F1 Cutoff", "F1 Resonance", "F2 Cutoff", "F2 Resonance", "Macro 1", and "Master
+Volume"; the first five are the names Pigments sent in test 7.[^test-7] That a parameter's number
+is its position in the list is an inference from those five.
+
+- For 39 other instruments the same reading gives names. For 37 they look plausible (macros 1–4
+  on 74, 71, 76, and 77, and a volume on 17, in most), but for MiniFreak V it puts "All Sounds
+  Off" on 74 and for DX7 V "Macro 1" on both 74 and 93, so the inference may not hold everywhere. The eight
+  Augmented instruments have no parameter-name file. None has been checked on a device.
+- These are the factory assignments. Analog Lab V's `tmp` folder holds a `plugin.prefmidi.xml`
+  of its own; the inference, untested, is that an instrument keeps assignments the user changes
+  there.
+
+**A preset's macro labels.** An instrument's presets are files under
+`/Library/Arturia/Presets/<instrument>/Factory/<bank>/` (and `User/`, seen for two instruments,
+not read), each named as its preset (all 9,392 of Pigments' factory presets). A file is a text
+serialization: a string is its length, a space, and its bytes, and a parameter is its name
+followed by its value. It holds the preset's name, a "Subtype" or "Type", the four labels as
+`Macro1_Name` to `Macro4_Name` (padded with 0 bytes in some instruments' files, empty where the
+preset keeps the default), and, in Pigments' files, the macros' values and the master volume.
+One file from each of nine other instruments had the labels the same way; MiniFreak V's had
+none.
+
+An instrument's text gives the preset's name cut to 15 characters ("Hang Me Some Me" for "Hang
+Me Some Melodies") and, as its third field, the preset's subtype (three Pigments presets), or
+its type where the file has no subtype ("Template", one preset). Counted by a script over Pigments' 9,392 factory
+presets, taking a group of presets as ambiguous when its members' labels differ:
+
+| Known to the controller | Presets left ambiguous |
+|---|---|
+| The name as sent | 387 |
+| The name and the type | 85 |
+| The name, the type, and the macros' values and the volume, within 1 or 2 of the file's | 2 |
+
+Pigments sent every value before the text at a preset change, and no value on connecting, in
+test 7, so the values are there to use only after a preset change. A value has been seen 1 off
+the file's value × 127, rounded (86 for 0.673). Where the choice stays open the controller has
+no labels. A preset the user has changed and not saved, and a user preset, are untried.
+
+**Which program is sending.** The text can't tell Analog Lab V from the instrument a preset comes
+from: field 1 is "Pigments" either way. The lights can: in four logs, Analog Lab V lit items
+31–33 (its three control tabs) on connecting and at each preset change, and Pigments never
+did.[^test-4][^test-7] `ArturiaRotoDriver.hostIsAnalogLab` goes by that, and `sbdev arturia`
+reads no files then, since Analog Lab V sends its own labels and what its presets' files say of
+them is unchecked: for one Memory V preset the file's labels were empty where Analog Lab V
+showed "Brightness", "Timbre", "Time", and "Movement".
+
+**Each instrument's own settings.** An instrument's `tmp` folder holds `standalone.pref` (the
+MIDI ports turned on, as `MidiDevice_1` and so on, and the audio device) and `plugin.pref.xml`
+(`MidiController`, among others): one set an instrument, so the standalone apps don't share
+them. Across the installed products' files `MidiController` read "KeyLab mk3" in 48, "KeyLab mkII"
+in 2, and "None" in 4. When the files are written was not worked out. `tmp/lastpresetc.pref` is
+the last preset in the preset files' format, labels included, but in Pigments it was written
+when the app quit, not when a preset loaded, so it can't say what is loaded now.
 
 ## 5. Open questions
 
@@ -264,9 +320,16 @@ set.
 7. Is the plugin, in a DAW, reachable the same way? The reading suggests the controller code is
    in the plugin[^code], but a DAW has its own, better path to a plugin's parameters.
 8. Do Arturia's apps share their MIDI settings, and does that explain why the same step went
-   differently from run to run (Adam, 2026-11-14)? Where each app saves them has not been read.
+   differently from run to run (Adam, 2026-11-14)? Each instrument has settings files of its
+   own (section 4), so not by a shared file; when an instrument reads and writes them, and so
+   why Pigments chose "KeyLab mkII" by itself in test 7 and not in test 4, is still open.
 9. Which control change makes Analog Lab V send all its values under the mkII profile, and does
    it work?
+10. Do the names read from files show rightly on the device, for Pigments (test A9 of the plan)?
+    Then: an instrument where the reading looks wrong (MiniFreak V), a user preset, and a preset
+    changed and not saved.
+11. In Analog Lab V, do a preset's first four controls follow its file's four macro labels, in
+    order? If so the files could name them before a turn there too.
 
 ## 6. Tests
 

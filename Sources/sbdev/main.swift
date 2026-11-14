@@ -12,6 +12,8 @@
 //                                     list MIDI ports; talk to a Roto-Control (Roto.swift)
 //   sbdev arturia [options]           an Arturia instrument as a macro plugin on a Roto-Control's
 //                                     PLUGIN mode, a prototype (Arturia.swift)
+//   sbdev arturia-files INSTRUMENT [PRESET [TYPE]]
+//                                     what sbdev arturia reads from an instrument's files
 //   sbdev relay [options]             relay between a Roto-Control and Bitwig Studio's integration
 //                                     through a virtual port, a prototype (Relay.swift)
 //   sbdev bridge [options]            run SurfaceCore and the Roto-Control driver between TotalMix FX
@@ -51,6 +53,7 @@ let usage = """
       sbdev roto [options]      (sbdev roto --help for the options)
       sbdev relay [options]     relays between a Roto-Control and Bitwig Studio (sbdev relay --help)
       sbdev arturia [options]   an Arturia instrument on a Roto-Control's PLUGIN mode (sbdev arturia --help)
+      sbdev arturia-files INSTRUMENT [PRESET [TYPE]]   what sbdev arturia reads from an instrument's files
       sbdev bridge [options]    (sbdev bridge --help for the options)
       sbdev lcxl [options]      talks to a Launch Control XL 3 (sbdev lcxl --help)
       sbdev lcbridge [options]  TotalMix FX and a Launch Control, as the app will (sbdev lcbridge --help)
@@ -317,6 +320,7 @@ case "midi": midiMonitor(arguments.dropFirst())
 case "vport": virtualPort(arguments.dropFirst())
 case "relay": relay(arguments.dropFirst())
 case "arturia": arturia(arguments.dropFirst())
+case "arturia-files": arturiaFiles(arguments.dropFirst())
 case "lcxl": launchControl(arguments.dropFirst())
 case "lcbridge": launchBridge(arguments.dropFirst())
 case "e16": e16(arguments.dropFirst())

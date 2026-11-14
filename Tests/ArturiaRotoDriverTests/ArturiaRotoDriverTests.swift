@@ -370,4 +370,64 @@ final class ArturiaRotoDriverTests: XCTestCase {
         _ = driver.fromInstrument(text("Prophet-VS", "*00 ZENNY 1"), now: 4)
         XCTAssertNil(driver.name(forItem: 5))
     }
+
+    /// A light's message from the instrument.
+    private func light(_ item: UInt8, _ value: UInt8) -> [UInt8] {
+        [0xF0, 0x00, 0x20, 0x6B, 0x7F, 0x42, 0x02, 0x00, 0x10, item, value, 0xF7]
+    }
+
+    func testNamesFromFilesShowUntilTheInstrumentSendsBetter() {
+        var driver = driverInPluginMode()
+        // Parameter names, by control change: knobs 5 and 6 of the page are renamed ("?" stays
+        // while the values are unknown); the volume is on the other page.
+        let named = driver.setParameterNames([93: "F1 Cutoff", 18: "F1 Resonance", 17: "Master Volume", 7: "Not in the profile"])
+        XCTAssertEqual(named.toDevice, [rename(5, "F1 Cutoff?"), rename(6, "F1 Resonance?")])
+        // The preset's labels for the macros; an empty or missing label keeps the default.
+        let labeled = driver.setPresetLabels(["Timbre", "", nil, "Delay"])
+        XCTAssertEqual(labeled.toDevice, [rename(1, "Timbre?"), rename(4, "Delay?")])
+        // The same again changes nothing.
+        XCTAssertTrue(driver.setPresetLabels(["Timbre", "", nil, "Delay"]).isEmpty)
+        // Pigments answers a turn of knob 1 with its fixed name, "Macro 1": the label stays.
+        _ = driver.fromDevice(.control(.knob(0, position: ArturiaRotoDriver.position(forValue: 60))), now: 1)
+        let fixed = driver.fromInstrument(controlText("Macro 1", "0.472", controller: 74, value: 60), now: 1.2)
+        XCTAssertEqual(fixed.toDevice, [show(0, "0.472")])
+        // A name that says more than the default wins over the label (Analog Lab V's).
+        XCTAssertEqual(driver.fromInstrument(controlText("Density", "0.472", controller: 77, value: 60), now: 2).toDevice.first,
+                       rename(4, "Density"))
+        // LEARN PARAM carries the names shown.
+        let page = driver.fromDevice(.message(.macroPage(0)), now: 3).toDevice
+        XCTAssertEqual(page[0], learn(1, "Timbre", ArturiaRotoDriver.position(forValue: 60)))
+        XCTAssertEqual(page[4], learn(5, "F1 Cutoff?", 0))
+        _ = driver.fromInstrument(value(9, 86), now: 4)
+        XCTAssertEqual(driver.fromDevice(.message(.macroPage(1)), now: 5).toDevice.first,
+                       learn(1, "Master Volume", ArturiaRotoDriver.position(forValue: 86)))
+        XCTAssertEqual(driver.presetValues.macros, [60, nil, nil, 60])
+        XCTAssertEqual(driver.presetValues.volume, 86)
+    }
+
+    func testANewPresetDropsItsLabelsAndKeepsParameterNames() {
+        var driver = driverInPluginMode()
+        _ = driver.fromInstrument(text("Pigments", "*Hanging Threads"), now: 0.5)
+        _ = driver.setParameterNames([93: "F1 Cutoff"])
+        _ = driver.setPresetLabels(["Timbre", "Time", "Inharmonicity", "Delay"])
+        XCTAssertEqual(driver.instrumentName, "Pigments")
+        XCTAssertEqual(driver.presetKind, "Bells")
+        let next = driver.fromInstrument(text("Pigments", "*Welcome"), now: 2).toDevice
+        XCTAssertEqual(next, [rename(1, "Macro 1?"), rename(2, "Macro 2?"), rename(3, "Macro 3?"), rename(4, "Macro 4?"),
+                              .message(.currentTrackName("Welcome"))])
+        // Outside PLUGIN mode nothing is sent, and the names are there on coming back.
+        _ = driver.fromDevice(.message(.singleTrackMode(controlPage: 0)), now: 3)
+        XCTAssertTrue(driver.setPresetLabels(["Timbre", "Time", "Unison", "Reverb"]).isEmpty)
+        let back = driver.fromDevice(.message(.pluginMode), now: 4).toDevice
+        XCTAssertEqual(back[6], learn(1, "Timbre?", 0))
+        XCTAssertEqual(back[10], learn(5, "F1 Cutoff?", 0))
+    }
+
+    func testAnalogLabIsKnownByItsTabLights() {
+        var driver = ArturiaRotoDriver()
+        _ = driver.fromInstrument(light(24, 127) + light(34, 0), now: 0)
+        XCTAssertFalse(driver.hostIsAnalogLab, "Pigments lights these too")
+        _ = driver.fromInstrument(light(31, 127), now: 1)
+        XCTAssertTrue(driver.hostIsAnalogLab)
+    }
 }

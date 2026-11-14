@@ -24,9 +24,10 @@ final class ArturiaKeyLabTests: XCTestCase {
     }
 
     func testOtherAndForeignMessages() {
-        // A light's message has 10 where a value's has 00 (read from the instrument's code, not seen).
-        let light = bytes("F0 00 20 6B 7F 42 02 00 10 18 7F F7")
-        XCTAssertEqual(ArturiaInstrumentMessage.parse(light), .other(light))
+        // A light's message has 10 where a value's has 00.
+        XCTAssertEqual(ArturiaInstrumentMessage.parse(bytes("F0 00 20 6B 7F 42 02 00 10 18 7F F7")), .light(item: 24, value: 127))
+        let other = bytes("F0 00 20 6B 7F 42 02 00 20 18 7F F7")
+        XCTAssertEqual(ArturiaInstrumentMessage.parse(other), .other(other))
         // The Roto-Control's DAW STARTED is not Arturia's.
         XCTAssertNil(ArturiaInstrumentMessage.parse(bytes("F0 00 22 03 02 0A 01 F7")))
         XCTAssertNil(ArturiaInstrumentMessage.parse(bytes("B0 4A 64")))

@@ -125,8 +125,20 @@ public struct ArturiaRotoDriver: Sendable {
     public private(set) var page = 0
     /// The plugin's name on the device: the instrument's, cut to 12 characters.
     public private(set) var pluginName = ArturiaRotoDriver.defaultPluginName
-    /// The instrument's name as its text last sent it, uncut.
-    private var instrumentName: String?
+    /// The instrument's name as its text last sent it, uncut. From Analog Lab V this is the
+    /// instrument the preset comes from.
+    public private(set) var instrumentName: String?
+    /// The third field of the instrument's last text: the preset's subtype or type.
+    public private(set) var presetKind: String?
+    /// Whether the instrument has lit one of the lights only Analog Lab V has been seen to light
+    /// (its three control tabs, items 31–33: docs/ARTURIA.md, tests 4 and 7). Kept until the
+    /// driver is made again.
+    public private(set) var hostIsAnalogLab = false
+    /// Names for controls read from the instrument's own files, by item: shown until the
+    /// instrument sends a name of its own.
+    private var parameterNames: [Int: String] = [:]
+    /// The loaded preset's labels for the four macros, by item, read from its file.
+    private var presetLabels: [Int: String] = [:]
     /// The preset's name, without its leading asterisk, once the instrument has sent it.
     public private(set) var presetName: String?
 
@@ -209,10 +221,14 @@ public struct ArturiaRotoDriver: Sendable {
         pages[page].firstIndex { $0?.item == item }
     }
 
-    /// A control's name as shown: the instrument's if it has sent one, otherwise the driver's own,
-    /// with a trailing "?" while its value is unknown.
+    /// A control's name as shown, with a trailing "?" while its value is unknown. In order: the
+    /// name the instrument sent, unless it is only the driver's own default (Pigments sends
+    /// "Macro 1" for a macro its preset labels "Timbre"); the preset's label from its file; the
+    /// name the instrument sent; the parameter's name from the instrument's files; the default.
     private func shownName(_ control: ArturiaRotoControl) -> String {
-        let name = names[control.item] ?? control.name
+        let sent = names[control.item]
+        let informative = sent == control.name ? nil : sent
+        let name = informative ?? presetLabels[control.item] ?? sent ?? parameterNames[control.item] ?? control.name
         return values[control.item] == nil ? name + "?" : name
     }
 
@@ -295,6 +311,50 @@ public struct ArturiaRotoDriver: Sendable {
         .message(.mappedControlName(parameterIndex: knob + 1, hash: .macroParameter(knob + 1), name: shownName(control)))
     }
 
+    // MARK: Names from files
+
+    /// The knobs of the page whose shown name differs from `before`, renamed.
+    private func renames(since before: [String?]) -> [ArturiaRotoDeviceMessage] {
+        guard isInPluginMode else { return [] }
+        return (0..<8).compactMap { knob in
+            guard let control = control(knob), shownName(control) != before[knob] else { return nil }
+            return renamed(knob, control)
+        }
+    }
+
+    private var shownNames: [String?] { (0..<8).map { knob in control(knob).map(shownName) } }
+
+    /// Sets names for controls read from the instrument's own files, by control change number
+    /// (`ArturiaParameterFiles.names`). They show until the instrument sends a name of its own.
+    public mutating func setParameterNames(_ names: [Int: String]) -> ArturiaRotoOutput {
+        let before = shownNames
+        parameterNames = [:]
+        for (controller, name) in names {
+            if let item = profile.item(forController: controller) { parameterNames[item] = name }
+        }
+        return ArturiaRotoOutput(toDevice: renames(since: before))
+    }
+
+    /// Sets the loaded preset's labels for macros 1–4, read from its file
+    /// (`ArturiaPresetMatch.macroLabels`), or none with `nil`. They are dropped when the
+    /// instrument's text names another preset.
+    public mutating func setPresetLabels(_ labels: [String?]?) -> ArturiaRotoOutput {
+        let before = shownNames
+        presetLabels = [:]
+        for (index, controller) in [74, 71, 76, 77].enumerated() {
+            guard let labels, index < labels.count, let label = labels[index], !label.isEmpty,
+                  let item = profile.item(forController: controller) else { continue }
+            presetLabels[item] = label
+        }
+        return ArturiaRotoOutput(toDevice: renames(since: before))
+    }
+
+    /// The macros' values (0–127) and the volume's as last known, for choosing a preset file.
+    public var presetValues: (macros: [Int?], volume: Int?) {
+        func value(_ controller: Int) -> Int? { profile.item(forController: controller).flatMap { values[$0] } }
+        return ([74, 71, 76, 77].map(value), value(17))
+    }
+
     // MARK: From the instrument
 
     /// Takes bytes the instrument sent to the virtual port.
@@ -308,6 +368,8 @@ public struct ArturiaRotoDriver: Sendable {
                 output.toDevice += instrumentText(fields)
             case .controlText(let text)?:
                 output.toDevice += controlText(text, now: now)
+            case .light(let item, _)? where (31...33).contains(item):
+                hostIsAnalogLab = true
             default:
                 break
             }
@@ -345,27 +407,19 @@ public struct ArturiaRotoDriver: Sendable {
             // The asterisk before the name has been seen on a preset just loaded; what it means
             // is not known (docs/ARTURIA.md, section 3).
             let name = preset.hasPrefix("*") ? String(preset.dropFirst()) : preset
-            if let previous = presetName, previous != name,
-               !Self.fixedNameInstruments.contains(instrumentName ?? "") { messages += forgetNames() }
+            let kind = fields.first(where: { $0.tag == 3 })?.text
+            if let previous = presetName, previous != name || presetKind != kind {
+                let before = shownNames
+                presetLabels = [:]
+                if !Self.fixedNameInstruments.contains(instrumentName ?? "") {
+                    names = [:]
+                    instrumentText = [:]
+                }
+                messages += renames(since: before)
+            }
             presetName = name
+            presetKind = kind
             if isInPluginMode { messages += trackName(onlyIfChanged: true) }
-        }
-        return messages
-    }
-
-    /// Drops the names and value texts the instrument sent, since a new preset can label its
-    /// controls differently (Analog Lab V does: docs/ARTURIA.md, test 4), and renames the knobs
-    /// of the page that showed one. A preset whose name is the same as the last one's is taken
-    /// for the same preset.
-    private mutating func forgetNames() -> [ArturiaRotoDeviceMessage] {
-        let named = names
-        names = [:]
-        instrumentText = [:]
-        guard isInPluginMode else { return [] }
-        var messages: [ArturiaRotoDeviceMessage] = []
-        for knob in 0..<8 {
-            guard let control = control(knob), named[control.item] != nil else { continue }
-            messages.append(renamed(knob, control))
         }
         return messages
     }
@@ -376,8 +430,10 @@ public struct ArturiaRotoDriver: Sendable {
         instrumentSendsText = true
         guard let item = profile.item(forController: text.controller) else { return [] }
         let value = min(max(text.value, 0), 127)
-        let nameChanged = !text.name.isEmpty && names[item] != text.name
+        // Whether the name shown changes: a name that is only the default changes nothing.
+        let shownBefore = knob(forItem: item).flatMap { control($0) }.map(shownName)
         if !text.name.isEmpty { names[item] = text.name }
+        let nameChanged = knob(forItem: item).flatMap { control($0) }.map(shownName) != shownBefore
         if !text.valueText.isEmpty { instrumentText[item] = (value, text.valueText) }
         if values[item] != value {
             if isInPluginMode, let knob = knob(forItem: item), let control = control(knob),

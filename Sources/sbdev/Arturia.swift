@@ -12,6 +12,7 @@ import MIDITransport
 
 let arturiaUsage = """
     Usage: sbdev arturia [--port NAME] [--wait] [--device NAME | --in NAME --out NAME] [--gap MS]
+                         [--no-files] [--trust-files] [--library PATH]
         Connects to the Roto-Control, runs the handshake as type 02, and publishes a virtual
         MIDI source and destination named NAME (--port; default "KeyLab mkII 61"), the name
         of a controller an Arturia instrument reports its values to. NAME must be one the
@@ -28,8 +29,18 @@ let arturiaUsage = """
         Under the KeyLab mkII's name, the instrument answers a knob turned on the Roto-Control
         with the control's name and its value in words. The knob then shows that name (Analog
         Lab V: the preset's own label) until the preset changes, and the instrument's value
-        text in place of a percentage. Names come only from turning the knobs: no instrument
-        has been seen to send them otherwise.
+        text in place of a percentage. No instrument has been seen to send the names
+        otherwise.
+
+        Names before a knob is turned are read (never written) from the instrument's own files
+        under /Library/Arturia (--library PATH for another place; --no-files to read none):
+        knobs 5–8 and the volume from its factory MIDI assignments and parameter names, and
+        knobs 1–4 from the loaded preset's file, which holds the preset's labels for the four
+        macros. The preset is found by its name, its type, and its values as the instrument
+        sends them; where presets of one name differ in their labels and those don't settle it,
+        the knobs stay "Macro 1" to "Macro 4". Files are read only for Pigments, the one
+        instrument they have been checked for (--trust-files reads them for any), and not for
+        presets in Analog Lab V, which sends its own labels.
 
         To try it:
           1. Quit Performance Bridge and every other sbdev tool, and every Arturia app.
@@ -69,6 +80,9 @@ struct ArturiaOptions {
     var outName = "Roto"
     var portName = "KeyLab mkII 61"
     var wait = false
+    var readsFiles = true
+    var trustsFiles = false
+    var library = "/Library/Arturia"
     var gapMilliseconds = 5
 }
 
@@ -83,6 +97,9 @@ func parseArturiaOptions(_ arguments: ArraySlice<String>) -> ArturiaOptions {
         switch argument {
         case "--port": options.portName = value(argument)
         case "--wait": options.wait = true
+        case "--no-files": options.readsFiles = false
+        case "--trust-files": options.trustsFiles = true
+        case "--library": options.library = value(argument)
         case "--device": let name = value(argument); options.inName = name; options.outName = name
         case "--in": options.inName = value(argument)
         case "--out": options.outName = value(argument)
@@ -127,10 +144,15 @@ final class ArturiaSession: @unchecked Sendable {
     private var controls = RotoControlDecoder()
     private var assembler = ArturiaSysExAssembler()
     private var device: MIDIConnection?
+    private let library: ArturiaLibrary?
+    /// The instrument and the preset the files were last read for.
+    private var namedInstrument: String?
+    private var labeledPreset: [String?] = []
     private var port: VirtualMIDIPort?
 
     init(options: ArturiaOptions) {
         self.options = options
+        library = options.readsFiles ? ArturiaLibrary(root: options.library, trustsUnchecked: options.trustsFiles) : nil
         driver = ArturiaRotoDriver(profile: ArturiaKeyLabProfile.forPortName(options.portName) ?? .keyLabMkII,
                                    waitsForControlMapped: options.wait)
     }
@@ -190,6 +212,39 @@ final class ArturiaSession: @unchecked Sendable {
             }
         }
         carryOut(driver.fromInstrument(bytes, now: now(arrived)))
+        readFiles()
+    }
+
+    /// Reads the instrument's files when its text names a new instrument or a new preset, and
+    /// gives the driver what they say. Called with the lock held.
+    private func readFiles() {
+        guard let library, let instrument = driver.instrumentName else { return }
+        if driver.hostIsAnalogLab {
+            // Analog Lab V sends its own labels; what its presets' files say of them is unchecked.
+            if namedInstrument != nil {
+                namedInstrument = nil
+                labeledPreset = []
+                carryOut(driver.setParameterNames([:]))
+                carryOut(driver.setPresetLabels(nil))
+            }
+            return
+        }
+        if instrument != namedInstrument {
+            namedInstrument = instrument
+            let names = library.parameterNames(instrument: instrument)
+            log("   files: \(names.isEmpty ? "no parameter names read" : "parameter names for control changes \(names.keys.sorted().map(String.init).joined(separator: ", "))") (\(instrument))")
+            carryOut(driver.setParameterNames(names))
+        }
+        guard let preset = driver.presetName else { return }
+        let key = [instrument, preset, driver.presetKind]
+        guard key != labeledPreset else { return }
+        labeledPreset = key
+        let values = driver.presetValues
+        let found = library.macroLabels(instrument: instrument, preset: preset, kind: driver.presetKind ?? "",
+                                        macroValues: values.macros, volume: values.volume)
+        let words = found.labels.map { "macro labels " + $0.map { $0 ?? "-" }.joined(separator: ", ") } ?? "no macro labels"
+        log("   files: \(words), from \(found.read) preset file\(found.read == 1 ? "" : "s") named like \"\(preset)\"")
+        carryOut(driver.setPresetLabels(found.labels))
     }
 
     private func fromDevice(_ bytes: [UInt8]) {
