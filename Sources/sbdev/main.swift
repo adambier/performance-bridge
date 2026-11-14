@@ -10,6 +10,8 @@
 //   sbdev curve --table               print the curve in steps of 1 dB
 //   sbdev roto ports | sbdev roto [options]
 //                                     list MIDI ports; talk to a Roto-Control (Roto.swift)
+//   sbdev relay [options]             relay between a Roto-Control and Bitwig Studio's integration
+//                                     through a virtual port, a prototype (Relay.swift)
 //   sbdev bridge [options]            run SurfaceCore and the Roto-Control driver between TotalMix FX
 //                                     and a Roto-Control, as the app will (Bridge.swift)
 //   sbdev lcxl ports | sbdev lcxl [options]
@@ -45,6 +47,7 @@ let usage = """
       sbdev midi <port name>    prints what a MIDI device sends (e.g., an ARC USB's keys)
       sbdev vport <port name>   publishes virtual MIDI ports and prints what programs send to them
       sbdev roto [options]      (sbdev roto --help for the options)
+      sbdev relay [options]     relays between a Roto-Control and Bitwig Studio (sbdev relay --help)
       sbdev bridge [options]    (sbdev bridge --help for the options)
       sbdev lcxl [options]      talks to a Launch Control XL 3 (sbdev lcxl --help)
       sbdev lcbridge [options]  TotalMix FX and a Launch Control, as the app will (sbdev lcbridge --help)
@@ -309,6 +312,7 @@ case "roto": roto(arguments.dropFirst())
 case "bridge": bridge(arguments.dropFirst())
 case "midi": midiMonitor(arguments.dropFirst())
 case "vport": virtualPort(arguments.dropFirst())
+case "relay": relay(arguments.dropFirst())
 case "lcxl": launchControl(arguments.dropFirst())
 case "lcbridge": launchBridge(arguments.dropFirst())
 case "e16": e16(arguments.dropFirst())

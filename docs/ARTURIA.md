@@ -8,10 +8,11 @@ library holds the message formats, and `sbdev vport` is the probe. It is written
 own words, and nothing from Arturia's files is copied here. This project is not affiliated with or
 endorsed by Arturia.
 
-**The short answer.** Yes, within limits. An instrument that finds a MIDI port named like one of
-Arturia's first KeyLab keyboards reports parameter changes to it as they happen and takes plain
-control changes from it.[^test-1] The limits: nine useful controls an instrument, 7-bit values, no
-value text, and no way yet known to ask for the values on connecting (sections 3 and 5).
+**The short answer.** Probably, within limits. In one test, Pigments, finding a MIDI port named
+like one of Arturia's first KeyLab keyboards, reported changes to Macro 1 to it as they happened
+and took a plain control change from it.[^test-1] Other instruments share the profile file but
+are untested. The limits: nine useful controls an instrument, 7-bit values, no value text, and no
+way yet known to ask for the values on connecting (sections 3 and 5).
 
 **How sure each statement is.** A plain statement describes what was found. A statement that rests
 on a source has a footnote: a test with the instrument running, described in section 6, or a
@@ -53,8 +54,8 @@ headers.[^code]
   exact. Only "KeyLab 61" has been tried.
 - Pigments took a virtual port named "KeyLab 61" for that controller as soon as the port was
   turned on under MIDI Devices in its audio and MIDI settings window (reached from the main menu
-  at the top left of Pigments' window; the labels were not recorded), and not before: with the
-  port published but not turned on there, it sent nothing.[^test-1]
+  at the top left of Pigments' window; the labels were not recorded) (seen); the log holds
+  nothing before then.[^test-1]
 - It then showed "KeyLab" as both its MIDI Controller and its MIDI Config, without being
   told to (seen by Adam).[^test-1] Its saved controller before the test was "KeyLab mk3"[^files];
   whether the change is saved is not known.
@@ -66,8 +67,8 @@ headers.[^code]
 
 ## 3. From the instrument to the controller
 
-Every message is SysEx with Arturia's manufacturer ID, `F0 00 20 6B … F7`. In the "KeyLab"
-profile's format the next two bytes are `7F 42`.
+Every message is SysEx with Arturia's manufacturer ID, `F0 00 20 6B … F7`.[^test-1][^code] In
+the "KeyLab" profile's format the next two bytes are `7F 42`.
 
 | Message | Bytes after `F0 00 20 6B 7F 42` | Evidence |
 |---|---|---|
@@ -80,12 +81,13 @@ profile's format the next two bytes are `7F 42`.
 `<p>` was `00` in every message seen.[^test-1]
 
 - **Values.** `value` is 0–127 and `item` is the controller's number for the control (section 4).
-  Pigments sent one for each change to Macro 1 made in its own window: 76 messages over two drags,
-  a median of 17 ms apart, covering 0 to 127.[^test-1]
+  Pigments sent value messages while Macro 1 was dragged in its own window (seen): 76 messages
+  over two drags, a median of 17 ms apart, covering 0 to 127.[^test-1]
 - **Preset changes.** Loading the next preset sent eight values within 10 ms, then the text
   message.[^test-1] The eight items are the nine controls Pigments' "KeyLab" configuration
-  assigns, less item 1, whose value (0) was the one last reported.[^files] The inference is that a
-  preset change reports each assigned control whose value differs from the last one reported.
+  assigns, less item 1, whose value (0) was the one last reported.[^files] One inference,
+  untested: a preset change reports only the controls whose values changed. Item 1's value in the new preset
+  was not recorded and items 2–9 had not been reported before, so the burst fits other rules too.
 - **No echo.** A control change sent to Pigments moved the control and drew no message back in
   the 7.9 s before the next change made in the window.[^test-1]
 - **Text.** The fields seen were tag 1 with the instrument's name ("Pigments"), tag 2 with the
@@ -98,9 +100,10 @@ profile's format the next two bytes are `7F 42`.
   connecting[^files], but when the port was turned on with Pigments already running, only the
   text came.[^test-1] Whether the values come when an instrument starts with the port already
   turned on is untested.
-- **Resolution.** The value message carries 7 bits. Nine times in the second drag, a message
-  repeated the value before it[^test-1]; the inference is that the parameter moved by less than
-  one step in 127, so it is finer inside the instrument. The code has a 14-bit value message, but
+- **Resolution.** The value message carries 7 bits. Ten times (once in the first drag, nine in
+  the second) a message repeated the value before it[^test-1], several just after a pause. The
+  inference, unconfirmed, is that the parameter moved by less than one step in 127; a message for
+  each movement of the mouse would look the same. The code has a 14-bit value message, but
   no profile Arturia installs asks for it.[^files][^code]
 
 ## 4. From the controller to the instrument
@@ -160,6 +163,8 @@ profile's format the next two bytes are `7F 42`.
 
 Run with `sbdev vport <port name>` (macOS), which publishes a virtual MIDI source and destination
 under that name and prints every message sent to the destination with the time since starting.
+The times are when `sbdev` received each message. The version used for test 1 did not yet print
+decoded lines.
 
 ### Test 1 (2026-11-13): Pigments and a virtual "KeyLab 61"
 
@@ -171,11 +176,12 @@ own KeyLab 61 mk3 goes by another port name; whether it was plugged in was not r
 **Findings:**
 
 - **Before the port was turned on.** The ports were published at 0 s and Pigments opened after
-  that. Nothing arrived until 77 s.
-- **Turning the port on** (the audio and MIDI settings window, MIDI Devices, "KeyLab 61"): the text message at
+  that (seen). Nothing arrived until 77 s.
+- **Turning the port on** (seen: the audio and MIDI settings window, MIDI Devices, "KeyLab
+  61"): the text message at
   77.145 s and again at 77.163 s, with "Pigments", "*Hang Me Some Me", "Bells", and an empty
   fourth field. No value message followed.
-- **A drag of Macro 1 with the mouse**, up and down: 41 value messages for item 1 in 1.0 s
+- **A drag of Macro 1 with the mouse** (seen), up and down: 41 value messages for item 1 in 1.0 s
   (117.886–118.884 s), from 1 up to 127 and down to 0, a median of 17 ms apart, with one pause of
   0.35 s at the top.
 - **The next preset** (the arrow by the preset's name): eight value messages in 10 ms
@@ -183,9 +189,10 @@ own KeyLab 61 mk3 goes by another port name; whether it was plugged in was not r
   0, 127, 0, 127, and 0; then the text message at 230.500 s and 230.501 s, with "Pigments",
   "*Welcome", and "Template". Item 1, last reported as 0, was not among them.
 - **A control change in** (`cc 1 74 100`, sent at 264.575 s): Macro 1 jumped to about three
-  quarters (seen). Nothing arrived until Adam dragged the knob himself, 7.9 s later.
+  quarters (seen). Nothing arrived for 7.9 s, until Adam dragged the knob himself (seen).
 - **That drag:** 35 value messages for item 1 (272.471–274.030 s), the first with 102, between 102
-  and 127; nine of them repeated the value before.
+  and 127; nine of them repeated the value before. The first drag has one such repeat, of 127
+  on either side of its pause.
 - **Every value message** was 12 bytes, with `00 00` between `7F 42 02` and the item. The log
   holds no other kind of message than these two.
 - **Afterward** (seen): Pigments' MIDI tab showed "KeyLab" for both MIDI Controller and MIDI

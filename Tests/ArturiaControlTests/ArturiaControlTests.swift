@@ -1,7 +1,8 @@
 import XCTest
 @testable import ArturiaControl
 
-/// The messages are the ones Pigments sent in test 1 of docs/ARTURIA.md.
+/// The value and text messages are ones Pigments sent in test 1 of docs/ARTURIA.md; the others
+/// are made up.
 final class ArturiaKeyLabTests: XCTestCase {
     private func bytes(_ hex: String) -> [UInt8] {
         hex.split(separator: " ").map { UInt8($0, radix: 16)! }

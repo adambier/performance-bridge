@@ -48,6 +48,20 @@ let rotoCommandHelp = """
       ctl K NAME        SET PLUGIN CONTROL DETAILS: name knob K (1–64)
       ctlsw K NAME      the same for switch K
       unmap K           UNMAP CONTROL knob K;  unmapsw K for switch K
+    A macro plugin (test R1; the sequence is from a reading of Melbourne Instruments' Bitwig
+    integration and is untested on the device):
+      macro [PAGES]     replace the plugin list with one macro plugin, "Macro Test", with PAGES
+                        macro pages (default 1), and send NUM PLUGINS, FIRST PLUGIN, PLUGIN
+                        DETAILS, PLUGIN DETAILS END, DAW SELECT PLUGIN, then LEARN PARAM with
+                        the macro flag for macros 1–8 and the eight knob positions, unasked.
+                        Put the device in PLUGIN mode first. Page 2 has eight other names.
+      macro [PAGES] --wait
+                        the same up to DAW SELECT PLUGIN; LEARN PARAM is then sent only in
+                        answer to CONTROL MAPPED
+      macrosend         send the eight LEARN PARAM messages and knob positions again
+      macroname N TEXT  SET MAPPED CONTROL NAME: rename macro N (1–8) of the current page
+      macropos N VALUE  LEARN PARAM for macro N with a new position (0 to 1), and move its knob
+      macro off         back to the stand-in plugins
       hex BYTES         send raw bytes, e.g. hex F0 00 22 03 02 0A 0D F7
       restart           start the handshake again (DAW STARTED)
       quit
@@ -184,11 +198,13 @@ func describe(_ message: RotoOutgoing) -> String {
     case .meterThresholds(let yellow, let red): return "SET MIX VU METER THRESHOLDS \(yellow) \(red)"
     case .pluginCount(let count): return "NUM PLUGINS \(count)"
     case .firstPlugin(let first): return "FIRST PLUGIN \(first)"
-    case .pluginDetails(let details): return "PLUGIN DETAILS \(details.index) \"\(details.name)\""
+    case .pluginDetails(let details):
+        return "PLUGIN DETAILS \(details.index) \"\(details.name)\"" + (details.type == .macro ? ", macro, \(details.macroPages) pages" : "")
     case .pluginDetailsEnd: return "PLUGIN DETAILS END"
-    case .dawSelectPlugin(let index, _, let force): return "DAW SELECT PLUGIN \(index)\(force ? " (forced)" : "")"
+    case .dawSelectPlugin(let index, let page, let force): return "DAW SELECT PLUGIN \(index), macro page \(page)\(force ? " (forced)" : "")"
     case .learnParameter(let details):
         var text = "LEARN PARAM \(details.index) \"\(details.name)\" at \(details.position)"
+        if details.isMacro { text += ", macro" }
         if details.centerIndent { text += ", center detent" }
         if details.steps > 0 { text += ", \(details.steps) steps" }
         return text
@@ -221,6 +237,8 @@ final class RotoSession: @unchecked Sendable {
     private var pendingLearn: (plugin: Int, parameter: Int)?
     /// The parameter each control of the current plugin page is mapped to, by kind and control.
     private var mappings: [String: Int] = [:]
+    /// The macro plugin of the `macro` command, while it replaces the stand-in plugins.
+    private var macro: MacroTest?
 
     init(options: RotoOptions) {
         self.options = options
@@ -339,6 +357,10 @@ final class RotoSession: @unchecked Sendable {
     private func key(_ kind: RotoControlKind, _ control: Int) -> String { "\(kind) \(control)" }
 
     private func reactInPluginMode(to message: RotoIncoming) {
+        if macro != nil {
+            reactInMacroMode(to: message)
+            return
+        }
         switch message {
         case .pluginMode:
             inPluginMode = true
@@ -377,6 +399,70 @@ final class RotoSession: @unchecked Sendable {
         }
     }
 
+    // MARK: The macro plugin (test R1)
+
+    /// What the `macro` command's plugin does with a message from the Roto-Control. Every step
+    /// here follows a reading of Bitwig's integration, or is a guess where the comment says so.
+    private func reactInMacroMode(to message: RotoIncoming) {
+        guard var test = macro else { return }
+        switch message {
+        case .pluginMode:
+            inPluginMode = true
+            sendMacroPlugin()
+        case .allTracksMode, .singleTrackMode, .trackSet:
+            inPluginMode = false
+        case .setFirstPlugin(let first):
+            // A guess: one plugin has one page, so the list is sent again only for page 0.
+            if first == 0 { sendMacroPlugin() }
+        case .selectPlugin(let index):
+            guard index == 0 else { log("   only plugin 1 exists"); break }
+            // A guess: the device selected the plugin itself, so only the parameters are sent.
+            if !test.wait { sendMacroParameters() }
+        case .controlMapped(let mapping):
+            // The device asks for a mapped control's details; a macro is found by its index (1–8),
+            // as Bitwig's integration finds it.
+            guard (1...8).contains(mapping.parameterIndex) else {
+                log("   not a macro index (1–8); no answer sent"); break
+            }
+            if !mapping.isMacro { log("   the macro flag is off; answering as for a macro all the same") }
+            if mapping.parameterHash != RotoHash.macroParameter(mapping.parameterIndex) {
+                log("   the hash is not that of \"Macro \(mapping.parameterIndex)\"")
+            }
+            send([.learnParameter(test.parameter(mapping.parameterIndex))])
+        case .macroPage(let page):
+            test.page = page
+            macro = test
+            log("   macro page \(page + 1) of \(test.pages)" + (page >= test.names.count ? " (past the last page; showing the last)" : ""))
+            // A guess: Bitwig's integration changes its own page and then sends whatever changed
+            // (names and positions). Here the whole page is sent again, unless waiting.
+            if !test.wait { sendMacroParameters() }
+        default:
+            break
+        }
+    }
+
+    /// Steps 1–3 of the macro sequence: NUM PLUGINS, FIRST PLUGIN, PLUGIN DETAILS, PLUGIN DETAILS
+    /// END, and DAW SELECT PLUGIN; then, unless waiting, the parameters. Bitwig's integration sets
+    /// DAW SELECT PLUGIN's force byte only while its plugin lock is on, so it is off here.
+    private func sendMacroPlugin() {
+        guard let test = macro else { return }
+        send([.pluginCount(1), .firstPlugin(0), .pluginDetails(test.details), .pluginDetailsEnd,
+              .dawSelectPlugin(index: 0, macroPage: test.pageIndex, force: false)])
+        if !test.wait { sendMacroParameters() }
+    }
+
+    /// Steps 4 and 5: LEARN PARAM with the macro flag for macros 1–8, then the eight knob positions.
+    private func sendMacroParameters() {
+        guard let test = macro else { return }
+        send((1...8).map { .learnParameter(test.parameter($0)) })
+        for knob in 0..<8 { sendMacroKnob(knob, position: test.positions[test.pageIndex][knob]) }
+    }
+
+    private func sendMacroKnob(_ knob: Int, position: Int) {
+        knobCommandTimes[knob] = Date()
+        sendBytes(RotoFeedback.knob(knob, position: position), label: "knob \(knob + 1) to \(position)")
+    }
+
     /// NUM PLUGINS (optionally), FIRST PLUGIN, and PLUGIN DETAILS for the plugins of the current page.
     private func sendPluginPage(countFirst: Bool) {
         var messages: [RotoOutgoing] = countFirst ? [.pluginCount(plugins.count)] : []
@@ -390,6 +476,13 @@ final class RotoSession: @unchecked Sendable {
 
     /// The parameter a knob or switch event changed, updating its position. Called with the lock held.
     private func pluginNote(for event: RotoControlEvent) -> String? {
+        if var test = macro {
+            // An inference from Bitwig's integration: knob K is macro K of the current page.
+            guard case .knob(let control, let position) = event else { return nil }
+            test.positions[test.pageIndex][control] = position
+            macro = test
+            return "\(MacroTest.pluginName) › \(test.names[test.pageIndex][control]) (macro \(control + 1), page \(test.pageIndex + 1))"
+        }
         switch event {
         case .knob(let control, let position):
             guard let index = mappings[key(.knob, control)],
@@ -501,7 +594,61 @@ final class RotoSession: @unchecked Sendable {
             send([.meterThresholds(yellow: yellow, red: red)])
         case "refresh":
             send([.refreshMixMode])
+        case "macro":
+            if words.count > 1, words[1].lowercased() == "off" {
+                macro = nil
+                mappings.removeAll()
+                pendingLearn = nil
+                firstPlugin = 0
+                selectedPlugin = 0
+                log("back to the stand-in plugins")
+                if inPluginMode {
+                    sendPluginPage(countFirst: true)
+                    send([.dawSelectPlugin(index: selectedPlugin, macroPage: 0, force: false)])
+                }
+                break
+            }
+            let arguments = words.dropFirst().filter { $0 != "--wait" }
+            let wait = words.contains("--wait")
+            var pages = 1
+            if let text = arguments.first {
+                guard arguments.count == 1, let count = Int(text), (1...127).contains(count) else {
+                    log("macro [PAGES] [--wait]: PAGES from 1 to 127; or macro off"); break
+                }
+                pages = count
+            }
+            macro = MacroTest(pages: pages, wait: wait)
+            mappings.removeAll()
+            pendingLearn = nil
+            if !inPluginMode { log("the device has not reported PLUGIN mode; sending all the same") }
+            sendMacroPlugin()
+        case "macrosend":
+            guard macro != nil else { log("macrosend: type `macro` first"); break }
+            sendMacroParameters()
+        case "macroname":
+            guard var test = macro else { log("macroname: type `macro` first"); break }
+            guard let knob = index(1), words.count > 2 else { log("macroname N TEXT: N from 1 to 8"); break }
+            test.names[test.pageIndex][knob] = rest(from: 2)
+            macro = test
+            send([.mappedControlName(parameterIndex: knob + 1, hash: .macroParameter(knob + 1), name: rest(from: 2))])
+        case "macropos":
+            guard var test = macro else { log("macropos: type `macro` first"); break }
+            guard let knob = index(1), words.count > 2, let fraction = Double(words[2]), (0...1).contains(fraction) else {
+                log("macropos N VALUE: N from 1 to 8, VALUE from 0 to 1"); break
+            }
+            let position = RotoFeedback.position(fraction)
+            test.positions[test.pageIndex][knob] = position
+            macro = test
+            send([.learnParameter(test.parameter(knob + 1))])
+            sendMacroKnob(knob, position: position)
         case "plugins":
+            if let test = macro {
+                print("  1. \(MacroTest.pluginName)   (macro plugin, \(test.pages) pages, on page \(test.pageIndex + 1)\(test.wait ? ", waiting for CONTROL MAPPED" : ""))")
+                for knob in 0..<8 {
+                    print("       \(knob + 1). \(test.names[test.pageIndex][knob]) at \(test.positions[test.pageIndex][knob])")
+                }
+                break
+            }
             for (number, plugin) in plugins.enumerated() {
                 print("  \(number + 1). \(plugin.name)\(number == selectedPlugin ? "   (selected)" : "")")
             }
@@ -512,12 +659,17 @@ final class RotoSession: @unchecked Sendable {
                 print(text)
             }
         case "select":
+            if let test = macro {
+                send([.dawSelectPlugin(index: 0, macroPage: test.pageIndex, force: true)])
+                break
+            }
             guard words.count > 1, let number = Int(words[1]), (1...plugins.count).contains(number) else { log("select P: P from 1 to \(plugins.count)"); break }
             selectedPlugin = number - 1
             mappings.removeAll()
             pendingLearn = nil
             send([.dawSelectPlugin(index: selectedPlugin, macroPage: 0, force: true)])
         case "learn":
+            guard macro == nil else { log("learn: not with the macro plugin; use macrosend or macropos"); break }
             let parameters = plugins[selectedPlugin].parameters
             guard words.count > 1, let number = Int(words[1]), (1...parameters.count).contains(number) else {
                 log("learn N: N from 1 to \(parameters.count) (`plugins` lists them)"); break

@@ -24,12 +24,13 @@ public struct ArturiaTextField: Equatable, Sendable {
 /// for the first KeyLab keyboards (`F0 00 20 6B 7F 42 …`).
 public enum ArturiaInstrumentMessage: Equatable, Sendable {
     /// A control's value, 0–127: `7F 42 02 <p> 00 <item> <value>`. `item` is the controller's
-    /// number for the control (`ArturiaKeyLabProfile`). Seen whenever the parameter changed in the
-    /// instrument's own window, and for each changed parameter when a preset loaded.
+    /// number for the control (`ArturiaKeyLabProfile`). Seen (test 1) while Macro 1 was dragged in
+    /// the instrument's window, and for eight items when a preset loaded; the inference is that a
+    /// preset load reports the items whose values changed.
     case value(item: Int, value: Int)
     /// The display's text: `7F 42 04 <p> 60`, then fields of a tag byte, ASCII text, and a 0 byte.
-    /// Seen when the instrument first found the controller and after each preset change, twice
-    /// each time.
+    /// Seen twice when the instrument first found the controller and twice after the one preset
+    /// change tried.
     case text([ArturiaTextField])
     /// Any other Arturia SysEx message, whole, from `F0` to `F7`.
     case other([UInt8])
@@ -103,15 +104,16 @@ public struct ArturiaSysExAssembler: Sendable {
 /// "KeyLab 61"), then reports values for the controls below and takes plain control changes for
 /// them.
 public enum ArturiaKeyLabProfile {
-    /// The port names the profile lists, which an instrument matches exactly (read from the
-    /// profile file; only "KeyLab 61" has been tried).
+    /// The port names the profile lists (read from the profile file; inferred, not tested, to
+    /// need an exact match; only "KeyLab 61" has been tried).
     public static let portNames = ["KeyLab 25", "KeyLab 49", "KeyLab 61", "KeyLab 88"]
 
     /// The profile's controls: the control change number the controller sends, and the item
     /// number the instrument reports the value under (read from the profile file; 74 and item 1
     /// have been seen to be a pair). In the "KeyLab" MIDI configuration of nearly every
     /// instrument, 74, 71, 76, and 77 are macros 1–4, 17 is the master volume, 93, 18, 19, and 16
-    /// are four parameters of the instrument's own, and 7 and 91 are mostly unassigned.
+    /// are four parameters of the instrument's own, 7 is unassigned, and 91 is assigned in two
+    /// instruments.
     public static let controls: [(controller: Int, item: Int)] = [
         (7, 48), (74, 1), (71, 2), (76, 3), (77, 4), (93, 9), (18, 5), (19, 6), (16, 7), (17, 8), (91, 10),
     ]

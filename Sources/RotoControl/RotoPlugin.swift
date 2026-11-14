@@ -24,6 +24,30 @@ public struct RotoHash: Hashable, Sendable {
         return RotoHash(bytes: (0..<min(max(length, 0), 9)).map { UInt8((value >> (7 * UInt64($0))) & 0x7F) })
     }
 
+    /// The first `length` bytes (at most 20) of the SHA-1 digest of a text's UTF-8 bytes, each
+    /// masked to 7 bits. Melbourne Instruments' Ableton and Bitwig integrations derive their
+    /// hashes this way, per their code (not tested on the device). Use it where a hash has to be
+    /// the one those integrations send; `of(_:length:)` is unchanged and remains this project's
+    /// own.
+    public static func sha1(of text: String, length: Int) -> RotoHash {
+        RotoHash(bytes: Array(RotoSHA1.digest(text).prefix(min(max(length, 0), 20))))
+    }
+
+    /// The text whose SHA-1 names every macro plugin in Melbourne Instruments' Ableton and Bitwig
+    /// integrations, per their code.
+    public static let macroPluginHashText = "MIMacroDefaultDevice"
+
+    /// The 8-byte plugin hash Bitwig's integration sends for every macro plugin, per its code:
+    /// `sha1(of:length:)` of `macroPluginHashText`. Whether the Roto-Control treats this hash
+    /// specially is not known.
+    public static var macroPlugin: RotoHash { sha1(of: macroPluginHashText, length: 8) }
+
+    /// The 6-byte parameter hash Bitwig's integration sends for macro `number` (1–8), per its
+    /// code: `sha1(of:length:)` of "Macro 1" … "Macro 8".
+    public static func macroParameter(_ number: Int) -> RotoHash {
+        sha1(of: "Macro \(number)", length: 6)
+    }
+
     /// The hash padded with 0 bytes, or cut, to exactly `length` bytes.
     func field(_ length: Int) -> [UInt8] {
         Array(bytes.prefix(length)) + [UInt8](repeating: 0, count: max(length - bytes.count, 0))
@@ -63,6 +87,12 @@ public struct RotoPluginDetails: Equatable, Sendable {
         self.name = name
         self.type = type
         self.macroPages = macroPages
+    }
+
+    /// A macro plugin as Bitwig's integration describes one, per its code (not tested on the
+    /// device): type `.macro`, the hash `RotoHash.macroPlugin`, and a number of macro pages.
+    public static func macro(index: Int, name: String, pages: Int, enabled: Bool = true) -> RotoPluginDetails {
+        RotoPluginDetails(index: index, hash: .macroPlugin, enabled: enabled, name: name, type: .macro, macroPages: pages)
     }
 
     var bytes: [UInt8] {
@@ -116,6 +146,15 @@ public struct RotoParameterDetails: Equatable, Sendable {
         guard steps >= 2 else { return 0 }
         let count = min(steps, maximumSteps)
         return min((Int(value & 0x7F) * (count - 1) + 63) / 127, count - 1)
+    }
+
+    /// A macro plugin's parameter as Bitwig's integration sends it in LEARN PARAM, per its code
+    /// (not tested on the device): index `number` (1–8), the macro flag, and the hash of
+    /// "Macro `number`" (`RotoHash.macroParameter`), with the name to show and a position.
+    public static func macro(_ number: Int, name: String, position: Int, centerIndent: Bool = false,
+                             steps: Int = 0, stepNames: [String] = []) -> RotoParameterDetails {
+        RotoParameterDetails(index: number, hash: .macroParameter(number), name: name, position: position,
+                             isMacro: true, centerIndent: centerIndent, steps: steps, stepNames: stepNames)
     }
 
     var bytes: [UInt8] {
