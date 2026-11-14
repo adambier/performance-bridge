@@ -31,7 +31,7 @@ with a real KeyLab.
 | Resolution of reported values | 7 bits (seen) | 7 bits (seen) | 7 bits (seen, test 5) |
 | Previous and next preset | no | controllers 28 and 29 (declared) | no; browse and validate only (declared) |
 | Save, Undo, and Redo | no | no | controllers 53, 54, and 55, with lights (declared) |
-| Chosen by the instrument by itself | Pigments and Analog Lab V (seen) | Analog Lab V; in Pigments, chosen by hand (seen, test 4) | Pigments (seen, test 5) |
+| Chosen by the instrument by itself | Pigments (seen, test 1); Analog Lab V showed it, how it was chosen not recorded (test 3) | Analog Lab V; in Pigments, chosen by hand (seen, test 4) | Pigments (seen, test 5) |
 
 For a controller with its own displays and no KeyLab screen, the mkII's profile is the one to
 imitate: the first KeyLab's sends no names, and the mk3's adds only what belongs to the mk3's
@@ -41,7 +41,8 @@ panel, in a second message format.
 
 The instrument looks through its MIDI ports for a name a profile lists (declared), and the user
 turns the port on in the instrument's Audio MIDI Settings window, under MIDI ports (seen). A port
-that goes away and comes back has been observed to come back turned off (tests 2 and 5). The
+that went away was no longer turned on afterward (test 5), and one that came back the next day
+came back turned off (test 2). The
 instrument's Midi Controller setting has been observed to follow the port by itself, except
 Pigments with the mkII port (test 4); after the port went away, Pigments kept the setting (test 5).
 
@@ -60,7 +61,8 @@ MIDI configuration).
 In Pigments these are Macros 1–4, Filter 1's cutoff and resonance, Filter 2's cutoff and
 resonance, and the master volume, in the table's order (seen in its MIDI tab, test 4; 7 and 91
 are not assigned there). In Analog Lab V they are the preset's first four controls, four more
-(Chorus Mix was the first of them in one preset), and Master (seen, tests 3 and 4).
+(Chorus Mix was the first of them in one preset; seen, test 4), and, by an inference from its
+value, Master.
 
 **Faders.** The instruments' KeyLab configurations also assign nine more control changes, 73, 75,
 79, 72, 80, 81, 82, 83, and 85: in Pigments, the amplitude envelope's attack, decay, sustain, and
@@ -137,7 +139,8 @@ Control changes the instruments' KeyLab configurations assign beyond the knobs a
 
 Analog Lab V adds, as a mkII: its three control tabs on 24, 22, and 23, octave down and up on 26
 and 27, and a request for all current values on 118. As a mk3 it has transpose and octave on 86,
-87, 89, and 90 and no value request listed under that number. Save has not been sent in any test,
+87, 89, and 90; its profile declares the value request, but its configuration lists no control
+change for it. Save has not been sent in any test,
 since it could overwrite a preset.
 
 ## 7. Per-preset labels
