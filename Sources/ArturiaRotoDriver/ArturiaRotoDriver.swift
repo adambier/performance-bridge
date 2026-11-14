@@ -78,8 +78,9 @@ public struct ArturiaRotoControl: Equatable, Sendable {
 ///
 /// Under the KeyLab mkII's profile (the default) the instrument answers a control change with the
 /// control's name and its value in words (`ArturiaControlText`). The driver then shows that name
-/// in place of its own, until the preset changes, and shows the instrument's value text in place
-/// of a percentage. A name is known only once its knob has been turned: no instrument has been
+/// in place of its own, and the instrument's value text in place of a percentage. A name is kept
+/// across presets for an instrument in `fixedNameInstruments`, and dropped at a preset change for
+/// any other, since Analog Lab V names controls by preset. A name is known only once its knob has been turned: no instrument has been
 /// seen to send the names otherwise (docs/ARTURIA.md, tests 4 and 6).
 public struct ArturiaRotoDriver: Sendable {
     /// The pages, by control change number and the name shown until the instrument sends one: the
@@ -95,6 +96,12 @@ public struct ArturiaRotoDriver: Sendable {
     /// showing a percentage instead, once the instrument has sent any (it has been seen to answer
     /// in about 30 ms; test 4).
     public static let textWaitSeconds: TimeInterval = 0.2
+
+    /// The instruments, by the name their text sends in field 1, whose control names are the same in
+    /// every preset: Pigments (test A7: its names are its parameters' fixed names). Analog Lab V
+    /// sends the name of each preset's own instrument there, which is not in the set, so its
+    /// per-preset labels are dropped at each preset change, as are any unknown instrument's.
+    public static let fixedNameInstruments: Set<String> = ["Pigments"]
 
     /// The controller profile the instrument is talking to.
     public let profile: ArturiaKeyLabProfile
@@ -118,6 +125,8 @@ public struct ArturiaRotoDriver: Sendable {
     public private(set) var page = 0
     /// The plugin's name on the device: the instrument's, cut to 12 characters.
     public private(set) var pluginName = ArturiaRotoDriver.defaultPluginName
+    /// The instrument's name as its text last sent it, uncut.
+    private var instrumentName: String?
     /// The preset's name, without its leading asterisk, once the instrument has sent it.
     public private(set) var presetName: String?
 
@@ -325,6 +334,7 @@ public struct ArturiaRotoDriver: Sendable {
     private mutating func instrumentText(_ fields: [ArturiaTextField]) -> [ArturiaRotoDeviceMessage] {
         var messages: [ArturiaRotoDeviceMessage] = []
         if let name = fields.first(where: { $0.tag == 1 })?.text, !name.isEmpty {
+            instrumentName = name
             let cut = String(name.prefix(RotoSysEx.nameFieldLength - 1))
             if cut != pluginName {
                 pluginName = cut
@@ -335,7 +345,8 @@ public struct ArturiaRotoDriver: Sendable {
             // The asterisk before the name has been seen on a preset just loaded; what it means
             // is not known (docs/ARTURIA.md, section 3).
             let name = preset.hasPrefix("*") ? String(preset.dropFirst()) : preset
-            if let previous = presetName, previous != name { messages += forgetNames() }
+            if let previous = presetName, previous != name,
+               !Self.fixedNameInstruments.contains(instrumentName ?? "") { messages += forgetNames() }
             presetName = name
             if isInPluginMode { messages += trackName(onlyIfChanged: true) }
         }
@@ -390,9 +401,9 @@ public struct ArturiaRotoDriver: Sendable {
         return (nameChanged ? [renamed(knob, control)] : []) + valueText(knob, now: now)
     }
 
-    /// SET CURRENT TRACK NAME with the preset's name. The MENU window showed nothing for it in
-    /// PLUGIN mode (seen once: docs/ARTURIA.md, test 2), so this needs another message
-    /// (docs/PLUGIN-MODE-PLAN.md, section 6).
+    /// SET CURRENT TRACK NAME with the preset's name, for the MENU window's bottom line. It showed
+    /// there, cut to 12 characters, in the three runs of docs/ARTURIA.md, test 7, and not in test
+    /// 2, for reasons not known.
     private mutating func trackName(onlyIfChanged: Bool) -> [ArturiaRotoDeviceMessage] {
         guard let name = presetName, !(onlyIfChanged && name == lastTrackNameSent) else { return [] }
         lastTrackNameSent = name

@@ -252,9 +252,10 @@ waiting for CONTROL MAPPED is untested.
 DETAILS ("Polysynth >" with Bitwig as the host; what the ">" marks was not found out), or "--"
 when the selected track has no plugin; its bottom line showed the selected track's name in the
 track's color while Bitwig was the host (seen).[^test-15] With a
-host that sent no DAW SELECT TRACK the bottom line was dark (seen; `docs/ARTURIA.md`, test 2), and
-SET CURRENT TRACK NAME put nothing there. Bitwig sent the track's name both in DAW SELECT TRACK
-and in the track page, so which of the two fills the line is not known (section 8, item 7).
+host that sent no DAW SELECT TRACK, SET CURRENT TRACK NAME's text showed there in three runs
+(seen; `docs/ARTURIA.md`, test 7), cut to 12 characters, but put nothing there in an earlier run
+(test 2), for reasons not known. Bitwig sent the track's name both in DAW SELECT TRACK and in the
+track page, so which of the two filled the line with Bitwig is not known (section 8, item 7).
 
 **What PLUGIN mode lacks.** The meter CCs are listed for MIX mode only, and the per-track screens
 and track paging are MIX-mode features.[^sysex-1.6]
@@ -354,8 +355,8 @@ and step names.
 
 7. **The MENU window's bottom line in PLUGIN mode** (test 15). Which message fills it: DAW SELECT
    TRACK, or the track page's TRACK DETAILS for the selected track? `sbdev roto` can send each
-   by itself in PLUGIN mode. The answer decides how a host with no tracks (e.g., a standalone
-   instrument's driver) can show a second line of text there.
+   by itself in PLUGIN mode. SET CURRENT TRACK NAME has filled it in three runs of four
+   (`docs/ARTURIA.md`, tests 2 and 7); why not in the other is the open part.
 8. **What Bitwig sends for its remote controls** (test 15). The knob names appeared only once
    Show Remote Controls was on in Bitwig Studio. The plugin had been sent as an ordinary one
    (type `00`) when it was added, and what was sent after that was not logged. Whether they came as answers to CONTROL MAPPED

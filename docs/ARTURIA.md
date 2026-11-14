@@ -22,7 +22,10 @@ to ask for the values (sections 3 and 5).
 KeyLab's and adds what the first lacks: when a control is changed from the controller, Analog
 Lab V and Pigments each sent the control's name and its value in words (e.g., "F1 Cutoff" and
 "1448 Hz").[^test-4] Analog Lab V sent the name the preset gives the control; Pigments sent its
-parameter's fixed name ("Macro 1", where its window shows "Timbre"). Everything here is about
+parameter's fixed name ("Macro 1", where its window shows "Timbre"). In test 7 a prototype on
+this profile showed those names and values on a Roto-Control's knobs once each knob had been
+turned.[^test-7] Pigments' fixed names can also be read, before any turn, from two of its own
+files (section 4).[^files-3] Everything here is about
 the standalone apps. Nothing has been tested with the plugins in a DAW, and nothing found here
 should be assumed to hold there (Adam, 2026-11-14).
 
@@ -47,6 +50,10 @@ has not been checked, the text says so in words ("inference", "untested").
     section 6; Pigments standalone, version not read that day.
 [^test-6]: [Test 6](#test-6-2026-11-14-a-virtual-keylab-61-mk3-midi-with-analog-lab-v) (2026-11-14),
     section 6; Analog Lab V standalone, version not read that day.
+[^test-7]: [Test 7](#test-7-2026-11-14-a-roto-control-on-the-keylab-mkiis-profile-through-sbdev-arturia)
+    (2026-11-14), section 6; Analog Lab V and Pigments standalone, versions not read that day.
+[^files-3]: Pigments' `plugin.prefmidi.xml` and `Reference_ParamNames.xml`, in
+    `/Library/Arturia/Pigments/resources/`, read directly on Adam's Mac (read-only) on 2026-11-14.
 [^files-2]: The controller profile files and one preset file, read directly on Adam's Mac
     (read-only) on 2026-11-14: `controllers-common.prefmidi.xml` in Pigments' resources,
     `controllers.prefmidi.xml` in Analog Lab V's, and Pigments' factory preset "Hanging Threads".
@@ -221,6 +228,17 @@ the "KeyLab" profile's format the next two bytes are `7F 42`.
   sends them[^files]; other instruments have the parameter but assign nothing to it.
 - **Finer control.** Every assignment in the installed configurations is a 7-bit control change.
   The code also takes NRPN and RPN, but how one would be assigned was not found.[^files][^code]
+
+**Names from the instrument's own files** (Pigments only, read on 2026-11-14).[^files-3] Its
+MIDI configuration file has a "KeyLab" set tying each control change to a parameter number (93
+to 165, 18 to 166, 19 to 183, 16 to 184, 74 to 1, 17 to 0), and its parameter-name file lists
+each parameter's internal and display names. Counted by position in that list, from 0, those
+numbers are "F1 Cutoff", "F1 Resonance", "F2 Cutoff", "F2 Resonance", "Macro 1", and "Master
+Volume": the names Pigments sent in test 7. That a parameter number is its position in the list
+is an inference from those six. 81 folders under `/Library/Arturia/` hold a parameter-name file,
+which suggests, untested, that the same works for other instruments. Where an instrument keeps
+assignments the user changes by MIDI learn has not been found; the files above hold the factory
+set.
 
 ## 5. Open questions
 
@@ -474,3 +492,47 @@ it. Adam's notes and screenshots are marked "seen".
 
 **Not tested.** A preset change from the controller (control changes 114 and 115); the faders;
 the Save, Undo, Redo, Back, and display button control changes; anything sent in this format.
+
+### Test 7 (2026-11-14): a Roto-Control on the KeyLab mkII's profile, through `sbdev arturia`
+
+**Setup.** Adam's Mac; his Roto-Control (firmware 3.3.0); `sbdev arturia --wait --device
+"Roto-Control"` at commit `f0da505` (run 1), then `e910d19` (runs 2 and 3), publishing "KeyLab mkII
+61", with its output written to a file. Three runs: Analog Lab V (runs 1 and 2), then Pigments
+(run 3), each standalone. The three logs (1,233, 643, and 2,499 lines) are whole and are kept
+outside this repository; the counts below come from a script over them. Adam's notes and
+screenshots are marked "seen".
+
+- **Choosing the controller** (seen). In Analog Lab V, already set to "KeyLab mkII", only the port
+  needed checking. Pigments, last set to "KeyLab mkII" in test 4 by hand, switched to it by itself
+  when the port was checked. Each time the port was published again it came back unchecked, in
+  both apps. After the last run, Pigments showed no port checked and Midi Controller still read
+  "KeyLab mkII".
+- **On connecting**, Analog Lab V sent all nine values (three times) and the text, "Memory" and
+  "*00 SYNTH (Sweep", the preset's name cut to 16 characters.
+- **The MENU window** (seen): "Memory >" over "00 SYNTH (Sw" in run 1, "Prophet-VS >" over "00
+  ZENNY 1" in run 2, and "Pigments >" over "Hanging Thre" in run 3. The bottom line is SET CURRENT
+  TRACK NAME's text, cut to 12 characters on the device. In test 2 the same message showed
+  nothing; what differs between the runs is not known.
+- **Names and value text** (seen). Each knob turned on the Roto-Control was renamed with the
+  instrument's name for the control and then showed the instrument's value text: Analog Lab V's
+  "Brightness" ("0.528" … "0.583"), "Chorus Mix" ("6 %"), and, in the log only, "Phaser Mix"; Pigments' "F1
+  Cutoff", "F1 Resonance", "F2 Cutoff", and "F2 Resonance". The matching controls moved in the
+  instruments' windows, except F2 Resonance in Pigments, which Adam found has no control for the
+  preset's Filter 2 type (HP6); Pigments still took it and named it.
+- **Counts.** 387 control changes went to the instruments; 417 control texts came back (each
+  usually three times, every copy counted). Matched to the control change they answer, the texts came a median of
+  43–54 ms after it (all three copies counted; 90% within about 0.1 s, the slowest 0.3 s).
+- **A preset change** (seen): the names went back to "Macro 1" … "Param 4", the knobs moved, and
+  the MENU window showed the new preset, with both apps. For Pigments, whose names don't change
+  with the preset, that loses names for nothing; Adam chose to keep names across presets for a
+  list of instruments, Pigments first (commit after this test).
+- **Two flaws, fixed between and after runs.** In run 1 a late answer to an earlier step of a knob
+  still being turned was taken for a change made elsewhere, and the knob moved back one step
+  when let go (seen in the log; fixed in `e910d19`, and in run 2 the knob stayed put, seen). In
+  runs 1 and 2 a held-back value text came due while the instrument's text was awaited and
+  showed a percentage for a moment ("47%" between "0.480" and "0.472"; fixed in `3a857b9`, not
+  yet run).
+
+**Not tested.** The first value of a turn before any text has come shows a percentage ("53%",
+"34%"), as designed; values the instrument reports without a turn (a preset change, a mouse drag)
+show percentages too. Any instrument but these two; the plugins.

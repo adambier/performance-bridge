@@ -359,4 +359,15 @@ final class ArturiaRotoDriverTests: XCTestCase {
         XCTAssertEqual(driver.fromInstrument(controlText("Brightness", "0.472", controller: 74, value: 60), now: 1.10).toDevice,
                        [show(0, "0.472")])
     }
+
+    func testPigmentsKeepsItsNamesAcrossPresets() {
+        var driver = driverInPluginMode()
+        _ = driver.fromInstrument(text("Pigments", "*Hanging Threads"), now: 0.5)
+        _ = driver.fromInstrument(controlText("F1 Cutoff", "1448 Hz", controller: 93, value: 80), now: 1)
+        XCTAssertEqual(driver.fromInstrument(text("Pigments", "*Welcome"), now: 2).toDevice, [.message(.currentTrackName("Welcome"))])
+        XCTAssertEqual(driver.name(forItem: 5), "F1 Cutoff")
+        // Analog Lab V's text names the preset's instrument: a change drops the names.
+        _ = driver.fromInstrument(text("Prophet-VS", "*00 ZENNY 1"), now: 4)
+        XCTAssertNil(driver.name(forItem: 5))
+    }
 }

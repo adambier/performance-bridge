@@ -31,7 +31,7 @@ with a real KeyLab.
 | Resolution of reported values | 7 bits (seen) | 7 bits (seen) | 7 bits (seen, tests 5 and 6) |
 | Previous and next preset | no | controllers 28 and 29 (declared) | no; browse and validate only (declared) |
 | Save, Undo, and Redo | no | no | controllers 53, 54, and 55, with lights (declared) |
-| Chosen by the instrument by itself | Pigments (seen, test 1); Analog Lab V showed it, how it was chosen not recorded (test 3) | Analog Lab V; in Pigments, chosen by hand (seen, test 4) | Pigments and Analog Lab V (seen, tests 5 and 6) |
+| Chosen by the instrument by itself | Pigments (seen, test 1); Analog Lab V showed it, how it was chosen not recorded (test 3) | Analog Lab V; Pigments chose it by hand in test 4 and by itself in test 7 (seen) | Pigments and Analog Lab V (seen, tests 5 and 6) |
 
 For a controller with its own displays and no KeyLab screen, the mkII's profile is the one to
 imitate: the first KeyLab's sends no names, and the mk3's adds only what belongs to the mk3's

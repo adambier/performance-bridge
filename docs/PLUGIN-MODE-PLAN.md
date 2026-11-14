@@ -147,9 +147,8 @@ What the first run of the prototype showed (`docs/ARTURIA.md`, test 2), and what
   values instead of jumping (a proposal; it hides the steps and adds no resolution).
 - **The preset's name.** Adam, 2026-11-14: the plugin's name in the MENU window's top line and
   the preset's name in its bottom line. SET CURRENT TRACK NAME, which the prototype sends, put
-  nothing there. With Bitwig as the host the bottom line showed the selected track's name, so the
-  driver should send the preset as a selected track's name, once it is known which message fills
-  the line (`docs/ROTO-CONTROL.md`, section 8, item 7).
+  nothing there in this run, but did in all three runs of test 7 (`docs/ARTURIA.md`), cut to 12
+  characters; why it failed here is not known (`docs/ROTO-CONTROL.md`, section 8, item 7).
 - **Values on connecting** came in this run and not in test 1, so "not knowing a value" above
   still stands until A1 says which is the rule.
 - **Names.** "Param 1" to "Param 4" tell the user nothing; reading the instrument's files for
@@ -195,7 +194,13 @@ Arturia (each a few minutes with `sbdev vport`):
 - **A2.** MiniFreak V, a V Collection instrument, and Analog Lab V in place of Pigments.
 - **A3.** "KeyLab 25" in place of "KeyLab 61".
 - **A7.** `sbdev arturia` on the mkII profile, with a Roto-Control: do names and value text
-  follow each knob, at what rate, and does the text keep up with a turning knob?
+  follow each knob, at what rate, and does the text keep up with a turning knob? **Passed with
+  Analog Lab V and Pigments (`docs/ARTURIA.md`, test 7): names and the instruments' value texts
+  followed each knob turned, answering in about 50 ms; two flaws found and fixed, the second not
+  yet run.**
+- **A9.** Names before any turn, from the instrument's own files (`docs/ARTURIA.md`, section 4):
+  read Pigments' MIDI configuration and parameter-name files and name knobs 5–8 on entering
+  PLUGIN mode; then a V Collection instrument; then where MIDI-learn changes are kept.
 - **A8.** The preset-file lookup for macro labels: a second instrument, a user preset, and two
   presets of one name.
 - **A4.** Assign another parameter to control change 74 by MIDI learn. Does it report as item 1?
