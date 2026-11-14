@@ -39,7 +39,8 @@ let relayUsage = """
         Each line has the time since starting, the direction, the bytes, and the rule:
           device → host, host → device   passed on
           device → local                 left for sbdev's own MIX-mode page and handshake
-          relay → device, relay → host   sent by the relay itself (a replay, or an answer)
+          relay → device, relay → host   sent by the relay itself (a replay, an answer, or
+                                         the mode for a host that has started again)
           local → device                 sent by sbdev's handshake or MIX-mode page
           dropped host, dropped device   sent nowhere
         The stand-in MIX page is minimal: track names and send names only, with no levels,

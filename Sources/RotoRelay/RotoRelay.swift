@@ -103,15 +103,25 @@ public struct RotoRelayOutput: Equatable, Sendable {
 ///
 /// The device's mode is unknown until the device sends one of the messages that tell it, so the
 /// relay starts in MIX mode (or `initialMode`), where the host's messages are dropped.
+///
+/// For the app's version: the local owner of MIX mode never sees SET PLUGIN MODE (`0B 01`), which
+/// goes to the host. So it must read `knobMode`, send the device no knob or meter feedback while
+/// that is `.plugin`, and draw its page again on SET MIX ALL TRACKS MODE (`0C 01`).
 public struct RotoRelay: Sendable {
     /// What the knobs are on. While the transport switches are active this is the mode the knobs
     /// were in when they became active.
     public private(set) var knobMode: RotoRelayKnobMode
     /// Whether the transport switches are active: from REQUEST TRANSPORT STATUS until the next
     /// SET PLUGIN MODE, SET MIX ALL TRACKS MODE, or SET MIX TRACK MODE.
+    ///
+    /// Only those three (`0B 01`, `0C 01`, `0C 02`) end it. If the device leaves its transport
+    /// mode another way, the host's control changes 28–35 would keep passing to the device in MIX
+    /// mode; whether that happens is to be watched in test R4 of docs/PLUGIN-MODE-PLAN.md.
     public private(set) var transportSwitchesActive = false
     /// The device's ROTO FW VERSION message (`0A 0E`), complete, if one is known. The relay keeps
-    /// the last one the device sends; set it to give the relay one from elsewhere.
+    /// the last one the device sends; set it to give the relay one from elsewhere. It answers a
+    /// host's REQUEST ROTO FW VERSION, which Bitwig's integration, as written, never gets to send
+    /// through the relay (see `isSwallowedFromHost`).
     public var firmwareVersionReply: [UInt8]?
 
     private var deviceParser = RotoMIDIParser()
@@ -146,10 +156,20 @@ public struct RotoRelay: Sendable {
     /// Keeps a host message if it is one of those replayed on coming back to PLUGIN mode: NUM
     /// TRACKS, FIRST TRACK, each TRACK DETAILS up to the next TRACK DETAILS END, NUM SEND TRACKS,
     /// SEND TRACK NAMES, and DAW SELECT TRACK. Called in every mode.
+    ///
+    /// NUM TRACKS and FIRST TRACK each start a new list of TRACK DETAILS. Per the integration's
+    /// code, they come before the details, and for a project with no tracks they are followed by
+    /// TRACK DETAILS END alone, after which an older list must not be replayed.
     private mutating func remember(_ bytes: [UInt8], group: UInt8, command: UInt8) {
         switch (group, command) {
-        case (0x0A, 0x04): remembered.trackCount = bytes
-        case (0x0A, 0x05): remembered.firstTrack = bytes
+        case (0x0A, 0x04):
+            remembered.trackCount = bytes
+            remembered.trackDetails = []
+            remembered.trackDetailsClosed = false
+        case (0x0A, 0x05):
+            remembered.firstTrack = bytes
+            remembered.trackDetails = []
+            remembered.trackDetailsClosed = false
         case (0x0A, 0x07):
             if remembered.trackDetailsClosed {
                 remembered.trackDetails = []
@@ -340,6 +360,10 @@ public struct RotoRelay: Sendable {
     /// Whether a SysEx message from the host is swallowed in every mode: DAW STARTED (`0A 01`),
     /// which would start the device's handshake again, DAW PING RESPONSE (`0A 03`), and REQUEST
     /// ROTO FW VERSION (`0A 0D`), which the relay answers itself if it knows the version.
+    ///
+    /// Per its code, Bitwig's integration sends REQUEST ROTO FW VERSION only on receiving ROTO-DAW
+    /// CONNECTED, which the relay never passes to it. So with that integration as written the
+    /// answer is never asked for; it is kept for a host that asks at another time.
     static func isSwallowedFromHost(_ group: UInt8, _ command: UInt8) -> Bool {
         group == 0x0A && (command == 0x01 || command == 0x03 || command == 0x0D)
     }
@@ -348,6 +372,29 @@ public struct RotoRelay: Sendable {
     /// switches are active: only TRANSPORT STATUS (`0A 0B`).
     static func passesToDeviceWithTransportInMixMode(_ group: UInt8, _ command: UInt8) -> Bool {
         group == 0x0A && command == 0x0B
+    }
+
+    /// SET PLUGIN MODE (`0B 01`) with macro page 0, as the relay sends it to a host that has
+    /// started again while the device is in PLUGIN mode.
+    static let setPluginModeForHost: [UInt8] = [0xF0, 0x00, 0x22, 0x03, 0x02, 0x0B, 0x01, 0x00, 0xF7]
+    /// REQUEST TRANSPORT STATUS (`0A 0A`), as the relay sends it to a host that has started again
+    /// while the transport switches are active.
+    static let requestTransportStatusForHost: [UInt8] = [0xF0, 0x00, 0x22, 0x03, 0x02, 0x0A, 0x0A, 0xF7]
+
+    /// What the relay itself sends the host on DAW STARTED, so that an integration the host has
+    /// loaded again in the middle of a session comes up: SET PLUGIN MODE if the device is in
+    /// PLUGIN mode, then REQUEST TRANSPORT STATUS if the transport switches are active; nothing
+    /// in MIX mode without them.
+    ///
+    /// The reason is from the integration's code: a new instance drops every SysEx message until
+    /// it receives SET PLUGIN MODE, SET MIX ALL TRACKS MODE, or REQUEST TRANSPORT STATUS. Untested
+    /// with Bitwig Studio. The macro page byte is 0, since the relay does not follow the page (an
+    /// inference that the integration then asks for nothing more).
+    var sentToHostOnDAWStarted: [[UInt8]] {
+        var messages: [[UInt8]] = []
+        if knobMode == .plugin { messages.append(Self.setPluginModeForHost) }
+        if transportSwitchesActive { messages.append(Self.requestTransportStatusForHost) }
+        return messages
     }
 
     /// Takes bytes from the host and returns what to do with the messages they complete.
@@ -384,9 +431,14 @@ public struct RotoRelay: Sendable {
                                                           rule: "ROTO FW VERSION, as the device last sent it"))
             } else if command == 0x0D {
                 decide(.dropped, "REQUEST ROTO FW VERSION: no version known")
+            } else if command == 0x01 {
+                decide(.dropped, "DAW STARTED: never passed to the device")
+                for message in sentToHostOnDAWStarted {
+                    output.decisions.append(RotoRelayDecision(source: .relay, route: .toHost, bytes: message,
+                                                              rule: "the device's mode, for a host that has started again"))
+                }
             } else {
-                decide(.dropped, command == 0x01 ? "DAW STARTED: never passed to the device"
-                                                 : "DAW PING RESPONSE: never passed to the device")
+                decide(.dropped, "DAW PING RESPONSE: never passed to the device")
             }
             return
         }

@@ -73,10 +73,47 @@ final class RotoRelayTests: XCTestCase {
             for message in [sx(0x0A, 0x01), sx(0x0A, 0x03, 0x02), sx(0x0A, 0x0D)] {
                 let output = relay.fromHost(message)
                 XCTAssertEqual(output.toDevice, [])
-                XCTAssertEqual(output.toHost, [])
+                // DAW STARTED in PLUGIN mode is answered by the relay (the tests below).
+                if !(message == sx(0x0A, 0x01) && relay.knobMode == .plugin) { XCTAssertEqual(output.toHost, []) }
                 XCTAssertEqual(output.dropped, [message])
             }
         }
+    }
+
+    func testDAWStartedInPluginModeSendsTheHostSetPluginMode() {
+        var relay = relayInPluginMode()
+        let output = relay.fromHost(sx(0x0A, 0x01))
+        XCTAssertEqual(output.toHost, [[0xF0, 0x00, 0x22, 0x03, 0x02, 0x0B, 0x01, 0x00, 0xF7]])
+        XCTAssertEqual(output.toDevice, [])
+        XCTAssertEqual(output.dropped, [sx(0x0A, 0x01)])
+        XCTAssertEqual(output.decisions.map(\.source), [.host, .relay])
+        XCTAssertEqual(relay.knobMode, .plugin)
+    }
+
+    func testDAWStartedWithTransportSwitchesActiveSendsTheHostRequestTransportStatus() {
+        // In MIX mode: the request alone.
+        var relay = RotoRelay()
+        _ = relay.fromDevice(requestTransport)
+        let output = relay.fromHost(sx(0x0A, 0x01))
+        XCTAssertEqual(output.toHost, [[0xF0, 0x00, 0x22, 0x03, 0x02, 0x0A, 0x0A, 0xF7]])
+        XCTAssertEqual(output.toDevice, [])
+        XCTAssertTrue(relay.transportSwitchesActive)
+        // In PLUGIN mode: SET PLUGIN MODE first.
+        var inPlugin = relayInPluginMode()
+        _ = inPlugin.fromDevice(requestTransport)
+        XCTAssertEqual(inPlugin.fromHost(sx(0x0A, 0x01)).toHost, [setPluginMode, requestTransport])
+    }
+
+    func testDAWStartedInMixModeWithoutTransportSendsTheHostNothing() {
+        var relay = RotoRelay()
+        let output = relay.fromHost(sx(0x0A, 0x01))
+        XCTAssertEqual(output.toHost, [])
+        XCTAssertEqual(output.toDevice, [])
+        XCTAssertEqual(output.decisions.count, 1)
+        // The transport switches' layer has ended.
+        _ = relay.fromDevice(requestTransport)
+        _ = relay.fromDevice(setMixAllTracks)
+        XCTAssertEqual(relay.fromHost(sx(0x0A, 0x01)).toHost, [])
     }
 
     func testFirmwareVersionRequestIsAnsweredWhenKnown() {
@@ -276,7 +313,9 @@ final class RotoRelayTests: XCTestCase {
         let selectTrack = sx(0x0C, 0x04, 0x00, 0x01, 0x42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x06, 0x00)
 
         var relay = relayInPluginMode()
-        // Sent in another order than the replay's, with other messages between.
+        // The sends and the selected track in another order than the replay's; NUM TRACKS and
+        // FIRST TRACK before the details, as Bitwig's integration sends them, with another
+        // message between the details.
         for message in [selectTrack, sendNames, sendCount, numTracks, firstTrack, track1, sx(0x0B, 0x02, 0x01), track2, end] {
             XCTAssertEqual(relay.fromHost(message).toDevice, [message], "passed as well as remembered")
         }
@@ -287,20 +326,50 @@ final class RotoRelayTests: XCTestCase {
         XCTAssertEqual(output.decisions.first?.route, .toHost, "SET PLUGIN MODE goes to the host before the replay")
         XCTAssertEqual(output.decisions.dropFirst().map(\.source), Array(repeating: .relay, count: 8))
 
-        // A new TRACK DETAILS after TRACK DETAILS END starts a new list. Messages dropped in MIX
-        // mode are remembered too.
+        // A new page starts a new list. Messages dropped in MIX mode are remembered too.
         _ = relay.fromDevice(setMixTrack)
-        XCTAssertEqual(relay.fromHost(track3).toDevice, [])
-        XCTAssertEqual(relay.fromHost(end).toDevice, [])
         let newCount = sx(0x0A, 0x04, 0x00, 0x01)
         XCTAssertEqual(relay.fromHost(newCount).toDevice, [])
+        XCTAssertEqual(relay.fromHost(track3).toDevice, [])
+        XCTAssertEqual(relay.fromHost(end).toDevice, [])
         XCTAssertEqual(relay.fromDevice(setPluginMode).toDevice,
                        [newCount, firstTrack, track3, end, sendCount, sendNames, selectTrack])
+
+        // A new TRACK DETAILS after TRACK DETAILS END starts a new list too, with no NUM TRACKS.
+        XCTAssertEqual(relay.fromHost(track1).toDevice, [track1])
+        XCTAssertEqual(relay.fromHost(end).toDevice, [end])
+        XCTAssertEqual(relay.replayOnEnteringPluginMode,
+                       [newCount, firstTrack, track1, end, sendCount, sendNames, selectTrack])
 
         // No replay on SET PLUGIN MODE while already in PLUGIN mode.
         let again = relay.fromDevice(setPluginMode)
         XCTAssertEqual(again.toHost, [setPluginMode])
         XCTAssertEqual(again.toDevice, [])
+    }
+
+    func testNumTracksAndFirstTrackClearTheRememberedTrackDetails() {
+        let numTracks = sx(0x0A, 0x04, 0x00, 0x02)
+        let firstTrack = sx(0x0A, 0x05, 0x00, 0x00)
+        let track1 = sx(0x0A, 0x07, 0x00, 0x00, 0x41, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x05, 0x00)
+        let track2 = sx(0x0A, 0x07, 0x00, 0x01, 0x42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x06, 0x00)
+        let end = sx(0x0A, 0x08)
+        var relay = relayInPluginMode()
+        for message in [numTracks, firstTrack, track1, track2, end] { _ = relay.fromHost(message) }
+        XCTAssertEqual(relay.replayOnEnteringPluginMode, [numTracks, firstTrack, track1, track2, end])
+
+        // A project with no tracks: NUM TRACKS, FIRST TRACK, and TRACK DETAILS END, no details.
+        let noTracks = sx(0x0A, 0x04, 0x00, 0x00)
+        _ = relay.fromHost(noTracks)
+        XCTAssertEqual(relay.replayOnEnteringPluginMode, [noTracks, firstTrack, end], "cleared by NUM TRACKS alone")
+        for message in [firstTrack, end] { _ = relay.fromHost(message) }
+        XCTAssertEqual(relay.replayOnEnteringPluginMode, [noTracks, firstTrack, end])
+
+        // FIRST TRACK alone clears an unfinished list as well.
+        _ = relay.fromHost(track1)
+        XCTAssertEqual(relay.replayOnEnteringPluginMode, [noTracks, firstTrack, track1, end])
+        let second = sx(0x0A, 0x05, 0x00, 0x08)
+        _ = relay.fromHost(second)
+        XCTAssertEqual(relay.replayOnEnteringPluginMode, [noTracks, second, end])
     }
 
     func testReplayEndsAnUnfinishedListOfTrackDetails() {

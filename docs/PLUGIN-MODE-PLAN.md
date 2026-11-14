@@ -1,12 +1,15 @@
 # PLUGIN mode: the plan
 
 This is a plan, not a record. It sets out how Performance Bridge could use the Roto-Control's
-PLUGIN mode, what is known, and the tests that decide each part. Nothing here is built except the
-probe (`sbdev vport`) and the `ArturiaControl` library. Statements about the Roto-Control rest on
+PLUGIN mode, what is known, and the tests that decide each part. Nothing here is in the app. What
+exists is for the tests: the probe (`sbdev vport`), the `ArturiaControl` library, and three
+prototypes that have run on no device (`sbdev roto`'s macro commands, `sbdev relay`, and `sbdev
+arturia`). Statements about the Roto-Control rest on
 `docs/ROTO-CONTROL.md`, and those about Arturia's instruments on `docs/ARTURIA.md`; statements
 about Melbourne Instruments' Bitwig Studio and Logic Pro integrations come from reading their code
 in [roto_control](https://github.com/Melbourne-Instruments/roto_control) (commit 2d43a72) on
-2026-11-13 and have not been tested unless a test is named. Everything else is a proposal.
+2026-11-13 (the Bitwig integration by two readers, the second checking the first) and have not
+been tested unless a test is named. Everything else is a proposal.
 
 ## 1. The aim
 
@@ -49,10 +52,13 @@ From the integration's code:
 - **Bitwig to device:** everything while the device is in PLUGIN mode; nothing while it is in MIX
   mode (Bitwig keeps sending knob positions and plugin lists as things change, and waits for no
   answer, so dropping them does it no harm).
-- **Coming back to PLUGIN mode.** On SET PLUGIN MODE Bitwig sends the plugin list, the selection,
-  and all eight knob positions again. It does not resend the track page or the send names, which
-  Performance Bridge's own MIX page has overwritten; the relay should keep Bitwig's last ones and
-  send them again.
+- **Coming back to PLUGIN mode.** On SET PLUGIN MODE Bitwig sends the plugin list again, the
+  selection if the selected plugin is on the page, the positions of the knobs that have a
+  parameter, and the switch lights. It sends the selected track only if that has changed, and
+  never the track page or the send names, which Performance Bridge's own MIX page has
+  overwritten; the relay keeps Bitwig's last ones and sends them again.
+- **Bitwig reloading its integration.** A new instance sends nothing until it is told the mode
+  again, so on its DAW STARTED the relay tells it (untested).
 - **Going back to MIX mode.** Bitwig writes its own track list to the device while in PLUGIN
   mode, so Performance Bridge must draw its page again. It already does on SET MIX ALL TRACKS
   MODE.
@@ -98,9 +104,10 @@ as one plugin.
   master volume. Proposal: knobs 1–4 the macros, 5–8 the four parameters, and the volume on a
   second page. The layout is Adam's to decide.
 - **No learning.** Bitwig's integration shows eight named, positioned knobs with no learning by
-  declaring a "macro" plugin and sending LEARN PARAM with the macro flag for parameters 1–8. The
-  driver would do the same. Whether the device accepts that from a host that it has not asked is
-  test R1.
+  declaring a "macro" plugin. It then waits for the device to send CONTROL MAPPED for a macro
+  knob, and answers with LEARN PARAM, with the macro flag, for all eight. So the path depends on
+  the device announcing macro knobs that were never learned, which is test R1. The driver would do
+  the same; sending LEARN PARAM unasked is this project's own variant, also in R1.
 - **Names.** The parameter behind each control differs by instrument. The driver can read the
   instrument's own installed files for the names when it starts (reading another app's files is
   allowed; nothing of Arturia's is shipped).
@@ -129,12 +136,17 @@ Arturia (each a few minutes with `sbdev vport`):
 
 Roto-Control:
 
-- **R1.** From `sbdev roto`: a macro plugin and LEARN PARAM with the macro flag, with no learning
-  on the device. Do names and positions show, and do the knobs then send?
+- **R1.** From `sbdev roto`: a macro plugin with no learning on the device, first as Bitwig does it
+  (`macro --wait`: LEARN PARAM only in answer to CONTROL MAPPED), then unasked (`macro`). Do names
+  and positions show, and do the knobs then send?
 - **R2.** A relay in `sbdev` between the device and Bitwig Studio, in PLUGIN mode only.
 - **R3.** A new handshake as `03` and back to `02` without unplugging: does the device change
   type cleanly, and how long does it take?
-- **R4.** Transport to Bitwig Studio while in MIX mode.
+- **R4.** Transport to Bitwig Studio while in MIX mode. Watch what the device sends on leaving
+  transport mode: the relay ends transport only on SET PLUGIN MODE or a MIX-mode message.
+
+If R1 passes, `sbdev arturia` puts the two halves together: the Roto-Control's PLUGIN mode on a
+standalone instrument, with values marked unknown until the instrument reports them.
 
 ## 8. Order of work
 
@@ -157,4 +169,6 @@ readings, to be added with their source once a second reader or a test has confi
 - that in PLUGIN mode Bitwig reads and lights a switch as a 0–127 value, not only as on and off;
 - that Bitwig handles SET FIRST PLUGIN, SET PLUGIN ENABLED, SET PLUGINS LOCK, MACRO PLUGIN PAGE
   INDEX, and TOGGLE REMOTE PAGE, and that DAW SELECT PLUGIN carries three bytes;
-- an erratum in the serial API document: ADD PLUGIN's command is printed with SET PLUGIN's bytes.
+- an erratum in the serial API document: ADD PLUGIN's command is printed with SET PLUGIN's bytes;
+- an apparent bug in Bitwig's integration, not to be copied: it unmaps a macro knob with control
+  type `01`, which the SysEx doc gives to switches.

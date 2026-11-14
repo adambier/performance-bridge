@@ -148,9 +148,13 @@ public struct RotoParameterDetails: Equatable, Sendable {
         return min((Int(value & 0x7F) * (count - 1) + 63) / 127, count - 1)
     }
 
-    /// A macro plugin's parameter as Bitwig's integration sends it in LEARN PARAM, per its code
-    /// (not tested on the device): index `number` (1–8), the macro flag, and the hash of
-    /// "Macro `number`" (`RotoHash.macroParameter`), with the name to show and a position.
+    /// A macro plugin's parameter for LEARN PARAM, laid out as Bitwig's integration lays one out,
+    /// per its code (not tested on the device): index `number` (1–8), the macro flag, and the
+    /// hash of "Macro `number`" (`RotoHash.macroParameter`), with the name to show and a position.
+    ///
+    /// The step names and the limit of 24 steps are this library's, from Melbourne Instruments'
+    /// SysEx document, not Bitwig's: its integration never adds step names for a macro parameter
+    /// and accepts up to 42 (`0x2A`) steps.
     public static func macro(_ number: Int, name: String, position: Int, centerIndent: Bool = false,
                              steps: Int = 0, stepNames: [String] = []) -> RotoParameterDetails {
         RotoParameterDetails(index: number, hash: .macroParameter(number), name: name, position: position,

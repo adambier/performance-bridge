@@ -67,8 +67,9 @@ let testPlugins: [TestPlugin] = [
 
 /// The one macro plugin `sbdev roto`'s `macro` command offers, for test R1 (docs/PLUGIN-MODE-PLAN.md):
 /// whether the Roto-Control shows eight named, positioned knobs with no learning on the device.
-/// The message sequence follows a reading of Melbourne Instruments' Bitwig integration and is
-/// untested on the device.
+/// With `wait`, the message sequence follows a reading of Melbourne Instruments' Bitwig
+/// integration; without it, LEARN PARAM is sent unasked, which is this project's own variant.
+/// Both are untested on the device.
 struct MacroTest {
     /// The plugin's name on the device.
     static let pluginName = "Macro Test"
@@ -80,7 +81,8 @@ struct MacroTest {
 
     /// The number of macro pages declared in PLUGIN DETAILS.
     var pages: Int
-    /// Whether LEARN PARAM is sent only in answer to CONTROL MAPPED (`macro --wait`).
+    /// Whether LEARN PARAM is sent only in answer to CONTROL MAPPED (`macro --wait`), which is
+    /// the order of Bitwig's integration.
     var wait: Bool
     /// The page the device last reported with MACRO PLUGIN PAGE INDEX.
     var page = 0
