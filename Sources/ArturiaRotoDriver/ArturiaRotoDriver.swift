@@ -8,9 +8,10 @@ import ArturiaControl
 
 // A prototype driver that shows a standalone Arturia instrument on the Roto-Control's PLUGIN mode
 // as one macro plugin (docs/PLUGIN-MODE-PLAN.md, section 6). The instrument's side rests on
-// docs/ARTURIA.md (one test, with Pigments); the Roto-Control's side on a reading of Melbourne
-// Instruments' Bitwig integration, which test R1 is to check. Nothing here has been tested on a
-// device or with an instrument.
+// docs/ARTURIA.md (tests 1–4, with Pigments and Analog Lab V); the Roto-Control's side on a
+// reading of Melbourne Instruments' Bitwig integration and test R1. Run once, under the first
+// KeyLab's profile, with Pigments and a Roto-Control (docs/ARTURIA.md, test 2); under the KeyLab
+// mkII's profile, which names the controls, not yet.
 
 /// One message from the driver to the Roto-Control.
 public enum ArturiaRotoDeviceMessage: Equatable, Sendable {
@@ -45,15 +46,19 @@ public struct ArturiaRotoOutput: Equatable, Sendable {
     public var isEmpty: Bool { toDevice.isEmpty && toInstrument.isEmpty }
 }
 
-/// One knob of a page: the instrument's item it controls, and its name on the device.
+/// One knob of a page: the control change it sends the instrument, the item the instrument reports
+/// it under, and its name on the device until the instrument names it.
 public struct ArturiaRotoControl: Equatable, Sendable {
-    /// The item number the instrument reports the control under (`ArturiaKeyLabProfile`).
+    /// The control change number.
+    public var controller: Int
+    /// The item number the instrument reports the control under (by the driver's profile).
     public var item: Int
-    /// The name shown on the device once the value is known.
+    /// The name shown on the device until the instrument has sent one.
     public var name: String
 
     /// Makes a control.
-    public init(item: Int, name: String) {
+    public init(controller: Int, item: Int, name: String) {
+        self.controller = controller
         self.item = item
         self.name = name
     }
@@ -70,18 +75,31 @@ public struct ArturiaRotoControl: Equatable, Sendable {
 /// no way to ask an instrument for its values is known (docs/ARTURIA.md, section 4). Until then
 /// the control's name ends in "?" and its knob is sent no position. (LEARN PARAM has to carry
 /// one, and carries 0; whether that moves the knob is untested.)
+///
+/// Under the KeyLab mkII's profile (the default) the instrument answers a control change with the
+/// control's name and its value in words (`ArturiaControlText`). The driver then shows that name
+/// in place of its own, until the preset changes, and shows the instrument's value text in place
+/// of a percentage. A name is known only once its knob has been turned: no instrument has been
+/// seen to send the names otherwise (docs/ARTURIA.md, tests 4 and 6).
 public struct ArturiaRotoDriver: Sendable {
-    /// The pages: the first is macros 1–4 and the instrument's four own parameters (items 9, 5, 6,
-    /// and 7, in the order of their control change numbers in the profile); the second is the
-    /// volume alone. `nil` is a knob with no control. The parameters' real names differ by
-    /// instrument and are not known to the driver.
-    public static let pages: [[ArturiaRotoControl?]] = [
-        [ArturiaRotoControl(item: 1, name: "Macro 1"), ArturiaRotoControl(item: 2, name: "Macro 2"),
-         ArturiaRotoControl(item: 3, name: "Macro 3"), ArturiaRotoControl(item: 4, name: "Macro 4"),
-         ArturiaRotoControl(item: 9, name: "Param 1"), ArturiaRotoControl(item: 5, name: "Param 2"),
-         ArturiaRotoControl(item: 6, name: "Param 3"), ArturiaRotoControl(item: 7, name: "Param 4")],
-        [ArturiaRotoControl(item: 8, name: "Volume"), nil, nil, nil, nil, nil, nil, nil],
+    /// The pages, by control change number and the name shown until the instrument sends one: the
+    /// first is macros 1–4 and four parameters of the instrument's own, in the order of their
+    /// control change numbers in the profile file; the second is the volume alone. `nil` is a
+    /// knob with no control.
+    public static let layout: [[(controller: Int, name: String)?]] = [
+        [(74, "Macro 1"), (71, "Macro 2"), (76, "Macro 3"), (77, "Macro 4"),
+         (93, "Param 1"), (18, "Param 2"), (19, "Param 3"), (16, "Param 4")],
+        [(17, "Volume"), nil, nil, nil, nil, nil, nil, nil],
     ]
+    /// How long after a knob is turned the driver waits for the instrument's value text before
+    /// showing a percentage instead, once the instrument has sent any (it has been seen to answer
+    /// in about 30 ms; test 4).
+    public static let textWaitSeconds: TimeInterval = 0.2
+
+    /// The controller profile the instrument is talking to.
+    public let profile: ArturiaKeyLabProfile
+    /// The pages: `layout` with the profile's item numbers.
+    public let pages: [[ArturiaRotoControl?]]
     /// The plugin's name until the instrument has sent its own.
     public static let defaultPluginName = "Arturia"
     /// How long after a knob's last report a value from the instrument is kept from moving it.
@@ -115,14 +133,37 @@ public struct ArturiaRotoDriver: Sendable {
     private var lastValueText = [TimeInterval?](repeating: nil, count: 8)
     private var valueTextPending = [Bool](repeating: false, count: 8)
     private var lastTrackNameSent: String?
+    /// Each item's name as the instrument last sent it, for the preset shown.
+    private var names: [Int: String] = [:]
+    /// Each item's value text as the instrument last sent it, with the value it was for.
+    private var instrumentText: [Int: (value: Int, text: String)] = [:]
+    /// Whether the instrument has sent any control text, which makes the driver wait for it.
+    public private(set) var instrumentSendsText = false
+    /// For each knob, when it was turned, while the driver waits for the instrument's value text.
+    private var awaitingText = [TimeInterval?](repeating: nil, count: 8)
+    /// For each knob, the value text last shown.
+    private var shownText = [String?](repeating: nil, count: 8)
 
-    /// Makes a driver. With `waitsForControlMapped`, the controls are described only when the
-    /// device asks with CONTROL MAPPED, which is the order of Bitwig's integration; without it
-    /// they are sent unasked, this project's own variant. Whether the firmware takes the second
-    /// is test R1's question, so try `true` first.
-    public init(waitsForControlMapped: Bool = false) {
+    /// Makes a driver for an instrument talking to `profile`. With `waitsForControlMapped`, the
+    /// controls are described only when the device asks with CONTROL MAPPED, which is the order of
+    /// Bitwig's integration; without it they are sent unasked, this project's own variant (test
+    /// R1 and test 2 ran with `true`).
+    public init(profile: ArturiaKeyLabProfile = .keyLabMkII, waitsForControlMapped: Bool = false) {
+        self.profile = profile
         self.waitsForControlMapped = waitsForControlMapped
+        pages = Self.layout.map { page in
+            page.map { entry in
+                entry.flatMap { entry in
+                    profile.item(forController: entry.controller).map {
+                        ArturiaRotoControl(controller: entry.controller, item: $0, name: entry.name)
+                    }
+                }
+            }
+        }
     }
+
+    /// The name the instrument last sent for an item, for the preset shown, or `nil`.
+    public func name(forItem item: Int) -> String? { names[item] }
 
     /// The value (0–127) known for an item, or `nil` while it is unknown.
     public func value(forItem item: Int) -> Int? { values[item] }
@@ -141,8 +182,8 @@ public struct ArturiaRotoDriver: Sendable {
         return (clamped * 127 * 2 + RotoSysEx.maximum14Bit) / (RotoSysEx.maximum14Bit * 2)
     }
 
-    /// The text SHOW CONTROL VALUE carries for a 7-bit value: a percentage, e.g., "58%". The
-    /// instrument sends no value text, so this is the driver's own.
+    /// The text SHOW CONTROL VALUE carries for a 7-bit value when the instrument has sent none for
+    /// it: a percentage, e.g., "58%".
     public static func valueText(_ value: Int) -> String {
         let clamped = min(max(value, 0), 127)
         let percent: Int = (clamped * 200 + 127) / 254
@@ -152,16 +193,26 @@ public struct ArturiaRotoDriver: Sendable {
     // MARK: The page
 
     private func control(_ knob: Int) -> ArturiaRotoControl? {
-        (0..<8).contains(knob) ? Self.pages[page][knob] : nil
+        (0..<8).contains(knob) ? pages[page][knob] : nil
     }
 
     private func knob(forItem item: Int) -> Int? {
-        Self.pages[page].firstIndex { $0?.item == item }
+        pages[page].firstIndex { $0?.item == item }
     }
 
-    /// A control's name as shown: with a trailing "?" while its value is unknown.
+    /// A control's name as shown: the instrument's if it has sent one, otherwise the driver's own,
+    /// with a trailing "?" while its value is unknown.
     private func shownName(_ control: ArturiaRotoControl) -> String {
-        values[control.item] == nil ? control.name + "?" : control.name
+        let name = names[control.item] ?? control.name
+        return values[control.item] == nil ? name + "?" : name
+    }
+
+    /// The value text for an item at its current value: the instrument's, if it sent one for this
+    /// value, otherwise a percentage.
+    private func currentValueText(item: Int) -> String? {
+        guard let value = values[item] else { return nil }
+        if let sent = instrumentText[item], sent.value == value { return sent.text }
+        return Self.valueText(value)
     }
 
     /// LEARN PARAM for a knob of the page: macro number knob + 1, as Bitwig's integration numbers
@@ -178,7 +229,7 @@ public struct ArturiaRotoDriver: Sendable {
     /// while its plugin lock is on, so it is off here.
     private var pluginList: [ArturiaRotoDeviceMessage] {
         [.message(.pluginCount(1)), .message(.firstPlugin(0)),
-         .message(.pluginDetails(.macro(index: 0, name: pluginName, pages: Self.pages.count))),
+         .message(.pluginDetails(.macro(index: 0, name: pluginName, pages: pages.count))),
          .message(.pluginDetailsEnd),
          .message(.dawSelectPlugin(index: 0, macroPage: page, force: false))]
     }
@@ -208,26 +259,31 @@ public struct ArturiaRotoDriver: Sendable {
         heldBack = [Bool](repeating: false, count: 8)
         lastValueText = [TimeInterval?](repeating: nil, count: 8)
         valueTextPending = [Bool](repeating: false, count: 8)
+        awaitingText = [TimeInterval?](repeating: nil, count: 8)
+        shownText = [String?](repeating: nil, count: 8)
     }
 
     /// SHOW CONTROL VALUE for a knob now, or a note to send it at a later `tick`, so that a knob
     /// gets at most 12 a second and the last value is always shown.
+    /// An identical text is not sent again (the instrument sends each of its texts three times).
     private mutating func valueText(_ knob: Int, now: TimeInterval) -> [ArturiaRotoDeviceMessage] {
-        guard let control = control(knob), let value = values[control.item] else { return [] }
+        guard let control = control(knob), let text = currentValueText(item: control.item) else { return [] }
+        if text == shownText[knob], !valueTextPending[knob] { return [] }
         if let last = lastValueText[knob], now - last < Self.valueTextInterval {
             valueTextPending[knob] = true
             return []
         }
         lastValueText[knob] = now
         valueTextPending[knob] = false
-        return [.message(.showValue(.knob, control: knob, text: Self.valueText(value)))]
+        shownText[knob] = text
+        return [.message(.showValue(.knob, control: knob, text: text))]
     }
 
-    /// SET MAPPED CONTROL NAME with the name without its "?", for a control whose value has just
-    /// become known. (The driver's choice over LEARN PARAM again, which also carries a position
-    /// and so could move a knob the user is turning.)
-    private func nameNowKnown(_ knob: Int, _ control: ArturiaRotoControl) -> ArturiaRotoDeviceMessage {
-        .message(.mappedControlName(parameterIndex: knob + 1, hash: .macroParameter(knob + 1), name: control.name))
+    /// SET MAPPED CONTROL NAME with a control's name as now shown, for a control whose value has
+    /// just become known or whose name has changed. (The driver's choice over LEARN PARAM again,
+    /// which also carries a position and so could move a knob the user is turning.)
+    private func renamed(_ knob: Int, _ control: ArturiaRotoControl) -> ArturiaRotoDeviceMessage {
+        .message(.mappedControlName(parameterIndex: knob + 1, hash: .macroParameter(knob + 1), name: shownName(control)))
     }
 
     // MARK: From the instrument
@@ -241,6 +297,8 @@ public struct ArturiaRotoDriver: Sendable {
                 output.toDevice += instrumentValue(item: item, value: min(max(value, 0), 127), now: now)
             case .text(let fields)?:
                 output.toDevice += instrumentText(fields)
+            case .controlText(let text)?:
+                output.toDevice += controlText(text, now: now)
             default:
                 break
             }
@@ -253,7 +311,7 @@ public struct ArturiaRotoDriver: Sendable {
         values[item] = value
         guard isInPluginMode, let knob = knob(forItem: item), let control = control(knob) else { return [] }
         var messages: [ArturiaRotoDeviceMessage] = []
-        if wasUnknown { messages.append(nameNowKnown(knob, control)) }
+        if wasUnknown { messages.append(renamed(knob, control)) }
         if let moved = lastKnobMove[knob], now - moved < Self.holdSeconds {
             // The user is turning this knob: the value waits for `tick`.
             heldBack[knob] = true
@@ -276,10 +334,53 @@ public struct ArturiaRotoDriver: Sendable {
         if let preset = fields.first(where: { $0.tag == 2 })?.text {
             // The asterisk before the name has been seen on a preset just loaded; what it means
             // is not known (docs/ARTURIA.md, section 3).
-            presetName = preset.hasPrefix("*") ? String(preset.dropFirst()) : preset
+            let name = preset.hasPrefix("*") ? String(preset.dropFirst()) : preset
+            if let previous = presetName, previous != name { messages += forgetNames() }
+            presetName = name
             if isInPluginMode { messages += trackName(onlyIfChanged: true) }
         }
         return messages
+    }
+
+    /// Drops the names and value texts the instrument sent, since a new preset can label its
+    /// controls differently (Analog Lab V does: docs/ARTURIA.md, test 4), and renames the knobs
+    /// of the page that showed one. A preset whose name is the same as the last one's is taken
+    /// for the same preset.
+    private mutating func forgetNames() -> [ArturiaRotoDeviceMessage] {
+        let named = names
+        names = [:]
+        instrumentText = [:]
+        guard isInPluginMode else { return [] }
+        var messages: [ArturiaRotoDeviceMessage] = []
+        for knob in 0..<8 {
+            guard let control = control(knob), named[control.item] != nil else { continue }
+            messages.append(renamed(knob, control))
+        }
+        return messages
+    }
+
+    /// A control's name and value text from the instrument, after a control change from the driver
+    /// (or from anything else on the port).
+    private mutating func controlText(_ text: ArturiaControlText, now: TimeInterval) -> [ArturiaRotoDeviceMessage] {
+        instrumentSendsText = true
+        guard let item = profile.item(forController: text.controller) else { return [] }
+        let value = min(max(text.value, 0), 127)
+        let nameChanged = !text.name.isEmpty && names[item] != text.name
+        if !text.name.isEmpty { names[item] = text.name }
+        if !text.valueText.isEmpty { instrumentText[item] = (value, text.valueText) }
+        if values[item] != value {
+            // A control change the driver didn't send: handled as a value report, which renames a
+            // knob whose value was unknown and shows the text.
+            let wasUnknown = values[item] == nil
+            var messages = instrumentValue(item: item, value: value, now: now)
+            if nameChanged, !wasUnknown, isInPluginMode, let knob = knob(forItem: item), let control = control(knob) {
+                messages.insert(renamed(knob, control), at: 0)
+            }
+            return messages
+        }
+        guard isInPluginMode, let knob = knob(forItem: item), let control = control(knob) else { return [] }
+        awaitingText[knob] = nil
+        return (nameChanged ? [renamed(knob, control)] : []) + valueText(knob, now: now)
     }
 
     /// SET CURRENT TRACK NAME with the preset's name. The MENU window showed nothing for it in
@@ -327,7 +428,7 @@ public struct ArturiaRotoDriver: Sendable {
         guard isInPluginMode else { return [] }
         switch message {
         case .macroPage(let index):
-            page = min(max(index, 0), Self.pages.count - 1)
+            page = min(max(index, 0), pages.count - 1)
             resetKnobState()
             return waitsForControlMapped ? [] : pageControls()
         case .controlMapped(let mapping):
@@ -356,23 +457,29 @@ public struct ArturiaRotoDriver: Sendable {
         let value = Self.value(forPosition: position)
         knobValue[knob] = value
         guard values[control.item] != value,
-              let change = ArturiaKeyLabProfile.controlChange(item: control.item, value: value) else {
+              let change = profile.controlChange(item: control.item, value: value) else {
             return ArturiaRotoOutput()
         }
         let wasUnknown = values[control.item] == nil
         values[control.item] = value
         // The knob's own value is newer than one the instrument sent during the hold.
         heldBack[knob] = false
-        var messages: [ArturiaRotoDeviceMessage] = wasUnknown ? [nameNowKnown(knob, control)] : []
-        messages += valueText(knob, now: now)
+        var messages: [ArturiaRotoDeviceMessage] = wasUnknown ? [renamed(knob, control)] : []
+        if instrumentSendsText {
+            // The instrument's own text for the new value is expected shortly.
+            awaitingText[knob] = now
+        } else {
+            messages += valueText(knob, now: now)
+        }
         return ArturiaRotoOutput(toDevice: messages, toInstrument: [change])
     }
 
     // MARK: Time
 
     /// Sends what was waiting: a value held back while its knob was being turned, once the hold
-    /// has ended and if it still differs from what the knob last reported; and a value text held
-    /// back by the limit of 12 a second.
+    /// has ended and if it still differs from what the knob last reported; a value text held back
+    /// by the limit of 12 a second; and a percentage for a knob whose value text the instrument
+    /// has not sent within `textWaitSeconds`.
     public mutating func tick(now: TimeInterval) -> ArturiaRotoOutput {
         guard isInPluginMode else { return ArturiaRotoOutput() }
         var messages: [ArturiaRotoDeviceMessage] = []
@@ -385,7 +492,10 @@ public struct ArturiaRotoDriver: Sendable {
                     knobValue[knob] = value
                 }
             }
-            if valueTextPending[knob], let last = lastValueText[knob], now - last >= Self.valueTextInterval {
+            if let turned = awaitingText[knob], now - turned >= Self.textWaitSeconds {
+                awaitingText[knob] = nil
+                messages += valueText(knob, now: now)
+            } else if valueTextPending[knob], let last = lastValueText[knob], now - last >= Self.valueTextInterval {
                 messages += valueText(knob, now: now)
             }
         }

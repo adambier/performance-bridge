@@ -1,9 +1,10 @@
 import Foundation
 
-// What an Arturia instrument sends to a controller it takes for one of Arturia's first KeyLab
-// keyboards, and what that controller sends back. docs/ARTURIA.md has the evidence for each
-// statement here: test 1 (2026-11-13, Pigments 7.0.1 standalone) for what is marked "seen", and a
-// reading of the files Arturia installs for the rest. Not affiliated with or endorsed by Arturia.
+// What an Arturia instrument sends to a controller it takes for one of Arturia's first KeyLab or
+// KeyLab mkII keyboards, and what that controller sends back. docs/ARTURIA.md has the evidence for
+// each statement here: tests 1–4 (2026-11-13 and 14, Pigments and Analog Lab V standalone) for
+// what is marked "seen", and a reading of the files Arturia installs for the rest;
+// docs/ARTURIA-KEYLAB.md sets the profiles side by side. Not affiliated with or endorsed by Arturia.
 
 /// One text field of the display message: a tag (1–4 have been seen) and its text.
 public struct ArturiaTextField: Equatable, Sendable {
@@ -20,8 +21,31 @@ public struct ArturiaTextField: Equatable, Sendable {
     }
 }
 
+/// The text an instrument sends a KeyLab mkII after a control change from it: the control's name
+/// and its value in words. Seen (test 4) from Analog Lab V, with the preset's own label for the
+/// control ("Color"), and from Pigments, with the parameter's fixed name ("Macro 1"), three times
+/// within 0.1 s of the control change.
+public struct ArturiaControlText: Equatable, Sendable {
+    /// The control's name (text field 1).
+    public var name: String
+    /// The value in the instrument's words, e.g., "0.472", "39 %", or "1448 Hz" (text field 2).
+    public var valueText: String
+    /// The control change number the text is about (field 4).
+    public var controller: Int
+    /// The control change's value (field 4).
+    public var value: Int
+
+    /// Makes a control text.
+    public init(name: String, valueText: String, controller: Int, value: Int) {
+        self.name = name
+        self.valueText = valueText
+        self.controller = controller
+        self.value = value
+    }
+}
+
 /// A SysEx message from an Arturia instrument to a controller, in the format the instrument uses
-/// for the first KeyLab keyboards (`F0 00 20 6B 7F 42 …`).
+/// for the first KeyLab and KeyLab mkII keyboards (`F0 00 20 6B 7F 42 …`).
 public enum ArturiaInstrumentMessage: Equatable, Sendable {
     /// A control's value, 0–127: `7F 42 02 <p> 00 <item> <value>`. `item` is the controller's
     /// number for the control (`ArturiaKeyLabProfile`). Seen (test 1) while Macro 1 was dragged in
@@ -32,6 +56,12 @@ public enum ArturiaInstrumentMessage: Equatable, Sendable {
     /// Seen twice when the instrument first found the controller and twice after the one preset
     /// change tried.
     case text([ArturiaTextField])
+    /// The display's text naming a control and its value, sent to a KeyLab mkII after a control
+    /// change from it: the same message as `text`, with field 1 the control's name, field 2 the
+    /// value in words, field 3 empty, and field 4 "c", the control change's number and value as
+    /// two bytes, and ";" (seen, test 4). How a value of 0 is sent has not been seen; it is read
+    /// here as the same two bytes, not as the end of the field.
+    case controlText(ArturiaControlText)
     /// Any other Arturia SysEx message, whole, from `F0` to `F7`.
     case other([UInt8])
 
@@ -50,13 +80,26 @@ public enum ArturiaInstrumentMessage: Equatable, Sendable {
             return .value(item: Int(body[5]), value: Int(body[6]))
         case (0x04, 0x60):
             var fields: [ArturiaTextField] = []
+            var control: (controller: Int, value: Int)?
             var rest = body[5...]
             while let tag = rest.first {
                 rest = rest.dropFirst()
+                // Field 4 of a control text holds raw bytes: "c", the number, the value, ";".
+                if tag == 4, rest.count >= 4, rest[rest.startIndex] == 0x63, rest[rest.startIndex + 3] == 0x3B {
+                    control = (Int(rest[rest.startIndex + 1]), Int(rest[rest.startIndex + 2]))
+                    rest = rest.dropFirst(4)
+                    if rest.first == 0 { rest = rest.dropFirst() }
+                    continue
+                }
                 let end = rest.firstIndex(of: 0) ?? rest.endIndex
                 let text = String(decoding: rest[rest.startIndex..<end].map { $0 & 0x7F }, as: UTF8.self)
                 fields.append(ArturiaTextField(tag: Int(tag), text: text))
                 rest = end < rest.endIndex ? rest[(end + 1)...] : rest[end...]
+            }
+            if let control {
+                func field(_ tag: Int) -> String { fields.first { $0.tag == tag }?.text ?? "" }
+                return .controlText(ArturiaControlText(name: field(1), valueText: field(2),
+                                                       controller: control.controller, value: control.value))
             }
             return .text(fields)
         default:
@@ -99,40 +142,83 @@ public struct ArturiaSysExAssembler: Sendable {
     }
 }
 
-/// The controller profile Arturia's instruments name "KeyLab": the first KeyLab keyboards. An
-/// instrument picks it for a MIDI port with one of `portNames` (Pigments has been seen to, for
-/// "KeyLab 61"), then reports values for the controls below and takes plain control changes for
-/// them.
-public enum ArturiaKeyLabProfile {
-    /// The port names the profile lists (read from the profile file; inferred, not tested, to
-    /// need an exact match; only "KeyLab 61" has been tried).
-    public static let portNames = ["KeyLab 25", "KeyLab 49", "KeyLab 61", "KeyLab 88"]
+/// One control of a profile: the control change number the controller sends, and the item number
+/// the instrument reports its value under.
+public struct ArturiaKeyLabControl: Equatable, Sendable {
+    /// The control change number.
+    public var controller: Int
+    /// The item number.
+    public var item: Int
 
-    /// The profile's controls: the control change number the controller sends, and the item
-    /// number the instrument reports the value under (read from the profile file; 74 and item 1
-    /// have been seen to be a pair). In the "KeyLab" MIDI configuration of nearly every
+    /// Makes a control.
+    public init(controller: Int, item: Int) {
+        self.controller = controller
+        self.item = item
+    }
+}
+
+/// A controller profile of Arturia's instruments: the port names an instrument recognizes, and
+/// the controls it reports values for and takes plain control changes for. Both profiles here use
+/// the same messages (`ArturiaInstrumentMessage`); only the mkII's draws `controlText`.
+public struct ArturiaKeyLabProfile: Equatable, Sendable {
+    /// A name for the profile, as the instruments' Midi Controller menu shows it.
+    public var name: String
+    /// The port names the profile lists (read from the profile file).
+    public var portNames: [String]
+    /// The profile's controls (read from the profile file).
+    public var controls: [ArturiaKeyLabControl]
+
+    /// Makes a profile.
+    public init(name: String, portNames: [String], controls: [ArturiaKeyLabControl]) {
+        self.name = name
+        self.portNames = portNames
+        self.controls = controls
+    }
+
+    /// The first KeyLab keyboards ("KeyLab"). Pigments has been seen to pick it for a port named
+    /// "KeyLab 61" (tests 1 and 2). In the "KeyLab" MIDI configuration of nearly every
     /// instrument, 74, 71, 76, and 77 are macros 1–4, 17 is the master volume, 93, 18, 19, and 16
     /// are four parameters of the instrument's own, 7 is unassigned, and 91 is assigned in two
-    /// instruments.
-    public static let controls: [(controller: Int, item: Int)] = [
-        (7, 48), (74, 1), (71, 2), (76, 3), (77, 4), (93, 9), (18, 5), (19, 6), (16, 7), (17, 8), (91, 10),
-    ]
+    /// instruments. 74 and item 1 have been seen to be a pair.
+    public static let keyLab = ArturiaKeyLabProfile(
+        name: "KeyLab",
+        portNames: ["KeyLab 25", "KeyLab 49", "KeyLab 61", "KeyLab 88"],
+        controls: [(7, 48), (74, 1), (71, 2), (76, 3), (77, 4), (93, 9), (18, 5), (19, 6), (16, 7), (17, 8), (91, 10)]
+            .map { ArturiaKeyLabControl(controller: $0.0, item: $0.1) })
+
+    /// The KeyLab mkII keyboards ("KeyLab mkII"). Analog Lab V picked it by itself for a port named
+    /// "KeyLab mkII 61"; Pigments needed it chosen by hand (test 4). The same nine control
+    /// changes as `keyLab`'s, numbered 1–9 in order; 74 and item 1 and 93 and item 5 have been
+    /// seen to be pairs. The profile also lists the names with " MIDI" or " (1)" after them.
+    public static let keyLabMkII = ArturiaKeyLabProfile(
+        name: "KeyLab mkII",
+        portNames: ["KeyLab mkII 49", "KeyLab mkII 61", "KeyLab mkII 88"],
+        controls: [74, 71, 76, 77, 93, 18, 19, 16, 17].enumerated()
+            .map { ArturiaKeyLabControl(controller: $0.element, item: $0.offset + 1) })
+
+    /// The profile whose port names include this one (for the mkII, also with " MIDI" or " (1)"
+    /// after it), or `nil`.
+    public static func forPortName(_ name: String) -> ArturiaKeyLabProfile? {
+        if keyLabMkII.portNames.contains(where: { [$0, $0 + " MIDI", $0 + " (1)"].contains(name) }) { return keyLabMkII }
+        return keyLab.portNames.contains(name) ? keyLab : nil
+    }
 
     /// The item number an instrument reports for the control with this control change number.
-    public static func item(forController controller: Int) -> Int? {
+    public func item(forController controller: Int) -> Int? {
         controls.first { $0.controller == controller }?.item
     }
 
     /// The control change number for the control an instrument reports under this item number.
-    public static func controller(forItem item: Int) -> Int? {
+    public func controller(forItem item: Int) -> Int? {
         controls.first { $0.item == item }?.controller
     }
 
     /// The control change that sets the control an instrument reports as `item` to `value`
     /// (0–127), on `channel` (1–16; an instrument has been seen to take channel 1). `nil` if the
     /// profile has no such item or a number is out of range. An instrument has been seen not to
-    /// report a value back for a change made this way.
-    public static func controlChange(item: Int, value: Int, channel: Int = 1) -> [UInt8]? {
+    /// report a value back for a change made this way; under the mkII's profile it sends a
+    /// `controlText` instead.
+    public func controlChange(item: Int, value: Int, channel: Int = 1) -> [UInt8]? {
         guard let controller = controller(forItem: item), (0...127).contains(value), (1...16).contains(channel) else {
             return nil
         }

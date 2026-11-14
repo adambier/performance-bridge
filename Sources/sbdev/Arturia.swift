@@ -1,8 +1,8 @@
 // sbdev arturia: a prototype that shows a standalone Arturia instrument on the Roto-Control's
 // PLUGIN mode (docs/PLUGIN-MODE-PLAN.md, section 6). sbdev opens the device and runs the
-// handshake as type 02, publishes a virtual port under a first KeyLab keyboard's name for the
-// instrument, and runs the ArturiaRotoDriver library between the two. Run once, with Pigments
-// (docs/ARTURIA.md, test 2).
+// handshake as type 02, publishes a virtual port under a KeyLab keyboard's name for the
+// instrument (a KeyLab mkII's by default), and runs the ArturiaRotoDriver library between the
+// two. Run once, under the first KeyLab's name, with Pigments (docs/ARTURIA.md, test 2).
 
 import Foundation
 import RotoControl
@@ -13,21 +13,30 @@ import MIDITransport
 let arturiaUsage = """
     Usage: sbdev arturia [--port NAME] [--wait] [--device NAME | --in NAME --out NAME] [--gap MS]
         Connects to the Roto-Control, runs the handshake as type 02, and publishes a virtual
-        MIDI source and destination named NAME (--port; default "KeyLab 61"), the name of a
-        controller an Arturia instrument reports its values to. In PLUGIN mode the
-        Roto-Control is then offered one macro plugin with two pages:
+        MIDI source and destination named NAME (--port; default "KeyLab mkII 61"), the name
+        of a controller an Arturia instrument reports its values to. NAME must be one the
+        KeyLab mkII's or the first KeyLab's profile lists (e.g., "KeyLab 61"); the tool talks
+        to the instrument by that profile. In PLUGIN mode the Roto-Control is then offered
+        one macro plugin with two pages:
           page 1   knobs 1–4: Macro 1–4;  knobs 5–8: four parameters of the instrument's own,
-                   shown as Param 1–4 (their real names are not known to this tool)
+                   shown as Param 1–4 until the instrument names them
           page 2   knob 1: Volume
         In MIX mode sbdev shows a page of stand-in tracks, as `sbdev relay` does.
-        This is a prototype for a test (docs/ARTURIA.md, test 2, is its one run so far).
+        This is a prototype for a test (docs/ARTURIA.md, test 2, is its one run so far, under
+        the first KeyLab's name).
+
+        Under the KeyLab mkII's name, the instrument answers a knob turned on the Roto-Control
+        with the control's name and its value in words. The knob then shows that name (Analog
+        Lab V: the preset's own label) until the preset changes, and the instrument's value
+        text in place of a percentage. Names come only from turning the knobs: no instrument
+        has been seen to send them otherwise.
 
         To try it:
-          1. Quit Performance Bridge and every other sbdev tool.
+          1. Quit Performance Bridge and every other sbdev tool, and every Arturia app.
           2. Start `sbdev arturia`, then the instrument.
-          3. In the instrument's audio and MIDI settings window, turn on the port under MIDI
-             Devices (the window's labels have not been recorded). In test 2 Pigments then
-             sent every value.
+          3. In the instrument's Audio MIDI Settings window, check the port under MIDI ports,
+             and make sure Midi Controller (in its MIDI panel) reads "KeyLab mkII" (Pigments
+             has needed it chosen by hand).
           4. Press MODE, then PLUGIN, on the Roto-Control.
         A control's name ends in "?" until the instrument reports its value. To make it
         report, move the control in the instrument's window, or load a preset.
@@ -49,7 +58,7 @@ let arturiaUsage = """
     """ + arturiaCommandHelp
 
 let arturiaCommandHelp = """
-      status        prints the mode, the page, the plugin's name, and each control's value
+      status        prints the mode, the page, the plugin's name, and each control's name and value
       mark <text>   prints a line with the time and the text
       help          this list
       quit          removes the virtual ports and exits
@@ -58,7 +67,7 @@ let arturiaCommandHelp = """
 struct ArturiaOptions {
     var inName = "Roto"
     var outName = "Roto"
-    var portName = "KeyLab 61"
+    var portName = "KeyLab mkII 61"
     var wait = false
     var gapMilliseconds = 5
 }
@@ -83,6 +92,9 @@ func parseArturiaOptions(_ arguments: ArraySlice<String>) -> ArturiaOptions {
         case "-h", "--help": print(arturiaUsage); exit(0)
         default: fail("Unknown option \(argument).\n\n\(arturiaUsage)")
         }
+    }
+    guard ArturiaKeyLabProfile.forPortName(options.portName) != nil else {
+        fail("\"\(options.portName)\" is not a port name of the KeyLab mkII's or the first KeyLab's profile.")
     }
     return options
 }
@@ -119,7 +131,8 @@ final class ArturiaSession: @unchecked Sendable {
 
     init(options: ArturiaOptions) {
         self.options = options
-        driver = ArturiaRotoDriver(waitsForControlMapped: options.wait)
+        driver = ArturiaRotoDriver(profile: ArturiaKeyLabProfile.forPortName(options.portName) ?? .keyLabMkII,
+                                   waitsForControlMapped: options.wait)
     }
 
     func connect() {
@@ -172,7 +185,7 @@ final class ArturiaSession: @unchecked Sendable {
         defer { lock.unlock() }
         log(arturiaLine("instrument → sbdev", bytes, "received"), at: arrived)
         for message in assembler.feed(bytes) {
-            if let parsed = ArturiaInstrumentMessage.parse(message), let words = vportDescribe(parsed) {
+            if let parsed = ArturiaInstrumentMessage.parse(message), let words = vportDescribe(parsed, profile: driver.profile) {
                 log("   " + words, at: arrived)
             }
         }
@@ -248,12 +261,13 @@ final class ArturiaSession: @unchecked Sendable {
     }
 
     private func printStatus() {
-        log("\(driver.isInPluginMode ? "PLUGIN" : "MIX") mode, page \(driver.page + 1), plugin \"\(driver.pluginName)\", preset \(driver.presetName.map { "\"\($0)\"" } ?? "not known")\(options.wait ? ", waiting for CONTROL MAPPED" : "")")
-        for (number, page) in ArturiaRotoDriver.pages.enumerated() {
+        log("profile \(driver.profile.name), \(driver.isInPluginMode ? "PLUGIN" : "MIX") mode, page \(driver.page + 1), plugin \"\(driver.pluginName)\", preset \(driver.presetName.map { "\"\($0)\"" } ?? "not known")\(options.wait ? ", waiting for CONTROL MAPPED" : "")")
+        for (number, page) in driver.pages.enumerated() {
             for (knob, control) in page.enumerated() {
                 guard let control else { continue }
                 let value = driver.value(forItem: control.item).map { "\($0) (\(ArturiaRotoDriver.valueText($0)))" } ?? "not known"
-                print("             page \(number + 1), knob \(knob + 1): \(control.name), item \(control.item): \(value)")
+                let name = driver.name(forItem: control.item).map { "\"\($0)\" from the instrument" } ?? control.name
+                print("             page \(number + 1), knob \(knob + 1): \(name), CC \(control.controller), item \(control.item): \(value)")
             }
         }
     }

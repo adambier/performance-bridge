@@ -12,15 +12,17 @@ let vportUsage = """
         Publishes a virtual MIDI source and a virtual MIDI destination, both named <port name>
         (quote a name with spaces), and prints, with the time since starting, every message
         another program sends to the destination. A message from an Arturia instrument in the
-        format it uses for the first KeyLab keyboards is also printed decoded ("value" or "text";
-        docs/ARTURIA.md). Type a command and press Return:
+        format it uses for the first KeyLab and KeyLab mkII keyboards is also printed decoded
+        ("value", "text", or "control"; docs/ARTURIA.md), with item numbers read by the mkII's
+        profile for a mkII port name and by the first KeyLab's otherwise. Type a command and
+        press Return:
 
     """ + vportCommandHelp
 
 let vportCommandHelp = """
       cc <channel 1–16> <number 0–127> <value 0–127>   sends a control change from the source
-      item <item> <value 0–127>                        sends the control change for one of the "KeyLab"
-                                                       profile's items (e.g., item 1 100 is cc 1 74 100)
+      item <item> <value 0–127>                        sends the control change for one of the profile's
+                                                       items (e.g., item 1 100 is cc 1 74 100)
       raw <hex bytes>                                  sends those bytes from the source (e.g., raw B0 4A 40)
       mark <text>                                      prints a line with the time and the text
       help                                             this list
@@ -42,13 +44,15 @@ func vportRawBytes(_ words: [String]) -> [UInt8]? {
 }
 
 /// A decoded Arturia message in words, or `nil` for one this tool has no words for.
-func vportDescribe(_ message: ArturiaInstrumentMessage) -> String? {
+func vportDescribe(_ message: ArturiaInstrumentMessage, profile: ArturiaKeyLabProfile) -> String? {
     switch message {
     case .value(let item, let value):
-        let controller = ArturiaKeyLabProfile.controller(forItem: item).map { "CC \($0)" } ?? "no CC in the profile"
+        let controller = profile.controller(forItem: item).map { "CC \($0)" } ?? "no CC in the profile"
         return "value     item \(item) (\(controller)) = \(value)"
     case .text(let fields):
         return "text      " + fields.map { "\($0.tag): \"\($0.text)\"" }.joined(separator: "  ")
+    case .controlText(let text):
+        return "control   CC \(text.controller) = \(text.value): \"\(text.name)\", \"\(text.valueText)\""
     case .other:
         return nil
     }
@@ -75,13 +79,14 @@ func virtualPort(_ arguments: ArraySlice<String>) -> Never {
     if let first = arguments.first, first == "-h" || first == "--help" { print(vportUsage); exit(0) }
     guard let name = arguments.first, arguments.count == 1 else { fail(vportUsage) }
     let start = Date()
+    let profile = ArturiaKeyLabProfile.forPortName(name) ?? .keyLab
     let assembler = VportAssembler()
     let port: VirtualMIDIPort
     do {
         port = try VirtualMIDIPort(clientName: "sbdev vport", name: name) { bytes in
             print(vportStamp(since: start) + "received  " + hex(bytes))
             for message in assembler.feed(bytes) {
-                if let parsed = ArturiaInstrumentMessage.parse(message), let words = vportDescribe(parsed) {
+                if let parsed = ArturiaInstrumentMessage.parse(message), let words = vportDescribe(parsed, profile: profile) {
                     print(vportStamp(since: start) + words)
                 }
             }
@@ -107,7 +112,7 @@ func virtualPort(_ arguments: ArraySlice<String>) -> Never {
             case "raw": parsed = vportRawBytes(rest)
             default:
                 parsed = rest.count == 2 ? Int(rest[0]).flatMap { item in
-                    Int(rest[1]).flatMap { ArturiaKeyLabProfile.controlChange(item: item, value: $0) }
+                    Int(rest[1]).flatMap { profile.controlChange(item: item, value: $0) }
                 } : nil
             }
             guard let bytes = parsed else {

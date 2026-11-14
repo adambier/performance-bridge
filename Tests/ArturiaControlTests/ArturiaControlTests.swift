@@ -49,14 +49,43 @@ final class ArturiaKeyLabTests: XCTestCase {
     }
 
     func testProfile() {
-        XCTAssertEqual(ArturiaKeyLabProfile.item(forController: 74), 1)
-        XCTAssertEqual(ArturiaKeyLabProfile.controller(forItem: 8), 17)
-        XCTAssertNil(ArturiaKeyLabProfile.item(forController: 1))
-        XCTAssertEqual(ArturiaKeyLabProfile.controlChange(item: 1, value: 100), bytes("B0 4A 64"))
-        XCTAssertEqual(ArturiaKeyLabProfile.controlChange(item: 48, value: 0, channel: 16), [0xBF, 7, 0])
-        XCTAssertNil(ArturiaKeyLabProfile.controlChange(item: 11, value: 0))
-        XCTAssertNil(ArturiaKeyLabProfile.controlChange(item: 1, value: 128))
-        XCTAssertEqual(Set(ArturiaKeyLabProfile.controls.map(\.item)).count, 11)
-        XCTAssertEqual(Set(ArturiaKeyLabProfile.controls.map(\.controller)).count, 11)
+        XCTAssertEqual(ArturiaKeyLabProfile.keyLab.item(forController: 74), 1)
+        XCTAssertEqual(ArturiaKeyLabProfile.keyLab.controller(forItem: 8), 17)
+        XCTAssertNil(ArturiaKeyLabProfile.keyLab.item(forController: 1))
+        XCTAssertEqual(ArturiaKeyLabProfile.keyLab.controlChange(item: 1, value: 100), bytes("B0 4A 64"))
+        XCTAssertEqual(ArturiaKeyLabProfile.keyLab.controlChange(item: 48, value: 0, channel: 16), [0xBF, 7, 0])
+        XCTAssertNil(ArturiaKeyLabProfile.keyLab.controlChange(item: 11, value: 0))
+        XCTAssertNil(ArturiaKeyLabProfile.keyLab.controlChange(item: 1, value: 128))
+        XCTAssertEqual(Set(ArturiaKeyLabProfile.keyLab.controls.map(\.item)).count, 11)
+        XCTAssertEqual(Set(ArturiaKeyLabProfile.keyLab.controls.map(\.controller)).count, 11)
+    }
+
+    func testMkIIProfile() {
+        let profile = ArturiaKeyLabProfile.keyLabMkII
+        XCTAssertEqual(profile.item(forController: 74), 1)
+        XCTAssertEqual(profile.item(forController: 93), 5)
+        XCTAssertEqual(profile.item(forController: 17), 9)
+        XCTAssertNil(profile.item(forController: 7))
+        XCTAssertEqual(profile.controlChange(item: 9, value: 64), bytes("B0 11 40"))
+        XCTAssertEqual(ArturiaKeyLabProfile.forPortName("KeyLab mkII 61"), profile)
+        XCTAssertEqual(ArturiaKeyLabProfile.forPortName("KeyLab mkII 49 MIDI"), profile)
+        XCTAssertEqual(ArturiaKeyLabProfile.forPortName("KeyLab mkII 88 (1)"), profile)
+        XCTAssertEqual(ArturiaKeyLabProfile.forPortName("KeyLab 61"), .keyLab)
+        XCTAssertNil(ArturiaKeyLabProfile.forPortName("KeyLab 61 mk3 MIDI"))
+    }
+
+    func testControlText() {
+        // Analog Lab V, test 4: "Color", "0.236", after control change 74 = 30.
+        let color = bytes("F0 00 20 6B 7F 42 04 00 60 01 43 6F 6C 6F 72 00 02 30 2E 32 33 36 00 03 00 04 63 4A 1E 3B 00 F7")
+        XCTAssertEqual(ArturiaInstrumentMessage.parse(color),
+                       .controlText(ArturiaControlText(name: "Color", valueText: "0.236", controller: 74, value: 30)))
+        // Pigments, test 4: "F1 Cutoff", "1448 Hz", after control change 93 = 80.
+        let cutoff = bytes("F0 00 20 6B 7F 42 04 00 60 01 46 31 20 43 75 74 6F 66 66 00 02 31 34 34 38 20 48 7A 00 03 00 04 63 5D 50 3B 00 F7")
+        XCTAssertEqual(ArturiaInstrumentMessage.parse(cutoff),
+                       .controlText(ArturiaControlText(name: "F1 Cutoff", valueText: "1448 Hz", controller: 93, value: 80)))
+        // A value of 0 (not seen) is read as a value, not as the end of the field.
+        let zero = bytes("F0 00 20 6B 7F 42 04 00 60 01 41 00 02 30 00 03 00 04 63 4A 00 3B 00 F7")
+        XCTAssertEqual(ArturiaInstrumentMessage.parse(zero),
+                       .controlText(ArturiaControlText(name: "A", valueText: "0", controller: 74, value: 0)))
     }
 }

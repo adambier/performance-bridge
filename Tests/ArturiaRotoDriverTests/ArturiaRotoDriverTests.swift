@@ -3,7 +3,9 @@ import XCTest
 import RotoControl
 import ArturiaControl
 
-/// The instrument's messages below are written from the layouts in docs/ARTURIA.md, section 3.
+/// The instrument's messages below are written from the layouts in docs/ARTURIA.md, section 3. The
+/// driver uses the KeyLab mkII's profile unless a test says otherwise: items 1–4 are macros 1–4,
+/// 5–8 the four parameters, and 9 the volume.
 final class ArturiaRotoDriverTests: XCTestCase {
     /// The instrument's value message for an item.
     private func value(_ item: UInt8, _ value: UInt8) -> [UInt8] {
@@ -16,6 +18,15 @@ final class ArturiaRotoDriverTests: XCTestCase {
         bytes += [0x01] + Array(instrument.utf8) + [0x00]
         bytes += [0x02] + Array(preset.utf8) + [0x00]
         bytes += [0x03] + Array("Bells".utf8) + [0x00, 0x04, 0x00, 0xF7]
+        return bytes
+    }
+
+    /// The text a KeyLab mkII is sent after a control change: a name, a value text, and field 4.
+    private func controlText(_ name: String, _ valueText: String, controller: UInt8, value: UInt8) -> [UInt8] {
+        var bytes: [UInt8] = [0xF0, 0x00, 0x20, 0x6B, 0x7F, 0x42, 0x04, 0x00, 0x60]
+        bytes += [0x01] + Array(name.utf8) + [0x00]
+        bytes += [0x02] + Array(valueText.utf8) + [0x00]
+        bytes += [0x03, 0x00, 0x04, 0x63, controller, value, 0x3B, 0x00, 0xF7]
         return bytes
     }
 
@@ -107,15 +118,15 @@ final class ArturiaRotoDriverTests: XCTestCase {
 
     func testUnknownThenKnownFromTheInstrument() {
         var driver = driverInPluginMode()
-        let output = driver.fromInstrument(value(9, 74), now: 1)
-        // Item 9 is knob 5 (Param 1): the name without "?", the position, and the value's text.
+        let output = driver.fromInstrument(value(5, 74), now: 1)
+        // Item 5 is knob 5 (Param 1): the name without "?", the position, and the value's text.
         XCTAssertEqual(output.toDevice, [rename(5, "Param 1"), .knob(4, position: ArturiaRotoDriver.position(forValue: 74)), show(4, "58%")])
         XCTAssertEqual(output.toInstrument, [], "a value the instrument reported is not sent back to it")
         // A second value: no name again.
-        XCTAssertEqual(driver.fromInstrument(value(9, 0), now: 2).toDevice, [.knob(4, position: 0), show(4, "0%")])
+        XCTAssertEqual(driver.fromInstrument(value(5, 0), now: 2).toDevice, [.knob(4, position: 0), show(4, "0%")])
         // An item on the other page is only kept.
-        XCTAssertTrue(driver.fromInstrument(value(8, 86), now: 3).isEmpty)
-        XCTAssertEqual(driver.value(forItem: 8), 86)
+        XCTAssertTrue(driver.fromInstrument(value(9, 86), now: 3).isEmpty)
+        XCTAssertEqual(driver.value(forItem: 9), 86)
         // An item with no control at all.
         XCTAssertTrue(driver.fromInstrument(value(48, 5), now: 3).isEmpty)
     }
@@ -208,7 +219,7 @@ final class ArturiaRotoDriverTests: XCTestCase {
 
     func testPaging() {
         var driver = driverInPluginMode()
-        _ = driver.fromInstrument(value(8, 86), now: 1)
+        _ = driver.fromInstrument(value(9, 86), now: 1)
         let second = driver.fromDevice(.message(.macroPage(1)), now: 2)
         XCTAssertEqual(second.toDevice, [learn(1, "Volume", ArturiaRotoDriver.position(forValue: 86)),
                                          .knob(0, position: ArturiaRotoDriver.position(forValue: 86))])
@@ -253,5 +264,71 @@ final class ArturiaRotoDriverTests: XCTestCase {
         let message = value(2, 127)
         XCTAssertTrue(driver.fromInstrument(Array(message.prefix(5)), now: 1).isEmpty)
         XCTAssertEqual(driver.fromInstrument(Array(message.dropFirst(5)), now: 1).toDevice.first, rename(2, "Macro 2"))
+    }
+
+    func testTheFirstKeyLabsProfileNumbersItemsItsOwnWay() {
+        var driver = ArturiaRotoDriver(profile: .keyLab)
+        XCTAssertEqual(driver.pages[0][4], ArturiaRotoControl(controller: 93, item: 9, name: "Param 1"))
+        XCTAssertEqual(driver.pages[1][0], ArturiaRotoControl(controller: 17, item: 8, name: "Volume"))
+        _ = driver.fromDevice(.message(.pluginMode), now: 0)
+        XCTAssertEqual(driver.fromInstrument(value(9, 74), now: 1).toDevice.first, rename(5, "Param 1"))
+        XCTAssertEqual(driver.fromDevice(.control(.knob(4, position: 0)), now: 2).toInstrument, [[0xB0, 93, 0]])
+    }
+
+    func testControlTextNamesTheKnobAndShowsTheInstrumentsValueText() {
+        var driver = driverInPluginMode()
+        // The knob is turned: control change 93 = 80 goes to the instrument, with a percentage,
+        // since the instrument has sent no text yet.
+        let turned = driver.fromDevice(.control(.knob(4, position: ArturiaRotoDriver.position(forValue: 80))), now: 1.0)
+        XCTAssertEqual(turned.toInstrument, [[0xB0, 93, 80]])
+        XCTAssertEqual(turned.toDevice, [rename(5, "Param 1"), show(4, "63%")])
+        // The instrument answers with the name and its value text: the knob is renamed and shows
+        // the text; the value is already known, so the knob is not moved.
+        let answer = controlText("F1 Cutoff", "1448 Hz", controller: 93, value: 80)
+        XCTAssertEqual(driver.fromInstrument(answer, now: 1.1).toDevice, [rename(5, "F1 Cutoff"), show(4, "1448 Hz")])
+        XCTAssertEqual(driver.name(forItem: 5), "F1 Cutoff")
+        XCTAssertTrue(driver.instrumentSendsText)
+        // The same text twice more, as the instrument sends it: nothing.
+        XCTAssertTrue(driver.fromInstrument(answer + answer, now: 1.2).isEmpty)
+        // From now on a turn waits for the instrument's text.
+        let again = driver.fromDevice(.control(.knob(4, position: ArturiaRotoDriver.position(forValue: 90))), now: 2.0)
+        XCTAssertEqual(again.toInstrument, [[0xB0, 93, 90]])
+        XCTAssertEqual(again.toDevice, [])
+        XCTAssertEqual(driver.fromInstrument(controlText("F1 Cutoff", "2018 Hz", controller: 93, value: 90), now: 2.03).toDevice,
+                       [show(4, "2018 Hz")])
+        XCTAssertTrue(driver.tick(now: 2.3).isEmpty, "the text came: no percentage")
+        // A turn the instrument doesn't answer shows a percentage after 0.2 s.
+        _ = driver.fromDevice(.control(.knob(4, position: 0)), now: 3.0)
+        XCTAssertTrue(driver.tick(now: 3.1).isEmpty)
+        XCTAssertEqual(driver.tick(now: 3.21).toDevice, [show(4, "0%")])
+        // LEARN PARAM carries the instrument's name.
+        let page = driver.fromDevice(.message(.macroPage(0)), now: 4).toDevice
+        XCTAssertEqual(page[4], learn(5, "F1 Cutoff", 0))
+    }
+
+    func testControlTextFromElsewhereMovesTheKnob() {
+        var driver = driverInPluginMode()
+        // A control change the driver didn't send (e.g., from another controller on the port).
+        let output = driver.fromInstrument(controlText("Color", "0.236", controller: 74, value: 30), now: 1)
+        XCTAssertEqual(output.toDevice, [rename(1, "Color"), .knob(0, position: ArturiaRotoDriver.position(forValue: 30)),
+                                         show(0, "0.236")])
+        // Another value, with a known value before it: renamed first, then moved.
+        let next = driver.fromInstrument(controlText("Tone", "0.5", controller: 74, value: 64), now: 2)
+        XCTAssertEqual(next.toDevice, [rename(1, "Tone"), .knob(0, position: ArturiaRotoDriver.position(forValue: 64)), show(0, "0.5")])
+    }
+
+    func testANewPresetForgetsTheNames() {
+        var driver = driverInPluginMode()
+        _ = driver.fromInstrument(text("Analog Lab", "*Fiber Lines"), now: 0.5)
+        _ = driver.fromDevice(.control(.knob(0, position: ArturiaRotoDriver.position(forValue: 30))), now: 1)
+        _ = driver.fromInstrument(controlText("Color", "0.236", controller: 74, value: 30), now: 1.03)
+        XCTAssertEqual(driver.name(forItem: 1), "Color")
+        // The same preset's text again (sent 2 s after a control text): the name stays.
+        XCTAssertEqual(driver.fromInstrument(text("Analog Lab", "*Fiber Lines"), now: 3).toDevice, [])
+        XCTAssertEqual(driver.name(forItem: 1), "Color")
+        // Another preset: the knob goes back to the driver's name.
+        let next = driver.fromInstrument(text("Analog Lab", "*00 ZENNY 1"), now: 4).toDevice
+        XCTAssertEqual(next, [rename(1, "Macro 1"), .message(.currentTrackName("00 ZENNY 1"))])
+        XCTAssertNil(driver.name(forItem: 1))
     }
 }

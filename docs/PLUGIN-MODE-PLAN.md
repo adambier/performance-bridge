@@ -163,7 +163,10 @@ them:
   controller. That answers "Names" and "Values" above without reading files: the driver learns a
   knob's name the first time the knob is turned, and shows the instrument's own value text
   ("1448 Hz") in place of a percentage. The item numbers differ, and the port is "KeyLab mkII
-  61" (or 49 or 88).
+  61" (or 49 or 88). Done in `ArturiaRotoDriver` and `sbdev arturia` (2026-11-14), untested on
+  the device (A7): a name learned from the instrument is kept until the preset's name changes;
+  once the instrument has sent any value text, a turned knob waits up to 0.2 s for the
+  instrument's text before showing a percentage.
 - **Not the mk3.** Its profile was probed too, with Pigments and Analog Lab V (tests 5 and 6): for
   the knobs it gives what the mkII's gives, in a second message format, plus Save, Undo, and
   Redo, which could go on switches later. Neither profile brings Analog Lab V's labels before a
