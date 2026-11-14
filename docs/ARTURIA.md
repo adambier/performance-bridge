@@ -15,8 +15,16 @@ they happened and took plain control changes from it[^test-1][^test-2]; in the s
 prototype kept a Roto-Control's knobs and Pigments' controls in step in both directions.[^test-2]
 Analog Lab V, in one test with the probe, reported to the same port and took a control change
 from it.[^test-3] The other instruments share the profile file but are untested. The limits:
-nine useful controls an instrument (eleven in Analog Lab V), 7-bit values, no value text, no
-names for the controls, and no way yet known to ask for the values (sections 3 and 5).
+nine useful controls an instrument (eleven in Analog Lab V), 7-bit values, and no way yet known
+to ask for the values (sections 3 and 5).
+
+**Which controller to imitate.** The KeyLab mkII's profile uses the same messages as the first
+KeyLab's and adds what the first lacks: when a control is changed from the controller, Analog
+Lab V and Pigments each sent the control's name and its value in words (e.g., "F1 Cutoff" and
+"1448 Hz").[^test-4] Analog Lab V sent the name the preset gives the control; Pigments sent its
+parameter's fixed name ("Macro 1", where its window shows "Timbre"). Everything here is about
+the standalone apps. Nothing has been tested with the plugins in a DAW, and nothing found here
+should be assumed to hold there (Adam, 2026-11-14).
 
 **How sure each statement is.** A plain statement describes what was found. A statement that rests
 on a source has a footnote: a test with the instrument running, described in section 6, or a
@@ -30,6 +38,12 @@ has not been checked, the text says so in words ("inference", "untested").
     (2026-11-14), section 6; Pigments standalone, version not rechecked since test 1.
 [^test-3]: [Test 3](#test-3-2026-11-14-analog-lab-v-and-a-virtual-keylab-61) (2026-11-14),
     section 6; Analog Lab V standalone, version not read that day.
+[^test-4]: [Test 4](#test-4-2026-11-14-a-virtual-keylab-mkii-61-with-analog-lab-v-and-pigments)
+    (2026-11-14), section 6; Analog Lab V and Pigments standalone, versions not read that day.
+[^files-2]: The controller profile files and one preset file, read directly on Adam's Mac
+    (read-only) on 2026-11-14: `controllers-common.prefmidi.xml` in Pigments' resources,
+    `controllers.prefmidi.xml` in Analog Lab V's, and Pigments' factory preset "Hanging Threads".
+    One reader.
 [^files]: The files Arturia's installers put on Adam's Mac, read on 2026-11-13 by two AI agents
     working through a read-only view of the folders (section 1). Their reports and scripts are
     kept outside this repository. The reading was not repeated by a second reader.
@@ -40,7 +54,7 @@ has not been checked, the text says so in words ("inference", "untested").
 ## 1. Sources
 
 - **Tests** with an instrument running, in section 6. Three so far: two with Pigments and one
-  with Analog Lab V.
+  with Analog Lab V, and one with both.
 - **Installed files** (Pigments 7.0.1.6772, MiniFreak V 5.1.1.6945, Analog Lab V 5.12.6.6914, and
   about 45 V Collection and Augmented instruments, as their bundles give their versions).[^files]
   Each instrument has, among its resources:
@@ -73,6 +87,20 @@ headers.[^code]
   known.
 - Pigments' MIDI Config menu lists three factory configurations: Generic, KeyLab (marked as the
   default), and Empty (seen).[^test-1]
+- **The profiles compared.**[^files-2] The first KeyLab's, the KeyLab Essential's, and the KeyLab
+  mkII's all use the message family of section 3 (the files call it version 2). The Essential's
+  and the mkII's carry a flag for displaying values, which the first KeyLab's lacks; test 4 shows
+  what it does. Both list nine controls, on control changes 74, 71, 76, 77, 93, 18, 19, 16, and
+  17 as items 1–9 (so items 5–9 are not the first KeyLab's). The mkII's port names are "KeyLab
+  mkII 49", "61", and "88", each also with " MIDI" or " (1)" after it. In Analog Lab V's own
+  file these profiles also declare that all values are sent when a certain control change
+  arrives; the shared file doesn't. The KeyLab mk3's and Essential mk3's profiles use a newer
+  family (version 3: another display message, a property message for knob values, and a connect
+  step), which has not been read further.
+- With a port named "KeyLab mkII 61", Analog Lab V chose "KeyLab mkII" as its MIDI Controller by
+  itself; in Pigments Adam had to choose it (seen).[^test-4] Why they differed is not known.
+- The audio and MIDI settings window is titled "Audio MIDI Settings" in Pigments, and the list
+  is "MIDI ports" under "MIDI Settings" (seen).[^test-4]
 - A profile cannot be added without changing Arturia's files[^files], which this project does not
   do (AGENTS.md, section 4). So a program that wants an instrument's reports has to publish a port
   under one of a real controller's names.
@@ -110,17 +138,27 @@ the "KeyLab" profile's format the next two bytes are `7F 42`.
   for each preset (e.g., "Filters", "Density", "Time", and "FX", then "Color", "Morph", "Time",
   and "Motion"; seen), and none of those names was sent, on connecting, at the preset change, or
   while four of the controls were dragged.[^test-3]
+- **A control's name and value, under the mkII profile.** After a control change from the
+  controller, the instrument sent the text message with the control's name in field 1, its value
+  in words in field 2, field 3 empty, and in field 4 the letter "c", the control change's number
+  and value as two bytes, and ";". It came three times within about 0.1 s, and the usual text
+  (instrument, preset, type) came back 2.0 s later. Five control changes, five times.[^test-4]
+  The values read "0.236", "0.709", and "39 %" from Analog Lab V and "0.472" and "1448 Hz" from
+  Pigments. A drag in the instrument's window drew no such text (Analog Lab V, two drags); so
+  the text follows the controller's own changes, an inference from those two cases.
 - **Text.** The fields seen were tag 1 with the instrument's name ("Pigments"), tag 2 with the
   preset's name behind an asterisk, tag 3 with a second word about the preset ("Bells",
   "Template"), and tag 4 empty. The message came twice each time, when the controller was first
   found and after the preset change.[^test-1] What the asterisk means is not known; it was there
   on a preset just loaded, and in test 3 on a preset whose name had none in Analog Lab V's
-  window.[^test-3] No text came with a value: a parameter's name and its value in words
-  (e.g., "50%") have not been seen.
+  window.[^test-3] Under the first KeyLab's profile no text came with a value; under the
+  mkII's it does (above).
 - **On connecting: sometimes.** The profile declares that current values are sent just after
   connecting.[^files] When the port was turned on in test 1, only the text came[^test-1]; in test
-  2 the same action brought all nine values within 46 ms, and then the text.[^test-2] What
-  differed is not known (in test 1 Pigments was started after the port existed; in test 2 it may
+  2 the same action brought all nine values within 46 ms, and then the text[^test-2]; in test
+  4, with the mkII port, Pigments sent lights and the text and no values.[^test-4] What
+  differed is not known; which controller Pigments had selected beforehand was not recorded in
+  any of the three, and is the first thing to hold fixed next time (Adam, 2026-11-14) (in test 1 Pigments was started after the port existed; in test 2 it may
   have been running already). Whether the values come when an instrument starts with the port
   already turned on is untested.
 - **Resolution.** The value message carries 7 bits, and a motorized knob following it moves in
@@ -158,6 +196,12 @@ the "KeyLab" profile's format the next two bytes are `7F 42`.
   loaded preset maps.[^files] In test 3 it reported all eleven items, with item 48 (control
   change 7) at a value that fits its Master knob, an inference; items 1–4 moved as its first four
   knobs were dragged, and control change 74 moved the first (seen).[^test-3]
+- **Per-preset names.** Pigments' window labels its four macros per preset, and its factory
+  preset file holds those labels as four named fields ("Hanging Threads": Timbre, Time,
+  Inharmonicity, and Delay, as the window showed).[^files-2][^test-4] So a controller that knows
+  the instrument and the preset (the text message gives both) could read the labels from the
+  preset's file. Untested, and open: two presets of one name, where user presets are kept,
+  whether other instruments store the labels the same way, and a label changed but not saved.
 - **Parameters the user assigns.** The reports follow the control change number, not the
   parameter.[^files] The inference, untested, is that a parameter the user assigns to one of the
   eleven control change numbers with the instrument's MIDI learn would be reported under that
@@ -179,7 +223,8 @@ the "KeyLab" profile's format the next two bytes are `7F 42`.
    reported trouble with MiniFreak V's MIDI learn on
    [Arturia's forum](https://forum.arturia.com/t/bug-minifreak-v-midi-learn-not-quite-working/2615);
    nothing here has been tried with it.
-3. Do "KeyLab 25" and the other names work as "KeyLab 61" does? A name of a controller the user
+3. Do "KeyLab 25" and the other names work as "KeyLab 61" does? (With the mkII's profile now the
+   better one to imitate, the same question goes for "KeyLab mkII 49" and "88".) A name of a controller the user
    doesn't own would be less confusing in the instrument's settings (Adam, 2026-11-13).
 4. Does a parameter assigned by MIDI learn report under its control change's item?
 5. Does the change of controller and configuration persist, and does it disturb a real KeyLab mk3
@@ -188,6 +233,10 @@ the "KeyLab" profile's format the next two bytes are `7F 42`.
    showed there before and after test 2 was not recorded.
 6. Can a control be driven, or reported, with more than 7 bits (NRPN in; the newer controllers'
    message family out)?
+8. Do Arturia's apps share their MIDI settings, and does that explain why the same step went
+   differently from run to run (Adam, 2026-11-14)? Where each app saves them has not been read.
+9. Which control change makes Analog Lab V send all its values under the mkII profile, and does
+   it work?
 7. Is the plugin, in a DAW, reachable the same way? The reading suggests the controller code is
    in the plugin[^code], but a DAW has its own, better path to a plugin's parameters.
 
@@ -314,3 +363,41 @@ sends the names it gives its controls for each preset.
 **Not tested.** Whether items 5–10 are the window's other knobs; the faders moved by hand; the
 lights' meaning; what Analog Lab V's MIDI tab showed before the test, and whether its setting
 changed.
+
+### Test 4 (2026-11-14): a virtual "KeyLab mkII 61", with Analog Lab V and Pigments
+
+**Setup.** Adam's Mac; `sbdev vport "KeyLab mkII 61"` on branch `vport-probe`, with its output
+also written to a file; Analog Lab V standalone, still running from test 3 with the preset "Fiber
+Lines", and then Pigments standalone. The log (635 lines) is whole and is kept outside this
+repository; the counts below come from a script over it. Adam's notes and screenshots are marked
+"seen". The probe labels values with the first KeyLab's control change numbers, which are wrong
+for items 5–9 under this profile; the items below are as received.
+
+**Analog Lab V:**
+
+- **Connecting.** In 88 ms (14.284–14.372 s): 29 value messages for items 1–9, 23 light messages
+  for 14 lights, and the text once ("Augmented VOICES", "*Fiber Lines", "Poly Lead"). Its MIDI
+  Controller read "KeyLab mkII", and the window showed nine knobs over nine faders (seen). Adam
+  did not choose the controller.
+- **Two drags in the window** (Color, then Chorus Mix; seen): 172 value messages for item 1 and
+  94 for item 5. No text.
+- **Control changes from the probe.** `cc 1 74 30`: the text "Color", "0.236", three times from
+  66 ms after, and the usual text 2.06 s after. `cc 1 74 90`: "Color", "0.709"; Color moved to
+  about 70% (seen). `cc 1 93 50`: "Chorus Mix", "39 %"; Chorus Mix moved (seen). No value message
+  followed any of them.
+- **Quitting** sent a value 0 for item 89 and one short message of another kind (`7F 42 00 00 05
+  00` after the manufacturer ID), not seen before.
+
+**Pigments** (preset "Hanging Threads", whose macros the window labels Timbre, Time,
+Inharmonicity, and Delay; seen):
+
+- **Connecting.** Adam turned the port on under MIDI ports and had to choose "KeyLab mkII" as the
+  MIDI Controller himself (seen); MIDI Config read "KeyLab" and Fader Mode "Scale" (seen). In
+  28 ms (610.557–610.585 s): 27 light messages for 11 lights and the text once ("Pigments",
+  "*Hanging Threads", "Evolving Keys"). No value message.
+- **Control changes from the probe.** `cc 1 74 60`: "Macro 1", "0.472", three times from 24 ms
+  after; the M1 bar in the window rose (seen in two screenshots). `cc 1 93 80`: "F1 Cutoff",
+  "1448 Hz". Pigments' MIDI tab lists 74 as Macro 1 and 93 as F1 Cutoff (seen).
+
+**Not tested.** Whether a control turned on a real controller draws the text for every step or
+only now and then; the faders; the value request; any other instrument; either plugin in a DAW.

@@ -155,6 +155,27 @@ What the first run of the prototype showed (`docs/ARTURIA.md`, test 2), and what
 - **Names.** "Param 1" to "Param 4" tell the user nothing; reading the instrument's files for
   the real names matters more than it seemed (knob 5 was Filter 1's cutoff in one preset).
 
+Then tests 3 and 4 (`docs/ARTURIA.md`) changed the picture, and the driver should change with
+them:
+
+- **Imitate the KeyLab mkII, not the first KeyLab.** Same messages, and the instrument then
+  sends each control's name and its value in words when the control is changed from the
+  controller. That answers "Names" and "Values" above without reading files: the driver learns a
+  knob's name the first time the knob is turned, and shows the instrument's own value text
+  ("1448 Hz") in place of a percentage. The item numbers differ, and the port is "KeyLab mkII
+  61" (or 49 or 88).
+- **Per-preset labels** (Adam, 2026-11-14: the aim is what Analog Lab V gives, on the single
+  instruments too). Analog Lab V sends the preset's own label for a control; Pigments sends
+  "Macro 1" where its window says "Timbre". Pigments' preset file holds the labels, so the driver
+  could look them up by the instrument and preset names the text message gives. A proposal,
+  with open questions in `docs/ARTURIA.md`, section 4.
+- **Names before the first turn.** A knob has no name until it is turned once, or until the
+  preset file is read. Open: whether sending each control's current value back to the instrument
+  on a preset change would draw all nine names without changing anything.
+- **The plugins are a separate question** (Adam, 2026-11-14). In a DAW the names come through
+  the plugin interface, where Analog Lab V is seen to rename its parameters per preset and the
+  single instruments are not. None of the above has been tried with a plugin.
+
 ## 7. Tests, in order
 
 Arturia (each a few minutes with `sbdev vport`):
@@ -162,6 +183,10 @@ Arturia (each a few minutes with `sbdev vport`):
 - **A1.** Start Pigments with the port already turned on. Do the values come?
 - **A2.** MiniFreak V, a V Collection instrument, and Analog Lab V in place of Pigments.
 - **A3.** "KeyLab 25" in place of "KeyLab 61".
+- **A7.** `sbdev arturia` on the mkII profile, with a Roto-Control: do names and value text
+  follow each knob, at what rate, and does the text keep up with a turning knob?
+- **A8.** The preset-file lookup for macro labels: a second instrument, a user preset, and two
+  presets of one name.
 - **A4.** Assign another parameter to control change 74 by MIDI learn. Does it report as item 1?
 - **A5.** Two instruments at once, on two port names.
 - **A6.** Adam's KeyLab 61 mk3 with the same instrument afterward: does it still work as before?
