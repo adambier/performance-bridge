@@ -26,6 +26,9 @@ parameter's fixed name ("Macro 1", where its window shows "Timbre"). Everything 
 the standalone apps. Nothing has been tested with the plugins in a DAW, and nothing found here
 should be assumed to hold there (Adam, 2026-11-14).
 
+[ARTURIA-KEYLAB.md](ARTURIA-KEYLAB.md) arranges the same findings by controller (the first
+KeyLab, the KeyLab mkII, and the KeyLab mk3), as a reference for imitating one.
+
 **How sure each statement is.** A plain statement describes what was found. A statement that rests
 on a source has a footnote: a test with the instrument running, described in section 6, or a
 reading of the files Arturia installs, described in section 1. Statements from the files say what
@@ -40,6 +43,8 @@ has not been checked, the text says so in words ("inference", "untested").
     section 6; Analog Lab V standalone, version not read that day.
 [^test-4]: [Test 4](#test-4-2026-11-14-a-virtual-keylab-mkii-61-with-analog-lab-v-and-pigments)
     (2026-11-14), section 6; Analog Lab V and Pigments standalone, versions not read that day.
+[^test-5]: [Test 5](#test-5-2026-11-14-a-virtual-keylab-61-mk3-midi-with-pigments) (2026-11-14),
+    section 6; Pigments standalone, version not read that day.
 [^files-2]: The controller profile files and one preset file, read directly on Adam's Mac
     (read-only) on 2026-11-14: `controllers-common.prefmidi.xml` in Pigments' resources,
     `controllers.prefmidi.xml` in Analog Lab V's, and Pigments' factory preset "Hanging Threads".
@@ -66,8 +71,9 @@ has not been checked, the text says so in words ("inference", "untested").
   message.[^code]
 
 Arturia publishes none of this as a protocol. The profile for Arturia's newer controllers (KeyLab
-mk3 and others) uses a second, larger message family that has not been looked at beyond its
-headers.[^code]
+mk3 and others) uses a second message family; test 5 shows what Pigments sends in it, and
+[ARTURIA-KEYLAB.md](ARTURIA-KEYLAB.md), section 5, describes it.[^code][^test-5] It gave nothing
+for the knobs that the mkII's profile doesn't: the same fixed names, and 7-bit values.
 
 ## 2. How an instrument finds a controller
 
@@ -231,8 +237,8 @@ the "KeyLab" profile's format the next two bytes are `7F 42`.
    used with the same instrument afterward? After test 1, Adam set MIDI Controller back to
    "KeyLab mk3" by hand; MIDI Config stayed on "KeyLab", the factory default. What Pigments
    showed there before and after test 2 was not recorded.
-6. Can a control be driven, or reported, with more than 7 bits (NRPN in; the newer controllers'
-   message family out)?
+6. Can a control be driven, or reported, with more than 7 bits? Not reported, under the mk3's
+   profile: 137 values from Pigments were 7-bit (test 5). NRPN in is untried.
 7. Is the plugin, in a DAW, reachable the same way? The reading suggests the controller code is
    in the plugin[^code], but a DAW has its own, better path to a plugin's parameters.
 8. Do Arturia's apps share their MIDI settings, and does that explain why the same step went
@@ -401,3 +407,31 @@ Inharmonicity, and Delay; seen):
 
 **Not tested.** Whether a control turned on a real controller draws the text for every step or
 only now and then; the faders; the value request; any other instrument; either plugin in a DAW.
+
+### Test 5 (2026-11-14): a virtual "KeyLab 61 mk3 MIDI", with Pigments
+
+**Setup.** Adam's Mac, with his real KeyLab 61 mk3 unplugged; Pigments standalone, already
+running (preset "Hanging Threads", Midi Controller "KeyLab mkII" from test 4, whose port had gone);
+then `sbdev vport "KeyLab 61 mk3 MIDI"`, with its output also written to a file. The log (176
+lines) is whole and is kept outside this repository; the counts below come from a script over
+it. The probe does not decode this message family, so the readings below are from the bytes.
+Adam's notes and a screenshot are marked "seen".
+
+- **Before the port was turned on.** The port was published with Pigments running. It was listed
+  under MIDI ports, turned off (seen), and nothing arrived in the first 60 s.
+- **Turning the port on** (seen): Midi Controller changed to "KeyLab mk3" by itself. In 74 ms
+  (60.187–60.261 s) came 22 messages, all with the header `7F 42 00 0D`: three connect messages
+  (on, off, on), a screen with "Hanging Threads*" and "Evolving Keys", and screens 1–8, some more
+  than once, the first four each with an icon number and a color and the last four empty. No
+  knob value.
+- **A control change in** (`cc 1 74 70`): Macro 1 moved (seen). 27 ms later a screen with
+  "0.551", "Macro 1", and the value 70, three times; 2.0 s later the preset screen and screens
+  1–8 again.
+- **A drag of Macro 1 in the window** (seen): 137 value messages in 3.2 s, each with item 0, the
+  value in one byte (0–127; 107 different values), and a last byte that was 0 every time.
+- **Removing the port** with Pigments running (seen): nothing was turned on under MIDI ports
+  afterward, and Midi Controller still read "KeyLab mk3".
+
+**Not tested.** Analog Lab V under this profile; the Save, Undo, Redo, Back, and display button
+control changes (Save could overwrite a preset); anything sent to Pigments in this format; a
+real KeyLab mk3 beside the virtual port.

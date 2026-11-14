@@ -47,7 +47,8 @@ statement there carries its evidence.
 | `docs/LAUNCH-CONTROL-XL3.md` | The same for the Launch Control XL 3, from Novation's documents and tests on the device |
 | `docs/LAUNCH-CONTROL-3.md` | The same for the Launch Control 3, from Novation's documents (no device yet) |
 | `docs/OXI-E16.md` | The same for the OXI E16's Remote Mode, from OXI's sheet and manual and tests on Adam's unit |
-| `docs/ARTURIA.md` | Whether Arturia's standalone instruments can be controlled in both directions, from a test with Pigments and a reading of the installed files |
+| `docs/ARTURIA.md` | Whether Arturia's standalone instruments can be controlled in both directions, from tests with Pigments and Analog Lab V and a reading of the installed files |
+| `docs/ARTURIA-KEYLAB.md` | A reference to what Arturia's instruments expect of the first KeyLab, the KeyLab mkII, and the KeyLab mk3 (port names, messages, controls), for imitating one; the evidence is in `docs/ARTURIA.md` |
 | `docs/PLUGIN-MODE-PLAN.md` | The plan for the Roto-Control's PLUGIN mode: a relay to Bitwig Studio's and Logic Pro's own integrations, a driver for Arturia's standalone instruments, and the tests each needs. A plan, not a record |
 
 ## 3. Architecture and what comes next
