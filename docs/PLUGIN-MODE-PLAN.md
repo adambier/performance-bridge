@@ -410,6 +410,11 @@ each "inference" or "guess" is marked.
    or NRPN through MIDI learn)? Unknown; if so, the standalone path loses its largest limit.
 5. How does a host learn which preset a plugin has loaded?
 6. Is Performance Bridge in the audio path acceptable on stage?
+7. If a host, which plugin format? Audio Units are the cheapest to host on a Mac. Adam asks
+   whether they have a name for being buggy or slow next to other formats. From recollection,
+   not checked: not for speed; for bugs in makers' less-tested Audio Unit builds, and for
+   telling a host less about changed parameter names than VST3 or CLAP do. The probe's result
+   on names matters more than the reputation.
 
 **Improving Melbourne Instruments' Bitwig integration** (Adam, 2026-11-14). Its code is
 MIT-licensed. One pull request with every improvement, prepared once each is understood and
@@ -435,8 +440,11 @@ answer. So:
 
 - the draft of item 1 now applies to the fork's newest code (`e0cd9eb`), builds there against
   extension API 25, and its tests pass; it has still not run in Bitwig;
-- which version Adam's Bitwig Studio has, and whether it comes with Bitwig or was installed by
-  hand, is to be checked;
+- Adam's is the one that comes with Bitwig Studio 6.1.4 (Adam, 2026-11-14), so what users run
+  is whatever Bitwig ships, and a change reaches them only through a Bitwig release. Whether
+  Bitwig builds it from the fork is not known; the fork's newest commits (2026-10-30) are later
+  than 6.1.4's build date (2026-10-02). Whether a build put in the user's Extensions folder
+  takes the place of the one that comes with Bitwig is untested;
 - where a contribution should go (the fork, Melbourne Instruments' repository, or first a
   message to either) is Adam's to decide, and the closed pull requests bear on it.
 

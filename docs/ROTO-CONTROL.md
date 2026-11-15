@@ -842,7 +842,7 @@ open: section 8, items 7 and 8, and a repeat of run 2 with the whole log kept.
 Instruments' controller extension, its two ports set to "PB Roto Relay" (seen), and Takeover
 mode "Catch" (seen). Pigments and Analog Lab V as plugins (the plugin format was not noted), and
 a KeyLab 61 mk3 on Bitwig's own "Arturia KeyLab Mk3" controller. Which build of the extension
-is installed was not checked. These are tests B1 and B2 of `docs/PLUGIN-MODE-PLAN.md`, and the
+is installed was not checked; it is the one that comes with Bitwig Studio (Adam, afterward). These are tests B1 and B2 of `docs/PLUGIN-MODE-PLAN.md`, and the
 start of B3. One log, kept whole (0–1528.7 s, 1,890 messages); the counts below come from a
 script over it, and Adam's notes are marked "seen".
 
