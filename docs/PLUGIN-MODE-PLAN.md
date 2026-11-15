@@ -346,7 +346,9 @@ instrument, with values marked unknown until the instrument reports them. Its fi
 5. Before more work on the standalone path: B1–B3, which say whether Bitwig is the better home
    for these instruments (Adam, 2026-11-14).
 
-6. The review of section 10's questions with Adam, before choosing among them.
+6. The review of section 10's questions with Adam, before choosing among them. First of them
+   (Adam, 2026-11-14): whether a standalone instrument takes NRPN at more than 7 bits (section
+   10, "Read on the web"), then the rest of B3.
 
 Each step merges only after the review its tier calls for; until then it lives on a test branch.
 
@@ -446,9 +448,13 @@ each "inference" or "guess" is marked.
   Nothing found says what happens when one there has the same identity as one that comes
   with Bitwig.
 
-**Improving Melbourne Instruments' Bitwig integration** (Adam, 2026-11-14). Its code is
-MIT-licensed. One pull request with every improvement, prepared once each is understood and
-tested, and opened on Adam's word. What test 16 suggests:
+**Improving the Roto-Control's Bitwig integration** (Adam, 2026-11-14). The code is
+MIT-licensed. The aim is to have changes accepted into the version most Bitwig users run. So
+(Adam, the same evening, replacing "one pull request with everything"): small pull requests,
+one per coherent change, to the author's fork (below), each prepared once it is understood and
+tested in Bitwig, and opened on Adam's word; Adam introduces himself to the author before the
+first. A commit keeps its usual co-author line, and a description says plainly what was tested
+and how. What test 16 suggests:
 
 1. **Names fitted, not cut**, a page at a time, so that different parameters keep different
    names. Drafted against the published code (commit 2d43a72) and built with its tests; kept
@@ -475,8 +481,15 @@ answer. So:
   Bitwig builds it from the fork is not known; the fork's newest commits (2026-10-30) are later
   than 6.1.4's build date (2026-10-02). Whether a build put in the user's Extensions folder
   takes the place of the one that comes with Bitwig is untested;
-- where a contribution should go (the fork, Melbourne Instruments' repository, or first a
-  message to either) is Adam's to decide, and the closed pull requests bear on it.
+- the author also writes extensions that come with Bitwig: 458 of the 1,423 commits in
+  Bitwig's public extensions repository
+  ([bitwig/bitwig-extensions](https://github.com/bitwig/bitwig-extensions), counted
+  2026-11-14) are his, from February 2021 to October 2026. The Roto-Control's extension is not
+  in that repository, so where Bitwig builds it from is not known; his fork is the nearest
+  public source (an inference that Bitwig's copy comes from the same work);
+- in his own repositories he has merged four pull requests from outside, all from one
+  contributor, in 2022 and 2023, each small and on one subject, and has not merged seven from
+  another (2025 and 2026). That is the case for small, single-purpose pull requests to the fork.
 
 That issue, from another integrator, also says two things worth checking before items 2 and 3:
 that answering CONTROL MAPPED for a stored (learned) plugin caused problems and ignoring it
