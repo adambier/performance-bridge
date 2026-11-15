@@ -704,8 +704,9 @@ devices and windows showed is Adam's report ("seen").
   ("Fiber Lines": Color, Morph, Time, Motion, Chorus Mix, Phaser Mix, Delay Volume, Reverb Volume,
   the last cut to 12 characters on the device; "22 Bongo 2": Brightness, Timbre, Time, Movement,
   and the same four; seen, and in the log one knob at a time, each answer three times). After
-  the asking Analog Lab V's screen marked "22 Bongo 2" as changed; in run 2 Adam saw no asterisk
-  on another preset.
+  the asking, Analog Lab V's preset screen marked the preset as changed, for all four presets
+  asked in runs 2 and 3 (in the logs); for one of them Adam saw no asterisk in Analog Lab V's
+  window, so what the window shows was not settled.
 - At a preset change the Roto-Control shows a percentage for each value the instrument reports
   without a text.
 

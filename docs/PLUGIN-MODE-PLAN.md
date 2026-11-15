@@ -264,7 +264,8 @@ Arturia (each a few minutes with `sbdev vport`):
   **Passed (`docs/ARTURIA.md`, test 9), after two fixes; about 0.03 ms in the tool.**
 - **A12.** The relay with Analog Lab V: the asking names all eight knobs after a preset loads, one
   at a time, with no value text flashing; what it does to the preset. **Passed after two fixes
-  (test 9): eight names about 2 s after a preset loads; one preset of three was marked changed.**
+  (test 9): eight names about 2 s after a preset loads; every preset asked was marked changed in what
+  Analog Lab V sent.**
 - **A10.** Analog Lab V: do a preset's first four controls follow its file's macro labels, in
   order (`docs/ARTURIA.md`, section 5, item 11)? Until then no files are read for it.
 - **A8.** The preset-file lookup for macro labels: a second instrument, a user preset, and two
