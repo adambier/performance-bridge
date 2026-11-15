@@ -452,7 +452,9 @@ public struct ArturiaRotoDriver: Sendable {
         if recentChanges.count > 16 { recentChanges.removeFirst(recentChanges.count - 16) }
     }
 
-    private mutating func instrumentValue(item: Int, value: Int, now: TimeInterval) -> [ArturiaRotoDeviceMessage] {
+    /// With `awaitsText`, the value text waits for the instrument's own (as after a turn of the
+    /// Roto-Control's knob), rather than showing a percentage meanwhile (seen in test A11).
+    private mutating func instrumentValue(item: Int, value: Int, now: TimeInterval, awaitsText: Bool = false) -> [ArturiaRotoDeviceMessage] {
         let wasUnknown = values[item] == nil
         if wasUnknown, names[item] == nil { askSoon(now) }
         values[item] = value
@@ -465,6 +467,10 @@ public struct ArturiaRotoDriver: Sendable {
         } else if knobValue[knob] != value {
             messages.append(.knob(knob, position: Self.position(forValue: value)))
             knobValue[knob] = value
+        }
+        if awaitsText {
+            awaitingText[knob] = now
+            return messages
         }
         return messages + valueText(knob, now: now)
     }
@@ -520,6 +526,15 @@ public struct ArturiaRotoDriver: Sendable {
         if !text.name.isEmpty { names[item] = text.name }
         let nameChanged = knob(forItem: item).flatMap { control($0) }.map(shownName) != shownBefore
         if !text.valueText.isEmpty { instrumentText[item] = (value, text.valueText) }
+        // A newer control change for this control has gone to the instrument since the one this
+        // answers (a relayed keyboard's knob turning: seen in test A11, where late answers moved
+        // the Roto-Control's knob back a step and forward again).
+        let isStale = recentChanges.last(where: { $0.controller == text.controller }).map { $0.value != value } ?? false
+        if values[item] != value, isStale {
+            if asking?.item == item { asking = nil }
+            guard isInPluginMode, let knob = knob(forItem: item), let control = control(knob) else { return [] }
+            return nameChanged ? [renamed(knob, control)] : []
+        }
         if values[item] != value {
             if isInPluginMode, let knob = knob(forItem: item), let control = control(knob),
                let moved = lastKnobMove[knob], now - moved < Self.holdSeconds {
@@ -660,7 +675,7 @@ public struct ArturiaRotoDriver: Sendable {
             index += 3
             guard let item = profile.item(forController: controller) else { continue }
             noteChange(controller: controller, value: value, now: now)
-            messages += instrumentValue(item: item, value: value, now: now)
+            messages += instrumentValue(item: item, value: value, now: now, awaitsText: instrumentSendsText)
         }
         return ArturiaRotoOutput(toDevice: messages)
     }

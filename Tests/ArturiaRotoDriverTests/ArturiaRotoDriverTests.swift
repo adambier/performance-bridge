@@ -536,4 +536,21 @@ final class ArturiaRotoDriverTests: XCTestCase {
         // A touch on the keyboard sends the same value again: nothing moves.
         XCTAssertTrue(driver.fromKeyboard([0xB0, 74, 40], now: 3).isEmpty)
     }
+
+    func testAKeyboardTurnWaitsForTextAndLateAnswersDontMoveTheKnob() {
+        var driver = mk3DriverInPluginMode()
+        _ = driver.fromKeyboard([0xB0, 74, 89], now: 1)
+        _ = driver.fromInstrument(mk3Screen("Macro 1", "0.701", value: 89), now: 1.05)
+        // From now on the instrument sends text: a keyboard step shows no percentage.
+        XCTAssertEqual(driver.fromKeyboard([0xB0, 74, 91], now: 2).toDevice,
+                       [.knob(0, position: ArturiaRotoDriver.position(forValue: 91))])
+        XCTAssertEqual(driver.fromKeyboard([0xB0, 74, 92], now: 2.07).toDevice,
+                       [.knob(0, position: ArturiaRotoDriver.position(forValue: 92))])
+        // The answer to 91 comes after 92 was sent: the knob stays at 92.
+        XCTAssertTrue(driver.fromInstrument(mk3Screen("Macro 1", "0.717", value: 91), now: 2.08).isEmpty)
+        XCTAssertEqual(driver.value(forItem: 0), 92)
+        XCTAssertEqual(driver.fromInstrument(mk3Screen("Macro 1", "0.724", value: 92), now: 2.11).toDevice, [show(0, "0.724")])
+        // No percentage later either.
+        XCTAssertTrue(driver.tick(now: 2.5).isEmpty)
+    }
 }

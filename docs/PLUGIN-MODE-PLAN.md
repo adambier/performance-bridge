@@ -199,7 +199,10 @@ Adam needs his KeyLab 61 mk3 and the Roto-Control at once. An instrument talks t
 at a time (`docs/ARTURIA.md`, test 8), so, as with Bitwig, there is one owner in the middle:
 
 - `sbdev arturia --keyboard "KeyLab 61 mk3 MIDI"` opens the keyboard's port and publishes "KeyLab
-  88 mk3 MIDI" for the instrument, where the user checks it and unchecks the keyboard's own port.
+  49 mk3 MIDI" for the instrument, where the user checks it and unchecks the keyboard's own port.
+  The name is one no keyboard of Adam's has (he has a 61 and an 88): Pigments remembers a checked
+  port and checks it again when it reappears (seen, A11), so a real keyboard of the bridge's name
+  would be taken for it.
 - Everything passes both ways untouched, the keyboard's bytes before anything else is done with
   them; `status` prints how long they spent in the tool, the part of the delay it can measure.
 - The driver reads the same stream in the mk3's format (`ArturiaMk3Message`): values, the preset,

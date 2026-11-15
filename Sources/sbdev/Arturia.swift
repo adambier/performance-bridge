@@ -44,7 +44,7 @@ let arturiaUsage = """
 
         With a real KeyLab mk3 (--keyboard NAME, its MIDI port, e.g., "KeyLab 61 mk3 MIDI"):
         an instrument talks to one controller at a time, so sbdev sits between the two. It
-        opens the keyboard's port itself, publishes "KeyLab 88 mk3 MIDI" for the instrument
+        opens the keyboard's port itself, publishes "KeyLab 49 mk3 MIDI" for the instrument
         (--port for another name), passes everything both ways, and reads the same stream for
         the Roto-Control, in the mk3's message format. In the instrument, check sbdev's port
         and uncheck the keyboard's own. A knob moved on either shows on the other. `status`
@@ -129,8 +129,9 @@ func parseArturiaOptions(_ arguments: ArraySlice<String>) -> ArturiaOptions {
         }
     }
     if let keyboard = options.keyboardName, !options.portWasGiven {
-        // A mk3 name the keyboard itself doesn't use.
-        options.portName = keyboard.contains("88") ? "KeyLab 49 mk3 MIDI" : "KeyLab 88 mk3 MIDI"
+        // A mk3 name the keyboard itself doesn't use, and none of Adam's keyboards (a 61 and an 88)
+        // do, so that an instrument that remembers the port never takes a real keyboard for it.
+        options.portName = keyboard.contains("49") ? "KeyLab 88 mk3 MIDI" : "KeyLab 49 mk3 MIDI"
     }
     guard let profile = ArturiaKeyLabProfile.forPortName(options.portName) else {
         fail("\"\(options.portName)\" is not a port name of the KeyLab mk3's, the KeyLab mkII's, or the first KeyLab's profile.")
