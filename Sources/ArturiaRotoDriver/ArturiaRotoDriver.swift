@@ -37,7 +37,7 @@ public struct ArturiaRotoOutput: Equatable, Sendable {
     public var toInstrument: [[UInt8]]
     /// Messages for a real keyboard relayed beside the Roto-Control, as raw MIDI bytes: a knob's
     /// new value in the instrument's own format, so that the keyboard's knob follows a change made
-    /// on the Roto-Control (untested on a keyboard).
+    /// on the Roto-Control (a KeyLab 61 mk3 has been seen to take it: docs/ARTURIA.md, test 9).
     public var toKeyboard: [[UInt8]] = []
 
     /// Makes an output.
@@ -168,6 +168,33 @@ public struct ArturiaRotoDriver: Sendable {
     private var awaitingText = [TimeInterval?](repeating: nil, count: 8)
     /// For each knob, the value text last shown.
     private var shownText = [String?](repeating: nil, count: 8)
+    /// For each knob, the name the device was last told, or `nil` if none since the page was set.
+    private var sentNames = [String?](repeating: nil, count: 8)
+
+    /// Notes the names `output` tells the device, and adds a rename for every knob whose shown
+    /// name now differs from what the device was last told: fitting names as a set can change
+    /// one name when another does.
+    private mutating func finish(_ output: ArturiaRotoOutput) -> ArturiaRotoOutput {
+        var output = output
+        for message in output.toDevice {
+            switch message {
+            case .message(.learnParameter(let details)) where (1...8).contains(details.index):
+                sentNames[details.index - 1] = details.name
+            case .message(.mappedControlName(let index, _, let name)) where (1...8).contains(index):
+                sentNames[index - 1] = name
+            default:
+                break
+            }
+        }
+        guard isInPluginMode else { return output }
+        let shown = shownNames
+        for knob in 0..<8 {
+            guard let control = control(knob), let sent = sentNames[knob], let name = shown[knob], name != sent else { continue }
+            output.toDevice.append(renamed(knob, control))
+            sentNames[knob] = name
+        }
+        return output
+    }
     /// The control changes lately sent to the instrument, by the driver or by a relayed keyboard,
     /// newest last: the mk3's control screen does not say which control it is about, so it is
     /// taken for the newest of these with its value.
@@ -261,15 +288,30 @@ public struct ArturiaRotoDriver: Sendable {
         pages[page].firstIndex { $0?.item == item }
     }
 
-    /// A control's name as shown, with a trailing "?" while its value is unknown. In order: the
-    /// name the instrument sent, unless it is only the driver's own default (Pigments sends
-    /// "Macro 1" for a macro its preset labels "Timbre"); the preset's label from its file; the
-    /// name the instrument sent; the parameter's name from the instrument's files; the default.
-    private func shownName(_ control: ArturiaRotoControl) -> String {
+    /// A control's name before it is fitted. In order: the name the instrument sent, unless it is
+    /// only the driver's own default (Pigments sends "Macro 1" for a macro its preset labels
+    /// "Timbre"); the preset's label from its file; the name the instrument sent; the parameter's
+    /// name from the instrument's files; the default.
+    private func fullName(_ control: ArturiaRotoControl) -> String {
         let sent = names[control.item]
         let informative = sent == control.name ? nil : sent
-        let name = informative ?? presetLabels[control.item] ?? sent ?? parameterNames[control.item] ?? control.name
-        return values[control.item] == nil ? name + "?" : name
+        return informative ?? presetLabels[control.item] ?? sent ?? parameterNames[control.item] ?? control.name
+    }
+
+    /// The page's names as shown: fitted to the device's 12 characters as a set (`RotoNameFit`),
+    /// with a trailing "?" while a value is unknown.
+    private var shownNames: [String?] {
+        let controls = (0..<8).map(control)
+        let unknown = controls.map { $0.map { values[$0.item] == nil } ?? false }
+        let limit = RotoSysEx.nameFieldLength - 1
+        let fitted = RotoNameFit.fit(controls.map { $0.map(fullName) ?? "" }, to: unknown.map { $0 ? limit - 1 : limit })
+        return (0..<8).map { controls[$0] == nil ? nil : fitted[$0] + (unknown[$0] ? "?" : "") }
+    }
+
+    /// A control's name as shown.
+    private func shownName(_ control: ArturiaRotoControl) -> String {
+        if let knob = knob(forItem: control.item), let name = shownNames[knob] { return name }
+        return RotoNameFit.fit(fullName(control))
     }
 
     /// The value text for an item at its current value: the instrument's, if it sent one for this
@@ -326,6 +368,7 @@ public struct ArturiaRotoDriver: Sendable {
         valueTextPending = [Bool](repeating: false, count: 8)
         awaitingText = [TimeInterval?](repeating: nil, count: 8)
         shownText = [String?](repeating: nil, count: 8)
+        sentNames = [String?](repeating: nil, count: 8)
     }
 
     /// SHOW CONTROL VALUE for a knob now, or a note to send it at a later `tick`, so that a knob
@@ -362,8 +405,6 @@ public struct ArturiaRotoDriver: Sendable {
         }
     }
 
-    private var shownNames: [String?] { (0..<8).map { knob in control(knob).map(shownName) } }
-
     /// Sets names for controls read from the instrument's own files, by control change number
     /// (`ArturiaParameterFiles.names`). They show until the instrument sends a name of its own.
     public mutating func setParameterNames(_ names: [Int: String]) -> ArturiaRotoOutput {
@@ -372,7 +413,7 @@ public struct ArturiaRotoDriver: Sendable {
         for (controller, name) in names {
             if let item = profile.item(forController: controller) { parameterNames[item] = name }
         }
-        return ArturiaRotoOutput(toDevice: renames(since: before))
+        return finish(ArturiaRotoOutput(toDevice: renames(since: before)))
     }
 
     /// Sets the loaded preset's labels for macros 1–4, read from its file
@@ -386,7 +427,7 @@ public struct ArturiaRotoDriver: Sendable {
                   let item = profile.item(forController: controller) else { continue }
             presetLabels[item] = label
         }
-        return ArturiaRotoOutput(toDevice: renames(since: before))
+        return finish(ArturiaRotoOutput(toDevice: renames(since: before)))
     }
 
     /// The macros' values (0–127) and the volume's as last known, for choosing a preset file.
@@ -418,7 +459,7 @@ public struct ArturiaRotoDriver: Sendable {
                 break
             }
         }
-        return output
+        return finish(output)
     }
 
     /// The instruments by the number in their preset screen (`ArturiaMk3Message.preset`), each
@@ -590,9 +631,9 @@ public struct ArturiaRotoDriver: Sendable {
     public mutating func fromDevice(_ input: RotoInput, now: TimeInterval) -> ArturiaRotoOutput {
         switch input {
         case .message(let message):
-            return ArturiaRotoOutput(toDevice: deviceMessage(message, now: now))
+            return finish(ArturiaRotoOutput(toDevice: deviceMessage(message, now: now)))
         case .control(.knob(let knob, let position)):
-            return knobMoved(knob, position: position, now: now)
+            return finish(knobMoved(knob, position: position, now: now))
         case .control:
             return ArturiaRotoOutput()
         }
@@ -691,7 +732,7 @@ public struct ArturiaRotoDriver: Sendable {
             noteChange(controller: controller, value: value, now: now)
             messages += instrumentValue(item: item, value: value, now: now, awaitsText: instrumentSendsText)
         }
-        return ArturiaRotoOutput(toDevice: messages)
+        return finish(ArturiaRotoOutput(toDevice: messages))
     }
 
     // MARK: Time
@@ -704,7 +745,7 @@ public struct ArturiaRotoDriver: Sendable {
         guard isInPluginMode else { return ArturiaRotoOutput() }
         var output = ArturiaRotoOutput(toDevice: heldMessages(now: now))
         output.toInstrument = ask(now: now)
-        return output
+        return finish(output)
     }
 
     /// Asks the instrument for the name of the next knob of the page that has a value and no name

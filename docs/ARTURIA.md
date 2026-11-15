@@ -25,8 +25,9 @@ Lab V and Pigments each sent the control's name and its value in words (e.g., "F
 parameter's fixed name ("Macro 1", where its window shows "Timbre"). In test 7 a prototype on
 this profile showed those names and values on a Roto-Control's knobs once each knob had been
 turned.[^test-7] Pigments' fixed names, and each preset's labels for its four macros, can also
-be read before any turn from Pigments' own files (section 4; built, not yet run with the
-device).[^files-3] Everything here is about
+be read before any turn from Pigments' own files (section 4), and showed so on the device in test
+9.[^files-3][^test-9] Beside a real KeyLab mk3, the Roto-Control's driver has to sit between the
+keyboard and the instrument, which worked in test 9 with Pigments and Analog Lab V. Everything here is about
 the standalone apps. Nothing has been tested with the plugins in a DAW, and nothing found here
 should be assumed to hold there (Adam, 2026-11-14).
 
@@ -55,6 +56,8 @@ has not been checked, the text says so in words ("inference", "untested").
     (2026-11-14), section 6; Analog Lab V and Pigments standalone, versions not read that day.
 [^test-8]: [Test 8](#test-8-2026-11-14-a-real-keylab-61-mk3-its-touch-and-a-second-controller-beside-it)
     (2026-11-14), section 6; Pigments standalone and Adam's KeyLab 61 mk3, versions not read.
+[^test-9]: [Test 9](#test-9-2026-11-14-the-relay-a-keylab-61-mk3-and-a-roto-control-at-once)
+    (2026-11-14), section 6; the keyboard's firmware 1.5.1.
 [^files-3]: Read directly on Adam's Mac (read-only) on 2026-11-14, under `/Library/Arturia/`:
     each instrument's `resources/plugin.prefmidi.xml` and `resources/Reference_ParamNames.xml`;
     every file under `Presets/Pigments/` (9,595, by script) and one preset file each of ten
@@ -134,7 +137,9 @@ not come back until its own port was unchecked and checked again. That was so fo
 "KeyLab mkII 61" (Midi Controller changed to "KeyLab mkII") and for one named "KeyLab 88 mk3
 MIDI" (Midi Controller stayed "KeyLab mk3").[^test-8] So a second controller beside a real KeyLab
 has to sit between the keyboard and the instrument, passing the keyboard's messages on; `sbdev
-arturia --keyboard` does (built, not yet run).
+arturia --keyboard` does (test 9).[^test-9] The instrument has to be started after the tool's
+port exists: checked in a Pigments that was already running, the port got Pigments' input and
+nothing from it, in one run of two.
 
 ## 3. From the instrument to the controller
 
@@ -255,8 +260,8 @@ asks this way for knobs it has no name for, where its host reads no files for th
 
 Read on Adam's Mac on 2026-11-14, read-only.[^files-3] `ArturiaParameterFiles`, `ArturiaPresetFile`,
 and `ArturiaPresetMatch` (in `Sources/ArturiaControl/`) read them, and `sbdev arturia-files` prints
-what they give. Used so far only by `sbdev arturia`, for Pigments, and not yet run with the
-device.
+what they give. Used so far only by `sbdev arturia`, for Pigments; on the device the names showed
+before any knob was turned, for four presets (test 9).[^test-9]
 
 **A control's parameter.** An instrument's `resources/plugin.prefmidi.xml` has a "KeyLab" set of
 assignments, each a control change number and a parameter number, and its
@@ -350,9 +355,12 @@ when the app quit, not when a preset loaded, so it can't say what is loaded now.
     changed and not saved.
 11. In Analog Lab V, do a preset's first four controls follow its file's four macro labels, in
     order? If so the files could name them before a turn there too.
-12. Does the relay hold up (`sbdev arturia --keyboard`): the keyboard's screen and touch as
-    before, the Roto-Control's knobs and the keyboard's in step, and how long a note spends in
-    it? Does the keyboard take a knob's value sent in the instrument's format?
+12. Why did a running Pigments send nothing to a port newly checked in it, in one run of test 9,
+    when in test 8 it did? And how long do the two extra passes through macOS's MIDI system add
+    to a note (the time inside the tool is about 0.03 ms)?
+13. In a DAW, an instrument's parameters are not 7-bit. Does Bitwig Studio with the plugin give
+    the Roto-Control finer values, names before any turn, and the presets' own labels (the next
+    tests; `docs/PLUGIN-MODE-PLAN.md`)?
 
 ## 6. Tests
 
@@ -655,3 +663,51 @@ real keyboard could not be logged.
 
 **Not tested.** Analog Lab V; whether a touch's value differs from the last the instrument sent
 the keyboard; the relay (`sbdev arturia --keyboard`).
+
+### Test 9 (2026-11-14): the relay: a KeyLab 61 mk3 and a Roto-Control at once
+
+**Setup.** Adam's Mac; his KeyLab 61 mk3, updated that hour from firmware 1.5.0 to 1.5.1 (test 8
+ran on 1.5.0); his Roto-Control; `sbdev arturia --wait --device "Roto-Control" --keyboard "KeyLab
+61 mk3 MIDI"`, three runs at commits `b9be295` (port "KeyLab 88 mk3 MIDI"), `ed504dc`, and
+`4951f1a` (port "KeyLab 49 mk3 MIDI"); Pigments, then Analog Lab V, standalone. Three logs (3,888,
+3,174, and 1,063 lines), whole, kept outside this repository; counts are from them. What the
+devices and windows showed is Adam's report ("seen").
+
+- **Connecting.** Pigments, opened with the tool's port published, had that port checked already
+  from test 8, beside the keyboard's own (seen); it sent the connect messages, the screens, and
+  the values through the tool. Unchecking the keyboard's own port made Pigments disconnect, and
+  the keyboard lost the picture until the tool's port was unchecked and checked again (seen). In
+  run 2, a port of a new name, checked in a Pigments already running, got Pigments' input and
+  nothing back, also after unchecking and checking; quitting Pigments and opening it again, with
+  the port there, connected it (seen).
+- **The keyboard through the tool** (seen): the instrument's picture and the preset's name, and the
+  name and value on a touch or a turn, as without the tool. It showed nothing when a knob was
+  turned on the Roto-Control.
+- **Names from files** (seen, and in the log): the MENU window read "Pigments" over the preset;
+  knobs 1–4 took each preset's labels from its file ("Get The Info": Anger, Speed, Sanity, Delay;
+  "Welcome": Timbre, Time, Unison, Reverb, chosen from two files by its type; "Leadustrial":
+  Timbre, Time, Vocoder, Reverb), and knobs 5–8 the parameter names, before any knob was turned.
+- **A turn of the keyboard's encoder 1** moved the Roto-Control's knob 1 (seen). In run 1 it was
+  jerky and showed percentages between Pigments' value texts (seen, a video; in the log, late
+  answers moved the knob back a step and forward again); with both fixed (`ed504dc`) it was smooth
+  and showed only Pigments' texts (seen, run 2 after the reconnect).
+- **A turn of the Roto-Control's knob 1**, then a touch of the keyboard's encoder 1: the value
+  did not jump back (seen). The tool had sent the keyboard each new value in the instrument's
+  format (299 messages), and the touch sent the last of them, 106. So the keyboard takes it.
+- **Time in the tool** for the keyboard's messages, from `status`: over 1,460 messages, a median
+  of 0.032 ms, a 99th percentile of 0.070 ms, and 0.107 ms at most. Playing felt no later than
+  without the tool (seen). The two more passes through macOS's MIDI system are not in the figure.
+- **Analog Lab V, asked for names** (runs 2 and 3). In run 2 the copies of one answer were taken
+  for the next knobs' answers ("Macro 3" on knobs 3, 4, and 5), and names stayed across presets
+  because the driver still took the program for Pigments; both fixed in `4951f1a`. In run 3, two
+  presets each had all eight knobs named within about 2 s of loading, with nothing touched
+  ("Fiber Lines": Color, Morph, Time, Motion, Chorus Mix, Phaser Mix, Delay Volume, Reverb Volume,
+  the last cut to 12 characters on the device; "22 Bongo 2": Brightness, Timbre, Time, Movement,
+  and the same four; seen, and in the log one knob at a time, each answer three times). After
+  the asking Analog Lab V's screen marked "22 Bongo 2" as changed; in run 2 Adam saw no asterisk
+  on another preset.
+- At a preset change the Roto-Control shows a percentage for each value the instrument reports
+  without a text.
+
+**Not tested.** Notes' full delay; the keyboard's faders through the tool; the tool stopped
+while an instrument runs; names fitted as a page (`RotoNameFit`, written after this test).

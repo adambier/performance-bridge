@@ -381,7 +381,7 @@ final class ArturiaRotoDriverTests: XCTestCase {
         // Parameter names, by control change: knobs 5 and 6 of the page are renamed ("?" stays
         // while the values are unknown); the volume is on the other page.
         let named = driver.setParameterNames([93: "F1 Cutoff", 18: "F1 Resonance", 17: "Master Volume", 7: "Not in the profile"])
-        XCTAssertEqual(named.toDevice, [rename(5, "F1 Cutoff?"), rename(6, "F1 Resonance?")])
+        XCTAssertEqual(named.toDevice, [rename(5, "F1 Cutoff?"), rename(6, "F1 Res?")])
         // The preset's labels for the macros; an empty or missing label keeps the default.
         let labeled = driver.setPresetLabels(["Timbre", "", nil, "Delay"])
         XCTAssertEqual(labeled.toDevice, [rename(1, "Timbre?"), rename(4, "Delay?")])
@@ -400,7 +400,7 @@ final class ArturiaRotoDriverTests: XCTestCase {
         XCTAssertEqual(page[4], learn(5, "F1 Cutoff?", 0))
         _ = driver.fromInstrument(value(9, 86), now: 4)
         XCTAssertEqual(driver.fromDevice(.message(.macroPage(1)), now: 5).toDevice.first,
-                       learn(1, "Master Volume", ArturiaRotoDriver.position(forValue: 86)))
+                       learn(1, "Master Vol", ArturiaRotoDriver.position(forValue: 86)))
         XCTAssertEqual(driver.presetValues.macros, [60, nil, nil, 60])
         XCTAssertEqual(driver.presetValues.volume, 86)
     }
@@ -571,7 +571,7 @@ final class ArturiaRotoDriverTests: XCTestCase {
         XCTAssertTrue(driver.fromInstrument(screen, now: 1.40).isEmpty)
         XCTAssertEqual(driver.tick(now: 1.54).toInstrument, [[0xB0, 77, 0]])
         XCTAssertEqual(driver.fromInstrument(mk3Screen("Reverb Volume", "-70.0 dB", value: 0, id: 1), now: 1.58).toDevice,
-                       [rename(4, "Reverb Volume")])
+                       [rename(4, "Reverb Vol")])
         XCTAssertEqual(driver.name(forItem: 2), "Macro 3")
         XCTAssertEqual(driver.name(forItem: 3), "Reverb Volume")
     }
@@ -589,5 +589,21 @@ final class ArturiaRotoDriverTests: XCTestCase {
         _ = driver.fromInstrument(mk3Screen("Chorus Mix", "9 %", value: 12, id: 1), now: 4.05)
         _ = driver.fromInstrument(mk3Preset("Fever Keys", "Lofi Keys", picture: 35, id: 1), now: 5)
         XCTAssertNil(driver.name(forItem: 5))
+    }
+
+    func testNamesAreFittedAsAPage() {
+        var driver = mk3DriverInPluginMode()
+        _ = driver.fromDevice(.message(.macroPage(0)), now: 0)
+        _ = driver.fromKeyboard([0xB0, 19, 0], now: 1)
+        // "Delay Volume" fits as it is.
+        XCTAssertEqual(driver.fromInstrument(mk3Screen("Delay Volume", "-70.0 dB", value: 0, id: 1), now: 1.2).toDevice,
+                       [rename(7, "Delay Volume"), show(6, "-70.0 dB")])
+        // "Reverb Volume" doesn't: "Volume" is shortened in both.
+        _ = driver.fromKeyboard([0xB0, 16, 5], now: 2)
+        XCTAssertEqual(driver.fromInstrument(mk3Screen("Reverb Volume", "-60.0 dB", value: 5, id: 1), now: 2.05).toDevice,
+                       [rename(8, "Reverb Vol"), show(7, "-60.0 dB"), rename(7, "Delay Vol")])
+        // An unknown value's "?" counts toward the 12 characters.
+        _ = driver.setParameterNames([93: "F1 Resonance"])
+        XCTAssertEqual(driver.fromDevice(.message(.macroPage(0)), now: 3).toDevice[4], learn(5, "F1 Res?", 0))
     }
 }

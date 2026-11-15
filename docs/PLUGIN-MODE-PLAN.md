@@ -21,7 +21,16 @@ names and value text (`docs/ARTURIA.md`, test 7). Then test 8 changed the design
 real KeyLab mk3 beside the Roto-Control, and an instrument talks to one controller at a time, so
 the driver has to sit between the keyboard and the instrument, in the mk3's format (section 6,
 "Beside a real KeyLab mk3"). Built, with names read from Pigments' files and asked of the
-instrument elsewhere; none of that has run with the devices (A8–A12).
+instrument elsewhere. It ran with both devices, Pigments, and Analog Lab V that evening
+(`docs/ARTURIA.md`, test 9; A9, A11, and A12 below).
+
+**What the standalone path can't do** (Adam, 2026-11-14). An instrument tells a controller its
+values in 7 bits and takes them in 7 bits, so the Roto-Control's 14-bit knobs move in 128 steps,
+and asking for a name can move a parameter by a step. A plugin's parameters in a DAW have no such
+limit, and most use of these instruments is in a DAW. So the next tests are of Pigments and Analog
+Lab V as plugins in Bitwig Studio through the existing relay (B1–B3 in section 7): if Bitwig
+gives finer values and names as good, it is the main path, and the standalone relay is for
+playing without a DAW.
 
 ## 1. The aim
 
@@ -210,7 +219,9 @@ at a time (`docs/ARTURIA.md`, test 8), so, as with Bitwig, there is one owner in
   control it is about, so it is taken for the newest control change sent with its value.
 - A knob moved on the keyboard moves the Roto-Control's; a knob moved on the Roto-Control is sent
   to the keyboard as a value in the instrument's own format, so that the keyboard's knob follows
-  (untested: a guess at what the keyboard accepts).
+  (it does: `docs/ARTURIA.md`, test 9).
+- Start the tool before the instrument: a running Pigments has been seen to send nothing to a
+  port newly checked in it.
 - When the tool starts or stops, the instrument's port has to be checked again by hand.
 - Names: from the instrument's files where they are read (Pigments), which changes nothing in
   the instrument; elsewhere, including Analog Lab V, by asking as the keyboard's touch does,
@@ -238,18 +249,29 @@ Arturia (each a few minutes with `sbdev vport`):
   "Hanging Threads", knobs 1–8 should read Timbre, Time, Inharmonicit, Delay, F1 Cutoff, F1
   Resonance, F2 Cutoff, and F2 Resonance before any is turned, and with the "Welcome" template
   Timbre, Time, Unison, and Reverb.**
+- **B1.** Pigments as a plugin in Bitwig Studio, the Roto-Control through `sbdev relay`: what the
+  eight knobs are named (the preset's labels, "Macro 1", or nothing), with and without Show Remote
+  Controls; whether a slow turn moves the parameter in finer steps than 1/127 (the plugin's
+  window, or Bitwig's value); whether a change in the plugin's window moves the knob smoothly.
+- **B2.** The same with Analog Lab V as a plugin: do its per-preset labels reach the Roto-Control,
+  and when?
+- **B3.** The KeyLab 61 mk3 beside it in Bitwig, on its own ports and integration: do both work at
+  once with no relay between them, and what does the keyboard's screen show?
 - **A11.** The relay with Pigments: the keyboard's picture, screen, and touch as without the tool;
   names on the Roto-Control from the files before any turn; a knob turned on each device moves
   the other, and a touch on the keyboard afterward doesn't jump the value back; notes play, with
   `status` giving the time in the tool; the value-text flash fix and names kept across presets.
+  **Passed (`docs/ARTURIA.md`, test 9), after two fixes; about 0.03 ms in the tool.**
 - **A12.** The relay with Analog Lab V: the asking names all eight knobs after a preset loads, one
-  at a time, with no value text flashing; what it does to the preset.
+  at a time, with no value text flashing; what it does to the preset. **Passed after two fixes
+  (test 9): eight names about 2 s after a preset loads; one preset of three was marked changed.**
 - **A10.** Analog Lab V: do a preset's first four controls follow its file's macro labels, in
   order (`docs/ARTURIA.md`, section 5, item 11)? Until then no files are read for it.
 - **A8.** The preset-file lookup for macro labels: a second instrument, a user preset, and two
   presets of one name. **Built for Pigments (2026-11-14; `docs/ARTURIA.md`, section 4): the file
   is found by the preset's name, type, and values, which leaves 2 of Pigments' 9,392 factory
-  presets open. Not yet run with the device; a user preset and a second instrument are untried.**
+  presets open. Four presets showed their labels on the device (test 9); a user preset and a
+  second instrument are untried.**
 - **A4.** Assign another parameter to control change 74 by MIDI learn. Does it report as item 1?
 - **A5.** Two instruments at once, on two port names.
 - **A6.** Adam's KeyLab 61 mk3 with the same instrument afterward: does it still work as before?
@@ -286,6 +308,8 @@ instrument, with values marked unknown until the instrument reports them. Its fi
    with a setting for the virtual port and a Setup Guide page for Bitwig's controller settings.
 3. The Arturia driver, if step 1 says so. Its first run says it is worth building for Pigments.
 4. Logic (R3 first).
+5. Before more work on the standalone path: B1–B3, which say whether Bitwig is the better home
+   for these instruments (Adam, 2026-11-14).
 
 Each step merges only after the review its tier calls for; until then it lives on a test branch.
 
