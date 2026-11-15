@@ -60,6 +60,8 @@ words ("inference", "untested").
     (2026-11-14), section 9; firmware 3.3.0.
 [^test-16]: [Test 16](#test-16-2026-11-14-arturias-plugins-in-bitwig-studio-through-the-relay)
     (2026-11-14), section 9; firmware 3.3.0.
+[^test-17]: [Test 17](#test-17-2026-11-15-a-keylab-61-mk3-beside-the-roto-control-in-bitwig-studio)
+    (2026-11-15), section 9; firmware 3.3.0.
 [^totalmix-test-5]: Test 5 (2026-10-28) of the TotalMix FX tests,
     [docs/TOTALMIX-OSC.md](TOTALMIX-OSC.md#test-5-2026-10-28-does-totalmix-fx-echo-a-command),
     section 6.
@@ -315,6 +317,7 @@ bits is from Bitwig's and Logic's code.[^bitwig][^logic] The rest:
 - **Value text.** Ableton sends SHOW CONTROL VALUE whenever a mapped parameter's value changes, from the knob or from Live, at most 12 times a second with one trailing update, and once when a knob is touched.[^ableton] Bitwig sends value text only in PLUGIN mode, within 100 ms (plugin parameters) or 300 ms (macro parameters) of the knob last moving; in MIX mode it sends none.[^bitwig]
 - **Bitwig's command for value text.** The Bitwig extension Adam runs sent value text as `0A 18` (test 16).[^test-16] The published code sends it as `0A 0F`, the number the SysEx doc gives REQUEST ROTO SYSEX API VERSION, with the same layout as SHOW CONTROL VALUE.[^bitwig][^sysex-1.6] The inference is that `0A 0F` is an older form, from before SHOW CONTROL VALUE was documented. `RotoControl` sends `0A 18`, as Ableton and Logic do.[^ableton][^logic]
 - **Hold-off for the motors.** Bitwig holds back a knob position for 100 ms after the knob last moved on its master and return layer, and has the same rule commented out on its track layer. While touch automation is on, it also ignores the knob for 500 ms after release, and it queues knob positions while it switches modes.[^bitwig] Ableton leaves knob feedback to Live's framework, so its rule is not visible in the integration.[^ableton] Performance Bridge will need its own rule, because TotalMix FX confirms nothing[^totalmix-test-5]: a position from TotalMix FX is a change made elsewhere. The planned rule, an inference, was to hold back positions for a knob while it is touched; test 1 shows a knob turning before its touch CC, so the rule will also have to count recent movement. Test 3 adds that touches often failed to register at all (seen; a double tap sent nothing), so movement is the more reliable sign. Melbourne Instruments removed the touch-sensitivity setting in 2.1.0.[^release-notes]
+- **Positions sent back.** The Bitwig extension Adam runs has been observed to send a knob that is being turned in PLUGIN mode about half of its positions back (196 of 352), most of them 1 higher than the knob sent, 8 ms later at the median and 30 ms at most, some arriving after the knob had moved on.[^test-17] Whether the motor acts on them while the knob is held is not known (section 8, item 12).
 
 ## 7. Errata in the SysEx doc
 
@@ -370,10 +373,24 @@ and step names.
     integration answered none of them with LEARN PARAM; the knobs showed the names stored with
     the mappings. Why it didn't answer is open (its code is written to answer); whether those
     knobs moved their parameters was not tried. Bitwig's controller script console would show
-    the integration's own messages.
+    the integration's own messages. In test 17 the same eight stored mappings for Analog Lab V
+    came once more, and that time Bitwig answered all eight with LEARN PARAM, 5–7 ms later. Its
+    PLUGIN DETAILS for the plugin ended `01 01` then, where test 16's ended `00 01`; what in
+    Bitwig differed between the two is not known.
 11. **A name change that may not arrive** (test 16). A preset change in Analog Lab V sent new
     names for knobs 1–3 and none for knob 4, twice. Whether knob 4's name had changed the first
-    time was not noted.
+    time was not noted. In test 17, with no preset change, the same message came for all eight
+    knobs, twice.
+12. **Positions sent back to a knob being turned** (test 17). While Adam turned knob 1, Bitwig
+    sent the knob 196 positions, most of them a position the knob had just sent plus 1, and
+    some of them after the knob had moved on. Adam felt the knob resist once, as the turn
+    began, before the device had reported his touch. Whether the positions sent back caused
+    that is a guess. To check: the same turn with the relay dropping a position that comes
+    within, e.g., 100 ms of one from the knob.
+13. **A controller beside the Roto-Control** (test 17). What made Bitwig describe the plugin
+    again at 343.6 s, as an ordinary plugin, is not known (the keyboard's change to its DAW
+    program is a guess), nor why the keyboard's encoder then changed nothing in Bitwig until
+    the track and the plugin were clicked.
 
 ## 9. Tests
 
@@ -929,3 +946,97 @@ sends value text as `0A 18`; whether the installed extension is built from it wa
 **Consequences.** In Bitwig, the knobs work at their full 14 bits in both directions, with the
 host's value text. Names are the plugin's parameter names as the host has them: per preset for
 Analog Lab V, fixed for Pigments, and cut at 12 characters. Section 8, items 10 and 11, are new.
+
+### Test 17 (2026-11-15): a KeyLab 61 mk3 beside the Roto-Control in Bitwig Studio
+
+**Setup.** As in test 16: Adam's Roto-Control (firmware 3.3.0, commit `eaa37b0`, SysEx API 1.6,
+as it reported them), `sbdev relay --device "Roto-Control"` on branch `vport-probe` at
+`8f5be68`, and Bitwig Studio with the Roto-Control extension's two ports on "PB Roto Relay",
+its "Arturia KeyLab Mk3" controller on the keyboard's DAW and MIDI ports, in and out, and
+Takeover mode "Catch" (a screenshot). Bitwig was already running when the relay started (an
+inference from how soon its extension answered), and its version was not read again. One track
+held Analog Lab V as a plugin, with a preset that uses its Pigments engine (Adam). This is the
+rest of test B3 of `docs/PLUGIN-MODE-PLAN.md`. One log, kept whole outside this repository
+(0–938.2 s, 1,792 messages); the counts come from a script over it, and Adam's notes are marked
+"seen". Every turn was of the keyboard's encoder 1 except the last, of the Roto-Control's knob 1
+(Adam). The log's marks "roto turn 1" and "roto turn 2" are turns of the keyboard's encoder,
+and the Roto-Control's turn has no mark.
+
+**Starting.** The extension's DAW STARTED reached the relay 0.42 s after the relay's port was
+published, and was dropped; the relay sent the mode, and the extension's first message followed
+136 ms later. So Bitwig found the relay's port again by itself. Unasked, it sent the names it
+had: 36 LEARN PARAM messages with the macro flag and the changed-name message (`0B 0F`) for
+all eight knobs, "P1 Cutoff", "P1 Distort", "P1 Timbre", "P1 FX", "FXA Dry/Wet", "FXB
+Dry/Wet", "Delay Volume", and "Reverb Volum". Then came PLUGIN DETAILS as a macro plugin of two
+pages (1.472 s), the Roto-Control's eight CONTROL MAPPED messages with the macro flag 74 ms
+later, and Bitwig's eight LEARN PARAM messages in answer 1.73 s after those (117 ms in test
+16). Knob 1's position was 2834 of 16383, which is the 0.173 Bitwig's panel showed for P1
+Cutoff (a screenshot).
+
+**The keyboard's Arturia program** (marks "turn 1" and "turn 2", 65.2 s and 82.2 s). The
+keyboard's screen showed the cutoff changing, and the macro moved in Analog Lab V's window; the
+first knob of Bitwig's remote controls panel did not move, and neither did the Roto-Control's
+knob 1 (seen). Nothing passed in either direction between 3.3 s and 343.6 s. Bitwig's value was
+still 2834 at 636.9 s. So in this program the plugin took the keyboard's turn itself, and
+Bitwig was not told; that the keyboard reaches the plugin without going through Bitwig is the
+inference. The standalone Pigments was not open (Adam).
+
+**At 343.6 s** Bitwig described the plugin again, unlike before: PLUGIN DETAILS under the hash
+of the plugin's name, ending `01 01` (test 16's, with Show Remote Controls off, ended `00 01`).
+The Roto-Control answered with CONTROL MAPPED for the eight mappings it has stored for Analog
+Lab V (parameters 2, 4, 6, 8, 88, 149, 210, and 219, without the macro flag), and Bitwig
+answered each with LEARN PARAM, without the macro flag, carrying the same eight names (5–7 ms
+later). What Adam did at that moment was not noted. He changed the keyboard to its DAW program
+at some time between about 300 s and 395 s; that the change caused it is a guess.
+
+**The keyboard's DAW program, Mixer mode** (marks "daw turn 1" and "daw turn 2"). Encoder 1
+moved the pan of the track, the keyboard's screen showed the track's name and a percentage, and
+nothing changed in Analog Lab V (seen). Nothing was sent to the Roto-Control. Arturia's guide to
+the keyboard's Bitwig script (read in a copy on the web, not from Arturia's site) gives the
+encoders the pans in Mixer mode and the eight parameters of the selected device's page in
+Device mode.
+
+**Device mode, before the track was selected** (marks "device turn 1" and "device turn 2").
+The keyboard's screen showed encoder 1 moving, with no value; Bitwig showed that it had received
+something; no parameter changed (seen). Nothing was sent to the Roto-Control. Bitwig's
+inspector had read "No item selected" about three minutes earlier (the screenshot).
+
+**Device mode, with the track and the plugin selected.** Clicking the track's name made Bitwig
+send the macro plugin again (636.9 s), as at the start, and the Roto-Control's screens were
+drawn again (seen). Then, in three turns of the keyboard's encoder 1 (marks "device turn 3",
+"roto turn 1", and "roto turn 2"):
+
+- the keyboard's screen showed "P1 Cutoff" and its value, the parameter changed in Analog Lab V's
+  window and in Bitwig's panel, and the Roto-Control's knob 1 turned, "somewhat jumpy" (seen, for
+  the first turn; "all as expected" for the second);
+- Bitwig sent knob 1 147 positions: 90 up from 2916 to 10370, 37 down from 10289 to 7340, and 20
+  up from 7421 to 8978. All but two steps were of 81 or 82 units (two were of 163 and 164), so
+  one step of the encoder is 1/200 of the range. Within a turn the positions came a median of
+  72, 71, and 119 ms apart, and 22 ms at the least;
+- Bitwig sent no value text with them, and the Roto-Control sent nothing.
+
+The steps' size and spacing may be the jumpiness Adam saw; that is an inference.
+
+**A turn of the Roto-Control's knob 1** (896.96–938.14 s, both ways).
+
+- The knob sent 352 positions between 7117 and 11647, a median of 22 units apart; 348 of the 351
+  steps were smaller than a 7-bit step (129 units).
+- Bitwig sent 82 value texts, from "0.539" to "0.711", and the Roto-Control's screen showed the
+  value (seen). The keyboard's screen showed nothing (seen), as in `docs/ARTURIA.md`, test 9.
+  Whether Analog Lab V's window followed was not noted.
+- Bitwig sent the knob 196 positions meanwhile, a median of 8 ms (30 ms at most) after the
+  knob's last. Of them 177 were a position the knob had sent, plus 1. Set against the knob's last position at the time, 110 were 1 above it, 2 equal to
+  it, 61 behind it by 11 to 75 units, and 23 ahead of it by 20 to 102 units (while the knob was
+  turned down, the inference). Test 16 counted 5 positions sent back of 27, unchanged.
+- The knob turned freely, but for "some initial friction at the very beginning (only once)"
+  (seen). The knob's first position came at 896.956 s and its first touch message (CC 52) at
+  898.906 s; in between it sent 6 positions and Bitwig sent 4 back, each 1 above the knob's
+  last. Whether those made the motor resist is a guess (section 8, item 12).
+
+**Consequences.** The two controllers work on one plugin at once when both go through Bitwig:
+the keyboard in its DAW program and Device mode, with the track and the plugin selected. The
+Roto-Control followed the keyboard in three turns of three; the keyboard's screen did not show
+the Roto-Control's turn. In the keyboard's Arturia program the plugin was changed without
+Bitwig being told, in two turns of two, so nothing that goes through Bitwig can follow it;
+test 16's second turn, which Bitwig did follow, is not explained. Section 8, items 12 and 13,
+are new, and items 10 and 11 have more.

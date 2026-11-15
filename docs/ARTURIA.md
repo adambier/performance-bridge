@@ -15,8 +15,9 @@ they happened and took plain control changes from it[^test-1][^test-2]; in the s
 prototype kept a Roto-Control's knobs and Pigments' controls in step in both directions.[^test-2]
 Analog Lab V, in one test with the probe, reported to the same port and took a control change
 from it.[^test-3] The other instruments share the profile file but are untested. The limits:
-nine useful controls an instrument (eleven in Analog Lab V), 7-bit values, and no way yet known
-to ask for the values (sections 3 and 5).
+nine useful controls an instrument (eleven in Analog Lab V), 7-bit values (Pigments learned an
+NRPN message as a plain control change and ignored its fine byte[^test-10]), and no way yet
+known to ask for the values (sections 3 and 5).
 
 **Which controller to imitate.** The KeyLab mkII's profile uses the same messages as the first
 KeyLab's and adds what the first lacks: when a control is changed from the controller, Analog
@@ -58,6 +59,8 @@ has not been checked, the text says so in words ("inference", "untested").
     (2026-11-14), section 6; Pigments standalone and Adam's KeyLab 61 mk3, versions not read.
 [^test-9]: [Test 9](#test-9-2026-11-14-the-relay-a-keylab-61-mk3-and-a-roto-control-at-once)
     (2026-11-14), section 6; the keyboard's firmware 1.5.1.
+[^test-10]: [Test 10](#test-10-2026-11-15-nrpn-and-pigments-midi-learn) (2026-11-15), section 6;
+    Pigments standalone, version not read that day.
 [^files-3]: Read directly on Adam's Mac (read-only) on 2026-11-14, under `/Library/Arturia/`:
     each instrument's `resources/plugin.prefmidi.xml` and `resources/Reference_ParamNames.xml`;
     every file under `Presets/Pigments/` (9,595, by script) and one preset file each of ten
@@ -341,9 +344,15 @@ when the app quit, not when a preset loaded, so it can't say what is loaded now.
    "KeyLab mk3" by hand; MIDI Config stayed on "KeyLab", the factory default. What Pigments
    showed there before and after test 2 was not recorded.
 6. Can a control be driven, or reported, with more than 7 bits? Not reported, under the mk3's
-   profile: 137 values from Pigments were 7-bit (test 5). NRPN in is untried.
+   profile: 137 values from Pigments were 7-bit (test 5). Not driven by NRPN or by the 14-bit
+   pair of control changes 6 and 38, in Pigments (test 10): its MIDI learn took control change
+   6 alone. Untried: other 14-bit pairs, the other instruments, and a narrowed range (the
+   table's Min and Max) to make 127 steps finer over part of a parameter.
 7. Is the plugin, in a DAW, reachable the same way? The reading suggests the controller code is
-   in the plugin[^code], but a DAW has its own, better path to a plugin's parameters.
+   in the plugin[^code], but a DAW has its own, better path to a plugin's parameters. With a
+   KeyLab 61 mk3 in its Arturia program, Analog Lab V as a plugin in Bitwig Studio took the
+   keyboard's encoder itself, and Bitwig was not told of the change (`docs/ROTO-CONTROL.md`,
+   test 17), which fits the reading.
 8. Do Arturia's apps share their MIDI settings, and does that explain why the same step went
    differently from run to run (Adam, 2026-11-14)? Each instrument has settings files of its
    own (section 4), so not by a shared file; when an instrument reads and writes them, and so
@@ -712,3 +721,36 @@ devices and windows showed is Adam's report ("seen").
 
 **Not tested.** Notes' full delay; the keyboard's faders through the tool; the tool stopped
 while an instrument runs; names fitted as a page (`RotoNameFit`, written after this test).
+
+### Test 10 (2026-11-15): NRPN, and Pigments' MIDI learn
+
+**Setup.** Adam's Mac; Pigments standalone (version not read), with the preset "Rods", shown as
+changed before the test; `sbdev vport "NRPN Test"` on branch `vport-probe` at `8f5be68`,
+started before Pigments, with "NRPN Test" checked as a MIDI input in Pigments (not seen, but
+the learning below shows it was). The keyboard was not touched. One log, kept outside this
+repository: the four messages sent, and nothing received. What Pigments showed is from Adam's
+screenshots and his reading of the knob ("seen"). This is question 4 of
+`docs/PLUGIN-MODE-PLAN.md`, section 10.
+
+- **The MIDI panel** (screenshots). Its table has the columns Ch, CC, Control, Min, and Max,
+  and nothing for a message's type. "Midi Controller" read "KeyLab mk3" and was left so. MIDI
+  Config read "KeyLab", the factory default; its menu lists the factory configurations Generic,
+  KeyLab (default), and Empty, with "Save Current Config" grayed out. Empty was chosen for the
+  test, and its table was empty.
+- **Learning.** With Learn on and Filter 2's Cutoff clicked, the tool sent one NRPN message:
+  parameter 16, value 64 and 0 (`B0 63 00`, `B0 62 10`, `B0 06 40`, `B0 26 00`). The table
+  gained one row: channel 1, CC 6, "F2 Cutoff", 20.0Hz to 20000Hz, and the configuration's name
+  became "Empty*" (seen). So of the message's four control changes, Pigments learned the data
+  entry's coarse byte as an ordinary control change.
+- **The fine byte.** The same message sent three times, with the data entry at 64 and 0, 64 and
+  64, and 65 and 0, gave a cutoff of 204 Hz, 204 Hz, and 228 Hz (seen, read from the knob after
+  each). Half a 7-bit step made no difference, and a whole step made one that the readout
+  would have split.
+- **Afterward** Adam set MIDI Config back to "KeyLab (default)" and loaded the preset again
+  without saving. Whether the Empty configuration kept the learned row was not checked.
+
+**Consequences.** Pigments' MIDI learn takes 7 bits: an NRPN message is not treated as one, and
+the fine half of the 14-bit pair of control changes 6 and 38 is ignored. One parameter, one
+run. The other 14-bit pairs and the other instruments are untried; that they behave the same is
+an inference from their sharing this panel. Whether Pigments would report a value more finely
+was not tried, since nothing can set one (and test 5's reports were 7-bit).

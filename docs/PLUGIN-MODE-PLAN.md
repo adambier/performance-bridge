@@ -37,6 +37,14 @@ began. Through Bitwig the knobs work at 14 bits both ways with the host's value 
 Lab V's per-preset labels arrive; Pigments' macros arrive as "Macro 1" to "Macro 4", and names
 are cut at 12 characters. Section 10 has what follows from that, for review.
 
+**The next day** (2026-11-15). Two of section 10's questions have answers. Standalone Pigments
+takes 7 bits and no more: its MIDI learn took an NRPN message as a plain control change
+(`docs/ARTURIA.md`, test 10), so the standalone path keeps its largest limit. And B3 is done
+(`docs/ROTO-CONTROL.md`, test 17): the KeyLab mk3 and the Roto-Control work on one plugin at
+once when both go through Bitwig, the keyboard in its DAW program and Device mode; in the
+keyboard's Arturia program the plugin is changed without Bitwig being told, and the
+Roto-Control can't follow.
+
 ## 1. The aim
 
 Adam, 2026-11-13: MIX mode stays on TotalMix FX. A quick switch to PLUGIN mode on the device puts
@@ -289,8 +297,11 @@ Arturia (each a few minutes with `sbdev vport`):
 - **B3.** The KeyLab 61 mk3 beside it in Bitwig, on its own ports and integration: do both work at
   once with no relay between them, and what does the keyboard's screen show? **Begun (test 16):
   the keyboard moved the plugin's macro and showed its name and value; the Roto-Control's knob
-  did not follow the first turn, and Bitwig sent it positions on the second. To finish: does the
-  knob follow, every time, and does a knob turned on the Roto-Control show on the keyboard?**
+  did not follow the first turn, and Bitwig sent it positions on the second. Finished (test
+  17): with the keyboard in its DAW program and Device mode, and the track and the plugin
+  selected in Bitwig, the knob followed in three turns of three, in steps of 1/200; a knob
+  turned on the Roto-Control changed the parameter and did not show on the keyboard. In the
+  keyboard's Arturia program the plugin changed and Bitwig was not told, in two turns of two.**
 - **A11.** The relay with Pigments: the keyboard's picture, screen, and touch as without the tool;
   names on the Roto-Control from the files before any turn; a knob turned on each device moves
   the other, and a touch on the keyboard afterward doesn't jump the value back; notes play, with
@@ -348,7 +359,8 @@ instrument, with values marked unknown until the instrument reports them. Its fi
 
 6. The review of section 10's questions with Adam, before choosing among them. First of them
    (Adam, 2026-11-14): whether a standalone instrument takes NRPN at more than 7 bits (section
-   10, "Read on the web"), then the rest of B3.
+   10, "Read on the web"), then the rest of B3. Both done, 2026-11-15: no, for Pigments, and
+   test 17.
 
 Each step merges only after the review its tier calls for; until then it lives on a test branch.
 
@@ -407,9 +419,15 @@ each "inference" or "guess" is marked.
    For Audio Units there is a probe, `sbdev auhost` (branch `au-probe`; written on Linux and
    never compiled on a Mac): it prints the parameters an Audio Unit gives a host, and what
    changes when a preset does.
-3. Does a plugin always tell its host when the keyboard moves a control? (B3, unfinished.)
+3. Does a plugin always tell its host when the keyboard moves a control? No (test 17): with
+   the keyboard in its Arturia program, Analog Lab V changed and Bitwig was not told, in two
+   turns of two. Through the keyboard's DAW program, in Device mode, the change is Bitwig's
+   own, and the Roto-Control followed. Test 16's one turn that Bitwig did follow in the
+   Arturia program is not explained.
 4. Can a standalone instrument be controlled at more than 7 bits at all (14-bit control changes
-   or NRPN through MIDI learn)? Unknown; if so, the standalone path loses its largest limit.
+   or NRPN through MIDI learn)? Not Pigments, by NRPN or by control changes 6 and 38
+   (`docs/ARTURIA.md`, test 10); other pairs and the other instruments are untried. So the
+   standalone path keeps its largest limit.
 5. How does a host learn which preset a plugin has loaded?
 6. Is Performance Bridge in the audio path acceptable on stage?
 7. If a host, which plugin format? Audio Units are the cheapest to host on a Mac. Adam asks
@@ -435,7 +453,10 @@ each "inference" or "guess" is marked.
   describes NRPN in the instrument's MIDI assignment window
   ([manual page](https://www.manualsdir.com/manuals/39764/arturia-moog-modular-26.html?page=58)).
   Whether today's instruments still take NRPN, and at what resolution, is a test: assign one
-  in Pigments' MIDI tab and send it from `sbdev`.
+  in Pigments' MIDI tab and send it from `sbdev`. Run on 2026-11-15 (`docs/ARTURIA.md`, test
+  10): Pigments learned the message as control change 6 and ignored its fine byte. A search
+  engine's AI summary that Adam read the same day says the same of Arturia's current
+  instruments, and that an NRPN setting in older ones was removed; its sources were not read.
 - **CLAP** (Adam's question). Arturia does not appear to ship its instruments as CLAP plugins:
   a listing checked in June 2026 gives Pigments' formats as standalone, VST, VST3, AAX, Audio
   Unit, and NKS, and CLAP is a users' request on Arturia's forum
@@ -460,10 +481,18 @@ and how. What test 16 suggests:
    names. Drafted against the published code (commit 2d43a72) and built with its tests; kept
    outside this repository; not run in Bitwig.
 2. **Stored names when Show Remote Controls is off** (`docs/ROTO-CONTROL.md`, section 8, item
-   10). The cause is not found.
+   10). The cause is not found. In test 17 Bitwig did answer the stored mappings, once, in a
+   state that was not identified.
 3. **A name change that may not arrive** after a preset change (item 11).
-4. **The position sent back** to a knob that just sent it. Looks harmless.
-5. Whatever B3 finds.
+4. **The position sent back** to a knob that just sent it. Looked harmless in test 16. In
+   test 17 Bitwig sent back 196 positions during one turn of 352, most of them 1 above what
+   the knob had sent and some after the knob had moved on, and Adam felt the knob resist once
+   as the turn began; that the one caused the other is a guess (`docs/ROTO-CONTROL.md`,
+   section 8, item 12). The published code holds a position back for 100 ms after the knob
+   moves only on one of its layers (`docs/ROTO-CONTROL.md`, section 6).
+5. From B3 (test 17): the answer to the Roto-Control's CONTROL MAPPED messages took 1.73 s once
+   (117 ms in test 16). Nothing else for the extension; that the keyboard's screen doesn't
+   show a turn of the Roto-Control is the keyboard's script's matter.
 
 **Where the extension's code is.** The extension Adam runs was not built from the code in
 Melbourne Instruments' repository (test 16: it sends `0A 18` where that code sends `0A 0F`).
