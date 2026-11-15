@@ -597,6 +597,25 @@ and how. What test 16 suggests:
      so he may want it done there.
    - Performance Bridge hosting or relaying on its own doesn't depend on the panel at all;
      that weighs for it in section 10's first question, against the work it takes.
+10. **Both at once: Bitwig for the values, the relay for what a host isn't told** (an idea from
+    2026-11-15; nothing below is tried). In Bitwig the knobs have full resolution, pages, and
+    Bitwig's value text, but a host is not told which effect an Analog Lab V slot holds or the
+    preset's name (`docs/ARTURIA.md`, test 11; `docs/ROTO-CONTROL.md`, test 19). The
+    instrument does tell a KeyLab both (`docs/ARTURIA.md`, test 9), and as a plugin in Bitwig
+    it still talks to a KeyLab by itself (`docs/ROTO-CONTROL.md`, test 17).
+    - The extension already reaches the Roto-Control through `sbdev relay`'s port. So
+      Performance Bridge would not be a second writer of names: it could change a name in
+      the extension's own message as it passes ("FXA Dry/Wet" to "Chorus Mix"), and add the
+      preset's name to the plugin's.
+    - It needs to know which of the instrument's controls is which knob. For Analog Lab V's
+      first page the eight are in the keyboard's order (seen in tests 18 and 19); beyond
+      that, not known.
+    - Costs: Performance Bridge has to be running, which Adam wants light; the plugin has to
+      be pointed at the relay's port; asking the instrument for names marked its preset as
+      changed (test 9); and nothing here helps a plugin that is not Arturia's.
+    - First tests, in order: does the plugin inside Bitwig answer a KeyLab's questions on a
+      virtual port, with no keyboard; can one run of `sbdev` carry both relays (not checked);
+      then the renaming.
 
 **Where the extension's code is.** The extension Adam runs was not built from the code in
 Melbourne Instruments' repository (test 16: it sends `0A 18` where that code sends `0A 0F`).
