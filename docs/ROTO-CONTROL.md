@@ -1185,3 +1185,34 @@ device. Dropping "P1" works for a preset of one part, and part 2's names told a 
 time: two Multis and two presets of one part, with the names wrong for 6 ms or less at a
 change. Adam's notes from the
 session, on Show Remote Controls and new projects, are in `docs/PLUGIN-MODE-PLAN.md`, section 10.
+
+### Test 20 (2026-11-15): the extension opening Bitwig's remote controls panel
+
+**Setup.** As in test 19, the same afternoon, with three more builds of the fork, each the
+fifth build and a drafted preference, "Show remote controls when a plugin is selected" (off
+unless chosen): when the selected device is a plugin with its remote controls panel closed,
+the extension opens it, as Bitwig's API allows. Bitwig's settings showed the preference under
+the Roto-Control's ports, and Adam turned it on (seen). Each run: Bitwig started, a new
+project, Analog Lab V added, the panel not touched. Two relay logs (589 and 320 lines), read
+with test 19's script, and screenshots of Bitwig and of its controller console ("seen").
+
+- **Sixth build** (it looked when the device's name, its being a plugin, the selected track,
+  or the preference changed). The panel stayed closed (seen); at 138.2 s Bitwig described the
+  plugin with its pages off. Adam then clicked another track and this one again: the panel
+  opened (seen), and at 201.1 s the plugin was described with three pages and the knobs named.
+- **Seventh build** (the same, looking again 0.3 s and 1.5 s later). The panel stayed closed
+  (seen). But Bitwig's settings then showed the Roto-Control's ports as "None" (seen): the
+  relay had stopped at some point, and with it the extension's port. So this run shows nothing.
+- **Eighth build** (also looking when the device comes to exist, and printing what it sees),
+  with the relay started again and the ports back (seen). The console showed, at one
+  millisecond: the name "Analog Lab V" and a look that found no device yet; "plugin" and
+  the same; then the device existing and a look that found it. The panel was reported open
+  20 ms later, and was (seen). At 90.0 s the plugin was described with three pages, and the
+  knobs named; the eighth was taught as "UnknownParam" and named "Reverb Vol" just after.
+
+**Consequences.** A plugin just added has its name before Bitwig counts it as existing, so
+the sixth build looked too early and never again; looking when it comes to exist is what was
+missing. The later looks found nothing to do. The draft now looks at those five changes and
+no later; a build of that has not been run. Bitwig's controller console opens with a keyboard
+shortcut that has to be assigned first ("Show Control Script Console", in Settings,
+Shortcuts). The seventh build is the one left in Adam's Extensions folder.

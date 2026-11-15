@@ -590,6 +590,10 @@ and how. What test 16 suggests:
      unless chosen, because the author's design uses the panel as the user's switch between
      the Roto-Control's own learned mappings and Bitwig's pages. A third small pull request,
      to be asked about with the others.
+     Drafted and run (`docs/ROTO-CONTROL.md`, test 20): with the preference on, a plugin
+     added to a new project had its panel opened and its pages on the Roto-Control with
+     nothing clicked. The code has a preferences class of the author's that nothing uses,
+     so he may want it done there.
    - Performance Bridge hosting or relaying on its own doesn't depend on the panel at all;
      that weighs for it in section 10's first question, against the work it takes.
 
