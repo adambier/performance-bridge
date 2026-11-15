@@ -337,9 +337,6 @@ when the app quit, not when a preset loaded, so it can't say what is loaded now.
    showed there before and after test 2 was not recorded.
 6. Can a control be driven, or reported, with more than 7 bits? Not reported, under the mk3's
    profile: 137 values from Pigments were 7-bit (test 5). NRPN in is untried.
-12. Does the relay hold up (`sbdev arturia --keyboard`): the keyboard's screen and touch as
-    before, the Roto-Control's knobs and the keyboard's in step, and how long a note spends in
-    it? Does the keyboard take a knob's value sent in the instrument's format?
 7. Is the plugin, in a DAW, reachable the same way? The reading suggests the controller code is
    in the plugin[^code], but a DAW has its own, better path to a plugin's parameters.
 8. Do Arturia's apps share their MIDI settings, and does that explain why the same step went
@@ -353,6 +350,9 @@ when the app quit, not when a preset loaded, so it can't say what is loaded now.
     changed and not saved.
 11. In Analog Lab V, do a preset's first four controls follow its file's four macro labels, in
     order? If so the files could name them before a turn there too.
+12. Does the relay hold up (`sbdev arturia --keyboard`): the keyboard's screen and touch as
+    before, the Roto-Control's knobs and the keyboard's in step, and how long a note spends in
+    it? Does the keyboard take a knob's value sent in the instrument's format?
 
 ## 6. Tests
 
