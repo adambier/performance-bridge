@@ -922,7 +922,9 @@ VALUE (`0A 18`); the extension's code in roto_control (commit 2d43a72, the newes
 2026-11-14) builds `0A 0F` in the three places it sends value text, and `sbdev relay` passes
 such messages unchanged. So the extension installed with Adam's Bitwig Studio 6.1.4 was built
 from other code than was read for this project, and where this record says what "its code"
-does, the code is the published one. Where the installed one comes from was not checked.
+does, the code is the published one. The extension's author keeps later work in a fork
+([ericahrens/roto_control](https://github.com/ericahrens/roto_control), read at `e0cd9eb`), which
+sends value text as `0A 18`; whether the installed extension is built from it was not checked.
 
 **Consequences.** In Bitwig, the knobs work at their full 14 bits in both directions, with the
 host's value text. Names are the plugin's parameter names as the host has them: per preset for

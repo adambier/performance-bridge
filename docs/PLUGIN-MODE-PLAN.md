@@ -421,8 +421,23 @@ tested, and opened on Adam's word. What test 16 suggests:
 4. **The position sent back** to a knob that just sent it. Looks harmless.
 5. Whatever B3 finds.
 
-Before any of it: **the extension Adam runs was not built from the published code** (test 16:
-it sends `0A 18` where the published code sends `0A 0F`). So the first step is to find where
-the installed one comes from and whether newer source is public; a change made to old code
-may already be made, or may not apply. Also to read first: the repository's issues and pull
-requests, for how outside changes are received. It has no contribution guide.
+**Where the extension's code is.** The extension Adam runs was not built from the code in
+Melbourne Instruments' repository (test 16: it sends `0A 18` where that code sends `0A 0F`).
+That repository has the extension as first committed in November 2025. Its author, Eric
+Ahrens, keeps his later work (April to October 2026) in a fork,
+[ericahrens/roto_control](https://github.com/ericahrens/roto_control), which does send `0A 18`.
+His two pull requests offering that work to Melbourne Instruments' repository (October 2026)
+were closed unmerged, with no comments, and the repository's one issue (July 2026) has no
+answer. So:
+
+- the draft of item 1 now applies to the fork's newest code (`e0cd9eb`), builds there against
+  extension API 25, and its tests pass; it has still not run in Bitwig;
+- which version Adam's Bitwig Studio has, and whether it comes with Bitwig or was installed by
+  hand, is to be checked;
+- where a contribution should go (the fork, Melbourne Instruments' repository, or first a
+  message to either) is Adam's to decide, and the closed pull requests bear on it.
+
+That issue, from another integrator, also says two things worth checking before items 2 and 3:
+that answering CONTROL MAPPED for a stored (learned) plugin caused problems and ignoring it
+works, and that UNMAP CONTROL on a control with a stored mapping deletes the mapping for good.
+Neither is tested here.
