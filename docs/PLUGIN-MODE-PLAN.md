@@ -634,6 +634,14 @@ and how. What test 16 suggests:
       only if the relay gets users of its own, or for the vendor material's sake.
     - Not looked at: what the app needs to change to carry the relay, and how the relay
       behaves when the app's window is closed or the app is busy.
+    - **The aim it is judged by** (Adam, 2026-11-15): to reach as many people as possible.
+      What follows from that, as Claude reads it, with no figures for any of these groups:
+      what can live in Bitwig's extension should, since it needs no app of ours and runs
+      on Windows and Linux as well, where this app does not; rules that need no plugin's
+      name (shortening, dropping a page's shared words) reach more than ones for Arturia;
+      and for the app, how each group finds it (a page and words of its own for "Roto-Control
+      and Arturia", apart from the TotalMix FX ones) may count for more than whether it is
+      one program or two.
 
 **Where the extension's code is.** The extension Adam runs was not built from the code in
 Melbourne Instruments' repository (test 16: it sends `0A 18` where that code sends `0A 0F`).
