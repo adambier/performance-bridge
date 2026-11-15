@@ -481,7 +481,7 @@ final class ArturiaRotoDriverTests: XCTestCase {
         // Analog Lab V: its id.
         _ = driver.fromInstrument(mk3Preset("Fiber Lines", "Poly Lead", picture: 22, id: 1), now: 5)
         XCTAssertTrue(driver.hostIsAnalogLab)
-        XCTAssertEqual(driver.instrumentName, "Augmented VOICES")
+        XCTAssertEqual(driver.instrumentName, "Analog Lab")
     }
 
     func testAskingForNames() {
@@ -495,10 +495,12 @@ final class ArturiaRotoDriverTests: XCTestCase {
         // The answer names the knob, and shows no value text.
         XCTAssertEqual(driver.fromInstrument(mk3Screen("Color", "0.709", value: 90), now: 1.35).toDevice, [rename(1, "Color")])
         XCTAssertTrue(driver.fromInstrument(mk3Screen("Color", "0.709", value: 90) + mk3Screen("Color", "0.709", value: 90), now: 1.4).isEmpty)
-        // Knob 2 next; unanswered, it is given up after 0.4 s and not asked again.
-        XCTAssertEqual(driver.tick(now: 1.42).toInstrument, [[0xB0, 71, 64]])
-        XCTAssertTrue(driver.tick(now: 1.7).isEmpty)
-        XCTAssertTrue(driver.tick(now: 1.85).isEmpty)
+        // Knob 2 next, once the answer's copies have had 0.2 s; unanswered, it is given up after
+        // 0.4 s and not asked again.
+        XCTAssertTrue(driver.tick(now: 1.42).isEmpty)
+        XCTAssertEqual(driver.tick(now: 1.56).toInstrument, [[0xB0, 71, 64]])
+        XCTAssertTrue(driver.tick(now: 1.8).isEmpty)
+        XCTAssertTrue(driver.tick(now: 1.97).isEmpty)
         XCTAssertTrue(driver.tick(now: 3).isEmpty)
         // A new preset drops the names and sets the asking off again; a knob being turned puts it off.
         _ = driver.fromInstrument(mk3Preset("One", "Pad", picture: 22, id: 1), now: 4)
@@ -552,5 +554,40 @@ final class ArturiaRotoDriverTests: XCTestCase {
         XCTAssertEqual(driver.fromInstrument(mk3Screen("Macro 1", "0.724", value: 92), now: 2.11).toDevice, [show(0, "0.724")])
         // No percentage later either.
         XCTAssertTrue(driver.tick(now: 2.5).isEmpty)
+    }
+
+    func testAnAnswersCopiesAreNotTakenForTheNextAnswer() {
+        var driver = mk3DriverInPluginMode(asks: true)
+        _ = driver.fromInstrument(mk3Preset("01 Fingapikka", "Keys", picture: 31, id: 1), now: 0.5)
+        XCTAssertEqual(driver.instrumentName, "Analog Lab")
+        _ = driver.fromInstrument(mk3Value(2, 0, id: 1) + mk3Value(3, 0, id: 1), now: 1)
+        XCTAssertEqual(driver.tick(now: 1.31).toInstrument, [[0xB0, 76, 0]])
+        let screen = mk3Screen("Macro 3", "0.00", value: 0, id: 1)
+        // "Macro 3" is the default name already, and an asked answer shows no value text.
+        XCTAssertTrue(driver.fromInstrument(screen, now: 1.33).isEmpty)
+        // The next knob waits for the copies, which change nothing.
+        XCTAssertTrue(driver.tick(now: 1.35).isEmpty)
+        XCTAssertTrue(driver.fromInstrument(screen, now: 1.37).isEmpty)
+        XCTAssertTrue(driver.fromInstrument(screen, now: 1.40).isEmpty)
+        XCTAssertEqual(driver.tick(now: 1.54).toInstrument, [[0xB0, 77, 0]])
+        XCTAssertEqual(driver.fromInstrument(mk3Screen("Reverb Volume", "-70.0 dB", value: 0, id: 1), now: 1.58).toDevice,
+                       [rename(4, "Reverb Volume")])
+        XCTAssertEqual(driver.name(forItem: 2), "Macro 3")
+        XCTAssertEqual(driver.name(forItem: 3), "Reverb Volume")
+    }
+
+    func testAnalogLabsNamesAreDroppedAtAPresetChangeAfterPigments() {
+        var driver = mk3DriverInPluginMode()
+        _ = driver.fromInstrument(mk3Preset("Welcome", "Template"), now: 1)
+        XCTAssertEqual(driver.instrumentName, "Pigments")
+        // The same driver, now hearing Analog Lab V (id 1).
+        _ = driver.fromKeyboard([0xB0, 18, 10], now: 2)
+        _ = driver.fromInstrument(mk3Screen("Phaser Mix", "8 %", value: 10, id: 1), now: 2.05)
+        _ = driver.fromInstrument(mk3Preset("Blue Hopper", "Evolving Pad", picture: 35, id: 1), now: 3)
+        XCTAssertEqual(driver.instrumentName, "Analog Lab")
+        _ = driver.fromKeyboard([0xB0, 18, 12], now: 4)
+        _ = driver.fromInstrument(mk3Screen("Chorus Mix", "9 %", value: 12, id: 1), now: 4.05)
+        _ = driver.fromInstrument(mk3Preset("Fever Keys", "Lofi Keys", picture: 35, id: 1), now: 5)
+        XCTAssertNil(driver.name(forItem: 5))
     }
 }

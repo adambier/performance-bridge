@@ -192,6 +192,12 @@ public struct ArturiaRotoDriver: Sendable {
     private var asking: (item: Int, since: TimeInterval)?
     /// When each item was last asked, so that its answer's value text is not shown.
     private var askedAt: [Int: TimeInterval] = [:]
+    /// The last control screen in the mk3's format, and when: the instrument sends each three
+    /// times within about 0.1 s, and a copy must not be taken for the answer to the next question
+    /// (seen in test A12).
+    private var lastScreen: (screen: ArturiaMk3Message, time: TimeInterval)?
+    /// How long after an answer the next knob is asked, so that the answer's copies have come.
+    public static let askGapSeconds: TimeInterval = 0.2
 
     /// Sets the asking off again, a moment from now.
     private mutating func askSoon(_ now: TimeInterval) {
@@ -435,8 +441,13 @@ public struct ArturiaRotoDriver: Sendable {
         case .preset(let name, _, let kind, let picture, let id)?:
             instrumentID = id
             if id == ArturiaMk3Message.analogLabID { hostIsAnalogLab = true }
-            return presetInfo(instrument: picture.flatMap { Self.instrumentsByPicture[$0] }, preset: name, kind: kind, now: now)
+            // Analog Lab V's picture is its preset's instrument's, which is not the program here.
+            let instrument = hostIsAnalogLab ? "Analog Lab" : picture.flatMap { Self.instrumentsByPicture[$0] } ?? Self.defaultPluginName
+            return presetInfo(instrument: instrument, preset: name, kind: kind, now: now)
         case .controlScreen(let valueText, let name, let value, _)?:
+            let screen = ArturiaMk3Message.controlScreen(valueText: valueText, name: name, value: value, id: 0)
+            if let last = lastScreen, last.screen == screen, now - last.time < 0.25 { return [] }
+            lastScreen = (screen, now)
             // Which control: the newest control change sent with this value in the last second.
             let since = now - 1
             guard let change = recentChanges.last(where: { $0.time >= since && (value == nil || $0.value == value) }) else { return [] }
@@ -501,7 +512,7 @@ public struct ArturiaRotoDriver: Sendable {
             if let previous = presetName, previous != name || presetKind != kind {
                 let before = shownNames
                 presetLabels = [:]
-                if !Self.fixedNameInstruments.contains(instrumentName ?? "") {
+                if hostIsAnalogLab || !Self.fixedNameInstruments.contains(instrumentName ?? "") {
                     names = [:]
                     instrumentText = [:]
                 }
@@ -552,7 +563,10 @@ public struct ArturiaRotoDriver: Sendable {
             }
             return messages
         }
-        if asking?.item == item { asking = nil }
+        if asking?.item == item {
+            asking = nil
+            if let due = askDue { askDue = max(due, now + Self.askGapSeconds) }
+        }
         guard isInPluginMode, let knob = knob(forItem: item), let control = control(knob) else { return [] }
         awaitingText[knob] = nil
         // An answer to the driver's own asking shows no value text: nothing was turned.
