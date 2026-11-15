@@ -505,11 +505,17 @@ answer. So:
 
 - the draft of item 1 now applies to the fork's newest code (`e0cd9eb`), builds there against
   extension API 25, and its tests pass; it has still not run in Bitwig;
-- Adam's is the one that comes with Bitwig Studio 6.1.4 (Adam, 2026-11-14), so what users run
-  is whatever Bitwig ships, and a change reaches them only through a Bitwig release. Whether
-  Bitwig builds it from the fork is not known; the fork's newest commits (2026-10-30) are later
-  than 6.1.4's build date (2026-10-02). Whether a build put in the user's Extensions folder
-  takes the place of the one that comes with Bitwig is untested;
+- Adam's was taken on 2026-11-14 for the one that comes with Bitwig Studio 6.1.4. Checked on
+  his Mac on 2026-11-15, it is not: Documents/Bitwig Studio/Extensions holds
+  `Roto-Control.bwextension`, dated 2026-07-15, with the fork's ID, version 1.0.2, and version
+  date 29-05-26 (the same three as the fork's newest code and the draft's build, so they don't
+  tell builds apart), and no `.jar` or `.bwextension` file inside the Bitwig Studio 6.1.4
+  application names Melbourne Instruments or the Roto-Control. Adam recalls installing it,
+  from Melbourne Instruments as far as he remembers. So this Bitwig Studio ships no copy, a
+  build is tried by putting it in that folder in place of the July file, and a change reaches
+  users through whoever hands out the file. Who does (Melbourne Instruments' download, the
+  author, or a later Bitwig release) is not known, and the statements below about "Bitwig's
+  copy" are open with it;
 - the author also writes extensions that come with Bitwig: 458 of the 1,423 commits in
   Bitwig's public extensions repository
   ([bitwig/bitwig-extensions](https://github.com/bitwig/bitwig-extensions), counted
