@@ -37,13 +37,16 @@ began. Through Bitwig the knobs work at 14 bits both ways with the host's value 
 Lab V's per-preset labels arrive; Pigments' macros arrive as "Macro 1" to "Macro 4", and names
 are cut at 12 characters. Section 10 has what follows from that, for review.
 
-**The next day** (2026-11-15). Two of section 10's questions have answers. Standalone Pigments
+**The next day** (2026-11-15). Two of section 10's questions have answers, and Adam has
+answered its first (in a DAW or a host of our own, for the resolution; section 10). Standalone Pigments
 takes 7 bits and no more: its MIDI learn took an NRPN message as a plain control change
 (`docs/ARTURIA.md`, test 10), so the standalone path keeps its largest limit. And B3 is done
 (`docs/ROTO-CONTROL.md`, test 17): the KeyLab mk3 and the Roto-Control work on one plugin at
 once when both go through Bitwig, the keyboard in its DAW program and Device mode; in the
 keyboard's Arturia program the plugin is changed without Bitwig being told, and the
-Roto-Control can't follow.
+Roto-Control can't follow. That afternoon the name-shortening build ran in Bitwig, and a
+remote controls page made by hand put an Analog Lab V Multi's own macros on the Roto-Control
+at full resolution (`docs/ROTO-CONTROL.md`, test 18).
 
 ## 1. The aim
 
@@ -414,7 +417,12 @@ each "inference" or "guess" is marked.
 
 **Questions these raise.**
 
-1. Which matters most: playing with no DAW, or in one?
+1. Which matters most: playing with no DAW, or in one? Adam, 2026-11-15: full resolution is
+   strongly preferred, which means a DAW or hosting the plugins, not the standalone path
+   (7 bits; `docs/ARTURIA.md`, test 10). Most of his playing is live, not recording, so the
+   host should be light, and in Bitwig he has to add gain every time to get the level up
+   (both instrument tracks stood at -10.0 dB in the day's screenshots; whether that is the
+   whole of it was not looked into).
 2. Does another plugin format give the host Pigments' macro labels? (Test 16's was not noted.)
    For Audio Units there is a probe, `sbdev auhost` (branch `au-probe`; written on Linux and
    never compiled on a Mac): it prints the parameters an Audio Unit gives a host, and what
@@ -477,20 +485,37 @@ tested in Bitwig, and opened on Adam's word; Adam introduces himself to the auth
 first. A commit keeps its usual co-author line, and a description says plainly what was tested
 and how. What test 16 suggests:
 
-1. **Names fitted, not cut**, a page at a time, so that different parameters keep different
-   names. Drafted against the published code (commit 2d43a72) and built with its tests; kept
-   outside this repository. Run in Bitwig on 2026-11-15, in place of Adam's own copy of the
-   extension (a file in his Extensions folder; Bitwig Studio ships none): with Analog Lab V and
-   Show Remote Controls on, the knobs read "P1 Bright", "P1 Timbre", "P1 Time", "P1 Movement",
-   "FXA Dry/Wet", "FXB Dry/Wet", "Delay Vol", and "Reverb Vol" (seen, and in the log). Then the
-   rule changed (Adam, the same day): **a name that fits on its screen is left whole; a word
-   that has to be shortened gets the same short form wherever it is shortened on the page.**
-   So "Delay Volume" stays whole beside "Reverb Vol". Both the draft and `RotoNameFit` follow
-   it; the second build is not yet run in Bitwig. Pigments' two pages are not yet checked.
-   Next idea (Adam, 2026-11-15; untested): Analog Lab V gives its host "P1" before a part's
-   parameter names, and neither the keyboard nor Analog Lab's window shows it; drop it when no
-   other part number is on the page, so that "P1 Brightness" can read "Brightness". First find
-   out what a preset of two parts sends. A pull request of its own, after item 1.
+1. **Names shortened, not cut.** Three test builds ran or were made on 2026-11-15
+   (`docs/ROTO-CONTROL.md`, test 18), and the rule settled in three steps (Adam, that day):
+   a name that fits on its screen is left whole; a word that has to be shortened gets the
+   same short form wherever it is shortened; and an abbreviation from the list is final (it
+   loses no letters afterward). `RotoNameFit` follows all three, with vowels dropped and
+   words shortened from the end before anything is cut.
+
+   The pull request is narrower (Adam, 2026-11-15, on the grounds that it reads better for
+   most users and is easier for the author to take): common words are abbreviated, the last
+   first, only in a name that doesn't fit; spaces are closed up if that alone makes it fit;
+   and what still doesn't fit is cut as today. Each name is fitted alone, so nothing has to
+   be sent again when another name changes. From the code's own output:
+
+   | Full name | Cut at 12 (today) | The pull request |
+   |---|---|---|
+   | Reverb Volume | Reverb Volum | Reverb Vol |
+   | Delay Volume | Delay Volume | Delay Volume |
+   | P1 Brightness | P1 Brightnes | P1 Bright |
+   | Env Amp Attack | Env Amp Atta | Env Amp Atk |
+   | Env Amp Attack Curve | Env Amp Atta | EnvAmpAtkCrv |
+   | Env 2 Release | Env 2 Releas | Env 2 Rel |
+   | P1 Release Time | P1 Release T | P1 Rel Time |
+   | P1 Low Shelf Gain | P1 Low Shelf | P1 Lo Shelf |
+   | P1 High Shelf Gain | P1 High Shel | P1 Hi Shelf |
+   | P1 Hammer Noise | P1 Hammer No | P1 Hammer No |
+   | P1 Brilliance | P1 Brillianc | P1Brilliance |
+
+   (The "Curve" name is an inference from test 16's cut names.) Kept outside this repository
+   as a commit on the fork's `e0cd9eb` with four tests, which pass; the build with it (the
+   fourth) has not run in Bitwig. A later offer, if the author is receptive: where a cut
+   leaves two names on a page the same, squeeze those two further.
 2. **Stored names when Show Remote Controls is off** (`docs/ROTO-CONTROL.md`, section 8, item
    10). The cause is not found. In test 17 Bitwig did answer the stored mappings, once, in a
    state that was not identified.
@@ -504,6 +529,21 @@ and how. What test 16 suggests:
 5. From B3 (test 17): the answer to the Roto-Control's CONTROL MAPPED messages took 1.73 s once
    (117 ms in test 16). Nothing else for the extension; that the keyboard's screen doesn't
    show a turn of the Roto-Control is the keyboard's script's matter.
+6. **The page count is not sent when it changes** (test 18): after a remote controls page was
+   added in Bitwig, the Roto-Control's page buttons stopped at the old last page until
+   another track had been selected. A small change of its own, drafted on the fork's
+   `e0cd9eb` (send the plugin's details again when the count changes while the plugin is
+   shown); not run in Bitwig.
+7. **Analog Lab V** (test 18; nothing to be written before the author has been asked, and not
+   before the first pull requests are in; Adam, 2026-11-15). Three things would make its
+   knobs read as its own window and the KeyLab do: dropping the "P1" before a part's
+   parameter names; for a preset of two parts, showing the preset's own macros (plugin
+   parameters without a prefix) in place of part 1's; and the FX knobs' names ("Chorus Mix"
+   where Bitwig says "FXA Dry/Wet"; Adam: the standard to aim for, if it can be had). The
+   extension already treats four of Bitwig's own devices by name, and no plugin of another
+   maker; a general rule per plugin, with Analog Lab V as its first entry, is the likelier
+   shape. Whether a preset of two parts can be told from one of one part is open: "P2
+   Volume" read "0.000" in one and "-2.33" in the other, two presets in all.
 
 **Where the extension's code is.** The extension Adam runs was not built from the code in
 Melbourne Instruments' repository (test 16: it sends `0A 18` where that code sends `0A 0F`).

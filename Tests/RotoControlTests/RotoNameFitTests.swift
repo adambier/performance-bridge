@@ -44,4 +44,14 @@ final class RotoNameFitTests: XCTestCase {
         XCTAssertEqual(RotoNameFit.fit(["Tape Saturation Amount", "Saturation Mix"], to: [12, 12]),
                        ["TapeStrtnAmt", "Strtn Mix"])
     }
+
+    func testAnAbbreviationLosesNoLetters() {
+        let fitted = RotoNameFit.fit(["P1 Soundboard Resonance", "P1 Sympathetic Resonance", "P1 Duplex Scale Resonance"],
+                                     to: [12, 12, 12])
+        for name in fitted {
+            XCTAssertTrue(name.hasSuffix("Res"), name)
+            XCTAssertLessThanOrEqual(name.count, 12, name)
+        }
+        XCTAssertEqual(Set(fitted).count, 3)
+    }
 }

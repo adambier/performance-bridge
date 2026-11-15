@@ -62,6 +62,8 @@ words ("inference", "untested").
     (2026-11-14), section 9; firmware 3.3.0.
 [^test-17]: [Test 17](#test-17-2026-11-15-a-keylab-61-mk3-beside-the-roto-control-in-bitwig-studio)
     (2026-11-15), section 9; firmware 3.3.0.
+[^test-18]: [Test 18](#test-18-2026-11-15-names-shortened-in-bitwig-studio-and-analog-lab-vs-multi-presets)
+    (2026-11-15), section 9; firmware not read again.
 [^totalmix-test-5]: Test 5 (2026-10-28) of the TotalMix FX tests,
     [docs/TOTALMIX-OSC.md](TOTALMIX-OSC.md#test-5-2026-10-28-does-totalmix-fx-echo-a-command),
     section 6.
@@ -390,7 +392,11 @@ and step names.
 13. **A controller beside the Roto-Control** (test 17). What made Bitwig describe the plugin
     again at 343.6 s, as an ordinary plugin, is not known (the keyboard's change to its DAW
     program is a guess), nor why the keyboard's encoder then changed nothing in Bitwig until
-    the track and the plugin were clicked.
+    the track and the plugin were clicked. To try: the keyboard's change of program, and a
+    click of its main encoder in Device mode, each with the relay's log running.
+14. **A changed page count** (test 18). Bitwig's extension did not tell the Roto-Control that a
+    remote controls page had been added until another track was selected.[^test-18] Its code
+    stores the new count and sends nothing (a reading of the fork at `e0cd9eb`).
 
 ## 9. Tests
 
@@ -1040,3 +1046,75 @@ the Roto-Control's turn. In the keyboard's Arturia program the plugin was change
 Bitwig being told, in two turns of two, so nothing that goes through Bitwig can follow it;
 test 16's second turn, which Bitwig did follow, is not explained. Section 8, items 12 and 13,
 are new, and items 10 and 11 have more.
+
+### Test 18 (2026-11-15): names shortened in Bitwig Studio, and Analog Lab V's Multi presets
+
+**Setup.** As in test 17, the same afternoon, with `sbdev relay` at `72fa39b` and the
+Roto-Control's extension changed. The extension Adam had been running turned out to be a file
+of his own, `Roto-Control.bwextension` in Documents/Bitwig Studio/Extensions (2026-07-15,
+1,878,202 bytes, version 1.0.2); it was moved aside, and builds of the author's fork (`e0cd9eb`)
+with this project's draft change to the names were put in its place, one after another, with
+Bitwig quit and started in between. One log, kept outside this repository; it was read up to
+2,706 s, and what is said of the messages comes from that part. What the screens and windows
+showed is Adam's report and screenshots ("seen").
+
+**The first build** (names of a page fitted together; a word abbreviated in one name
+abbreviated in all).
+
+- With Show Remote Controls off, Bitwig sent PLUGIN DETAILS under the hash of the plugin's
+  name, ending `00 01` as in test 16, and positions, but no LEARN PARAM in answer to the eight
+  stored mappings. The knobs read the stored names (seen): "P1 Timbre", "P1 Pan", "P1 Time",
+  "P1 Presence", "FXA Dry/Wet", "FXB Dry/Wet", "Delay Volume", "Reverb Volum".
+- With it on: "P1 Bright", "P1 Timbre", "P1 Time", "P1 Movement", "FXA Dry/Wet", "FXB
+  Dry/Wet", "Delay Vol", "Reverb Vol" (seen, and sent so). Adam then ruled that a name that
+  fits stays whole.
+
+**The second build** (that rule, and one short form for a word wherever it is shortened).
+
+- The same page read "... Delay Volume", "Reverb Vol" (seen, and sent so).
+- Two flaws showed with a piano preset's second page. "Resonance" came out "Rs" in every name
+  ("P1 SondbrdRs", "P1SympthtcRs"), because one name needed more than "Res" and the short
+  form was shared; hence the third rule, that an abbreviation is final. And at a change of
+  page a name was sent fitted against the other page's names ("P1DplxSclRes" for knob 3 of
+  page 1, replaced in the same millisecond).
+- Changing presets in Analog Lab V sent changed names for the first four knobs each time, e.g.,
+  "P1 Color", "P1 Morph", "P1 Motion"; "P1Brilliance"; "P1StereDelay".
+
+**A Multi preset is not what Bitwig's pages show** ("A Great Day Multi", a piano and a Jup-8).
+
+- Analog Lab V's window showed the preset's macros Brightness, Timbre, Time, and Movement,
+  then Flanger Mix, StereoPan Mix, Delay Volume, and Reverb Volume. Bitwig's first page showed
+  "P1 Brightness", "P1 Timbre", "P1 Dynamics", "P1 St. Width", "FXA Dry/Wet", "FXB Dry/Wet",
+  "Delay Volume", "Reverb Volume": part 1's macros, not the preset's. Its second page was
+  eight more of part 1's parameters. No "P2" name was on either (seen).
+- Bitwig's list of the plugin's parameters does hold the preset's macros, with no prefix
+  ("Brightness", "Timbre", "Time" at 0.732, "Movement"), beside "P1 ..." and "P2 ..." ones
+  (seen).
+- Adam made a third device page of those four and the same four FX and volume parameters, and
+  saved it for the device. The Roto-Control showed "Brightness", "Timbre", "Time", "Movement",
+  "FXA Dry/Wet", "FXB Dry/Wet", "Delay Volume", "Reverb Vol", and its knob 3 moved Time in
+  Analog Lab V's window (seen).
+- With a second Multi, "Breathe Intro", the page read "Heart", "Scream", "Wind", "Reverb", the
+  preset's macros as its window names them (seen). So these parameters take each Multi's names.
+- With a preset of one part, "A Kind Villain", Bitwig's first page was the preset's own macros
+  ("P1 Unison", "P1 Filters", "P1 Rhythm", "P1 FX"; the window: Unison, Filters, Rhythm, FX)
+  and its second the window's eight faders. The third page read "Brightness", "Timbre", "Time",
+  "Movement" again, and its knob 1 moved Bitwig's value and nothing in the window (seen). So
+  the first page is right for a preset of one part and the third for a Multi, and Bitwig shows
+  the same pages for both.
+- The FX knobs read "FXA Dry/Wet" and "FXB Dry/Wet" in Bitwig whatever the effect; the window
+  and the keyboard name the effect ("Chorus Mix", "Phaser Mix", "Flanger Mix").
+- Telling the two kinds apart: "P2 Active" read "On" in both. "P2 Volume" read "0.000" in "A
+  Kind Villain", where every "P2" value seen was 0 but the pan, and "-2.33" in "Breathe Intro",
+  where they were not. Two presets; not enough to rest anything on.
+- Of the 30,802 presets in Adam's Analog Lab V, 392 are Multis (its browser's counts).
+
+**The page count.** With the third page added, the Roto-Control's page buttons stopped at the
+second (seen). Bitwig had last sent PLUGIN DETAILS at 1,105.9 s, with two pages, before the
+page was made. After another track and then this one were selected, the third page was reached
+(seen). Section 8, item 14.
+
+**Consequences.** Shortened names work in Bitwig; the rule is in `docs/PLUGIN-MODE-PLAN.md`,
+section 10, with what is offered to the author. A Multi's macros can be had at full resolution
+with a device page made by hand, one page button away; choosing the page by the kind of preset
+would take code that knows Analog Lab V.

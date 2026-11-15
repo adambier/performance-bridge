@@ -3,7 +3,8 @@ import Foundation
 /// Shortens names to fit the Roto-Control's 12-character name fields, by the first of these that
 /// is enough: abbreviating words, the last first; closing up spaces before a capital or a digit;
 /// dropping lowercase vowels from the longest word, its last first, never a word's first letter;
-/// and at last cutting the end off.
+/// shortening the longest word from its end; and at last cutting the end off. An abbreviated word
+/// is left as it is by the later steps.
 ///
 /// The abbreviations are the short forms Arturia's own parameter names use, without a period, as
 /// most of them are written there (counted over the parameter names of the instruments installed
@@ -52,13 +53,20 @@ public enum RotoNameFit {
         let original = name.split(separator: " ").map(String.init)
         guard !original.isEmpty, joined(original).count > length else { return joined(original) }
         var words = original
+        // An abbreviation from the list is final: it loses no letters afterward (Adam, 2026-11-15).
+        var fixed = [Bool](repeating: false, count: words.count)
         var index = words.count - 1
         while joined(words).count > length, index >= 0 {
             let key = words[index].lowercased()
-            if let short = shared[key] ?? abbreviations[key] { words[index] = short }
+            if let short = abbreviations[key] {
+                words[index] = short
+                fixed[index] = true
+            } else if let short = shared[key] {
+                words[index] = short
+            }
             index -= 1
         }
-        let text = squeeze(&words, to: length)
+        let text = squeeze(&words, fixed: fixed, to: length)
         for (before, after) in zip(original, words) where before != after {
             let key = before.lowercased()
             if let known = found[key], known.count <= after.count { continue }
@@ -69,8 +77,9 @@ public enum RotoNameFit {
 
     private static func joined(_ words: [String]) -> String { words.joined(separator: " ") }
 
-    /// Closes up spaces, then drops vowels, then cuts. `words` keeps the vowels dropped.
-    private static func squeeze(_ words: inout [String], to length: Int) -> String {
+    /// Closes up spaces, then drops vowels, then shortens the longest word from its end, leaving
+    /// `fixed` words as they are, and cuts only if that is not enough. `words` keeps what was dropped.
+    private static func squeeze(_ words: inout [String], fixed: [Bool], to length: Int) -> String {
         guard !words.isEmpty else { return "" }
         // Whether a space stands before each word after the first.
         var spaces = [Bool](repeating: true, count: words.count)
@@ -90,13 +99,22 @@ public enum RotoNameFit {
         while text().count > length {
             // The longest word that still has a vowel to give; of equals, the last.
             var best: (word: Int, at: String.Index)?
-            for index in words.indices {
+            for index in words.indices where !fixed[index] {
                 let word = words[index]
                 guard let at = word.indices.dropFirst().last(where: { vowels.contains(word[$0]) }) else { continue }
                 if best == nil || word.count >= words[best!.word].count { best = (index, at) }
             }
             guard let drop = best else { break }
             words[drop.word].remove(at: drop.at)
+        }
+        while text().count > length {
+            // The longest word that is not an abbreviation; of equals, the last.
+            var longest: Int?
+            for index in words.indices where !fixed[index] && words[index].count > 1 {
+                if longest == nil || words[index].count >= words[longest!].count { longest = index }
+            }
+            guard let trim = longest else { break }
+            words[trim].removeLast()
         }
         return String(text().prefix(length))
     }
