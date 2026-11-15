@@ -541,7 +541,8 @@ and how. What test 16 suggests:
    another track had been selected. A small change of its own, drafted on the fork's
    `e0cd9eb` (send the plugin's details again when the count changes while the plugin is
    shown). Run in Bitwig (test 19): a page was added, the details came with four pages, and
-   the Roto-Control reached the fourth with no track selected again.
+   the Roto-Control reached the fourth with no track selected again. A page removed was
+   followed the same way (test 20).
 7. **Analog Lab V** (test 18; nothing to be written before the author has been asked, and not
    before the first pull requests are in; Adam, 2026-11-15). Three things would make its
    knobs read as its own window and the KeyLab do: dropping the "P1" before a part's

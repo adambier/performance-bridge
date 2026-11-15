@@ -400,9 +400,15 @@ and step names.
     remote controls page had been added until another track was selected.[^test-18] Its code
     stores the new count and sends nothing (a reading of the fork at `e0cd9eb`). With a
     drafted change it did (test 19).[^test-19]
-15. **"UnknownParam"** (test 19). Bitwig's extension sent that name for a knob eight times in
-    one burst, each replaced within 3 ms. The word is not in the extension's code, so it is
-    probably Bitwig's own name for a remote control it has not named yet (an inference).
+15. **"UnknownParam"** (tests 19 and 20). Where a plugin's remote controls fill in while the
+    Roto-Control already shows them (a plugin just added with its panel open, some changes
+    of project), Bitwig's extension teaches the knobs again once for each control that
+    appears, and the newest still has that name; its real name follows within
+    milliseconds: 44 messages for eight knobs. A reading of the fork at `e0cd9eb`: each
+    control's coming to exist sends every existing knob's LEARN PARAM, and its name comes
+    in a separate callback after. The word is not in the extension's code, so it is Bitwig's
+    (an inference). Nothing wrong was seen on the device. The author's code, not the drafts';
+    the drafted preference makes it likelier, by opening the panel before the controls fill.
 
 ## 9. Tests
 
@@ -1213,6 +1219,24 @@ with test 19's script, and screenshots of Bitwig and of its controller console (
 **Consequences.** A plugin just added has its name before Bitwig counts it as existing, so
 the sixth build looked too early and never again; looking when it comes to exist is what was
 missing. The later looks found nothing to do. The draft now looks at those five changes and
-no later; a build of that has not been run. Bitwig's controller console opens with a keyboard
+no later. A ninth build, of that, opened the panel for Pigments in a new project (seen), and
+at 17.6 s Bitwig described Pigments with two pages (a third log, 467 lines).
+
+**Two devices on one track** (the ninth build, then a tenth; a fourth log, 632 lines).
+
+- With an effect plugin (Rev OCEAN) added after Pigments and clicked, the ninth build left
+  the effect's panel closed (seen; at 256.1 s and 276.7 s it was described with its pages
+  off). An inference: going from a device with the panel open to one with it closed, Bitwig
+  reports the new device before the closed panel, so the look sees the old device's panel.
+- The tenth build also looks when a closed panel is reported within half a second of a change
+  of device, and when the device's place in the chain changes. In a new project both
+  panels opened by themselves, Pigments' when added and the effect's when clicked (seen). The
+  log shows Pigments' pages 51 ms after it was first described (70.9 s); for the effect it
+  shows no pages, which fits an effect with no remote controls pages (not checked).
+- **A page removed** (the same run; `docs/PLUGIN-MODE-PLAN.md`, section 10, item 6). A page
+  added to Pigments: PLUGIN DETAILS with three pages (242.9 s), and the Roto-Control reached
+  the third (its page messages 0 to 2; seen). The page removed: PLUGIN DETAILS with two
+  (284.4 s), and the page buttons stopped at the second (seen), with no track clicked. Added
+  and removed once more, the same (287.5 s and 289.9 s). Bitwig's controller console opens with a keyboard
 shortcut that has to be assigned first ("Show Control Script Console", in Settings,
-Shortcuts). The seventh build is the one left in Adam's Extensions folder.
+Shortcuts). The tenth build is the one left in Adam's Extensions folder.
