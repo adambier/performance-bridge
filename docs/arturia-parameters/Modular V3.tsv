@@ -1,0 +1,615 @@
+# Modular V3 3.13.4.6366 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+AttackTime Vca1	0.000
+SlopeTime Vca1	0.000
+DecayTime Vca1	0.702
+ReleaseTime Vca1	0.072
+SlopeLevel Vca1	1.00
+SustainLevel Vca1	0.000
+Level Vca1	0.452
+Amount AM Vca1	0.500
+AttackTime Vca2	0.000
+SlopeTime Vca2	0.000
+DecayTime Vca2	0.000
+ReleaseTime Vca2	0.000
+SlopeLevel Vca2	1.00
+SustainLevel Vca2	0.000
+Level Vca2	0.000
+Amount AM Vca2	0.500
+AttackTime Env1	0.000
+DecayTime Env1	0.214
+ReleaseTime Env1	0.163
+SustainLevel Env1	0.000
+AttackTime Env2	0.000
+DecayTime Env2	0.000
+ReleaseTime Env2	0.000
+SustainLevel Env2	0.000
+AttackTime Env3	0.000
+DecayTime Env3	0.000
+ReleaseTime Env3	0.000
+SustainLevel Env3	0.000
+AttackTime Env4	0.000
+DecayTime Env4	0.000
+ReleaseTime Env4	0.000
+SustainLevel Env4	0.000
+AttackTime Env5	0.000
+DecayTime Env5	0.000
+ReleaseTime Env5	0.200
+SustainLevel Env5	1.00
+AttackTime Env6	0.000
+DecayTime Env6	0.000
+ReleaseTime Env6	0.200
+SustainLevel Env6	1.00
+CutOff Filter1	0.268
+Resonance Filter1	0.360
+Gain Filter1	0.000
+Amount FM1 Filter1	0.500
+Amount RM1 Filter1	1.00
+CutOff Filter2	0.000
+Resonance Filter2	0.000
+Gain Filter2	0.000
+Amount FM1 Filter2	0.500
+Amount FM2 Filter2	0.504
+Amount FM3 Filter2	0.500
+Amount RM Filter2	1.00
+CutOff Filter3	0.000
+Resonance Filter3	0.000
+Gain Filter3	0.000
+Amount FM1 Filter3	0.500
+Amount FM2 Filter3	0.500
+Amount FM3 Filter3	0.500
+Amount RM Filter3	1.00
+Rate Ring Mod	0.500
+Depth Ring Mod	0.500
+Amount FM Ring Mod	0.000
+Amount DM Ring Mod	0.000
+Frequency BodeShift	0.500
+Mixture BodeShift	0.500
+Amount FM1 BodeShift	0.500
+Amount FM2 BodeShift	0.500
+Amount FM3 BodeShift	0.500
+Vowel FormantFilter	a	a | e | i | o | u
+Amount Vowel FormantFilter	0.500
+Freq Formant1	0.500
+Gain Formant1	0.500
+Res  Formant1	0.955
+Freq Formant2	0.106
+Gain Formant2	0.320
+Res  Formant2	0.955
+Freq Formant3	0.317
+Gain Formant3	0.867
+Res  Formant3	0.955
+Freq Formant4	0.350
+Gain Formant4	0.800
+Res  Formant4	0.955
+Amount FM Formant1	0.500
+Amount GM Formant1	0.500
+Amount RM Formant1	0.500
+Amount FM Formant2	0.500
+Amount GM Formant2	0.500
+Amount RM Formant2	0.500
+Amount FM Formant3	0.500
+Amount GM Formant3	0.500
+Amount RM Formant3	0.500
+Amount FM Formant4	0.500
+Amount GM Formant4	0.500
+Amount RM Formant4	0.500
+Type Filter1	BE	LP | BP | NO | HP | LS | HS | BE
+Filter 1 Keyboard Choice	K1	No | K1 | K2 | K3 | K4
+Filter 1 Sequencer Choice	S2	No | S1 | S2 | S3 | S4
+Type Filter2	BE	LP | BP | NO | HP | LS | HS | BE
+Filter 2 Keyboard Choice	No	No | K1 | K2 | K3 | K4
+Filter 2 Sequencer Choice	No	No | S1 | S2 | S3 | S4
+Type Filter3	BE	LP | BP | NO | HP | LS | HS | BE
+Filter 3 Keyboard Choice	No	No | K1 | K2 | K3 | K4
+Filter 3 Sequencer Choice	No	No | S1 | S2 | S3 | S4
+Width Osc1	0.255
+Tune Osc1	0.511
+Transpose Osc1-2-3	0.524
+Accord Osc1	0.000
+Amount FM1 Osc1	0.780
+Amount FM2 Osc1	0.505
+Amount FM3 Osc1	1.00
+Amount FM4 Osc1	0.500
+Amount FM5 Osc1	0.500
+Amount PWM1 Osc1	0.500
+Amount PWM2 Osc1	0.500
+Transpose Osc1	1 octave below	10 octaves below | 2 octaves below | 1 octave below | Tuned | 1 octave above | 2 octaves above
+Synchro On Osc1	1.00
+Width Osc2	0.255
+Tune Osc2	0.670
+Frequence Osc2	0.524
+Accord Osc2	0.297
+Amount FM1 Osc2	0.780
+Amount FM2 Osc2	0.505
+Amount FM3 Osc2	1.00
+Amount FM4 Osc2	0.500
+Amount FM5 Osc2	0.500
+Amount PWM1 Osc2	0.500
+Amount PWM2 Osc2	0.500
+Transpose Osc2	Tuned	10 octaves below | 2 octaves below | 1 octave below | Tuned | 1 octave above | 2 octaves above
+Synchro On Osc2	1.00
+Width Osc3	0.255
+Tune Osc3	0.330
+Frequence Osc3	0.524
+Accord Osc3	0.156
+Amount FM1 Osc3	0.780
+Amount FM2 Osc3	0.505
+Amount FM3 Osc3	1.00
+Amount FM4 Osc3	0.500
+Amount FM5 Osc3	0.500
+Amount PWM1 Osc3	0.500
+Amount PWM2 Osc3	0.500
+Transpose Osc3	Tuned	10 octaves below | 2 octaves below | 1 octave below | Tuned | 1 octave above | 2 octaves above
+Synchro On Osc3	1.00
+Width Osc4	0.438
+Tune Osc4	0.506
+Frequence Osc4	0.504
+Accord Osc4	0.594
+Amount FM1 Osc4	1.00
+Amount FM2 Osc4	1.00
+Amount FM3 Osc4	1.00
+Amount FM4 Osc4	0.500
+Amount FM5 Osc4	0.500
+Amount PWM1 Osc4	1.00
+Amount PWM2 Osc4	1.00
+Transpose Osc4	Tuned	10 octaves below | 2 octaves below | 1 octave below | Tuned | 1 octave above | 2 octaves above
+Synchro On Osc4	1.00
+Width Osc5	0.438
+Tune Osc5	0.500
+Frequence Osc5	0.504
+Accord Osc5	0.805
+Amount FM1 Osc5	1.00
+Amount FM2 Osc5	1.00
+Amount FM3 Osc5	1.00
+Amount FM4 Osc5	0.500
+Amount FM5 Osc5	0.500
+Amount PWM1 Osc5	1.00
+Amount PWM2 Osc5	1.00
+Transpose Osc5	Tuned	10 octaves below | 2 octaves below | 1 octave below | Tuned | 1 octave above | 2 octaves above
+Synchro On Osc5	1.00
+Width Osc6	0.438
+Tune Osc6	0.500
+Frequence Osc6	0.504
+Accord Osc6	1.00
+Amount FM1 Osc6	1.00
+Amount FM2 Osc6	1.00
+Amount FM3 Osc6	1.00
+Amount FM4 Osc6	0.500
+Amount FM5 Osc6	0.500
+Amount PWM1 Osc6	1.00
+Amount PWM2 Osc6	1.00
+Transpose Osc6	Tuned	10 octaves below | 2 octaves below | 1 octave below | Tuned | 1 octave above | 2 octaves above
+Synchro On Osc6	1.00
+Width Osc7	0.000
+Tune Osc7	0.724
+Frequence Osc7	0.739
+Accord Osc7	0.505
+Amount FM1 Osc7	0.500
+Amount FM2 Osc7	0.500
+Amount FM3 Osc7	0.500
+Amount FM4 Osc7	0.500
+Amount FM5 Osc7	0.500
+Amount PWM1 Osc7	0.500
+Amount PWM2 Osc7	0.500
+Transpose Osc7	10 octaves below	10 octaves below | 2 octaves below | 1 octave below | Tuned | 1 octave above | 2 octaves above
+Synchro On Osc7	1.00
+Width Osc8	0.000
+Tune Osc8	0.938
+Frequence Osc8	0.739
+Accord Osc8	0.000
+Amount FM1 Osc8	0.500
+Amount FM2 Osc8	0.500
+Amount FM3 Osc8	0.500
+Amount FM4 Osc8	0.500
+Amount FM5 Osc8	0.500
+Amount PWM1 Osc8	0.500
+Amount PWM2 Osc8	0.500
+Transpose Osc8	10 octaves below	10 octaves below | 2 octaves below | 1 octave below | Tuned | 1 octave above | 2 octaves above
+Synchro On Osc8	1.00
+Width Osc9	0.000
+Tune Osc9	0.500
+Frequence Osc9	0.739
+Accord Osc9	0.000
+Amount FM1 Osc9	0.500
+Amount FM2 Osc9	0.500
+Amount FM3 Osc9	0.500
+Amount FM4 Osc9	0.500
+Amount FM5 Osc9	0.500
+Amount PWM1 Osc9	0.500
+Amount PWM2 Osc9	0.500
+Transpose Osc9	Tuned	10 octaves below | 2 octaves below | 1 octave below | Tuned | 1 octave above | 2 octaves above
+Synchro On Osc9	1.00
+Range Osc1-2-3	0.524
+Range Osc4-5-6	0.504
+Range Osc7-8-9	0.739
+Sel. Range Osc1-2-3	1.00
+Sel. Range Osc4-5-6	1.00
+Sel. Range Osc7-8-9	0.510
+Width Osc1-2-3	0.580
+Width Osc4-5-6	0.360
+Width Osc7-8-9	0.000
+Amount FM1 Osc1-2-3	0.500
+Amount FM2 Osc1-2-3	0.505
+Amount FM3 Osc1-2-3	0.500
+Amount PWM1 Osc1-2-3	0.500
+Amount PWM2 Osc1-2-3	0.500
+Amount FM1 Osc4-5-6	0.500
+Amount FM2 Osc4-5-6	0.500
+Amount FM3 Osc4-5-6	0.500
+Amount PWM1 Osc4-5-6	1.00
+Amount PWM2 Osc4-5-6	0.500
+Amount FM1 Osc7-8-9	0.500
+Amount FM2 Osc7-8-9	0.500
+Amount FM3 Osc7-8-9	0.500
+Amount PWM1 Osc7-8-9	0.500
+Amount PWM2 Osc7-8-9	0.500
+Portamento	0.000
+Panoramic Vca1	0.500
+Panoramic Vca2	0.500
+Volume FilterBank	0.785
+CutOff Noise HighPass	0.000
+CutOff Noise LowPass	0.000
+Voice Detune	0.200
+General Volume	0.353
+General Tune	0.500
+Osc. Coarse Bender	0.000
+Filter. Coarse Bender	0.000
+Vca1 Soft Clip	1.00
+Vca2 Soft Clip	1.00
+Sequencer Forward/Backward	0.000
+Sequencer Tempo Sync. On	0.000
+Playing Mode	Mono	Mono | Unison | Poly
+Legato On	0.000
+Retrig	On	True | False
+Polyphony	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 16.0 | 32.0
+Mod Wheel	0.000
+Brightness	0.268
+Timbre	0.580
+Time	0.340
+Movement	0.000
+Level Band1 FilterBank	0.500
+Level Band2 FilterBank	0.321
+Level Band3 FilterBank	0.705
+Level Band4 FilterBank	0.516
+Level Band5 FilterBank	0.453
+Level Band6 FilterBank	0.492
+Level Band7 FilterBank	0.762
+Level Band8 FilterBank	0.344
+Level Band9 FilterBank	0.398
+Level Band10 FilterBank	0.554
+Level Band11 FilterBank	0.477
+Level Band12 FilterBank	0.528
+Level Band13 FilterBank	0.594
+Level Band14 FilterBank	0.262
+Quality Band2 FilterBank	0.500
+Quality Band3 FilterBank	0.500
+Quality Band4 FilterBank	0.490
+Quality Band5 FilterBank	0.500
+Quality Band6 FilterBank	0.631
+Quality Band7 FilterBank	0.229
+Quality Band8 FilterBank	0.500
+Quality Band9 FilterBank	0.500
+Quality Band10 FilterBank	0.570
+Quality Band11 FilterBank	0.500
+Quality Band12 FilterBank	0.500
+Quality Band13 FilterBank	0.545
+FilterBank Vca1	0.000
+FilterBank Vca2	1.00
+Gain Mixer1	1.00
+Gain Mixer2	1.00
+Gain Mixer3	1.00
+Gain Mixer4	0.961
+Gain Mixer5	1.00
+Gain Mixer6	0.500
+Gain Mixer7	0.500
+Gain Mixer8	0.500
+Gain Mixer9	0.500
+Gain Mixer10	0.500
+Gain Mixer11	0.500
+Gain Mixer12	0.500
+Gain Mixer13	0.500
+Gain Mixer14	0.500
+Gain Mixer15	0.500
+Gain Mixer16	0.500
+Amount AM Mixer1	0.500
+Amount AM Mixer2	0.500
+Amount AM Mixer3	0.500
+Amount AM Mixer4	0.500
+Amount AM Mixer5	0.500
+Amount AM Mixer6	0.500
+Amount AM Mixer7	0.500
+Amount AM Mixer8	0.500
+Amount AM Mixer9	0.500
+Amount AM Mixer10	0.500
+Amount AM Mixer11	0.500
+Amount AM Mixer12	0.500
+Amount AM Mixer13	0.500
+Amount AM Mixer14	0.500
+Amount AM Mixer15	0.500
+Amount AM Mixer16	0.500
+Link 1 On	0.000
+Link 2 On	0.000
+Link 3 On	0.000
+Link 4 On	1.00
+Link 5 On	1.00
+Link 6 On	1.00
+Link 7 On	1.00
+Link 8 On	1.00
+Link 9 On	1.00
+Link 10 On	1.00
+Link 11 On	1.00
+Link 12 On	1.00
+Link 13 On	1.00
+Link 14 On	1.00
+Link 15 On	1.00
+Clip 1 On	1.00
+Clip 2 On	1.00
+Clip 3 On	1.00
+Clip 4 On	1.00
+Clip 5 On	1.00
+Clip 6 On	1.00
+Clip 7 On	1.00
+Clip 8 On	1.00
+Clip 9 On	1.00
+Clip 10 On	1.00
+Clip 11 On	1.00
+Clip 12 On	1.00
+Clip 13 On	1.00
+Clip 14 On	1.00
+Clip 15 On	1.00
+Clip 16 On	1.00
+Inv. 1 On	1.00
+Inv. 2 On	1.00
+Inv. 3 On	1.00
+Inv. 4 On	1.00
+Inv. 5 On	1.00
+Inv. 6 On	1.00
+Inv. 7 On	1.00
+Inv. 8 On	1.00
+Inv. 9 On	1.00
+Inv. 10 On	1.00
+Inv. 11 On	1.00
+Inv. 12 On	1.00
+Inv. 13 On	1.00
+Inv. 14 On	1.00
+Inv. 15 On	1.00
+Inv. 16 On	1.00
+Rate Lfo1	0.100
+Width Lfo1	0.000
+Delay Lfo1	0.000
+Fade In Lfo1	0.000
+Amount FM Lfo1	0.500
+Amount PWM Lfo1	0.500
+Lfo1 Tempo Sync. On	Midi	Low | Mid | Midi
+Rate Lfo2	0.467
+Width Lfo2	0.000
+Delay Lfo2	0.000
+Fade In Lfo2	0.000
+Amount FM Lfo2	0.500
+Amount PWM Lfo2	0.500
+Lfo2 Tempo Sync. On	Midi	Low | Mid | Midi
+Rate Sequencer	0.647
+Glide1 Sequencer	0.000
+Glide2 Sequencer	0.000
+Glide3 Sequencer	0.000
+Glide4 Sequencer	0.000
+Sustain Time Sequencer	0.100
+Amount FM Sequencer	0.500
+Chain	--	L123 | L321 | L12 | L13 | L23 | C123 | C321 | C12 | C13 | C23 | rand | --
+Out1 Step1 Sequencer	0.484
+Out2 Step1 Sequencer	0.336
+Out3 Step1 Sequencer	0.000
+Out1 Step2 Sequencer	0.484
+Out2 Step2 Sequencer	0.508
+Out3 Step2 Sequencer	0.000
+Out1 Step3 Sequencer	0.992
+Out2 Step3 Sequencer	0.000
+Out3 Step3 Sequencer	0.000
+Out1 Step4 Sequencer	0.492
+Out2 Step4 Sequencer	1.00
+Out3 Step4 Sequencer	0.000
+Out1 Step5 Sequencer	0.492
+Out2 Step5 Sequencer	0.000
+Out3 Step5 Sequencer	0.000
+Out1 Step6 Sequencer	0.492
+Out2 Step6 Sequencer	0.000
+Out3 Step6 Sequencer	0.000
+Out1 Step7 Sequencer	0.484
+Out2 Step7 Sequencer	0.562
+Out3 Step7 Sequencer	0.000
+Out1 Step8 Sequencer	0.492
+Out2 Step8 Sequencer	0.211
+Out3 Step8 Sequencer	0.000
+Link Step	1.00
+Repeat Step	1.00
+Next Step	2	-- | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | ran
+Wait	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0
+Joystick1 X	0.540
+Joystick1 Y	0.505
+Joystick2 X	0.500
+Joystick2 Y	0.500
+RateLeft Delay	0.397
+RateRight Delay	0.287
+FeedBackLeft Delay	0.500
+FeedBackRight Delay	0.510
+CrossFeedBackLeft Delay	0.290
+CrossFeedBackRight Delay	0.265
+Dry Level Delay	1.00
+Wet Level Delay	0.509
+Delay Vca1	0.000
+Delay Vca2	1.00
+Delay Tempo Sync. On	0.000
+Trigg Delay Time1	0.000
+Trigg Delay Time2	0.000
+Trigg Delay Mode	off	off | par | ser
+Amount Chorus	0.500
+Delay Chorus	0.500
+Rate Chorus	0.500
+StereoRate Chorus	0.500
+StereoWidth Chorus	0.500
+Dry Level Chorus/Phaser	0.500
+Wet Level Chorus	0.500
+Chorus Vca1	0.500
+Chorus Vca2	0.500
+Chorus Type	1	1.0 | 2.0 | 3.0
+Phaser Sweep	0.500
+Phaser Resonance	0.500
+Phaser Rate	0.500
+Wet Level Phaser	0.500
+Phaser Amount	0.500
+Phaser Stereo	0.500
+Phaser Type	0.000
+Time Follower1	0.500
+Threshold Follower1	0.500
+Range Follower1	Off	False | True
+Time Follower2	0.500
+Threshold Follower2	0.500
+Range Follower2	Off	False | True
+Time Follower3	0.500
+Threshold Follower3	0.500
+Range Follower3	Off	False | True
+Time Follower4	0.500
+Threshold Follower4	0.500
+Range Follower4	Off	False | True
+Rate S&H1	0.500
+Glide S&H1	0.500
+Rate S&H2	0.500
+Glide S&H2	0.500
+S&H 1 trigg out	0.500
+S&H 2 trigg out	0.500
+Sequencer On	0.000
+Sequencer Off	0.000
+Res. Reset	0.000
+Driver 1 Keyboard Choice	K1	LFO | No | K1 | K2 | K3 | K4
+Driver 2 Keyboard Choice	K1	LFO | No | K1 | K2 | K3 | K4
+Driver 3 Keyboard Choice	LFO	LFO | No | K1 | K2 | K3 | K4
+Driver 1 Sequencer Choice	S1	No | S1 | S2 | S3 | S4
+Driver 2 Sequencer Choice	S1	No | S1 | S2 | S3 | S4
+Driver 3 Sequencer Choice	No	No | S1 | S2 | S3 | S4
+Threshold	C-2
+Keyb. Follow1	0.250
+Key Shift	C3
+Low Thresh.	E3
+High Thresh.	E3
+Porta Follow	On	On | Gliss | Off
+Pitch Bend Follow	On	On | Inv | Off
+Keyb. Follow2	0.420
+Keyb. Follow3	0.500
+Keyb. Follow4	0.500
+Trig. Line 1	0.000
+Trig. Line 2	0.000
+Trig. Line 3	0.000
+Trig. Step 1	0.000
+Trig. Step 2	0.000
+Trig. Step 3	0.000
+Trig. Step 4	0.000
+Trig. Step 5	0.000
+Trig. Step 6	0.000
+Trig. Step 7	0.000
+Trig. Step 8	0.000
+Unassigned 1	0.500
+Unassigned 2	0.500
+Pitch Bend	0.500
+AfterTouch	0.000
+Sustain	0.000
+All Notes Off	0.000
+Omni Mode Off	0.000
+Omni Mode On	0.000
+Poly Mode On/Off	0.000
+Poly Mode On	0.000
+All Sounds Off	0.000
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

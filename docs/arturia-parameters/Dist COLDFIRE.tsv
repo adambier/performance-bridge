@@ -1,0 +1,279 @@
+# Dist COLDFIRE 1.2.1.6566 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+On/Off	Active	Active | Bypassed
+Input Volume	0.000
+Output Volume	0.000
+Mix	100
+Color	0.000
+Routing Balance	0.500
+Routing Band Split	600
+Distortion A Output Level	0.000
+Distortion A Dry/Wet	100
+Distortion A Slot Bypass	On	False | True
+Distortion A Distortion Bypass	On	False | True
+Distortion A Module Type	Tube	Bit Crusher | Bit Inverter | Rectifier | Wavefolder | Waveshaper | Force | Transformer | Tube | Tape | Germanium | Transistor
+Distortion A Drive	50.0
+Distortion A Pre Filter Bypass	Off	False | True
+Distortion A Pre Filter Freq	20000
+Distortion A Comb Filter Freq	2000
+Distortion A Pre Filter Q	0.000
+Distortion A Post Filter Bypass 	Off	False | True
+Distortion A Post Filter HP Freq	20.0
+Distortion A Post Filter LP Freq	20000
+Distortion A Bitcrusher Frequency	44100
+Distortion A Bitcrusher Jitter	0.000
+Distortion A Bitcrusher Aliasing	100
+Distortion A Bit Inverter Bit 1 State	Normal	Normal | Inverted | Muted
+Distortion A Bit Inverter Bit 2 State	Normal	Normal | Inverted | Muted
+Distortion A Bit Inverter Bit 3 State	Normal	Normal | Inverted | Muted
+Distortion A Bit Inverter Bit 4 State	Normal	Normal | Inverted | Muted
+Distortion A Bit Inverter Bit 5 State	Normal	Normal | Inverted | Muted
+Distortion A Bit Inverter Bit 6 State	Normal	Normal | Inverted | Muted
+Distortion A Bit Inverter Bit 7 State	Normal	Normal | Inverted | Muted
+Distortion A Bit Inverter Bit 8 State	Normal	Normal | Inverted | Muted
+Distortion A Rectifier Center	0.000
+Distortion A Tube Profile	100
+Distortion B Output Level	0.000
+Distortion B Dry/Wet	100
+Distortion B Slot Bypass	On	False | True
+Distortion B Distortion Bypass	On	False | True
+Distortion B Module Type	Bit Crusher	Bit Crusher | Bit Inverter | Rectifier | Wavefolder | Waveshaper | Force | Transformer | Tube | Tape | Germanium | Transistor
+Distortion B Drive	0.000
+Distortion B Pre Filter Bypass	Off	False | True
+Distortion B Pre Filter Freq	20000
+Distortion B Comb Filter Freq	2000
+Distortion B Pre Filter Q	0.000
+Distortion B Post Filter Bypass 	Off	False | True
+Distortion B Post Filter HP Freq	20.0
+Distortion B Post Filter LP Freq	20000
+Distortion B Bitcrusher Frequency	44100
+Distortion B Bitcrusher Jitter	0.000
+Distortion B Bitcrusher Aliasing	100
+Distortion B Bit Inverter Bit 1 State	Normal	Normal | Inverted | Muted
+Distortion B Bit Inverter Bit 2 State	Normal	Normal | Inverted | Muted
+Distortion B Bit Inverter Bit 3 State	Normal	Normal | Inverted | Muted
+Distortion B Bit Inverter Bit 4 State	Normal	Normal | Inverted | Muted
+Distortion B Bit Inverter Bit 5 State	Normal	Normal | Inverted | Muted
+Distortion B Bit Inverter Bit 6 State	Normal	Normal | Inverted | Muted
+Distortion B Bit Inverter Bit 7 State	Normal	Normal | Inverted | Muted
+Distortion B Bit Inverter Bit 8 State	Normal	Normal | Inverted | Muted
+Distortion B Rectifier Center	0.000
+Distortion B Tube Profile	100
+Feedback Level	-70.0
+Feedback Filter Notch	20000
+Feedback Filter Color	0.000
+Feedback Time	36.4
+Feedback Time Synced	1/128	2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32 | 1/64 | 1/128
+Feedback Time Pitch	D#2
+Compressor Threshold	0.000
+Compressor Ratio	4.00
+Compressor Time	32.9
+Compressor Makeup Gain	0.000
+Multiband Time	100.0
+Multiband Tone	50.0
+Multiband Amount	100
+Limiter Threshold	0.000
+Limiter Release	20.0
+Limiter Output Gain	0.000
+Modulator 1 Rate	0.635
+Modulator 1 Tempo Div	1/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Modulator 1 Bipolar	On	False | True
+Modulator 1 LFO Waveform	0.000
+Modulator 1 LFO Symmetry	0.500
+Modulator 1 LFO Initial Phase	0.000
+Modulator 1 LFO Smooth	0.000
+Modulator 1 Function Scale	1.00
+Modulator 1 Step Sequencer Swing	50.0
+Modulator 1 Step Sequencer Smooth	0.000
+Modulator 1 Step Sequencer Random	0.000
+Modulator 1 Step Sequencer Scale	100
+Modulator 1 Env. Follow. Rise	0.000
+Modulator 1 Env. Follow. Fall	100
+Modulator 1 Env. Follow. Sensitivity	0.000
+Modulator 1 Env. Follow. Time Mode	Unsynced	Unsynced | Synced | Synced Triplets | Synced Dotted
+Modulator 1 Env. Follow. Unsynced	0.000
+Modulator 1 Env. Follow. Synced	1/16	4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32 | 1/64 | 1/128
+Modulator 2 Rate	0.635
+Modulator 2 Tempo Div	1/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Modulator 2 Bipolar	On	False | True
+Modulator 2 LFO Waveform	2.00
+Modulator 2 LFO Symmetry	0.500
+Modulator 2 LFO Initial Phase	0.000
+Modulator 2 LFO Smooth	0.000
+Modulator 2 Function Scale	1.00
+Modulator 2 Step Sequencer Swing	50.0
+Modulator 2 Step Sequencer Smooth	0.000
+Modulator 2 Step Sequencer Random	0.000
+Modulator 2 Step Sequencer Scale	100
+Modulator 2 Env. Follow. Rise	0.000
+Modulator 2 Env. Follow. Fall	100
+Modulator 2 Env. Follow. Sensitivity	0.000
+Modulator 2 Env. Follow. Time Mode	Unsynced	Unsynced | Synced | Synced Triplets | Synced Dotted
+Modulator 2 Env. Follow. Unsynced	0.000
+Modulator 2 Env. Follow. Synced	1/8	4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32 | 1/64 | 1/128
+Modulator 3 Rate	0.635
+Modulator 3 Tempo Div	1/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Modulator 3 Bipolar	Off	False | True
+Modulator 3 LFO Waveform	0.000
+Modulator 3 LFO Symmetry	0.500
+Modulator 3 LFO Initial Phase	0.000
+Modulator 3 LFO Smooth	0.000
+Modulator 3 Function Scale	1.00
+Modulator 3 Step Sequencer Swing	50.0
+Modulator 3 Step Sequencer Smooth	0.000
+Modulator 3 Step Sequencer Random	0.000
+Modulator 3 Step Sequencer Scale	100
+Modulator 3 Env. Follow. Rise	0.000
+Modulator 3 Env. Follow. Fall	100
+Modulator 3 Env. Follow. Sensitivity	0.000
+Modulator 3 Env. Follow. Time Mode	Unsynced	Unsynced | Synced | Synced Triplets | Synced Dotted
+Modulator 3 Env. Follow. Unsynced	0.000
+Modulator 3 Env. Follow. Synced	1/8	4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32 | 1/64 | 1/128
+Modulator 4 Rate	0.635
+Modulator 4 Tempo Div	1/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Modulator 4 Bipolar	Off	False | True
+Modulator 4 LFO Waveform	0.000
+Modulator 4 LFO Symmetry	0.500
+Modulator 4 LFO Initial Phase	0.000
+Modulator 4 LFO Smooth	0.000
+Modulator 4 Function Scale	1.00
+Modulator 4 Step Sequencer Swing	50.0
+Modulator 4 Step Sequencer Smooth	0.000
+Modulator 4 Step Sequencer Random	0.000
+Modulator 4 Step Sequencer Scale	100
+Modulator 4 Env. Follow. Rise	0.000
+Modulator 4 Env. Follow. Fall	100
+Modulator 4 Env. Follow. Sensitivity	0.000
+Modulator 4 Env. Follow. Time Mode	Unsynced	Unsynced | Synced | Synced Triplets | Synced Dotted
+Modulator 4 Env. Follow. Unsynced	0.000
+Modulator 4 Env. Follow. Synced	1/8	4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32 | 1/64 | 1/128
+Modulator 5 Rate	0.635
+Modulator 5 Tempo Div	1/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Modulator 5 Bipolar	Off	False | True
+Modulator 5 LFO Waveform	0.000
+Modulator 5 LFO Symmetry	0.500
+Modulator 5 LFO Initial Phase	0.000
+Modulator 5 LFO Smooth	0.000
+Modulator 5 Function Scale	1.00
+Modulator 5 Step Sequencer Swing	50.0
+Modulator 5 Step Sequencer Smooth	0.000
+Modulator 5 Step Sequencer Random	0.000
+Modulator 5 Step Sequencer Scale	100
+Modulator 5 Env. Follow. Rise	0.000
+Modulator 5 Env. Follow. Fall	72.5
+Modulator 5 Env. Follow. Sensitivity	0.000
+Modulator 5 Env. Follow. Time Mode	Unsynced	Unsynced | Synced | Synced Triplets | Synced Dotted
+Modulator 5 Env. Follow. Unsynced	0.000
+Modulator 5 Env. Follow. Synced	1/16	4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32 | 1/64 | 1/128
+Modulator 6 Rate	0.635
+Modulator 6 Tempo Div	1/8	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Modulator 6 Bipolar	Off	False | True
+Modulator 6 LFO Waveform	0.000
+Modulator 6 LFO Symmetry	0.500
+Modulator 6 LFO Initial Phase	0.000
+Modulator 6 LFO Smooth	0.000
+Modulator 6 Function Scale	1.00
+Modulator 6 Step Sequencer Swing	50.0
+Modulator 6 Step Sequencer Smooth	0.000
+Modulator 6 Step Sequencer Random	0.000
+Modulator 6 Step Sequencer Scale	100
+Modulator 6 Env. Follow. Rise	0.000
+Modulator 6 Env. Follow. Fall	100
+Modulator 6 Env. Follow. Sensitivity	0.000
+Modulator 6 Env. Follow. Time Mode	Unsynced	Unsynced | Synced | Synced Triplets | Synced Dotted
+Modulator 6 Env. Follow. Unsynced	0.000
+Modulator 6 Env. Follow. Synced	1/8	4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32 | 1/64 | 1/128
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

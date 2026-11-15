@@ -1,0 +1,167 @@
+# Filter SEM 1.8.1.6566 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+On/Off	Active	Active | Bypassed
+Input Gain	0.000
+Noise Volume	-120
+Filter Out	0.000
+Dry/Wet	100
+Soft Clip	Off	False | True
+Cutoff	15000
+Resonance	0.000
+Multi Mode	0.000
+BandPass On/Off	Off	False | True
+Lfo Waveform	Sine	Sine | Triangle | Saw Down | Saw Up | Square | S&H
+Lfo Sync	On	False | True
+Lfo Rate	0.910
+Lfo Sync Rate	1/2	4/1 | 2/1 | 1/1 | 1/2D | 1/2 | 1/4D | 1/4T | 1/4 | 1/8D | 1/8T | 1/8 | 1/16D | 1/16T | 1/16 | 1/32T | 1/32 | 1/64T | 1/64 | 1/128
+Lfo Smooth Time	0.000
+Envelope Attack	0.000
+Envelope Hold	0.000
+Envelope Decay	0.200
+Sequencer Steps	16	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Sequencer Sync	On	False | True
+Sequencer Rate	3.84
+Sequencer Sync Rate	1/16	4/1 | 2/1 | 1/1 | 1/2D | 1/2 | 1/4D | 1/4T | 1/4 | 1/8D | 1/8T | 1/8 | 1/16D | 1/16T | 1/16 | 1/32T | 1/32 | 1/64T | 1/64 | 1/128
+Env Sequencer Step 1	Off	False | True
+Env Sequencer Step 2	Off	False | True
+Env Sequencer Step 3	Off	False | True
+Env Sequencer Step 4	Off	False | True
+Env Sequencer Step 5	Off	False | True
+Env Sequencer Step 6	Off	False | True
+Env Sequencer Step 7	Off	False | True
+Env Sequencer Step 8	Off	False | True
+Env Sequencer Step 9	Off	False | True
+Env Sequencer Step 10	Off	False | True
+Env Sequencer Step 11	Off	False | True
+Env Sequencer Step 12	Off	False | True
+Env Sequencer Step 13	Off	False | True
+Env Sequencer Step 14	Off	False | True
+Env Sequencer Step 15	Off	False | True
+Env Sequencer Step 16	Off	False | True
+Lfo Sequencer Step 1	On	False | True
+Lfo Sequencer Step 2	Off	False | True
+Lfo Sequencer Step 3	Off	False | True
+Lfo Sequencer Step 4	Off	False | True
+Lfo Sequencer Step 5	Off	False | True
+Lfo Sequencer Step 6	Off	False | True
+Lfo Sequencer Step 7	Off	False | True
+Lfo Sequencer Step 8	Off	False | True
+Lfo Sequencer Step 9	Off	False | True
+Lfo Sequencer Step 10	Off	False | True
+Lfo Sequencer Step 11	Off	False | True
+Lfo Sequencer Step 12	Off	False | True
+Lfo Sequencer Step 13	Off	False | True
+Lfo Sequencer Step 14	Off	False | True
+Lfo Sequencer Step 15	Off	False | True
+Lfo Sequencer Step 16	Off	False | True
+Sequencer Current Step	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+LFO > Freq	0
+LFO > Res	0
+LFO > Mode	0
+LFO > Noise	0
+LFO > LFO Rate	0
+LFO > LFO Amp	0
+LFO > Env Amp	0
+LFO > Filter Out	0
+Env > Freq	0
+Env > Res	0
+Env > Mode	0
+Env > Noise	0
+Env > LFO Rate	0
+Env > LFO Amp	0
+Env > Env Amp	0
+Env > Filter Out	0
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

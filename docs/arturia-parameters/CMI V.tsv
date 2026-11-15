@@ -1,0 +1,1680 @@
+# CMI V 1.13.4.6366 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+Global Filter	0.000
+Global SampleStart	0.000
+Global VibSpeed	0.000
+Global VibDepth	0.000
+Global AuxLevel	0.000
+Global Attack	0.000
+Global Damping1	0.000
+Global Damping2	0.000
+MasterVolume	-15.8
+Sequencer Play Mode	Stop	Start | Stop | NoteOn | MidiStart
+Sequencer MIDI Sync	On	False | True
+Sequencer BPM	44.1
+Sequencer Sync Rate	1/16	1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+MasterTuning	128
+KeyboardRoot	12
+KeyboardBaseInt	2	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0
+KeyboardBaseFrc	0
+Cntrl1	0.000
+Cntrl2	0.000
+Cntrl3	0.000
+Cntrl4	0.000
+Cntrl5	0.000
+Cntrl6	0.000
+Swtch1	Off	False | True
+Swtch2	Off	False | True
+Swtch3	Off	False | True
+Swtch4	Off	False | True
+Swtch5	Off	False | True
+Swtch6	Off	False | True
+Brightness	0.772
+Timbre	0.476
+Time	0.310
+Movement	0.000
+Track 1 MainLevel	-2.95
+Track 1 Mute	Off	False | True
+Track 1 Solo	Off	False | True
+Track 1 Panning	0.500
+Track 1 VoiceLevel	6.00
+Track 1 AuxSend	-70.0
+Track 1 DampMode	1	1.0 | 2.0
+Track 1 Damping1	10987
+Track 1 Damping2	1644
+Track 1 AttackTime	1395
+Track 1 Slur	Off	False | True
+Track 1 Glissando	Off	False | True
+Track 1 Portamento	Off	False | True
+Track 1 PortaTime	0
+Track 1 ConstantTime	On	False | True
+Track 1 Bypass	Off	False | True
+Track 1 Dry / Wet	1.00
+Track 1 VibratoDepth	9
+Track 1 VibratoSpeed	116
+Track 1 VibratoDelay	0
+Track 1 VibratoAttack	0
+Track 1 Vibrato>Filter	0
+Track 1 Vibrato>Level	0
+Track 1 BendWidth	0
+Track 1 StartTrim	0
+Track 1 LoopStartTrim	0
+Track 1 LoopLengthTrim	0
+Track 1 StartSeg	0.000
+Track 1 SampleLength	1.00
+Track 1 SampleLengthTrim	0
+Track 1 Trig	Off	False | True
+Track 1 LoopActive	On	False | True
+Track 1 LoopStart	0.142
+Track 1 LoopLength	0.797
+Track 1 BFLoop	Off	False | True
+Track 1 FilterCutoff	113
+Track 1 EvoCenter	0.000
+Track 1 EvoSpread	0.500
+Track 1 EvoBias	0.500
+Track 1 Fund Boost	0.000
+Track 1 Octave	0	-3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0
+Track 1 Semitone	0	-12.0 | -11.0 | -10.0 | -9.0 | -8.0 | -7.0 | -6.0 | -5.0 | -4.0 | -3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0
+Track 1 Fine	0
+Track 1 Function1 Unsync Rate	0.500
+Track 1 Function1 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 1 Function1 MIDI Sync	Off	False | True
+Track 1 Function2 Unsync Rate	0.500
+Track 1 Function2 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 1 Function2 MIDI Sync	Off	False | True
+Track 1 Function3 Unsync Rate	0.500
+Track 1 Function3 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 1 Function3 MIDI Sync	Off	False | True
+Track 1 Function4 Unsync Rate	0.500
+Track 1 Function4 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 1 Function4 MIDI Sync	Off	False | True
+Track 1 Function5 Unsync Rate	0.500
+Track 1 Function5 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 1 Function5 MIDI Sync	Off	False | True
+Track 1 Function6 Unsync Rate	0.500
+Track 1 Function6 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 1 Function6 MIDI Sync	Off	False | True
+Track 1 Delay Time	161
+Track 1 Delay Feedback	67.0
+Track 1 Delay Sync	On	False | True
+Track 1 Delay PingPong	Off	False | True
+Track 1 Phaser Rate L	0.127
+Track 1 Phaser Rate L Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Track 1 Phaser Feedback	39.4
+Track 1 Phaser Depth L	14.2
+Track 1 Phaser Rate R	2.00
+Track 1 Phaser Rate R Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Track 1 Phaser Depth R	11.0
+Track 1 Phaser MIDI Sync	Off	False | True
+Track 1 Phaser Dual Mode	On	False | True
+Track 1 Distortion Drive	0.000
+Track 1 Distortion Output	1.00
+Track 1 Distortion Tone	1.00
+Track 1 Flanger Rate	0.966
+Track 1 Flanger Depth	70.9
+Track 1 Flanger Feedback	-36.0
+Track 1 Flanger Delay Time	0.000
+Track 1 Analog Delay Time	419
+Track 1 Analog Delay Amount	72.2
+Track 1 Analog Delay Depth	7.00
+Track 1 Analog Delay Rate	1.45
+Track 1 Analog Delay Tone	88.4
+Track 1 Pitch Shift Detune	12.0
+Track 1 Pitch Shift Delay	256 Samples	256 Samples | 512 Samples | 1024 Samples | 2048 Samples | 4096 Samples
+Track 1 Pitch Shift Level	0.828
+Track 1 Chorus Type	2	1.0 | 2.0 | 3.0
+Track 1 Chorus Rate	0.575
+Track 1 Chorus Amount	16.5
+Track 1 Chorus Delay	0.000
+Track 1 Chorus Stereo Width	25.0
+Track 1 Leslie Rate	32.0
+Track 1 Leslie Speed	Fast	Fast | Slow | Stop
+Track 1 Leslie Low - Width	32.0
+Track 1 Leslie Low - Shape	50.0
+Track 1 Leslie High - Width	69.0
+Track 1 Leslie High - Shape	50.0
+Track 1 Leslie High - Depth	56.0
+Track 1 Leslie Output Gain	38.0
+Track 1 Eq Lo Freq	47.6
+Track 1 Eq Lo Gain	0.000
+Track 1 Eq Hi Freq	2870
+Track 1 Eq Hi Gain	0.000
+Track 1 Eq P1 Freq	250
+Track 1 Eq P1 Gain	0.000
+Track 1 Eq P1 Width	0.500
+Track 1 Eq P2 Freq	530
+Track 1 Eq P2 Gain	0.000
+Track 1 Eq P2 Width	0.500
+Track 1 Eq P3 Freq	1466
+Track 1 Eq P3 Gain	0.000
+Track 1 Eq P3 Width	0.500
+Track 1 Compressor Threshold	-40.0
+Track 1 Compressor Ratio	8.80
+Track 1 Compressor Attack	36.0
+Track 1 Compressor Release	208
+Track 1 Compressor Input Gain	0.000
+Track 1 Compressor Makeup Gain	25.0
+Track 1 Limiter Gain	22.0
+Track 1 Limiter Knee	0.400
+Track 1 Limiter Release	300
+Track 1 Limiter Level	-30.0
+Track 1 Destroy Resampling	82.4
+Track 1 Destroy Bit Resolution	16	4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Track 1 Destroy Harmonic Distortion	60.0
+Track 1 Destroy Clipping	0.000
+Track 1 Destroy Tone	6871
+Track 1 Destroy Gain	0.000
+Track 1 Auto Pan	1.00
+Track 1 Auto Pan Rate	-0.240
+Track 2 MainLevel	0.000
+Track 2 Mute	Off	False | True
+Track 2 Solo	Off	False | True
+Track 2 Panning	0.500
+Track 2 VoiceLevel	0.000
+Track 2 AuxSend	-70.0
+Track 2 DampMode	1	1.0 | 2.0
+Track 2 Damping1	11272
+Track 2 Damping2	23593
+Track 2 AttackTime	0.000
+Track 2 Slur	Off	False | True
+Track 2 Glissando	Off	False | True
+Track 2 Portamento	Off	False | True
+Track 2 PortaTime	0
+Track 2 ConstantTime	On	False | True
+Track 2 Bypass	Off	False | True
+Track 2 Dry / Wet	1.00
+Track 2 VibratoDepth	0
+Track 2 VibratoSpeed	79
+Track 2 VibratoDelay	0
+Track 2 VibratoAttack	0
+Track 2 Vibrato>Filter	0
+Track 2 Vibrato>Level	0
+Track 2 BendWidth	2
+Track 2 StartTrim	0
+Track 2 LoopStartTrim	0
+Track 2 LoopLengthTrim	0
+Track 2 StartSeg	0.000
+Track 2 SampleLength	1.00
+Track 2 SampleLengthTrim	0
+Track 2 Trig	Off	False | True
+Track 2 LoopActive	Off	False | True
+Track 2 LoopStart	0.000
+Track 2 LoopLength	1.00
+Track 2 BFLoop	Off	False | True
+Track 2 FilterCutoff	100
+Track 2 EvoCenter	0.000
+Track 2 EvoSpread	0.500
+Track 2 EvoBias	0.500
+Track 2 Fund Boost	0.000
+Track 2 Octave	0	-3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0
+Track 2 Semitone	0	-12.0 | -11.0 | -10.0 | -9.0 | -8.0 | -7.0 | -6.0 | -5.0 | -4.0 | -3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0
+Track 2 Fine	0
+Track 2 Function1 Unsync Rate	0.500
+Track 2 Function1 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 2 Function1 MIDI Sync	Off	False | True
+Track 2 Function2 Unsync Rate	0.500
+Track 2 Function2 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 2 Function2 MIDI Sync	Off	False | True
+Track 2 Function3 Unsync Rate	0.500
+Track 2 Function3 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 2 Function3 MIDI Sync	Off	False | True
+Track 2 Function4 Unsync Rate	0.500
+Track 2 Function4 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 2 Function4 MIDI Sync	Off	False | True
+Track 2 Function5 Unsync Rate	0.500
+Track 2 Function5 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 2 Function5 MIDI Sync	Off	False | True
+Track 2 Function6 Unsync Rate	0.500
+Track 2 Function6 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 2 Function6 MIDI Sync	Off	False | True
+Track 2 Delay Time	161
+Track 2 Delay Feedback	67.0
+Track 2 Delay Sync	On	False | True
+Track 2 Delay PingPong	Off	False | True
+Track 2 Phaser Rate L	0.127
+Track 2 Phaser Rate L Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Track 2 Phaser Feedback	39.4
+Track 2 Phaser Depth L	14.2
+Track 2 Phaser Rate R	2.00
+Track 2 Phaser Rate R Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Track 2 Phaser Depth R	11.0
+Track 2 Phaser MIDI Sync	Off	False | True
+Track 2 Phaser Dual Mode	On	False | True
+Track 2 Distortion Drive	0.000
+Track 2 Distortion Output	1.00
+Track 2 Distortion Tone	1.00
+Track 2 Flanger Rate	0.966
+Track 2 Flanger Depth	70.9
+Track 2 Flanger Feedback	-36.0
+Track 2 Flanger Delay Time	0.000
+Track 2 Analog Delay Time	419
+Track 2 Analog Delay Amount	72.2
+Track 2 Analog Delay Depth	7.00
+Track 2 Analog Delay Rate	1.45
+Track 2 Analog Delay Tone	88.4
+Track 2 Pitch Shift Detune	12.0
+Track 2 Pitch Shift Delay	256 Samples	256 Samples | 512 Samples | 1024 Samples | 2048 Samples | 4096 Samples
+Track 2 Pitch Shift Level	0.828
+Track 2 Chorus Type	2	1.0 | 2.0 | 3.0
+Track 2 Chorus Rate	0.575
+Track 2 Chorus Amount	16.5
+Track 2 Chorus Delay	0.000
+Track 2 Chorus Stereo Width	25.0
+Track 2 Leslie Rate	32.0
+Track 2 Leslie Speed	Fast	Fast | Slow | Stop
+Track 2 Leslie Low - Width	32.0
+Track 2 Leslie Low - Shape	50.0
+Track 2 Leslie High - Width	69.0
+Track 2 Leslie High - Shape	50.0
+Track 2 Leslie High - Depth	56.0
+Track 2 Leslie Output Gain	38.0
+Track 2 Eq Lo Freq	47.6
+Track 2 Eq Lo Gain	0.000
+Track 2 Eq Hi Freq	2870
+Track 2 Eq Hi Gain	0.000
+Track 2 Eq P1 Freq	250
+Track 2 Eq P1 Gain	0.000
+Track 2 Eq P1 Width	0.500
+Track 2 Eq P2 Freq	530
+Track 2 Eq P2 Gain	0.000
+Track 2 Eq P2 Width	0.500
+Track 2 Eq P3 Freq	1466
+Track 2 Eq P3 Gain	0.000
+Track 2 Eq P3 Width	0.500
+Track 2 Compressor Threshold	-40.0
+Track 2 Compressor Ratio	8.80
+Track 2 Compressor Attack	36.0
+Track 2 Compressor Release	208
+Track 2 Compressor Input Gain	0.000
+Track 2 Compressor Makeup Gain	25.0
+Track 2 Limiter Gain	22.0
+Track 2 Limiter Knee	0.400
+Track 2 Limiter Release	300
+Track 2 Limiter Level	-30.0
+Track 2 Destroy Resampling	82.4
+Track 2 Destroy Bit Resolution	16	4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Track 2 Destroy Harmonic Distortion	60.0
+Track 2 Destroy Clipping	0.000
+Track 2 Destroy Tone	6871
+Track 2 Destroy Gain	0.000
+Track 2 Auto Pan	1.00
+Track 2 Auto Pan Rate	-0.240
+Track 3 MainLevel	0.000
+Track 3 Mute	Off	False | True
+Track 3 Solo	Off	False | True
+Track 3 Panning	0.500
+Track 3 VoiceLevel	0.000
+Track 3 AuxSend	-70.0
+Track 3 DampMode	1	1.0 | 2.0
+Track 3 Damping1	11272
+Track 3 Damping2	23593
+Track 3 AttackTime	0.000
+Track 3 Slur	Off	False | True
+Track 3 Glissando	Off	False | True
+Track 3 Portamento	Off	False | True
+Track 3 PortaTime	0
+Track 3 ConstantTime	On	False | True
+Track 3 Bypass	Off	False | True
+Track 3 Dry / Wet	1.00
+Track 3 VibratoDepth	0
+Track 3 VibratoSpeed	79
+Track 3 VibratoDelay	0
+Track 3 VibratoAttack	0
+Track 3 Vibrato>Filter	0
+Track 3 Vibrato>Level	0
+Track 3 BendWidth	2
+Track 3 StartTrim	0
+Track 3 LoopStartTrim	0
+Track 3 LoopLengthTrim	0
+Track 3 StartSeg	0.000
+Track 3 SampleLength	1.00
+Track 3 SampleLengthTrim	0
+Track 3 Trig	Off	False | True
+Track 3 LoopActive	Off	False | True
+Track 3 LoopStart	0.000
+Track 3 LoopLength	1.00
+Track 3 BFLoop	Off	False | True
+Track 3 FilterCutoff	100
+Track 3 EvoCenter	0.000
+Track 3 EvoSpread	0.500
+Track 3 EvoBias	0.500
+Track 3 Fund Boost	0.000
+Track 3 Octave	0	-3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0
+Track 3 Semitone	0	-12.0 | -11.0 | -10.0 | -9.0 | -8.0 | -7.0 | -6.0 | -5.0 | -4.0 | -3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0
+Track 3 Fine	0
+Track 3 Function1 Unsync Rate	0.500
+Track 3 Function1 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 3 Function1 MIDI Sync	Off	False | True
+Track 3 Function2 Unsync Rate	0.500
+Track 3 Function2 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 3 Function2 MIDI Sync	Off	False | True
+Track 3 Function3 Unsync Rate	0.500
+Track 3 Function3 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 3 Function3 MIDI Sync	Off	False | True
+Track 3 Function4 Unsync Rate	0.500
+Track 3 Function4 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 3 Function4 MIDI Sync	Off	False | True
+Track 3 Function5 Unsync Rate	0.500
+Track 3 Function5 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 3 Function5 MIDI Sync	Off	False | True
+Track 3 Function6 Unsync Rate	0.500
+Track 3 Function6 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 3 Function6 MIDI Sync	Off	False | True
+Track 3 Delay Time	161
+Track 3 Delay Feedback	67.0
+Track 3 Delay Sync	On	False | True
+Track 3 Delay PingPong	Off	False | True
+Track 3 Phaser Rate L	0.127
+Track 3 Phaser Rate L Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Track 3 Phaser Feedback	39.4
+Track 3 Phaser Depth L	14.2
+Track 3 Phaser Rate R	2.00
+Track 3 Phaser Rate R Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Track 3 Phaser Depth R	11.0
+Track 3 Phaser MIDI Sync	Off	False | True
+Track 3 Phaser Dual Mode	On	False | True
+Track 3 Distortion Drive	0.000
+Track 3 Distortion Output	1.00
+Track 3 Distortion Tone	1.00
+Track 3 Flanger Rate	0.966
+Track 3 Flanger Depth	70.9
+Track 3 Flanger Feedback	-36.0
+Track 3 Flanger Delay Time	0.000
+Track 3 Analog Delay Time	419
+Track 3 Analog Delay Amount	72.2
+Track 3 Analog Delay Depth	7.00
+Track 3 Analog Delay Rate	1.45
+Track 3 Analog Delay Tone	88.4
+Track 3 Pitch Shift Detune	12.0
+Track 3 Pitch Shift Delay	256 Samples	256 Samples | 512 Samples | 1024 Samples | 2048 Samples | 4096 Samples
+Track 3 Pitch Shift Level	0.828
+Track 3 Chorus Type	2	1.0 | 2.0 | 3.0
+Track 3 Chorus Rate	0.575
+Track 3 Chorus Amount	16.5
+Track 3 Chorus Delay	0.000
+Track 3 Chorus Stereo Width	25.0
+Track 3 Leslie Rate	32.0
+Track 3 Leslie Speed	Fast	Fast | Slow | Stop
+Track 3 Leslie Low - Width	32.0
+Track 3 Leslie Low - Shape	50.0
+Track 3 Leslie High - Width	69.0
+Track 3 Leslie High - Shape	50.0
+Track 3 Leslie High - Depth	56.0
+Track 3 Leslie Output Gain	38.0
+Track 3 Eq Lo Freq	47.6
+Track 3 Eq Lo Gain	0.000
+Track 3 Eq Hi Freq	2870
+Track 3 Eq Hi Gain	0.000
+Track 3 Eq P1 Freq	250
+Track 3 Eq P1 Gain	0.000
+Track 3 Eq P1 Width	0.500
+Track 3 Eq P2 Freq	530
+Track 3 Eq P2 Gain	0.000
+Track 3 Eq P2 Width	0.500
+Track 3 Eq P3 Freq	1466
+Track 3 Eq P3 Gain	0.000
+Track 3 Eq P3 Width	0.500
+Track 3 Compressor Threshold	-40.0
+Track 3 Compressor Ratio	8.80
+Track 3 Compressor Attack	36.0
+Track 3 Compressor Release	208
+Track 3 Compressor Input Gain	0.000
+Track 3 Compressor Makeup Gain	25.0
+Track 3 Limiter Gain	22.0
+Track 3 Limiter Knee	0.400
+Track 3 Limiter Release	300
+Track 3 Limiter Level	-30.0
+Track 3 Destroy Resampling	82.4
+Track 3 Destroy Bit Resolution	16	4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Track 3 Destroy Harmonic Distortion	60.0
+Track 3 Destroy Clipping	0.000
+Track 3 Destroy Tone	6871
+Track 3 Destroy Gain	0.000
+Track 3 Auto Pan	1.00
+Track 3 Auto Pan Rate	-0.240
+Track 4 MainLevel	0.000
+Track 4 Mute	Off	False | True
+Track 4 Solo	Off	False | True
+Track 4 Panning	0.500
+Track 4 VoiceLevel	0.000
+Track 4 AuxSend	-70.0
+Track 4 DampMode	1	1.0 | 2.0
+Track 4 Damping1	11272
+Track 4 Damping2	23593
+Track 4 AttackTime	0.000
+Track 4 Slur	Off	False | True
+Track 4 Glissando	Off	False | True
+Track 4 Portamento	Off	False | True
+Track 4 PortaTime	0
+Track 4 ConstantTime	On	False | True
+Track 4 Bypass	Off	False | True
+Track 4 Dry / Wet	1.00
+Track 4 VibratoDepth	0
+Track 4 VibratoSpeed	79
+Track 4 VibratoDelay	0
+Track 4 VibratoAttack	0
+Track 4 Vibrato>Filter	0
+Track 4 Vibrato>Level	0
+Track 4 BendWidth	2
+Track 4 StartTrim	0
+Track 4 LoopStartTrim	0
+Track 4 LoopLengthTrim	0
+Track 4 StartSeg	0.000
+Track 4 SampleLength	1.00
+Track 4 SampleLengthTrim	0
+Track 4 Trig	Off	False | True
+Track 4 LoopActive	Off	False | True
+Track 4 LoopStart	0.000
+Track 4 LoopLength	1.00
+Track 4 BFLoop	Off	False | True
+Track 4 FilterCutoff	100
+Track 4 EvoCenter	0.000
+Track 4 EvoSpread	0.500
+Track 4 EvoBias	0.500
+Track 4 Fund Boost	0.000
+Track 4 Octave	0	-3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0
+Track 4 Semitone	0	-12.0 | -11.0 | -10.0 | -9.0 | -8.0 | -7.0 | -6.0 | -5.0 | -4.0 | -3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0
+Track 4 Fine	0
+Track 4 Function1 Unsync Rate	0.500
+Track 4 Function1 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 4 Function1 MIDI Sync	Off	False | True
+Track 4 Function2 Unsync Rate	0.500
+Track 4 Function2 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 4 Function2 MIDI Sync	Off	False | True
+Track 4 Function3 Unsync Rate	0.500
+Track 4 Function3 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 4 Function3 MIDI Sync	Off	False | True
+Track 4 Function4 Unsync Rate	0.500
+Track 4 Function4 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 4 Function4 MIDI Sync	Off	False | True
+Track 4 Function5 Unsync Rate	0.500
+Track 4 Function5 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 4 Function5 MIDI Sync	Off	False | True
+Track 4 Function6 Unsync Rate	0.500
+Track 4 Function6 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 4 Function6 MIDI Sync	Off	False | True
+Track 4 Delay Time	161
+Track 4 Delay Feedback	67.0
+Track 4 Delay Sync	On	False | True
+Track 4 Delay PingPong	Off	False | True
+Track 4 Phaser Rate L	0.127
+Track 4 Phaser Rate L Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Track 4 Phaser Feedback	39.4
+Track 4 Phaser Depth L	14.2
+Track 4 Phaser Rate R	2.00
+Track 4 Phaser Rate R Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Track 4 Phaser Depth R	11.0
+Track 4 Phaser MIDI Sync	Off	False | True
+Track 4 Phaser Dual Mode	On	False | True
+Track 4 Distortion Drive	0.000
+Track 4 Distortion Output	1.00
+Track 4 Distortion Tone	1.00
+Track 4 Flanger Rate	0.966
+Track 4 Flanger Depth	70.9
+Track 4 Flanger Feedback	-36.0
+Track 4 Flanger Delay Time	0.000
+Track 4 Analog Delay Time	419
+Track 4 Analog Delay Amount	72.2
+Track 4 Analog Delay Depth	7.00
+Track 4 Analog Delay Rate	1.45
+Track 4 Analog Delay Tone	88.4
+Track 4 Pitch Shift Detune	12.0
+Track 4 Pitch Shift Delay	256 Samples	256 Samples | 512 Samples | 1024 Samples | 2048 Samples | 4096 Samples
+Track 4 Pitch Shift Level	0.828
+Track 4 Chorus Type	2	1.0 | 2.0 | 3.0
+Track 4 Chorus Rate	0.575
+Track 4 Chorus Amount	16.5
+Track 4 Chorus Delay	0.000
+Track 4 Chorus Stereo Width	25.0
+Track 4 Leslie Rate	32.0
+Track 4 Leslie Speed	Fast	Fast | Slow | Stop
+Track 4 Leslie Low - Width	32.0
+Track 4 Leslie Low - Shape	50.0
+Track 4 Leslie High - Width	69.0
+Track 4 Leslie High - Shape	50.0
+Track 4 Leslie High - Depth	56.0
+Track 4 Leslie Output Gain	38.0
+Track 4 Eq Lo Freq	47.6
+Track 4 Eq Lo Gain	0.000
+Track 4 Eq Hi Freq	2870
+Track 4 Eq Hi Gain	0.000
+Track 4 Eq P1 Freq	250
+Track 4 Eq P1 Gain	0.000
+Track 4 Eq P1 Width	0.500
+Track 4 Eq P2 Freq	530
+Track 4 Eq P2 Gain	0.000
+Track 4 Eq P2 Width	0.500
+Track 4 Eq P3 Freq	1466
+Track 4 Eq P3 Gain	0.000
+Track 4 Eq P3 Width	0.500
+Track 4 Compressor Threshold	-40.0
+Track 4 Compressor Ratio	8.80
+Track 4 Compressor Attack	36.0
+Track 4 Compressor Release	208
+Track 4 Compressor Input Gain	0.000
+Track 4 Compressor Makeup Gain	25.0
+Track 4 Limiter Gain	22.0
+Track 4 Limiter Knee	0.400
+Track 4 Limiter Release	300
+Track 4 Limiter Level	-30.0
+Track 4 Destroy Resampling	82.4
+Track 4 Destroy Bit Resolution	16	4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Track 4 Destroy Harmonic Distortion	60.0
+Track 4 Destroy Clipping	0.000
+Track 4 Destroy Tone	6871
+Track 4 Destroy Gain	0.000
+Track 4 Auto Pan	1.00
+Track 4 Auto Pan Rate	-0.240
+Track 5 MainLevel	0.000
+Track 5 Mute	Off	False | True
+Track 5 Solo	Off	False | True
+Track 5 Panning	0.500
+Track 5 VoiceLevel	0.000
+Track 5 AuxSend	-70.0
+Track 5 DampMode	1	1.0 | 2.0
+Track 5 Damping1	11272
+Track 5 Damping2	23593
+Track 5 AttackTime	0.000
+Track 5 Slur	Off	False | True
+Track 5 Glissando	Off	False | True
+Track 5 Portamento	Off	False | True
+Track 5 PortaTime	0
+Track 5 ConstantTime	On	False | True
+Track 5 Bypass	Off	False | True
+Track 5 Dry / Wet	1.00
+Track 5 VibratoDepth	0
+Track 5 VibratoSpeed	79
+Track 5 VibratoDelay	0
+Track 5 VibratoAttack	0
+Track 5 Vibrato>Filter	0
+Track 5 Vibrato>Level	0
+Track 5 BendWidth	2
+Track 5 StartTrim	0
+Track 5 LoopStartTrim	0
+Track 5 LoopLengthTrim	0
+Track 5 StartSeg	0.000
+Track 5 SampleLength	1.00
+Track 5 SampleLengthTrim	0
+Track 5 Trig	Off	False | True
+Track 5 LoopActive	Off	False | True
+Track 5 LoopStart	0.000
+Track 5 LoopLength	1.00
+Track 5 BFLoop	Off	False | True
+Track 5 FilterCutoff	100
+Track 5 EvoCenter	0.000
+Track 5 EvoSpread	0.500
+Track 5 EvoBias	0.500
+Track 5 Fund Boost	0.000
+Track 5 Octave	0	-3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0
+Track 5 Semitone	0	-12.0 | -11.0 | -10.0 | -9.0 | -8.0 | -7.0 | -6.0 | -5.0 | -4.0 | -3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0
+Track 5 Fine	0
+Track 5 Function1 Unsync Rate	0.500
+Track 5 Function1 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 5 Function1 MIDI Sync	Off	False | True
+Track 5 Function2 Unsync Rate	0.500
+Track 5 Function2 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 5 Function2 MIDI Sync	Off	False | True
+Track 5 Function3 Unsync Rate	0.500
+Track 5 Function3 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 5 Function3 MIDI Sync	Off	False | True
+Track 5 Function4 Unsync Rate	0.500
+Track 5 Function4 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 5 Function4 MIDI Sync	Off	False | True
+Track 5 Function5 Unsync Rate	0.500
+Track 5 Function5 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 5 Function5 MIDI Sync	Off	False | True
+Track 5 Function6 Unsync Rate	0.500
+Track 5 Function6 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 5 Function6 MIDI Sync	Off	False | True
+Track 5 Delay Time	161
+Track 5 Delay Feedback	67.0
+Track 5 Delay Sync	On	False | True
+Track 5 Delay PingPong	Off	False | True
+Track 5 Phaser Rate L	0.127
+Track 5 Phaser Rate L Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Track 5 Phaser Feedback	39.4
+Track 5 Phaser Depth L	14.2
+Track 5 Phaser Rate R	2.00
+Track 5 Phaser Rate R Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Track 5 Phaser Depth R	11.0
+Track 5 Phaser MIDI Sync	Off	False | True
+Track 5 Phaser Dual Mode	On	False | True
+Track 5 Distortion Drive	0.000
+Track 5 Distortion Output	1.00
+Track 5 Distortion Tone	1.00
+Track 5 Flanger Rate	0.966
+Track 5 Flanger Depth	70.9
+Track 5 Flanger Feedback	-36.0
+Track 5 Flanger Delay Time	0.000
+Track 5 Analog Delay Time	419
+Track 5 Analog Delay Amount	72.2
+Track 5 Analog Delay Depth	7.00
+Track 5 Analog Delay Rate	1.45
+Track 5 Analog Delay Tone	88.4
+Track 5 Pitch Shift Detune	12.0
+Track 5 Pitch Shift Delay	256 Samples	256 Samples | 512 Samples | 1024 Samples | 2048 Samples | 4096 Samples
+Track 5 Pitch Shift Level	0.828
+Track 5 Chorus Type	2	1.0 | 2.0 | 3.0
+Track 5 Chorus Rate	0.575
+Track 5 Chorus Amount	16.5
+Track 5 Chorus Delay	0.000
+Track 5 Chorus Stereo Width	25.0
+Track 5 Leslie Rate	32.0
+Track 5 Leslie Speed	Fast	Fast | Slow | Stop
+Track 5 Leslie Low - Width	32.0
+Track 5 Leslie Low - Shape	50.0
+Track 5 Leslie High - Width	69.0
+Track 5 Leslie High - Shape	50.0
+Track 5 Leslie High - Depth	56.0
+Track 5 Leslie Output Gain	38.0
+Track 5 Eq Lo Freq	47.6
+Track 5 Eq Lo Gain	0.000
+Track 5 Eq Hi Freq	2870
+Track 5 Eq Hi Gain	0.000
+Track 5 Eq P1 Freq	250
+Track 5 Eq P1 Gain	0.000
+Track 5 Eq P1 Width	0.500
+Track 5 Eq P2 Freq	530
+Track 5 Eq P2 Gain	0.000
+Track 5 Eq P2 Width	0.500
+Track 5 Eq P3 Freq	1466
+Track 5 Eq P3 Gain	0.000
+Track 5 Eq P3 Width	0.500
+Track 5 Compressor Threshold	-40.0
+Track 5 Compressor Ratio	8.80
+Track 5 Compressor Attack	36.0
+Track 5 Compressor Release	208
+Track 5 Compressor Input Gain	0.000
+Track 5 Compressor Makeup Gain	25.0
+Track 5 Limiter Gain	22.0
+Track 5 Limiter Knee	0.400
+Track 5 Limiter Release	300
+Track 5 Limiter Level	-30.0
+Track 5 Destroy Resampling	82.4
+Track 5 Destroy Bit Resolution	16	4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Track 5 Destroy Harmonic Distortion	60.0
+Track 5 Destroy Clipping	0.000
+Track 5 Destroy Tone	6871
+Track 5 Destroy Gain	0.000
+Track 5 Auto Pan	1.00
+Track 5 Auto Pan Rate	-0.240
+Track 6 MainLevel	0.000
+Track 6 Mute	Off	False | True
+Track 6 Solo	Off	False | True
+Track 6 Panning	0.500
+Track 6 VoiceLevel	0.000
+Track 6 AuxSend	-70.0
+Track 6 DampMode	1	1.0 | 2.0
+Track 6 Damping1	11272
+Track 6 Damping2	23593
+Track 6 AttackTime	0.000
+Track 6 Slur	Off	False | True
+Track 6 Glissando	Off	False | True
+Track 6 Portamento	Off	False | True
+Track 6 PortaTime	0
+Track 6 ConstantTime	On	False | True
+Track 6 Bypass	Off	False | True
+Track 6 Dry / Wet	1.00
+Track 6 VibratoDepth	0
+Track 6 VibratoSpeed	79
+Track 6 VibratoDelay	0
+Track 6 VibratoAttack	0
+Track 6 Vibrato>Filter	0
+Track 6 Vibrato>Level	0
+Track 6 BendWidth	2
+Track 6 StartTrim	0
+Track 6 LoopStartTrim	0
+Track 6 LoopLengthTrim	0
+Track 6 StartSeg	0.000
+Track 6 SampleLength	1.00
+Track 6 SampleLengthTrim	0
+Track 6 Trig	Off	False | True
+Track 6 LoopActive	Off	False | True
+Track 6 LoopStart	0.000
+Track 6 LoopLength	1.00
+Track 6 BFLoop	Off	False | True
+Track 6 FilterCutoff	100
+Track 6 EvoCenter	0.000
+Track 6 EvoSpread	0.500
+Track 6 EvoBias	0.500
+Track 6 Fund Boost	0.000
+Track 6 Octave	0	-3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0
+Track 6 Semitone	0	-12.0 | -11.0 | -10.0 | -9.0 | -8.0 | -7.0 | -6.0 | -5.0 | -4.0 | -3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0
+Track 6 Fine	0
+Track 6 Function1 Unsync Rate	0.500
+Track 6 Function1 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 6 Function1 MIDI Sync	Off	False | True
+Track 6 Function2 Unsync Rate	0.500
+Track 6 Function2 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 6 Function2 MIDI Sync	Off	False | True
+Track 6 Function3 Unsync Rate	0.500
+Track 6 Function3 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 6 Function3 MIDI Sync	Off	False | True
+Track 6 Function4 Unsync Rate	0.500
+Track 6 Function4 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 6 Function4 MIDI Sync	Off	False | True
+Track 6 Function5 Unsync Rate	0.500
+Track 6 Function5 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 6 Function5 MIDI Sync	Off	False | True
+Track 6 Function6 Unsync Rate	0.500
+Track 6 Function6 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 6 Function6 MIDI Sync	Off	False | True
+Track 6 Delay Time	161
+Track 6 Delay Feedback	67.0
+Track 6 Delay Sync	On	False | True
+Track 6 Delay PingPong	Off	False | True
+Track 6 Phaser Rate L	0.127
+Track 6 Phaser Rate L Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Track 6 Phaser Feedback	39.4
+Track 6 Phaser Depth L	14.2
+Track 6 Phaser Rate R	2.00
+Track 6 Phaser Rate R Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Track 6 Phaser Depth R	11.0
+Track 6 Phaser MIDI Sync	Off	False | True
+Track 6 Phaser Dual Mode	On	False | True
+Track 6 Distortion Drive	0.000
+Track 6 Distortion Output	1.00
+Track 6 Distortion Tone	1.00
+Track 6 Flanger Rate	0.966
+Track 6 Flanger Depth	70.9
+Track 6 Flanger Feedback	-36.0
+Track 6 Flanger Delay Time	0.000
+Track 6 Analog Delay Time	419
+Track 6 Analog Delay Amount	72.2
+Track 6 Analog Delay Depth	7.00
+Track 6 Analog Delay Rate	1.45
+Track 6 Analog Delay Tone	88.4
+Track 6 Pitch Shift Detune	12.0
+Track 6 Pitch Shift Delay	256 Samples	256 Samples | 512 Samples | 1024 Samples | 2048 Samples | 4096 Samples
+Track 6 Pitch Shift Level	0.828
+Track 6 Chorus Type	2	1.0 | 2.0 | 3.0
+Track 6 Chorus Rate	0.575
+Track 6 Chorus Amount	16.5
+Track 6 Chorus Delay	0.000
+Track 6 Chorus Stereo Width	25.0
+Track 6 Leslie Rate	32.0
+Track 6 Leslie Speed	Fast	Fast | Slow | Stop
+Track 6 Leslie Low - Width	32.0
+Track 6 Leslie Low - Shape	50.0
+Track 6 Leslie High - Width	69.0
+Track 6 Leslie High - Shape	50.0
+Track 6 Leslie High - Depth	56.0
+Track 6 Leslie Output Gain	38.0
+Track 6 Eq Lo Freq	47.6
+Track 6 Eq Lo Gain	0.000
+Track 6 Eq Hi Freq	2870
+Track 6 Eq Hi Gain	0.000
+Track 6 Eq P1 Freq	250
+Track 6 Eq P1 Gain	0.000
+Track 6 Eq P1 Width	0.500
+Track 6 Eq P2 Freq	530
+Track 6 Eq P2 Gain	0.000
+Track 6 Eq P2 Width	0.500
+Track 6 Eq P3 Freq	1466
+Track 6 Eq P3 Gain	0.000
+Track 6 Eq P3 Width	0.500
+Track 6 Compressor Threshold	-40.0
+Track 6 Compressor Ratio	8.80
+Track 6 Compressor Attack	36.0
+Track 6 Compressor Release	208
+Track 6 Compressor Input Gain	0.000
+Track 6 Compressor Makeup Gain	25.0
+Track 6 Limiter Gain	22.0
+Track 6 Limiter Knee	0.400
+Track 6 Limiter Release	300
+Track 6 Limiter Level	-30.0
+Track 6 Destroy Resampling	82.4
+Track 6 Destroy Bit Resolution	16	4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Track 6 Destroy Harmonic Distortion	60.0
+Track 6 Destroy Clipping	0.000
+Track 6 Destroy Tone	6871
+Track 6 Destroy Gain	0.000
+Track 6 Auto Pan	1.00
+Track 6 Auto Pan Rate	-0.240
+Track 7 MainLevel	0.000
+Track 7 Mute	Off	False | True
+Track 7 Solo	Off	False | True
+Track 7 Panning	0.500
+Track 7 VoiceLevel	0.000
+Track 7 AuxSend	-70.0
+Track 7 DampMode	1	1.0 | 2.0
+Track 7 Damping1	11272
+Track 7 Damping2	23593
+Track 7 AttackTime	0.000
+Track 7 Slur	Off	False | True
+Track 7 Glissando	Off	False | True
+Track 7 Portamento	Off	False | True
+Track 7 PortaTime	0
+Track 7 ConstantTime	On	False | True
+Track 7 Bypass	Off	False | True
+Track 7 Dry / Wet	1.00
+Track 7 VibratoDepth	0
+Track 7 VibratoSpeed	79
+Track 7 VibratoDelay	0
+Track 7 VibratoAttack	0
+Track 7 Vibrato>Filter	0
+Track 7 Vibrato>Level	0
+Track 7 BendWidth	2
+Track 7 StartTrim	0
+Track 7 LoopStartTrim	0
+Track 7 LoopLengthTrim	0
+Track 7 StartSeg	0.000
+Track 7 SampleLength	1.00
+Track 7 SampleLengthTrim	0
+Track 7 Trig	Off	False | True
+Track 7 LoopActive	Off	False | True
+Track 7 LoopStart	0.000
+Track 7 LoopLength	1.00
+Track 7 BFLoop	Off	False | True
+Track 7 FilterCutoff	100
+Track 7 EvoCenter	0.000
+Track 7 EvoSpread	0.500
+Track 7 EvoBias	0.500
+Track 7 Fund Boost	0.000
+Track 7 Octave	0	-3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0
+Track 7 Semitone	0	-12.0 | -11.0 | -10.0 | -9.0 | -8.0 | -7.0 | -6.0 | -5.0 | -4.0 | -3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0
+Track 7 Fine	0
+Track 7 Function1 Unsync Rate	0.500
+Track 7 Function1 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 7 Function1 MIDI Sync	Off	False | True
+Track 7 Function2 Unsync Rate	0.500
+Track 7 Function2 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 7 Function2 MIDI Sync	Off	False | True
+Track 7 Function3 Unsync Rate	0.500
+Track 7 Function3 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 7 Function3 MIDI Sync	Off	False | True
+Track 7 Function4 Unsync Rate	0.500
+Track 7 Function4 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 7 Function4 MIDI Sync	Off	False | True
+Track 7 Function5 Unsync Rate	0.500
+Track 7 Function5 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 7 Function5 MIDI Sync	Off	False | True
+Track 7 Function6 Unsync Rate	0.500
+Track 7 Function6 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 7 Function6 MIDI Sync	Off	False | True
+Track 7 Delay Time	161
+Track 7 Delay Feedback	67.0
+Track 7 Delay Sync	On	False | True
+Track 7 Delay PingPong	Off	False | True
+Track 7 Phaser Rate L	0.127
+Track 7 Phaser Rate L Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Track 7 Phaser Feedback	39.4
+Track 7 Phaser Depth L	14.2
+Track 7 Phaser Rate R	2.00
+Track 7 Phaser Rate R Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Track 7 Phaser Depth R	11.0
+Track 7 Phaser MIDI Sync	Off	False | True
+Track 7 Phaser Dual Mode	On	False | True
+Track 7 Distortion Drive	0.000
+Track 7 Distortion Output	1.00
+Track 7 Distortion Tone	1.00
+Track 7 Flanger Rate	0.966
+Track 7 Flanger Depth	70.9
+Track 7 Flanger Feedback	-36.0
+Track 7 Flanger Delay Time	0.000
+Track 7 Analog Delay Time	419
+Track 7 Analog Delay Amount	72.2
+Track 7 Analog Delay Depth	7.00
+Track 7 Analog Delay Rate	1.45
+Track 7 Analog Delay Tone	88.4
+Track 7 Pitch Shift Detune	12.0
+Track 7 Pitch Shift Delay	256 Samples	256 Samples | 512 Samples | 1024 Samples | 2048 Samples | 4096 Samples
+Track 7 Pitch Shift Level	0.828
+Track 7 Chorus Type	2	1.0 | 2.0 | 3.0
+Track 7 Chorus Rate	0.575
+Track 7 Chorus Amount	16.5
+Track 7 Chorus Delay	0.000
+Track 7 Chorus Stereo Width	25.0
+Track 7 Leslie Rate	32.0
+Track 7 Leslie Speed	Fast	Fast | Slow | Stop
+Track 7 Leslie Low - Width	32.0
+Track 7 Leslie Low - Shape	50.0
+Track 7 Leslie High - Width	69.0
+Track 7 Leslie High - Shape	50.0
+Track 7 Leslie High - Depth	56.0
+Track 7 Leslie Output Gain	38.0
+Track 7 Eq Lo Freq	47.6
+Track 7 Eq Lo Gain	0.000
+Track 7 Eq Hi Freq	2870
+Track 7 Eq Hi Gain	0.000
+Track 7 Eq P1 Freq	250
+Track 7 Eq P1 Gain	0.000
+Track 7 Eq P1 Width	0.500
+Track 7 Eq P2 Freq	530
+Track 7 Eq P2 Gain	0.000
+Track 7 Eq P2 Width	0.500
+Track 7 Eq P3 Freq	1466
+Track 7 Eq P3 Gain	0.000
+Track 7 Eq P3 Width	0.500
+Track 7 Compressor Threshold	-40.0
+Track 7 Compressor Ratio	8.80
+Track 7 Compressor Attack	36.0
+Track 7 Compressor Release	208
+Track 7 Compressor Input Gain	0.000
+Track 7 Compressor Makeup Gain	25.0
+Track 7 Limiter Gain	22.0
+Track 7 Limiter Knee	0.400
+Track 7 Limiter Release	300
+Track 7 Limiter Level	-30.0
+Track 7 Destroy Resampling	82.4
+Track 7 Destroy Bit Resolution	16	4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Track 7 Destroy Harmonic Distortion	60.0
+Track 7 Destroy Clipping	0.000
+Track 7 Destroy Tone	6871
+Track 7 Destroy Gain	0.000
+Track 7 Auto Pan	1.00
+Track 7 Auto Pan Rate	-0.240
+Track 8 MainLevel	0.000
+Track 8 Mute	Off	False | True
+Track 8 Solo	Off	False | True
+Track 8 Panning	0.500
+Track 8 VoiceLevel	0.000
+Track 8 AuxSend	-70.0
+Track 8 DampMode	1	1.0 | 2.0
+Track 8 Damping1	11272
+Track 8 Damping2	23593
+Track 8 AttackTime	0.000
+Track 8 Slur	Off	False | True
+Track 8 Glissando	Off	False | True
+Track 8 Portamento	Off	False | True
+Track 8 PortaTime	0
+Track 8 ConstantTime	On	False | True
+Track 8 Bypass	Off	False | True
+Track 8 Dry / Wet	1.00
+Track 8 VibratoDepth	0
+Track 8 VibratoSpeed	79
+Track 8 VibratoDelay	0
+Track 8 VibratoAttack	0
+Track 8 Vibrato>Filter	0
+Track 8 Vibrato>Level	0
+Track 8 BendWidth	2
+Track 8 StartTrim	0
+Track 8 LoopStartTrim	0
+Track 8 LoopLengthTrim	0
+Track 8 StartSeg	0.000
+Track 8 SampleLength	1.00
+Track 8 SampleLengthTrim	0
+Track 8 Trig	Off	False | True
+Track 8 LoopActive	Off	False | True
+Track 8 LoopStart	0.000
+Track 8 LoopLength	1.00
+Track 8 BFLoop	Off	False | True
+Track 8 FilterCutoff	100
+Track 8 EvoCenter	0.000
+Track 8 EvoSpread	0.500
+Track 8 EvoBias	0.500
+Track 8 Fund Boost	0.000
+Track 8 Octave	0	-3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0
+Track 8 Semitone	0	-12.0 | -11.0 | -10.0 | -9.0 | -8.0 | -7.0 | -6.0 | -5.0 | -4.0 | -3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0
+Track 8 Fine	0
+Track 8 Function1 Unsync Rate	0.500
+Track 8 Function1 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 8 Function1 MIDI Sync	Off	False | True
+Track 8 Function2 Unsync Rate	0.500
+Track 8 Function2 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 8 Function2 MIDI Sync	Off	False | True
+Track 8 Function3 Unsync Rate	0.500
+Track 8 Function3 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 8 Function3 MIDI Sync	Off	False | True
+Track 8 Function4 Unsync Rate	0.500
+Track 8 Function4 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 8 Function4 MIDI Sync	Off	False | True
+Track 8 Function5 Unsync Rate	0.500
+Track 8 Function5 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 8 Function5 MIDI Sync	Off	False | True
+Track 8 Function6 Unsync Rate	0.500
+Track 8 Function6 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 8 Function6 MIDI Sync	Off	False | True
+Track 8 Delay Time	161
+Track 8 Delay Feedback	67.0
+Track 8 Delay Sync	On	False | True
+Track 8 Delay PingPong	Off	False | True
+Track 8 Phaser Rate L	0.127
+Track 8 Phaser Rate L Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Track 8 Phaser Feedback	39.4
+Track 8 Phaser Depth L	14.2
+Track 8 Phaser Rate R	2.00
+Track 8 Phaser Rate R Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Track 8 Phaser Depth R	11.0
+Track 8 Phaser MIDI Sync	Off	False | True
+Track 8 Phaser Dual Mode	On	False | True
+Track 8 Distortion Drive	0.000
+Track 8 Distortion Output	1.00
+Track 8 Distortion Tone	1.00
+Track 8 Flanger Rate	0.966
+Track 8 Flanger Depth	70.9
+Track 8 Flanger Feedback	-36.0
+Track 8 Flanger Delay Time	0.000
+Track 8 Analog Delay Time	419
+Track 8 Analog Delay Amount	72.2
+Track 8 Analog Delay Depth	7.00
+Track 8 Analog Delay Rate	1.45
+Track 8 Analog Delay Tone	88.4
+Track 8 Pitch Shift Detune	12.0
+Track 8 Pitch Shift Delay	256 Samples	256 Samples | 512 Samples | 1024 Samples | 2048 Samples | 4096 Samples
+Track 8 Pitch Shift Level	0.828
+Track 8 Chorus Type	2	1.0 | 2.0 | 3.0
+Track 8 Chorus Rate	0.575
+Track 8 Chorus Amount	16.5
+Track 8 Chorus Delay	0.000
+Track 8 Chorus Stereo Width	25.0
+Track 8 Leslie Rate	32.0
+Track 8 Leslie Speed	Fast	Fast | Slow | Stop
+Track 8 Leslie Low - Width	32.0
+Track 8 Leslie Low - Shape	50.0
+Track 8 Leslie High - Width	69.0
+Track 8 Leslie High - Shape	50.0
+Track 8 Leslie High - Depth	56.0
+Track 8 Leslie Output Gain	38.0
+Track 8 Eq Lo Freq	47.6
+Track 8 Eq Lo Gain	0.000
+Track 8 Eq Hi Freq	2870
+Track 8 Eq Hi Gain	0.000
+Track 8 Eq P1 Freq	250
+Track 8 Eq P1 Gain	0.000
+Track 8 Eq P1 Width	0.500
+Track 8 Eq P2 Freq	530
+Track 8 Eq P2 Gain	0.000
+Track 8 Eq P2 Width	0.500
+Track 8 Eq P3 Freq	1466
+Track 8 Eq P3 Gain	0.000
+Track 8 Eq P3 Width	0.500
+Track 8 Compressor Threshold	-40.0
+Track 8 Compressor Ratio	8.80
+Track 8 Compressor Attack	36.0
+Track 8 Compressor Release	208
+Track 8 Compressor Input Gain	0.000
+Track 8 Compressor Makeup Gain	25.0
+Track 8 Limiter Gain	22.0
+Track 8 Limiter Knee	0.400
+Track 8 Limiter Release	300
+Track 8 Limiter Level	-30.0
+Track 8 Destroy Resampling	82.4
+Track 8 Destroy Bit Resolution	16	4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Track 8 Destroy Harmonic Distortion	60.0
+Track 8 Destroy Clipping	0.000
+Track 8 Destroy Tone	6871
+Track 8 Destroy Gain	0.000
+Track 8 Auto Pan	1.00
+Track 8 Auto Pan Rate	-0.240
+Track 9 MainLevel	0.000
+Track 9 Mute	Off	False | True
+Track 9 Solo	Off	False | True
+Track 9 Panning	0.500
+Track 9 VoiceLevel	0.000
+Track 9 AuxSend	-70.0
+Track 9 DampMode	1	1.0 | 2.0
+Track 9 Damping1	11272
+Track 9 Damping2	23593
+Track 9 AttackTime	0.000
+Track 9 Slur	Off	False | True
+Track 9 Glissando	Off	False | True
+Track 9 Portamento	Off	False | True
+Track 9 PortaTime	0
+Track 9 ConstantTime	On	False | True
+Track 9 Bypass	Off	False | True
+Track 9 Dry / Wet	1.00
+Track 9 VibratoDepth	0
+Track 9 VibratoSpeed	79
+Track 9 VibratoDelay	0
+Track 9 VibratoAttack	0
+Track 9 Vibrato>Filter	0
+Track 9 Vibrato>Level	0
+Track 9 BendWidth	2
+Track 9 StartTrim	0
+Track 9 LoopStartTrim	0
+Track 9 LoopLengthTrim	0
+Track 9 StartSeg	0.000
+Track 9 SampleLength	1.00
+Track 9 SampleLengthTrim	0
+Track 9 Trig	Off	False | True
+Track 9 LoopActive	Off	False | True
+Track 9 LoopStart	0.000
+Track 9 LoopLength	1.00
+Track 9 BFLoop	Off	False | True
+Track 9 FilterCutoff	100
+Track 9 EvoCenter	0.000
+Track 9 EvoSpread	0.500
+Track 9 EvoBias	0.500
+Track 9 Fund Boost	0.000
+Track 9 Octave	0	-3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0
+Track 9 Semitone	0	-12.0 | -11.0 | -10.0 | -9.0 | -8.0 | -7.0 | -6.0 | -5.0 | -4.0 | -3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0
+Track 9 Fine	0
+Track 9 Function1 Unsync Rate	0.500
+Track 9 Function1 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 9 Function1 MIDI Sync	Off	False | True
+Track 9 Function2 Unsync Rate	0.500
+Track 9 Function2 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 9 Function2 MIDI Sync	Off	False | True
+Track 9 Function3 Unsync Rate	0.500
+Track 9 Function3 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 9 Function3 MIDI Sync	Off	False | True
+Track 9 Function4 Unsync Rate	0.500
+Track 9 Function4 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 9 Function4 MIDI Sync	Off	False | True
+Track 9 Function5 Unsync Rate	0.500
+Track 9 Function5 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 9 Function5 MIDI Sync	Off	False | True
+Track 9 Function6 Unsync Rate	0.500
+Track 9 Function6 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 9 Function6 MIDI Sync	Off	False | True
+Track 9 Delay Time	161
+Track 9 Delay Feedback	67.0
+Track 9 Delay Sync	On	False | True
+Track 9 Delay PingPong	Off	False | True
+Track 9 Phaser Rate L	0.127
+Track 9 Phaser Rate L Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Track 9 Phaser Feedback	39.4
+Track 9 Phaser Depth L	14.2
+Track 9 Phaser Rate R	2.00
+Track 9 Phaser Rate R Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Track 9 Phaser Depth R	11.0
+Track 9 Phaser MIDI Sync	Off	False | True
+Track 9 Phaser Dual Mode	On	False | True
+Track 9 Distortion Drive	0.000
+Track 9 Distortion Output	1.00
+Track 9 Distortion Tone	1.00
+Track 9 Flanger Rate	0.966
+Track 9 Flanger Depth	70.9
+Track 9 Flanger Feedback	-36.0
+Track 9 Flanger Delay Time	0.000
+Track 9 Analog Delay Time	419
+Track 9 Analog Delay Amount	72.2
+Track 9 Analog Delay Depth	7.00
+Track 9 Analog Delay Rate	1.45
+Track 9 Analog Delay Tone	88.4
+Track 9 Pitch Shift Detune	12.0
+Track 9 Pitch Shift Delay	256 Samples	256 Samples | 512 Samples | 1024 Samples | 2048 Samples | 4096 Samples
+Track 9 Pitch Shift Level	0.828
+Track 9 Chorus Type	2	1.0 | 2.0 | 3.0
+Track 9 Chorus Rate	0.575
+Track 9 Chorus Amount	16.5
+Track 9 Chorus Delay	0.000
+Track 9 Chorus Stereo Width	25.0
+Track 9 Leslie Rate	32.0
+Track 9 Leslie Speed	Fast	Fast | Slow | Stop
+Track 9 Leslie Low - Width	32.0
+Track 9 Leslie Low - Shape	50.0
+Track 9 Leslie High - Width	69.0
+Track 9 Leslie High - Shape	50.0
+Track 9 Leslie High - Depth	56.0
+Track 9 Leslie Output Gain	38.0
+Track 9 Eq Lo Freq	47.6
+Track 9 Eq Lo Gain	0.000
+Track 9 Eq Hi Freq	2870
+Track 9 Eq Hi Gain	0.000
+Track 9 Eq P1 Freq	250
+Track 9 Eq P1 Gain	0.000
+Track 9 Eq P1 Width	0.500
+Track 9 Eq P2 Freq	530
+Track 9 Eq P2 Gain	0.000
+Track 9 Eq P2 Width	0.500
+Track 9 Eq P3 Freq	1466
+Track 9 Eq P3 Gain	0.000
+Track 9 Eq P3 Width	0.500
+Track 9 Compressor Threshold	-40.0
+Track 9 Compressor Ratio	8.80
+Track 9 Compressor Attack	36.0
+Track 9 Compressor Release	208
+Track 9 Compressor Input Gain	0.000
+Track 9 Compressor Makeup Gain	25.0
+Track 9 Limiter Gain	22.0
+Track 9 Limiter Knee	0.400
+Track 9 Limiter Release	300
+Track 9 Limiter Level	-30.0
+Track 9 Destroy Resampling	82.4
+Track 9 Destroy Bit Resolution	16	4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Track 9 Destroy Harmonic Distortion	60.0
+Track 9 Destroy Clipping	0.000
+Track 9 Destroy Tone	6871
+Track 9 Destroy Gain	0.000
+Track 9 Auto Pan	1.00
+Track 9 Auto Pan Rate	-0.240
+Track 10 MainLevel	0.000
+Track 10 Mute	Off	False | True
+Track 10 Solo	Off	False | True
+Track 10 Panning	0.500
+Track 10 VoiceLevel	0.000
+Track 10 AuxSend	-70.0
+Track 10 DampMode	1	1.0 | 2.0
+Track 10 Damping1	11272
+Track 10 Damping2	23593
+Track 10 AttackTime	0.000
+Track 10 Slur	Off	False | True
+Track 10 Glissando	Off	False | True
+Track 10 Portamento	Off	False | True
+Track 10 PortaTime	0
+Track 10 ConstantTime	On	False | True
+Track 10 Bypass	Off	False | True
+Track 10 Dry / Wet	1.00
+Track 10 VibratoDepth	0
+Track 10 VibratoSpeed	79
+Track 10 VibratoDelay	0
+Track 10 VibratoAttack	0
+Track 10 Vibrato>Filter	0
+Track 10 Vibrato>Level	0
+Track 10 BendWidth	2
+Track 10 StartTrim	0
+Track 10 LoopStartTrim	0
+Track 10 LoopLengthTrim	0
+Track 10 StartSeg	0.000
+Track 10 SampleLength	1.00
+Track 10 SampleLengthTrim	0
+Track 10 Trig	Off	False | True
+Track 10 LoopActive	Off	False | True
+Track 10 LoopStart	0.000
+Track 10 LoopLength	1.00
+Track 10 BFLoop	Off	False | True
+Track 10 FilterCutoff	100
+Track 10 EvoCenter	0.000
+Track 10 EvoSpread	0.500
+Track 10 EvoBias	0.500
+Track 10 Fund Boost	0.000
+Track 10 Octave	0	-3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0
+Track 10 Semitone	0	-12.0 | -11.0 | -10.0 | -9.0 | -8.0 | -7.0 | -6.0 | -5.0 | -4.0 | -3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0
+Track 10 Fine	0
+Track 10 Function1 Unsync Rate	0.500
+Track 10 Function1 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 10 Function1 MIDI Sync	Off	False | True
+Track 10 Function2 Unsync Rate	0.500
+Track 10 Function2 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 10 Function2 MIDI Sync	Off	False | True
+Track 10 Function3 Unsync Rate	0.500
+Track 10 Function3 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 10 Function3 MIDI Sync	Off	False | True
+Track 10 Function4 Unsync Rate	0.500
+Track 10 Function4 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 10 Function4 MIDI Sync	Off	False | True
+Track 10 Function5 Unsync Rate	0.500
+Track 10 Function5 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 10 Function5 MIDI Sync	Off	False | True
+Track 10 Function6 Unsync Rate	0.500
+Track 10 Function6 Sync Rate	8/1	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Track 10 Function6 MIDI Sync	Off	False | True
+Track 10 Delay Time	161
+Track 10 Delay Feedback	67.0
+Track 10 Delay Sync	On	False | True
+Track 10 Delay PingPong	Off	False | True
+Track 10 Phaser Rate L	0.127
+Track 10 Phaser Rate L Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Track 10 Phaser Feedback	39.4
+Track 10 Phaser Depth L	14.2
+Track 10 Phaser Rate R	2.00
+Track 10 Phaser Rate R Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Track 10 Phaser Depth R	11.0
+Track 10 Phaser MIDI Sync	Off	False | True
+Track 10 Phaser Dual Mode	On	False | True
+Track 10 Distortion Drive	0.000
+Track 10 Distortion Output	1.00
+Track 10 Distortion Tone	1.00
+Track 10 Flanger Rate	0.966
+Track 10 Flanger Depth	70.9
+Track 10 Flanger Feedback	-36.0
+Track 10 Flanger Delay Time	0.000
+Track 10 Analog Delay Time	419
+Track 10 Analog Delay Amount	72.2
+Track 10 Analog Delay Depth	7.00
+Track 10 Analog Delay Rate	1.45
+Track 10 Analog Delay Tone	88.4
+Track 10 Pitch Shift Detune	12.0
+Track 10 Pitch Shift Delay	256 Samples	256 Samples | 512 Samples | 1024 Samples | 2048 Samples | 4096 Samples
+Track 10 Pitch Shift Level	0.828
+Track 10 Chorus Type	2	1.0 | 2.0 | 3.0
+Track 10 Chorus Rate	0.575
+Track 10 Chorus Amount	16.5
+Track 10 Chorus Delay	0.000
+Track 10 Chorus Stereo Width	25.0
+Track 10 Leslie Rate	32.0
+Track 10 Leslie Speed	Fast	Fast | Slow | Stop
+Track 10 Leslie Low - Width	32.0
+Track 10 Leslie Low - Shape	50.0
+Track 10 Leslie High - Width	69.0
+Track 10 Leslie High - Shape	50.0
+Track 10 Leslie High - Depth	56.0
+Track 10 Leslie Output Gain	38.0
+Track 10 Eq Lo Freq	47.6
+Track 10 Eq Lo Gain	0.000
+Track 10 Eq Hi Freq	2870
+Track 10 Eq Hi Gain	0.000
+Track 10 Eq P1 Freq	250
+Track 10 Eq P1 Gain	0.000
+Track 10 Eq P1 Width	0.500
+Track 10 Eq P2 Freq	530
+Track 10 Eq P2 Gain	0.000
+Track 10 Eq P2 Width	0.500
+Track 10 Eq P3 Freq	1466
+Track 10 Eq P3 Gain	0.000
+Track 10 Eq P3 Width	0.500
+Track 10 Compressor Threshold	-40.0
+Track 10 Compressor Ratio	8.80
+Track 10 Compressor Attack	36.0
+Track 10 Compressor Release	208
+Track 10 Compressor Input Gain	0.000
+Track 10 Compressor Makeup Gain	25.0
+Track 10 Limiter Gain	22.0
+Track 10 Limiter Knee	0.400
+Track 10 Limiter Release	300
+Track 10 Limiter Level	-30.0
+Track 10 Destroy Resampling	82.4
+Track 10 Destroy Bit Resolution	16	4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Track 10 Destroy Harmonic Distortion	60.0
+Track 10 Destroy Clipping	0.000
+Track 10 Destroy Tone	6871
+Track 10 Destroy Gain	0.000
+Track 10 Auto Pan	1.00
+Track 10 Auto Pan Rate	-0.240
+Aux MainLevel	6.00
+Aux Mute	Off	False | True
+Aux Solo	Off	False | True
+Aux Panning	0.500
+Track 1 PitchBend	0.500
+Track 2 PitchBend	0.500
+Track 3 PitchBend	0.500
+Track 4 PitchBend	0.500
+Track 5 PitchBend	0.500
+Track 6 PitchBend	0.500
+Track 7 PitchBend	0.500
+Track 8 PitchBend	0.500
+Track 9 PitchBend	0.500
+Track 10 PitchBend	0.500
+Master Fx 1 Bypass	Off	False | True
+Master Fx 1 Dry / Wet	1.00
+Master Fx 1 Delay Time	161
+Master Fx 1 Delay Feedback	67.0
+Master Fx 1 Delay Sync	On	False | True
+Master Fx 1 Delay PingPong	Off	False | True
+Master Fx 1 Phaser Rate L	0.127
+Master Fx 1 Phaser Rate L Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Master Fx 1 Phaser Feedback	39.4
+Master Fx 1 Phaser Depth L	14.2
+Master Fx 1 Phaser Rate R	2.00
+Master Fx 1 Phaser Rate R Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Master Fx 1 Phaser Depth R	11.0
+Master Fx 1 Phaser MIDI Sync	Off	False | True
+Master Fx 1 Phaser Dual Mode	On	False | True
+Master Fx 1 Distortion Drive	0.000
+Master Fx 1 Distortion Output	1.00
+Master Fx 1 Distortion Tone	1.00
+Master Fx 1 Flanger Rate	0.966
+Master Fx 1 Flanger Depth	70.9
+Master Fx 1 Flanger Feedback	-36.0
+Master Fx 1 Flanger Delay Time	0.000
+Master Fx 1 Analog Delay Time	419
+Master Fx 1 Analog Delay Amount	72.2
+Master Fx 1 Analog Delay Depth	7.00
+Master Fx 1 Analog Delay Rate	1.45
+Master Fx 1 Analog Delay Tone	88.4
+Master Fx 1 Pitch Shift Detune	12.0
+Master Fx 1 Pitch Shift Delay	256 Samples	256 Samples | 512 Samples | 1024 Samples | 2048 Samples | 4096 Samples
+Master Fx 1 Pitch Shift Level	0.828
+Master Fx 1 Chorus Type	2	1.0 | 2.0 | 3.0
+Master Fx 1 Chorus Rate	0.575
+Master Fx 1 Chorus Amount	16.5
+Master Fx 1 Chorus Delay	0.000
+Master Fx 1 Chorus Stereo Width	25.0
+Master Fx 1 Leslie Rate	32.0
+Master Fx 1 Leslie Speed	Fast	Fast | Slow | Stop
+Master Fx 1 Leslie Low - Width	32.0
+Master Fx 1 Leslie Low - Shape	50.0
+Master Fx 1 Leslie High - Width	69.0
+Master Fx 1 Leslie High - Shape	50.0
+Master Fx 1 Leslie High - Depth	56.0
+Master Fx 1 Leslie Output Gain	38.0
+Master Fx 1 Eq Lo Freq	47.6
+Master Fx 1 Eq Lo Gain	0.000
+Master Fx 1 Eq Hi Freq	2870
+Master Fx 1 Eq Hi Gain	0.000
+Master Fx 1 Eq P1 Freq	250
+Master Fx 1 Eq P1 Gain	0.000
+Master Fx 1 Eq P1 Width	0.500
+Master Fx 1 Eq P2 Freq	530
+Master Fx 1 Eq P2 Gain	0.000
+Master Fx 1 Eq P2 Width	0.500
+Master Fx 1 Eq P3 Freq	1466
+Master Fx 1 Eq P3 Gain	0.000
+Master Fx 1 Eq P3 Width	0.500
+Master Fx 1 Compressor Threshold	-40.0
+Master Fx 1 Compressor Ratio	8.80
+Master Fx 1 Compressor Attack	36.0
+Master Fx 1 Compressor Release	208
+Master Fx 1 Compressor Input Gain	0.000
+Master Fx 1 Compressor Makeup Gain	25.0
+Master Fx 1 Limiter Gain	22.0
+Master Fx 1 Limiter Knee	0.400
+Master Fx 1 Limiter Release	300
+Master Fx 1 Limiter Level	-30.0
+Master Fx 1 Destroy Resampling	82.4
+Master Fx 1 Destroy Bit Resolution	16	4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Master Fx 1 Destroy Harmonic Distortion	60.0
+Master Fx 1 Destroy Clipping	0.000
+Master Fx 1 Destroy Tone	6871
+Master Fx 1 Destroy Gain	0.000
+Master Fx 1 Auto Pan	1.00
+Master Fx 1 Auto Pan Rate	-0.240
+Master Fx 2 Bypass	Off	False | True
+Master Fx 2 Dry / Wet	1.00
+Master Fx 2 Delay Time	161
+Master Fx 2 Delay Feedback	67.0
+Master Fx 2 Delay Sync	On	False | True
+Master Fx 2 Delay PingPong	Off	False | True
+Master Fx 2 Phaser Rate L	0.127
+Master Fx 2 Phaser Rate L Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Master Fx 2 Phaser Feedback	39.4
+Master Fx 2 Phaser Depth L	14.2
+Master Fx 2 Phaser Rate R	2.00
+Master Fx 2 Phaser Rate R Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Master Fx 2 Phaser Depth R	11.0
+Master Fx 2 Phaser MIDI Sync	Off	False | True
+Master Fx 2 Phaser Dual Mode	On	False | True
+Master Fx 2 Distortion Drive	0.000
+Master Fx 2 Distortion Output	1.00
+Master Fx 2 Distortion Tone	1.00
+Master Fx 2 Flanger Rate	0.966
+Master Fx 2 Flanger Depth	70.9
+Master Fx 2 Flanger Feedback	-36.0
+Master Fx 2 Flanger Delay Time	0.000
+Master Fx 2 Analog Delay Time	419
+Master Fx 2 Analog Delay Amount	72.2
+Master Fx 2 Analog Delay Depth	7.00
+Master Fx 2 Analog Delay Rate	1.45
+Master Fx 2 Analog Delay Tone	88.4
+Master Fx 2 Pitch Shift Detune	12.0
+Master Fx 2 Pitch Shift Delay	256 Samples	256 Samples | 512 Samples | 1024 Samples | 2048 Samples | 4096 Samples
+Master Fx 2 Pitch Shift Level	0.828
+Master Fx 2 Chorus Type	2	1.0 | 2.0 | 3.0
+Master Fx 2 Chorus Rate	0.575
+Master Fx 2 Chorus Amount	16.5
+Master Fx 2 Chorus Delay	0.000
+Master Fx 2 Chorus Stereo Width	25.0
+Master Fx 2 Leslie Rate	32.0
+Master Fx 2 Leslie Speed	Fast	Fast | Slow | Stop
+Master Fx 2 Leslie Low - Width	32.0
+Master Fx 2 Leslie Low - Shape	50.0
+Master Fx 2 Leslie High - Width	69.0
+Master Fx 2 Leslie High - Shape	50.0
+Master Fx 2 Leslie High - Depth	56.0
+Master Fx 2 Leslie Output Gain	38.0
+Master Fx 2 Eq Lo Freq	47.6
+Master Fx 2 Eq Lo Gain	0.000
+Master Fx 2 Eq Hi Freq	2870
+Master Fx 2 Eq Hi Gain	0.000
+Master Fx 2 Eq P1 Freq	250
+Master Fx 2 Eq P1 Gain	0.000
+Master Fx 2 Eq P1 Width	0.500
+Master Fx 2 Eq P2 Freq	530
+Master Fx 2 Eq P2 Gain	0.000
+Master Fx 2 Eq P2 Width	0.500
+Master Fx 2 Eq P3 Freq	1466
+Master Fx 2 Eq P3 Gain	0.000
+Master Fx 2 Eq P3 Width	0.500
+Master Fx 2 Compressor Threshold	-40.0
+Master Fx 2 Compressor Ratio	8.80
+Master Fx 2 Compressor Attack	36.0
+Master Fx 2 Compressor Release	208
+Master Fx 2 Compressor Input Gain	0.000
+Master Fx 2 Compressor Makeup Gain	25.0
+Master Fx 2 Limiter Gain	22.0
+Master Fx 2 Limiter Knee	0.400
+Master Fx 2 Limiter Release	300
+Master Fx 2 Limiter Level	-30.0
+Master Fx 2 Destroy Resampling	82.4
+Master Fx 2 Destroy Bit Resolution	16	4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Master Fx 2 Destroy Harmonic Distortion	60.0
+Master Fx 2 Destroy Clipping	0.000
+Master Fx 2 Destroy Tone	6871
+Master Fx 2 Destroy Gain	0.000
+Master Fx 2 Auto Pan	1.00
+Master Fx 2 Auto Pan Rate	-0.240
+Aux Fx Bypass	Off	False | True
+Aux Fx Delay Time	161
+Aux Fx Delay Feedback	67.0
+Aux Fx Delay Sync	On	False | True
+Aux Fx Delay PingPong	Off	False | True
+Aux Fx Phaser Rate L	0.127
+Aux Fx Phaser Rate L Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Aux Fx Phaser Feedback	39.4
+Aux Fx Phaser Depth L	14.2
+Aux Fx Phaser Rate R	2.00
+Aux Fx Phaser Rate R Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+Aux Fx Phaser Depth R	11.0
+Aux Fx Phaser MIDI Sync	Off	False | True
+Aux Fx Phaser Dual Mode	On	False | True
+Aux Fx Distortion Drive	0.000
+Aux Fx Distortion Output	1.00
+Aux Fx Distortion Tone	1.00
+Aux Fx Flanger Rate	0.966
+Aux Fx Flanger Depth	70.9
+Aux Fx Flanger Feedback	-36.0
+Aux Fx Flanger Delay Time	0.000
+Aux Fx Analog Delay Time	419
+Aux Fx Analog Delay Amount	72.2
+Aux Fx Analog Delay Depth	7.00
+Aux Fx Analog Delay Rate	1.45
+Aux Fx Analog Delay Tone	88.4
+Aux Fx Pitch Shift Detune	12.0
+Aux Fx Pitch Shift Delay	256 Samples	256 Samples | 512 Samples | 1024 Samples | 2048 Samples | 4096 Samples
+Aux Fx Pitch Shift Level	0.828
+Aux Fx Chorus Type	2	1.0 | 2.0 | 3.0
+Aux Fx Chorus Rate	0.575
+Aux Fx Chorus Amount	16.5
+Aux Fx Chorus Delay	0.000
+Aux Fx Chorus Stereo Width	25.0
+Aux Fx Leslie Rate	32.0
+Aux Fx Leslie Speed	Fast	Fast | Slow | Stop
+Aux Fx Leslie Low - Width	32.0
+Aux Fx Leslie Low - Shape	50.0
+Aux Fx Leslie High - Width	69.0
+Aux Fx Leslie High - Shape	50.0
+Aux Fx Leslie High - Depth	56.0
+Aux Fx Leslie Output Gain	38.0
+Aux Fx Reverb Pre Delay	0.000
+Aux Fx Reverb Room Size	90.4
+Aux Fx Reverb Width	80.8
+Aux Fx Reverb Tone	27.2
+Aux Fx Reverb Tame	Off	False | True
+Aux Fx Reverb Gain	5.95
+VST3_PitchBend	0.500
+VST3_CtrlModWheel	0.000
+VST3_AfterTouch	0.000
+VST3_CtrlExpression	0.000
+VST3_CtrlSustainOnOff	0.000
+VST3_CtrlAllNotesOff	0.000
+VST3_CtrlOmniModeOff	0.000
+VST3_CtrlOmniModeOn	0.000
+VST3_CtrlPolyModeOnOff	0.000
+VST3_CtrlPolyModeOn	0.000
+VST3_CtrlAllSoundsOff	0.000
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

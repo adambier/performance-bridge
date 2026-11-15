@@ -1,0 +1,468 @@
+# Synthi V 1.9.4.6366 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+Main Volume	3.33
+Keyboard Pitch Spread	5.50
+Sequencer Pitch Spread	5.50
+Envelope Shaper Trig Source	Both	Keyboard | Both | Sequencer
+Noise Generator Colour	5.00
+Noise Generator Output Level	0.000
+Channel 1 Output Filter	0.500
+Channel 2 Output Filter	0.500
+Channel 1 Output Level	0.500
+Channel 1 Panning	0.500
+Channel 2 Panning	0.500
+Channel 2 Output Level	0.500
+Reverb Dry/Wet Mix	0.208
+Reverb Output Level	0.740
+InputLevel_Channel1	0.500
+InputLevel_Channel2	0.500
+FX_Routing	Serie	Serie | Parallel
+Polyphony	Mono	Mono | Poly 2 | Poly 3 | Poly 4
+VST3_CtrlModWheel	0.500
+Brightness	0.256
+Timbre	0.692
+Time	0.000
+Movement	0.771
+Filter Cutoff Frequency	0.628
+Filter Response	0.526
+Filter Output Level	0.695
+Ring Modulator Output Level	0.500
+Osc1 Quantize	Off	False | True
+Osc1 Frequency	10005
+Osc1 Shape	0.500
+Osc1 Sine Level	0.512
+Osc1 Saw Level	0.000
+Osc1 Frequency Quantized	E9
+Osc2 Quantize	Off	False | True
+Osc2 Frequency	131
+Osc2 Shape	0.500
+Osc2 Square Level	0.500
+Osc2 Triangle Level	0.500
+Osc2 Frequency Quantized	C3
+Osc2 Hard Sync	Off	False | True
+Osc3 Quantize	Off	False | True
+Osc3 Frequency	6.93
+Osc3 Shape	0.500
+Osc3 Square Level	0.000
+Osc3 Triangle Level	0.000
+Osc3 Frequency Quantized	A-2
+Random Note Trigger	Off	False | True
+Envelope Shaper Attack Time	0.000
+Envelope Shaper On Time	0.000
+Envelope Shaper Decay Time	0.000
+Envelope Shaper Off Time	1.00
+Envelope Trapezoid Level	0.264
+Envelope Signal Level	0.700
+Envelope Attack Button	0.000
+EnvelopeShaper_Led	0.000
+Sample & Hold Clock Rate Unsynced	10.0
+Sample & Hold Clock Rate Synced	1/16	4 | 2 | 1 | 1/2 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Sample & Hold Sync	On	False | True
+Sample & Hold Slew	0.000
+Sample & Hold Output Level	0.000
+Joystick X Range	10.0
+Joystick Y Range	5.00
+Joystick X Control	0.000
+Joystick Y Control	0.000
+JoystickPath RateMultiplierUnSynced	1.00
+JoystickPath RateMultiplierSynced	1	1/8 | 1/4 | 1/2 | 3/4 | 1 | 2 | 4 | 8
+JoystickPath MidiSync	On	False | True
+Modulations LFO Waveform	Sine	Sine | Triangle | Saw | Ramp | Square | S&H
+Modulations LFO RateSynced	1/4	4 | 2 | 1 | 1/2 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Modulations LFO RateUnSynced	20.0
+Modulations LFO MidiSync	On	False | True
+Modulations LFO Retrig	On	False | True
+Modulations LFO Once	Off	False | True
+Function1 RateSynced	4	4 | 2 | 1 | 1/2 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Function1 RateUnSynced	2.58
+Function1 MidiSync	On	False | True
+Function2 RateSynced	1/8	4 | 2 | 1 | 1/2 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Function2 RateUnSynced	0.645
+Function2 MidiSync	On	False | True
+Function3 RateSynced	1/16	4 | 2 | 1 | 1/2 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Function3 RateUnSynced	0.500
+Function3 MidiSync	On	False | True
+Function4 RateSynced	1/32	4 | 2 | 1 | 1/2 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Function4 RateUnSynced	0.500
+Function4 MidiSync	On	False | True
+Function5 RateSynced	1/4	4 | 2 | 1 | 1/2 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Function5 RateUnSynced	0.500
+Function5 MidiSync	On	False | True
+Sequencer_Status	Stop	Stop | Play | Record
+Sequence Transpose	On	False | True
+Sequencer Length	1.92
+Sequence Length Sync	On	False | True
+Sequencer Length Synced	1/2	4 | 2 | 1 | 1/2 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Modulations Step Sequencer NbSteps	32
+Modulations Step Sequencer RateSynced	1/16	4 | 2 | 1 | 1/2 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Modulations Step Sequencer LoopMode	Forward	Forward | Backward | BackAndForth | Random
+Modulations Step Sequencer RateUnSynced	5.01
+Modulations Step Sequencer MidiSync	On	False | True
+Modulations Step Sequencer FreeRun	Off	False | True
+Modulations Step Sequencer Smooth	0.000
+Modulations Step Sequencer StepVal1	0.000
+Modulations Step Sequencer StepVal2	0.000
+Modulations Step Sequencer StepVal3	0.000
+Modulations Step Sequencer StepVal4	0.000
+Modulations Step Sequencer StepVal5	0.000
+Modulations Step Sequencer StepVal6	0.000
+Modulations Step Sequencer StepVal7	0.000
+Modulations Step Sequencer StepVal8	0.000
+Modulations Step Sequencer StepVal9	0.000
+Modulations Step Sequencer StepVal10	0.000
+Modulations Step Sequencer StepVal11	0.000
+Modulations Step Sequencer StepVal12	0.000
+Modulations Step Sequencer StepVal13	0.000
+Modulations Step Sequencer StepVal14	0.000
+Modulations Step Sequencer StepVal15	0.000
+Modulations Step Sequencer StepVal16	0.000
+Modulations Step Sequencer StepVal17	0.000
+Modulations Step Sequencer StepVal18	0.000
+Modulations Step Sequencer StepVal19	0.000
+Modulations Step Sequencer StepVal20	0.000
+Modulations Step Sequencer StepVal21	0.000
+Modulations Step Sequencer StepVal22	0.000
+Modulations Step Sequencer StepVal23	0.000
+Modulations Step Sequencer StepVal24	0.000
+Modulations Step Sequencer StepVal25	0.000
+Modulations Step Sequencer StepVal26	0.000
+Modulations Step Sequencer StepVal27	0.000
+Modulations Step Sequencer StepVal28	0.000
+Modulations Step Sequencer StepVal29	0.000
+Modulations Step Sequencer StepVal30	0.000
+Modulations Step Sequencer StepVal31	0.000
+Modulations Step Sequencer StepVal32	0.000
+Modulations Step Sequencer CurrentStep	1
+Effects1 Bypass	On	False | True
+Effects1 Dry / Wet	0.000
+Effects1 Reverb Predelay	0.020
+Effects1 Reverb Decay	0.460
+Effects1 Reverb Damping	0.593
+Effects1 Reverb Input LowPass Freq	3000
+Effects1 Reverb Input HighPass Freq	30.0
+Effects1 Reverb Size	1.00
+Effects1 Reverb Output MS Mix (Stereo)	0.364
+Effects1 Delay Midi Sync	ON	False | True
+Effects1 Delay Time	122
+Effects1 Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1/1 | 2/1 | 4/1 | 8/1
+Effects1 Delay Rate Synced Type	Binary	Binary | Ternary | Dotted
+Effects1 Delay Feedback	0.352
+Effects1 Delay HighPass freq	20.0
+Effects1 Delay LowPass freq	20000
+Effects1 Delay Stereo Width	0.000
+Effects1 Delay Stereo Ping Pong 	1.00
+Effects1 Delay Stereo Mode	Stereo	Stereo | Ping Pong
+Effects1 AnalogDelay Delay Time	100
+Effects1 AnalogDelay Feedback Amount	70.0
+Effects1 AnalogDelay LFO Depth	7.00
+Effects1 AnalogDelay LFO Rate Unsynced	2.00
+Effects1 AnalogDelay Feedback Tone	0.000
+Effects1 Chorus Fix Delay	5.00
+Effects1 Chorus Depth	2.20
+Effects1 Chorus Freq	0.990
+Effects1 Chorus Feedback	0.000
+Effects1 Chorus Stereo Mode	Stereo	Mono | Stereo
+Effects1 Chorus Voices	2 Voices	1 Voice | 2 Voices | 3 Voices
+Effects1 Chorus LFO Shape	Sine	Sine | Triangle
+Effects1 Flanger MinDelay	0.300
+Effects1 Flanger Depth	3.00
+Effects1 Flanger Freq	0.200
+Effects1 Flanger Feedback	0.800
+Effects1 Flanger Feedback Polarity	Negative	Positive | Negative
+Effects1 Flanger Stereo	Stereo	Mono | Stereo
+Effects1 Flanger LowPass fc	13000
+Effects1 Flanger HighPass fc	100
+Effects1 Flanger LFO Waveform	Triangle	Sine | Triangle
+Effects1 Phaser Frequency	740
+Effects1 Phaser N Poles	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+Effects1 Phaser Feedback	0.475
+Effects1 Phaser LFO Wave	Sine	Sine | Triangle | Saw | Ramp | Square | Sample & Hold
+Effects1 Phaser LFO Amount	1.00
+Effects1 Phaser Rate Unsynced	0.570
+Effects1 Phaser Rate Synced	1	4 | 2 | 1 | 1/2 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Effects1 Phaser Sync Rate Type	Binary	Binary | Ternary | Dotted
+Effects1 Phaser Midi Sync	ON	False | True
+Effects1 Phaser Stereo	45.0
+Effects1 Overdrive Drive	0.000
+Effects1 Overdrive Tone	1.00
+Effects1 Overdrive Level	0.500
+Effects1 Compressor Threshold	0.000
+Effects1 Compressor Ratio	2.00
+Effects1 Compressor Attack	2.00
+Effects1 Compressor Release	50.0
+Effects1 Compressor Auto Make up	OFF	False | True
+Effects1 Compressor OutputGain	0.000
+Effects1 BitCrusher Bit Depth	16.0
+Effects1 BitCrusher Downsample	1.00
+Effects1 ParamEq LowShelf Frequency	250
+Effects1 ParamEq LowShelf Gain	0.000
+Effects1 ParamEq LowShelf Q	0.707
+Effects1 ParamEq Peak 1 Frequency	500
+Effects1 ParamEq Peak 1 Gain	0.000
+Effects1 ParamEq Peak 1 Q	1.23
+Effects1 ParamEq Peak 2 Frequency	1000
+Effects1 ParamEq Peak 2 Gain	0.000
+Effects1 ParamEq Peak 2 Q	1.23
+Effects1 ParamEq Peak 3 Frequency	3000
+Effects1 ParamEq Peak 3 Gain	0.000
+Effects1 ParamEq Peak 3 Q	1.23
+Effects1 ParamEq HighShelf Frequency	5000
+Effects1 ParamEq HighShelf Gain	0.000
+Effects1 ParamEq HighShelf Q	0.707
+Effects1 ParamEq Scale	1.00
+Effects1 Compressor OutGainReduction	0.000
+Effects2 Bypass	On	False | True
+Effects2 Dry / Wet	0.000
+Effects2 Reverb Predelay	0.020
+Effects2 Reverb Decay	0.460
+Effects2 Reverb Damping	0.593
+Effects2 Reverb Input LowPass Freq	3000
+Effects2 Reverb Input HighPass Freq	30.0
+Effects2 Reverb Size	1.00
+Effects2 Reverb Output MS Mix (Stereo)	0.364
+Effects2 Delay Midi Sync	ON	False | True
+Effects2 Delay Time	122
+Effects2 Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1/1 | 2/1 | 4/1 | 8/1
+Effects2 Delay Rate Synced Type	Binary	Binary | Ternary | Dotted
+Effects2 Delay Feedback	0.352
+Effects2 Delay HighPass freq	20.0
+Effects2 Delay LowPass freq	20000
+Effects2 Delay Stereo Width	0.000
+Effects2 Delay Stereo Ping Pong 	1.00
+Effects2 Delay Stereo Mode	Stereo	Stereo | Ping Pong
+Effects2 AnalogDelay Delay Time	100
+Effects2 AnalogDelay Feedback Amount	70.0
+Effects2 AnalogDelay LFO Depth	7.00
+Effects2 AnalogDelay LFO Rate Unsynced	2.00
+Effects2 AnalogDelay Feedback Tone	0.000
+Effects2 Chorus Fix Delay	5.00
+Effects2 Chorus Depth	2.20
+Effects2 Chorus Freq	0.990
+Effects2 Chorus Feedback	0.000
+Effects2 Chorus Stereo Mode	Stereo	Mono | Stereo
+Effects2 Chorus Voices	2 Voices	1 Voice | 2 Voices | 3 Voices
+Effects2 Chorus LFO Shape	Sine	Sine | Triangle
+Effects2 Flanger MinDelay	0.300
+Effects2 Flanger Depth	3.00
+Effects2 Flanger Freq	0.200
+Effects2 Flanger Feedback	0.800
+Effects2 Flanger Feedback Polarity	Negative	Positive | Negative
+Effects2 Flanger Stereo	Stereo	Mono | Stereo
+Effects2 Flanger LowPass fc	13000
+Effects2 Flanger HighPass fc	100
+Effects2 Flanger LFO Waveform	Triangle	Sine | Triangle
+Effects2 Phaser Frequency	740
+Effects2 Phaser N Poles	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+Effects2 Phaser Feedback	0.475
+Effects2 Phaser LFO Wave	Sine	Sine | Triangle | Saw | Ramp | Square | Sample & Hold
+Effects2 Phaser LFO Amount	1.00
+Effects2 Phaser Rate Unsynced	0.570
+Effects2 Phaser Rate Synced	1	4 | 2 | 1 | 1/2 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Effects2 Phaser Sync Rate Type	Binary	Binary | Ternary | Dotted
+Effects2 Phaser Midi Sync	ON	False | True
+Effects2 Phaser Stereo	45.0
+Effects2 Overdrive Drive	0.000
+Effects2 Overdrive Tone	1.00
+Effects2 Overdrive Level	0.500
+Effects2 Compressor Threshold	0.000
+Effects2 Compressor Ratio	2.00
+Effects2 Compressor Attack	2.00
+Effects2 Compressor Release	50.0
+Effects2 Compressor Auto Make up	OFF	False | True
+Effects2 Compressor OutputGain	0.000
+Effects2 BitCrusher Bit Depth	16.0
+Effects2 BitCrusher Downsample	1.00
+Effects2 ParamEq LowShelf Frequency	250
+Effects2 ParamEq LowShelf Gain	0.000
+Effects2 ParamEq LowShelf Q	0.707
+Effects2 ParamEq Peak 1 Frequency	500
+Effects2 ParamEq Peak 1 Gain	0.000
+Effects2 ParamEq Peak 1 Q	1.23
+Effects2 ParamEq Peak 2 Frequency	1000
+Effects2 ParamEq Peak 2 Gain	0.000
+Effects2 ParamEq Peak 2 Q	1.23
+Effects2 ParamEq Peak 3 Frequency	3000
+Effects2 ParamEq Peak 3 Gain	0.000
+Effects2 ParamEq Peak 3 Q	1.23
+Effects2 ParamEq HighShelf Frequency	5000
+Effects2 ParamEq HighShelf Gain	0.000
+Effects2 ParamEq HighShelf Q	0.707
+Effects2 ParamEq Scale	1.00
+Effects2 Compressor OutGainReduction	0.000
+Effects3 Bypass	On	False | True
+Effects3 Dry / Wet	0.000
+Effects3 Reverb Predelay	0.020
+Effects3 Reverb Decay	0.460
+Effects3 Reverb Damping	0.593
+Effects3 Reverb Input LowPass Freq	3000
+Effects3 Reverb Input HighPass Freq	30.0
+Effects3 Reverb Size	1.00
+Effects3 Reverb Output MS Mix (Stereo)	0.364
+Effects3 Delay Midi Sync	ON	False | True
+Effects3 Delay Time	122
+Effects3 Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1/1 | 2/1 | 4/1 | 8/1
+Effects3 Delay Rate Synced Type	Binary	Binary | Ternary | Dotted
+Effects3 Delay Feedback	0.352
+Effects3 Delay HighPass freq	20.0
+Effects3 Delay LowPass freq	20000
+Effects3 Delay Stereo Width	0.000
+Effects3 Delay Stereo Ping Pong 	1.00
+Effects3 Delay Stereo Mode	Stereo	Stereo | Ping Pong
+Effects3 AnalogDelay Delay Time	100
+Effects3 AnalogDelay Feedback Amount	70.0
+Effects3 AnalogDelay LFO Depth	7.00
+Effects3 AnalogDelay LFO Rate Unsynced	2.00
+Effects3 AnalogDelay Feedback Tone	0.000
+Effects3 Chorus Fix Delay	5.00
+Effects3 Chorus Depth	2.20
+Effects3 Chorus Freq	0.990
+Effects3 Chorus Feedback	0.000
+Effects3 Chorus Stereo Mode	Stereo	Mono | Stereo
+Effects3 Chorus Voices	2 Voices	1 Voice | 2 Voices | 3 Voices
+Effects3 Chorus LFO Shape	Sine	Sine | Triangle
+Effects3 Flanger MinDelay	0.300
+Effects3 Flanger Depth	3.00
+Effects3 Flanger Freq	0.200
+Effects3 Flanger Feedback	0.800
+Effects3 Flanger Feedback Polarity	Negative	Positive | Negative
+Effects3 Flanger Stereo	Stereo	Mono | Stereo
+Effects3 Flanger LowPass fc	13000
+Effects3 Flanger HighPass fc	100
+Effects3 Flanger LFO Waveform	Triangle	Sine | Triangle
+Effects3 Phaser Frequency	740
+Effects3 Phaser N Poles	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+Effects3 Phaser Feedback	0.475
+Effects3 Phaser LFO Wave	Sine	Sine | Triangle | Saw | Ramp | Square | Sample & Hold
+Effects3 Phaser LFO Amount	1.00
+Effects3 Phaser Rate Unsynced	0.570
+Effects3 Phaser Rate Synced	1	4 | 2 | 1 | 1/2 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Effects3 Phaser Sync Rate Type	Binary	Binary | Ternary | Dotted
+Effects3 Phaser Midi Sync	ON	False | True
+Effects3 Phaser Stereo	45.0
+Effects3 Overdrive Drive	0.000
+Effects3 Overdrive Tone	1.00
+Effects3 Overdrive Level	0.500
+Effects3 Compressor Threshold	0.000
+Effects3 Compressor Ratio	2.00
+Effects3 Compressor Attack	2.00
+Effects3 Compressor Release	50.0
+Effects3 Compressor Auto Make up	OFF	False | True
+Effects3 Compressor OutputGain	0.000
+Effects3 BitCrusher Bit Depth	16.0
+Effects3 BitCrusher Downsample	1.00
+Effects3 ParamEq LowShelf Frequency	250
+Effects3 ParamEq LowShelf Gain	0.000
+Effects3 ParamEq LowShelf Q	0.707
+Effects3 ParamEq Peak 1 Frequency	500
+Effects3 ParamEq Peak 1 Gain	0.000
+Effects3 ParamEq Peak 1 Q	1.23
+Effects3 ParamEq Peak 2 Frequency	1000
+Effects3 ParamEq Peak 2 Gain	0.000
+Effects3 ParamEq Peak 2 Q	1.23
+Effects3 ParamEq Peak 3 Frequency	3000
+Effects3 ParamEq Peak 3 Gain	0.000
+Effects3 ParamEq Peak 3 Q	1.23
+Effects3 ParamEq HighShelf Frequency	5000
+Effects3 ParamEq HighShelf Gain	0.000
+Effects3 ParamEq HighShelf Q	0.707
+Effects3 ParamEq Scale	1.00
+Effects3 Compressor OutGainReduction	0.000
+VST3_PitchBend	0.500
+VST3_AfterTouch	0.500
+VST3_CtrlSustainOnOff	0.000
+VST3_CtrlAllNotesOff	0.000
+VST3_CtrlAllSoundsOff	0.000
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

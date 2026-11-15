@@ -1,0 +1,211 @@
+# Farfisa V 1.13.4.6366 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+Bass Volume	0.000
+Grey Keys	Treble	Treble | Bass
+Bass On/Off	Off	False | True
+Bass Voice	Soft	Soft | Sharp
+Bass Perc	Off	False | True
+Bass Decay	Long	Long | Short
+MTB 16	Off	False | True
+MTB 8	Off	False | True
+MTB 4	Off	False | True
+MTB 2-2/3	Off	False | True
+All Boost	Off	False | True
+MT Boost	Off	False | True
+Bass 16	Off	False | True
+Strings 16	Off	False | True
+Flute 8	Off	False | True
+Oboe 8	Off	False | True
+Trumpet 8	Off	False | True
+Strings 8	On	False | True
+Flute 4	On	False | True
+Strings 4	Off	False | True
+2-2/3	Off	False | True
+Brilliant	Off	False | True
+Master Volume	7.63
+Master Bass	100
+Master Treble	100
+Bass Wave	Original	Original | Saw | Sync | Mod | Square | Pulse | Additive | Shape
+Bass Tone	20000
+Bass Res	5.00
+Noise	-50.0
+Voice Mode	Poly	Para | Poly
+AR Env On/Off	Off	False | True
+AR Env Attack	0.000
+AR Env Release	0.000
+Offset	100
+User Wave	Off	Shape | Off | Additive
+Brightness	0.000
+Timbre	1.00
+Time	0.000
+Movement	0.000
+Vibrato Rate	Slow	Slow | Fast
+Vibrato Depth	Light	Light | Heavy
+Vibrato On/Off	Off	False | True
+Tremolo On/Off	Off	False | True
+Tremolo Sync	Off	False | True
+Tremolo Rate	0.150
+Tremolo Ratio	2	2 | 1 | 1/2 | 1/4 | 1/4T | 1/8 | 1/8T | 1/16 | 1/16T
+Reverb On/Off	Off	False | True
+Reverb Mix	15.0
+Reverb Type	Farfisa	Farfisa | Eminent 310 | King Medium | King Bright | Twin | Boutique | RV-1 High-Cut | RV-1 Flat | RV-1 RIAA | RV-1 Low-Cut | RV-2 High-Cut | RV-2 Flat | RV-2 RIAA | RV-2 Low-Cut | DEP-5 H14 Long | DEP-5 P1 Medium | DEP-5 S1 Medium | RSP-550 Plate Warm | RSP-550 Black Hole | RSP-550 Shimmer
+Knee Lever MIDI	PB	AT | PB | CC
+Knee Lever Wah	MTB	MTB | Wah
+Knee Lever CC	0.000
+Swell Pedal	-2.69
+Flanger On/Off	Off	False | True
+Flanger Rate	0.111
+Flanger Depth	36.0
+Flanger Res	0.000
+Flanger Delay	100
+Phaser On/Off	Off	False | True
+Phaser Rate	0.502
+Phaser Depth	50.0
+Phaser Feedback	50.0
+Phaser Stereo	50.0
+Chorus On/Off	Off	False | True
+Chorus Type	3	1.0 | 2.0 | 3.0
+Chorus Rate	0.871
+Chorus Amount	50.0
+Chorus Stereo Rate	0.174
+Chorus Stereo Width	17.0
+Chorus Delay	6.14
+Chorus Mix	50.0
+Delay On/Off	Off	False | True
+Delay Time	443
+Delay Feedback	40.0
+Delay FB Tone	0.000
+Delay LFO Depth	10.0
+Delay LFO Rate	3.75
+Delay Mix	50.0
+Overdrive On/Off	Off	False | True
+Overdrive Drive	50.0
+Overdrive Tone	50.0
+Overdrive Output	2.50
+Amp Power	Off	False | True
+Amp Bright	Off	False | True
+Amp Volume	5.50
+Amp Treble	5.50
+Amp Middle	5.50
+Amp Bass	5.50
+Amp Master	0.000
+Amp Mic	Off Axis	Off Axis | On Axis
+Repeat On/Off	Off	False | True
+Repeat Sync	Off	False | True
+Repeat Rate	7.70
+Repeat Ratio	1/4	2 | 1 | 1/2 | 1/4 | 1/4T | 1/8 | 1/8T | 1/16 | 1/16T
+Repeat/Perc	Repeat	Repeat | Perc
+Perc Attack	Medium	Fast | Medium | Slow
+Tuning C	-3.58
+Tuning C#	0.100
+Tuning D	-0.625
+Tuning D#	0.250
+Tuning E	-0.300
+Tuning F	4.25
+Tuning F#	-1.05
+Tuning G	-0.700
+Tuning G#	0.500
+Tuning A	0.000
+Tuning A#	-0.400
+Tuning B	1.48
+Unassigned 1	0.500
+Unassigned 2	0.500
+VST3_CtrlAllNotesOff	0.000
+VST3_PitchBend	0.500
+VST3_AfterTouch	0.000
+VST3_CtrlSustainOnOff	0.000
+VST3_CtrlAllSoundsOff	0.000
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

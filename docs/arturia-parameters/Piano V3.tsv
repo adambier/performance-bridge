@@ -1,0 +1,150 @@
+# Piano V3 3.3.4.6366 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+String Tension	440
+Pitch Transpose	0 semitones	-12 semitones | -11 semitones | -10 semitones | -9 semitones | -8 semitones | -7 semitones | -6 semitones | -5 semitones | -4 semitones | -3 semitones | -2 semitones | -1 semitones | 0 semitones | 1 semitones | 2 semitones | 3 semitones | 4 semitones | 5 semitones | 6 semitones | 7 semitones | 8 semitones | 9 semitones | 10 semitones | 11 semitones | 12 semitones
+Unison Detune	0.008
+Stretch Tuning	0.024
+Dynamics	40.0
+Hammer Hardness	0.800
+Hammer Noise	0.344
+Hammer Position	0.505
+Soundboard Resonance	0.259
+Key Release Noise	-3.23
+Pedal Noise	-3.23
+Release Time	0.351
+Lid Position	Open	Closed | Slightly Open | Open
+Sympathetic Resonance	0.524
+Age	0.000
+Stereo Width	2.00
+Ambient Mics	0.000
+Master Volume	-0.000
+Duplex Scale Resonance	0.425
+FX Section On/Off	0.000
+Brightness	0.800
+Timbre	0.000
+St. Width	0.400
+Sustain Pedal	0.000
+Sostenuto Pedal	0.000
+Soft Pedal	0.000
+Low Shelf Freq	300
+Low Shelf Gain	0.000
+Low Shelf Curve	2.00
+Bell Freq	2003
+Presence Gain	0.000
+Bell Width	4.00
+High Shelf Freq	4005
+High Shelf Gain	0.000
+High Shelf Curve	2.00
+Equalizer Bypass	Off	False | True
+Comp Threshold	-24.0
+Comp Attack	6.00
+Comp Release	100
+Comp Ratio	1.50
+Comp Make Up gain	2.01
+Compressor Bypass	On	False | True
+Harmonics	12.0
+Drive	1.00
+Disto Bypass	On	False | True
+Reverb Dry/Wet	0.000
+Reverb Pre-Delay	6.01
+Reverb Room Size	100
+Reverb Decay Start	100
+Reverb Room	Small Plate	Small Piano Room | Soft Room | Small Studio | Large Studio | Jazz Club | Small Concert Hall | Large Concert Hall | Bright Room | Bright Space | Factory Hall | Small Plate | Large Plate | Spring
+Reverb Bypass	Off	False | True
+VST3_PitchBend	0.500
+VST3_CtrlAllNotesOff	0.000
+VST3_CtrlAllSoundsOff	0.000
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

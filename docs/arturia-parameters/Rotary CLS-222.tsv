@@ -1,0 +1,123 @@
+# Rotary CLS-222 1.2.1.6566 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+On/Off	Active	Active | Bypassed
+Dry / Wet	80.0
+Preamp Drive	0.000
+Preamp Type	Op-Amp	Op-Amp | Valve
+Rotor Balance	0.800
+Stereo Image	60.0
+Rotary On / Off	On	False | True
+Rotor Speed	Slow	Stop | Slow | Fast
+Output Level	0.000
+HPF Frequency	40.0
+Dry Bass	Off	False | True
+Mono Input	Off	False | True
+Sync Mode	All Sync	All Sync | Sync | Sync Triplets | Sync Dotted
+Hertz / Sync	Hertz	Hertz | Sync
+Bass Rate Unsynced	0.600
+Bass Rate Synced	1/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8
+Bass Rate All Synced	1/4	8/1.d | 8/1 | 4/1.d | 8/1.t | 4/1 | 2/1.d | 4/1.t | 2/1 | 1/1.d | 2/1.t | 1/1 | 1/2.d | 1/1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/8.t
+Treble Rate Unsynced	0.600
+Treble Rate Synced	1/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8
+Treble Rate All Synced	1/4	8/1.d | 8/1 | 4/1.d | 8/1.t | 4/1 | 2/1.d | 4/1.t | 2/1 | 1/1.d | 2/1.t | 1/1 | 1/2.d | 1/1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/8.t
+Treble Ratio	Off	False | True
+Treble Rate Ratio	1:1	1:4 | 1:3 | 1:2 | 1:1 | 2:1 | 3:1 | 4:1
+Phase Option	Aligned (0°)	Aligned (0°) | Chasing (90°) | Opposite (180°) | Chased (270°)
+Phase Reset	Off	False | True
+Bass Distance	0.000
+Treble Distance	0.000
+Trajectory	Circle	Circle | Horizontal 8 | Comb
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

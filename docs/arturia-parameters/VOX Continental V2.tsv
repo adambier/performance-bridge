@@ -1,0 +1,210 @@
+# VOX Continental V2 2.13.4.6366 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+Bass Flute	3.53
+Bass Reed	0.100
+Bass Strings	0.000
+Lower Ft 1	1.70
+Lower Ft 2	0.000
+Lower Ft 3	6.24
+Lower Ft 4	1.82
+Lower Ft 5	1.54
+Lower Ft 6	5.34
+Lower Ft 7	0.000
+Lower Ft 8	0.960
+Lower Flute	8.00
+Lower Reed	0.000
+Lower Strings	0.000
+Upper Ft 1	4.77
+Upper Ft 2	0.000
+Upper Ft 3	4.44
+Upper Ft 4	0.000
+Upper Ft 5	3.13
+Upper Ft 6	1.03
+Upper Ft 7	0.830
+Upper Ft 8	4.42
+Upper Flute	8.00
+Upper Reed	0.000
+Upper Strings	0.000
+Bass 8'-16'	8'	8' | 16'
+Bass Decay	0.000
+Perc Ft 1	Off	False | True
+Perc Ft 2	Off	False | True
+Perc Ft 3	Off	False | True
+Perc Ft 4	Off	False | True
+Perc Short/Long	Short	Short | Long
+Engine	VOX	VOX | Jennings
+Noise	-90.0
+Age	0.000
+Swell Pedal	-3.54
+MIDI Mode	Multi	Multi | Split | Bass | Lower | Upper
+Timbre	0.471
+Drive/Reed	0.421
+Tremolo	0.000
+Vibrato	0.000
+Vibrato On/Off	Off	False | True
+Vibrato Rate	0.010
+Vibrato Depth	0.000
+Tremolo On/Off	Off	False | True
+Tremolo Rate	1.00
+Tremolo Depth	0.000
+Reverb On/Off	On	False | True
+Reverb Level	54.4
+Reverb Model	RV-2 RIAA	King Dark | King Medium | King Bright | RV-1 High-Cut | RV-1 Flat | RV-1 RIAA | RV-1 Low-Cut | RV-2 High-Cut | RV-2 Flat | RV-2 RIAA | RV-2 Low-Cut
+Flanger On/Off	On	False | True
+Flanger Rate	0.111
+Flanger Depth	36.0
+Flanger Res	0.000
+Flanger Delay	100
+Phaser On/Off	On	False | True
+Phaser Rate	0.502
+Phaser Depth	50.0
+Phaser Feedback	50.0
+Phaser Stereo	50.0
+Chorus On/Off	On	False | True
+Chorus Type	3	1.0 | 2.0 | 3.0
+Chorus Rate	0.871
+Chorus Amount	50.0
+Chorus Stereo Rate	0.174
+Chorus Stereo Width	17.0
+Chorus Delay	6.14
+Chorus Mix	50.0
+Delay On/Off	On	False | True
+Delay Time	200
+Delay Feedback	40.0
+Delay FB Tone	0.000
+Delay LFO Depth	10.0
+Delay LFO Rate	0.203
+Delay Mix	50.0
+Overdrive On/Off	On	False | True
+Overdrive Drive	0.000
+Overdrive Tone	100
+Overdrive Output	5.54
+Wah Pedal	0.000
+Leslie Speed	Slow	Stop | Slow | Fast
+Leslie Rate	50.0
+Leslie Low Width	50.0
+Leslie Low Shape	60.0
+Leslie High Width	100
+Leslie High Shape	70.0
+Leslie High Depth	55.2
+Leslie Output	50.0
+Guitar Amp Drive	5.83
+Guitar Amp Volume	8.92
+Guitar Amp Reverb	1.00
+Guitar Amp Low	3.73
+Guitar Amp Mid	5.03
+Guitar Amp High	10.0
+Guitar Amp Cab	4x12" Half-Stack	1x12" Blackface | 2x12" Blackface | 4x10" Tweed | 4x12" Half-Stack
+Guitar Amp Mic	SM57 Off Axis	SM57 Off Axis | SM57 On Axis | 421 Front | U87 Front
+Tuning C	-3.13
+Tuning C#	0.267
+Tuning D	2.77
+Tuning D#	-3.93
+Tuning E	0.467
+Tuning F	-0.933
+Tuning F#	1.77
+Tuning G	1.57
+Tuning G#	0.167
+Tuning A	-1.43
+Tuning A#	1.67
+Tuning B	0.767
+Unassigned 1	0.500
+Unassigned 2	0.500
+VST3_CtrlAllNotesOff	0.000
+VST3_CtrlSustainOnOff	0.000
+PitchBend	-0.000
+VST3_CtrlAllSoundsOff	0.000
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

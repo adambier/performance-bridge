@@ -370,6 +370,11 @@ when the app quit, not when a preset loaded, so it can't say what is loaded now.
 13. In a DAW, an instrument's parameters are not 7-bit. Does Bitwig Studio with the plugin give
     the Roto-Control finer values, names before any turn, and the presets' own labels (the next
     tests; `docs/PLUGIN-MODE-PLAN.md`)?
+14. Does a second part's names tell a Multi in Analog Lab V? As loaded, part 2's twenty
+    parameters are "P2 Param0" to "P2 Param19" (test 11). If a Multi renames them and a preset
+    of one part doesn't (an inference, not seen), a host could tell the two by name.
+15. Are the Audio Unit's and the standalone app's parameter lists the same as the VST3's
+    (test 11)?
 
 ## 6. Tests
 
@@ -754,3 +759,50 @@ the fine half of the 14-bit pair of control changes 6 and 38 is ignored. One par
 run. The other 14-bit pairs and the other instruments are untried; that they behave the same is
 an inference from their sharing this panel. Whether Pigments would report a value more finely
 was not tried, since nothing can set one (and test 5's reports were 7-bit).
+
+### Test 11 (2026-11-15): what each plugin gives a host
+
+**Setup.** Adam's Mac, with Bitwig Studio and Arturia's apps closed. `arturia_params.py`
+(`docs/arturia-parameters/`) loaded each of the 89 Arturia VST3 plugins installed (49 instruments
+and 40 effects) with Pedalboard 0.9.26, with no window and no sound, and saved every parameter's
+name, value text, and value list. All 89 loaded, at about 3 s each. The versions are in
+`docs/arturia-parameters/INDEX.tsv` (Analog Lab V 5.12.6, Pigments 7.0.1, MiniFreak V 5.1.1). A
+first run printed nothing for over a minute and was stopped; the second, the same command with a
+timer added, ran through. Why is not known.
+
+These are counts from the lists, each plugin as it loads.
+
+- **Size.** 42,686 parameters in all; 34,320 without the 94 or so in every plugin that are not
+  sound parameters (MPE, program changes, preset browsing, a controller's display). Pigments has
+  2,345 and Matrix-12 V2 has 4,522.
+- **Length.** Of the 34,320, 31,415 (92%) have names longer than 12 characters, the width of a
+  Roto-Control's name, and 26,301 (77%) share their first 12 characters with another parameter
+  of the same plugin. The longest name has 53 characters.
+- **How names are built.** A section, then a part, then the parameter: "FX A1 Multiband Compressor
+  Low Below Threshold", "Sampler 1 Tremolo Depth", "Envelope 1 KYBD Follow". Some join two
+  words: "Env Amp AttackCurve" and "Env Amp ReleaseLink" in Pigments.
+- **Macros.** Of the 49 instruments, 29 have "Brightness" and "Timbre" (most with "Movement"), 7 have "Macro 1" to "Macro 4", and 4 have "Macro1" to "Macro4" with no space; three
+  have both kinds. The eight Augmented instruments have "Morph", "Color", "Time", and "Motion".
+- **"P1".** Only Analog Lab V has names that start with "P1" or "P2".
+- **Analog Lab V** (547 parameters). Part 1 has 20 named for the loaded preset ("P1 Brightness",
+  "P1 VCF Cutoff", ..., with "P1 Param9" for one not used) and "P1 Volume", "P1 Pan", "P1
+  Active", and two sends. Part 2's 20 were "P2 Param0" to "P2 Param19". There are also "Macro 1"
+  to "Macro 4" with no part, which is an inference away from being the Multi's own macros (in
+  `docs/ROTO-CONTROL.md`, test 18, parameters with no part took a Multi's names); "FXA Dry/Wet"
+  and "FXB Dry/Wet"; and "Delay Volume" and "Reverb Volume".
+- **Which effect is in a slot.** Clavinet V ("FX in slot 2"), DX7 V ("FX 1  Type"), Matrix-12 V2
+  ("FX1 Selector"), and Synclavier V ("Effect1 Selector") have a parameter whose values name
+  the effects. Analog Lab V and Pigments have none that was found (a search for value lists
+  naming three or more effects); their slots have a "Dry/Wet", an "Active" or "Bypass", and a set
+  of parameters for every effect the slot could hold.
+
+**Consequences.**
+
+- Cutting names at 12 characters loses most of them, and three in four of the cut names are no
+  longer unique in their plugin. Shortening words helps the shorter names; the long ones need
+  the words that a whole page shares to be dropped (`docs/PLUGIN-MODE-PLAN.md`, section 10).
+- A host is not told which effect is in an Analog Lab V slot. The instrument does tell a KeyLab
+  mk3: in test 9's third log the relay took "Chorus Mix" and "Phaser Mix" from it. So those
+  names can come by the relay and not by a DAW.
+- The eight Augmented instruments, which have no parameter-name file (section 4), are covered
+  here.

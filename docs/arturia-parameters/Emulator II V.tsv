@@ -1,0 +1,868 @@
+# Emulator II V 1.6.4.6366 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+Master Volume	-6.29
+Master Tune	440
+Master Transpose	0
+PitchWheelAmount	2	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0 | 17.0 | 18.0 | 19.0 | 20.0 | 21.0 | 22.0 | 23.0 | 24.0
+FX Routing	Serie	Serie | Parallel
+FX Section On/Off	On	False | True
+Mod Wheel	0.000
+Brightness	0.820
+Timbre	0.000
+Time	0.720
+Movement	0.000
+Linked Filter Frequency	8327
+Linked Filter Resonance	0.000
+Linked Filter Env. Amount	0.000
+Linked Filter Env. Attack	0.000
+Linked Filter Env. Decay	0.401
+Linked Filter Env. Sustain	0.248
+Linked Filter Env. Release	0.063
+Linked VCA Env. Attack	0.558
+Linked VCA Env. Decay	1.11
+Linked VCA Env. Sustain	1.00
+Linked VCA Env. Release	1.45
+Linked Voice Effect Dry/Wet	50.4
+Linked LFO Vibrato Amount	0.000
+Linked LFO Rate	0.850
+Linked LFO Delay	0.000
+Linked Filter Keyboard Amount	0.441
+Linked Filter LFO Amount	0.000
+Linked Filter Velocity Amount	0.244
+Linked VCA LFO Amount	0.000
+Linked VCA Velocity Amount	0.850
+Arpeggiator Rate (Sync)	1/8 Bar	1 Bar | 1/2 Bar | 1/2T Bar | 1/4 Bar | 1/4T Bar | 1/8 Bar | 1/8T Bar | 1/16 Bar | 1/16T Bar | 1/32 Bar | 1/32T Bar | 1/64 Bar
+Arpeggiator Rate (Unsync)	1.91
+Arpeggiator Octave Range	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0
+Arpeggiator On/Off	Off	False | True
+Arpeggiator Sync	On	False | True
+Arpeggiator Mode	As Played	As Played | As Played Reverse | Up | Down | Up Down Exc | Up Down Inc | Random
+Voice1 Sample Gain	-6.00
+Voice1 Sample Pitch Transpose	-12
+Voice1 Sample Fine	4.40
+Voice1 Trig Delay Sync	On	False | True
+Voice1 Trig Delay Time (Sync)	1/32	1/32 | 1/32.d | 1/16 | 1/16.d | 1/8 | 1/8.d | 1/4 | 1/4.d | 1/2 | 1/2.d | 1 | 1.d
+Voice1 Trig Delay Time (Unsync)	0.000
+Voice1 Trig Delay On/Off	Bypass	Bypass | Active
+Voice1 VCA Level	-0.000
+Voice1 VCA Pan	0.500
+Voice1 LFO Sync	Off	False | True
+Voice1 LFO Variation	0.000
+Voice1 FX Bypass	0.000
+Voice1 FX Reverb Reverb Decay	0.460
+Voice1 FX Reverb Damping	0.593
+Voice1 FX Delay Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1
+Voice1 FX Delay Feedback	0.352
+Voice1 FX Chorus Depth	2.20
+Voice1 FX Chorus Rate	0.990
+Voice1 FX Phaser Phaser Rate	0.570
+Voice1 FX Phaser LFO Amount	1.00
+Voice1 FX Overdrive Tone	1.00
+Voice1 FX Overdrive Overdrive Drive	0.000
+Voice1 FX BitCrusher BitCrusher Bit Depth	16.0
+Voice1 FX BitCrusher Downsample	1.00
+Voice1 FX Param Eq LowShelf Gain	0.000
+Voice1 FX Param Eq Mid 1 Gain	0.000
+Voice1 FX Param Eq HighShelf Gain	0.000
+Voice1 FX Filter Cutoff	20.0
+Voice1 FX Filter Resonnance	0.300
+Voice1 LowNote	C-2
+Voice1 HighNote	G#2
+Voice1 LowFadeNote	0
+Voice1 HighFadeNote	0
+Voice1 LowVel	0
+Voice1 HighVel	127
+Voice1 LowFadeVel	0
+Voice1 HighFadeVel	0
+Voice1 Forward/Backward Balance	0.000
+Voice1 Filter Q Velocity Amount	0.000
+Voice1 Filter Env. Attack Velocity Amount	0.000
+Voice1 Pan Alternate Amount	0.000
+Voice1 VCA Env. Attack Velocity Amount	0.000
+Voice1 Owned Filter Frequency	20000
+Voice1 Owned Filter Resonance	0.000
+Voice1 Owned Filter Env. Amount	0.000
+Voice1 Owned Filter Env. Attack	0.000
+Voice1 Owned Filter Env. Decay	0.001
+Voice1 Owned Filter Env. Sustain	1.00
+Voice1 Owned Filter Env. Release	0.001
+Voice1 Owned VCA Env. Attack	0.000
+Voice1 Owned VCA Env. Decay	0.001
+Voice1 Owned VCA Env. Sustain	1.00
+Voice1 Owned VCA Env. Release	0.001
+Voice1 Owned Voice Effect Dry/Wet	48.0
+Voice1 Owned LFO Vibrato Amount	0.000
+Voice1 Owned LFO Rate	0.500
+Voice1 Owned LFO Delay	0.000
+Voice1 Owned Filter Keyboard Amount	0.000
+Voice1 Owned Filter LFO Amount	0.000
+Voice1 Owned Filter Velocity Amount	0.000
+Voice1 Owned VCA LFO Amount	0.000
+Voice1 Owned VCA Velocity Amount	0.000
+Voice2 Sample Gain	-6.00
+Voice2 Sample Pitch Transpose	-12
+Voice2 Sample Fine	26.4
+Voice2 Trig Delay Sync	On	False | True
+Voice2 Trig Delay Time (Sync)	1/32	1/32 | 1/32.d | 1/16 | 1/16.d | 1/8 | 1/8.d | 1/4 | 1/4.d | 1/2 | 1/2.d | 1 | 1.d
+Voice2 Trig Delay Time (Unsync)	0.000
+Voice2 Trig Delay On/Off	Bypass	Bypass | Active
+Voice2 VCA Level	-0.000
+Voice2 VCA Pan	0.500
+Voice2 LFO Sync	Off	False | True
+Voice2 LFO Variation	0.000
+Voice2 FX Bypass	0.000
+Voice2 FX Reverb Reverb Decay	0.460
+Voice2 FX Reverb Damping	0.593
+Voice2 FX Delay Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1
+Voice2 FX Delay Feedback	0.352
+Voice2 FX Chorus Depth	2.20
+Voice2 FX Chorus Rate	0.990
+Voice2 FX Phaser Phaser Rate	0.570
+Voice2 FX Phaser LFO Amount	1.00
+Voice2 FX Overdrive Tone	1.00
+Voice2 FX Overdrive Overdrive Drive	0.000
+Voice2 FX BitCrusher BitCrusher Bit Depth	16.0
+Voice2 FX BitCrusher Downsample	1.00
+Voice2 FX Param Eq LowShelf Gain	0.000
+Voice2 FX Param Eq Mid 1 Gain	0.000
+Voice2 FX Param Eq HighShelf Gain	0.000
+Voice2 FX Filter Cutoff	20.0
+Voice2 FX Filter Resonnance	0.300
+Voice2 LowNote	A2
+Voice2 HighNote	B2
+Voice2 LowFadeNote	0
+Voice2 HighFadeNote	0
+Voice2 LowVel	0
+Voice2 HighVel	127
+Voice2 LowFadeVel	0
+Voice2 HighFadeVel	0
+Voice2 Forward/Backward Balance	0.000
+Voice2 Filter Q Velocity Amount	0.000
+Voice2 Filter Env. Attack Velocity Amount	0.000
+Voice2 Pan Alternate Amount	0.000
+Voice2 VCA Env. Attack Velocity Amount	0.000
+Voice2 Owned Filter Frequency	20000
+Voice2 Owned Filter Resonance	0.000
+Voice2 Owned Filter Env. Amount	0.000
+Voice2 Owned Filter Env. Attack	0.000
+Voice2 Owned Filter Env. Decay	0.001
+Voice2 Owned Filter Env. Sustain	1.00
+Voice2 Owned Filter Env. Release	0.001
+Voice2 Owned VCA Env. Attack	0.000
+Voice2 Owned VCA Env. Decay	0.001
+Voice2 Owned VCA Env. Sustain	1.00
+Voice2 Owned VCA Env. Release	0.001
+Voice2 Owned Voice Effect Dry/Wet	48.8
+Voice2 Owned LFO Vibrato Amount	0.000
+Voice2 Owned LFO Rate	0.500
+Voice2 Owned LFO Delay	0.000
+Voice2 Owned Filter Keyboard Amount	0.000
+Voice2 Owned Filter LFO Amount	0.000
+Voice2 Owned Filter Velocity Amount	0.000
+Voice2 Owned VCA LFO Amount	0.000
+Voice2 Owned VCA Velocity Amount	0.000
+Voice3 Sample Gain	-6.00
+Voice3 Sample Pitch Transpose	-12
+Voice3 Sample Fine	16.0
+Voice3 Trig Delay Sync	On	False | True
+Voice3 Trig Delay Time (Sync)	1/32	1/32 | 1/32.d | 1/16 | 1/16.d | 1/8 | 1/8.d | 1/4 | 1/4.d | 1/2 | 1/2.d | 1 | 1.d
+Voice3 Trig Delay Time (Unsync)	0.000
+Voice3 Trig Delay On/Off	Bypass	Bypass | Active
+Voice3 VCA Level	-0.000
+Voice3 VCA Pan	0.500
+Voice3 LFO Sync	Off	False | True
+Voice3 LFO Variation	0.000
+Voice3 FX Bypass	0.000
+Voice3 FX Reverb Reverb Decay	0.460
+Voice3 FX Reverb Damping	0.593
+Voice3 FX Delay Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1
+Voice3 FX Delay Feedback	0.352
+Voice3 FX Chorus Depth	2.20
+Voice3 FX Chorus Rate	0.990
+Voice3 FX Phaser Phaser Rate	0.570
+Voice3 FX Phaser LFO Amount	1.00
+Voice3 FX Overdrive Tone	1.00
+Voice3 FX Overdrive Overdrive Drive	0.000
+Voice3 FX BitCrusher BitCrusher Bit Depth	16.0
+Voice3 FX BitCrusher Downsample	1.00
+Voice3 FX Param Eq LowShelf Gain	0.000
+Voice3 FX Param Eq Mid 1 Gain	0.000
+Voice3 FX Param Eq HighShelf Gain	0.000
+Voice3 FX Filter Cutoff	20.0
+Voice3 FX Filter Resonnance	0.300
+Voice3 LowNote	C3
+Voice3 HighNote	D3
+Voice3 LowFadeNote	0
+Voice3 HighFadeNote	0
+Voice3 LowVel	0
+Voice3 HighVel	127
+Voice3 LowFadeVel	0
+Voice3 HighFadeVel	0
+Voice3 Forward/Backward Balance	0.000
+Voice3 Filter Q Velocity Amount	0.000
+Voice3 Filter Env. Attack Velocity Amount	0.000
+Voice3 Pan Alternate Amount	0.000
+Voice3 VCA Env. Attack Velocity Amount	0.000
+Voice3 Owned Filter Frequency	20000
+Voice3 Owned Filter Resonance	0.000
+Voice3 Owned Filter Env. Amount	0.000
+Voice3 Owned Filter Env. Attack	0.000
+Voice3 Owned Filter Env. Decay	0.001
+Voice3 Owned Filter Env. Sustain	1.00
+Voice3 Owned Filter Env. Release	0.001
+Voice3 Owned VCA Env. Attack	0.000
+Voice3 Owned VCA Env. Decay	0.001
+Voice3 Owned VCA Env. Sustain	1.00
+Voice3 Owned VCA Env. Release	0.001
+Voice3 Owned Voice Effect Dry/Wet	49.2
+Voice3 Owned LFO Vibrato Amount	0.000
+Voice3 Owned LFO Rate	0.500
+Voice3 Owned LFO Delay	0.000
+Voice3 Owned Filter Keyboard Amount	0.000
+Voice3 Owned Filter LFO Amount	0.000
+Voice3 Owned Filter Velocity Amount	0.000
+Voice3 Owned VCA LFO Amount	0.000
+Voice3 Owned VCA Velocity Amount	0.000
+Voice4 Sample Gain	-6.00
+Voice4 Sample Pitch Transpose	-12
+Voice4 Sample Fine	22.8
+Voice4 Trig Delay Sync	On	False | True
+Voice4 Trig Delay Time (Sync)	1/32	1/32 | 1/32.d | 1/16 | 1/16.d | 1/8 | 1/8.d | 1/4 | 1/4.d | 1/2 | 1/2.d | 1 | 1.d
+Voice4 Trig Delay Time (Unsync)	0.000
+Voice4 Trig Delay On/Off	Bypass	Bypass | Active
+Voice4 VCA Level	-0.000
+Voice4 VCA Pan	0.500
+Voice4 LFO Sync	Off	False | True
+Voice4 LFO Variation	0.000
+Voice4 FX Bypass	0.000
+Voice4 FX Reverb Reverb Decay	0.460
+Voice4 FX Reverb Damping	0.593
+Voice4 FX Delay Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1
+Voice4 FX Delay Feedback	0.352
+Voice4 FX Chorus Depth	2.20
+Voice4 FX Chorus Rate	0.990
+Voice4 FX Phaser Phaser Rate	0.570
+Voice4 FX Phaser LFO Amount	1.00
+Voice4 FX Overdrive Tone	1.00
+Voice4 FX Overdrive Overdrive Drive	0.000
+Voice4 FX BitCrusher BitCrusher Bit Depth	16.0
+Voice4 FX BitCrusher Downsample	1.00
+Voice4 FX Param Eq LowShelf Gain	0.000
+Voice4 FX Param Eq Mid 1 Gain	0.000
+Voice4 FX Param Eq HighShelf Gain	0.000
+Voice4 FX Filter Cutoff	20.0
+Voice4 FX Filter Resonnance	0.300
+Voice4 LowNote	D#3
+Voice4 HighNote	F3
+Voice4 LowFadeNote	0
+Voice4 HighFadeNote	0
+Voice4 LowVel	0
+Voice4 HighVel	127
+Voice4 LowFadeVel	0
+Voice4 HighFadeVel	0
+Voice4 Forward/Backward Balance	0.000
+Voice4 Filter Q Velocity Amount	0.000
+Voice4 Filter Env. Attack Velocity Amount	0.000
+Voice4 Pan Alternate Amount	0.000
+Voice4 VCA Env. Attack Velocity Amount	0.000
+Voice4 Owned Filter Frequency	20000
+Voice4 Owned Filter Resonance	0.000
+Voice4 Owned Filter Env. Amount	0.000
+Voice4 Owned Filter Env. Attack	0.000
+Voice4 Owned Filter Env. Decay	0.001
+Voice4 Owned Filter Env. Sustain	1.00
+Voice4 Owned Filter Env. Release	0.001
+Voice4 Owned VCA Env. Attack	0.000
+Voice4 Owned VCA Env. Decay	0.001
+Voice4 Owned VCA Env. Sustain	1.00
+Voice4 Owned VCA Env. Release	0.001
+Voice4 Owned Voice Effect Dry/Wet	48.8
+Voice4 Owned LFO Vibrato Amount	0.000
+Voice4 Owned LFO Rate	0.500
+Voice4 Owned LFO Delay	0.000
+Voice4 Owned Filter Keyboard Amount	0.000
+Voice4 Owned Filter LFO Amount	0.000
+Voice4 Owned Filter Velocity Amount	0.000
+Voice4 Owned VCA LFO Amount	0.000
+Voice4 Owned VCA Velocity Amount	0.000
+Voice5 Sample Gain	-6.00
+Voice5 Sample Pitch Transpose	-12
+Voice5 Sample Fine	7.20
+Voice5 Trig Delay Sync	On	False | True
+Voice5 Trig Delay Time (Sync)	1/32	1/32 | 1/32.d | 1/16 | 1/16.d | 1/8 | 1/8.d | 1/4 | 1/4.d | 1/2 | 1/2.d | 1 | 1.d
+Voice5 Trig Delay Time (Unsync)	0.000
+Voice5 Trig Delay On/Off	Bypass	Bypass | Active
+Voice5 VCA Level	-0.000
+Voice5 VCA Pan	0.500
+Voice5 LFO Sync	Off	False | True
+Voice5 LFO Variation	0.000
+Voice5 FX Bypass	0.000
+Voice5 FX Reverb Reverb Decay	0.460
+Voice5 FX Reverb Damping	0.593
+Voice5 FX Delay Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1
+Voice5 FX Delay Feedback	0.352
+Voice5 FX Chorus Depth	2.20
+Voice5 FX Chorus Rate	0.990
+Voice5 FX Phaser Phaser Rate	0.570
+Voice5 FX Phaser LFO Amount	1.00
+Voice5 FX Overdrive Tone	1.00
+Voice5 FX Overdrive Overdrive Drive	0.000
+Voice5 FX BitCrusher BitCrusher Bit Depth	16.0
+Voice5 FX BitCrusher Downsample	1.00
+Voice5 FX Param Eq LowShelf Gain	0.000
+Voice5 FX Param Eq Mid 1 Gain	0.000
+Voice5 FX Param Eq HighShelf Gain	0.000
+Voice5 FX Filter Cutoff	20.0
+Voice5 FX Filter Resonnance	0.300
+Voice5 LowNote	F#3
+Voice5 HighNote	G#3
+Voice5 LowFadeNote	0
+Voice5 HighFadeNote	0
+Voice5 LowVel	0
+Voice5 HighVel	127
+Voice5 LowFadeVel	0
+Voice5 HighFadeVel	0
+Voice5 Forward/Backward Balance	0.000
+Voice5 Filter Q Velocity Amount	0.000
+Voice5 Filter Env. Attack Velocity Amount	0.000
+Voice5 Pan Alternate Amount	0.000
+Voice5 VCA Env. Attack Velocity Amount	0.000
+Voice5 Owned Filter Frequency	20000
+Voice5 Owned Filter Resonance	0.000
+Voice5 Owned Filter Env. Amount	0.000
+Voice5 Owned Filter Env. Attack	0.000
+Voice5 Owned Filter Env. Decay	0.001
+Voice5 Owned Filter Env. Sustain	1.00
+Voice5 Owned Filter Env. Release	0.001
+Voice5 Owned VCA Env. Attack	0.000
+Voice5 Owned VCA Env. Decay	0.001
+Voice5 Owned VCA Env. Sustain	1.00
+Voice5 Owned VCA Env. Release	0.001
+Voice5 Owned Voice Effect Dry/Wet	49.6
+Voice5 Owned LFO Vibrato Amount	0.000
+Voice5 Owned LFO Rate	0.500
+Voice5 Owned LFO Delay	0.000
+Voice5 Owned Filter Keyboard Amount	0.000
+Voice5 Owned Filter LFO Amount	0.000
+Voice5 Owned Filter Velocity Amount	0.000
+Voice5 Owned VCA LFO Amount	0.000
+Voice5 Owned VCA Velocity Amount	0.000
+Voice6 Sample Gain	-6.00
+Voice6 Sample Pitch Transpose	-12
+Voice6 Sample Fine	6.80
+Voice6 Trig Delay Sync	On	False | True
+Voice6 Trig Delay Time (Sync)	1/32	1/32 | 1/32.d | 1/16 | 1/16.d | 1/8 | 1/8.d | 1/4 | 1/4.d | 1/2 | 1/2.d | 1 | 1.d
+Voice6 Trig Delay Time (Unsync)	0.000
+Voice6 Trig Delay On/Off	Bypass	Bypass | Active
+Voice6 VCA Level	-0.000
+Voice6 VCA Pan	0.500
+Voice6 LFO Sync	Off	False | True
+Voice6 LFO Variation	0.000
+Voice6 FX Bypass	0.000
+Voice6 FX Reverb Reverb Decay	0.460
+Voice6 FX Reverb Damping	0.593
+Voice6 FX Delay Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1
+Voice6 FX Delay Feedback	0.352
+Voice6 FX Chorus Depth	2.20
+Voice6 FX Chorus Rate	0.990
+Voice6 FX Phaser Phaser Rate	0.570
+Voice6 FX Phaser LFO Amount	1.00
+Voice6 FX Overdrive Tone	1.00
+Voice6 FX Overdrive Overdrive Drive	0.000
+Voice6 FX BitCrusher BitCrusher Bit Depth	16.0
+Voice6 FX BitCrusher Downsample	1.00
+Voice6 FX Param Eq LowShelf Gain	0.000
+Voice6 FX Param Eq Mid 1 Gain	0.000
+Voice6 FX Param Eq HighShelf Gain	0.000
+Voice6 FX Filter Cutoff	20.0
+Voice6 FX Filter Resonnance	0.300
+Voice6 LowNote	A3
+Voice6 HighNote	B3
+Voice6 LowFadeNote	0
+Voice6 HighFadeNote	0
+Voice6 LowVel	0
+Voice6 HighVel	127
+Voice6 LowFadeVel	0
+Voice6 HighFadeVel	0
+Voice6 Forward/Backward Balance	0.000
+Voice6 Filter Q Velocity Amount	0.000
+Voice6 Filter Env. Attack Velocity Amount	0.000
+Voice6 Pan Alternate Amount	0.000
+Voice6 VCA Env. Attack Velocity Amount	0.000
+Voice6 Owned Filter Frequency	20000
+Voice6 Owned Filter Resonance	0.000
+Voice6 Owned Filter Env. Amount	0.000
+Voice6 Owned Filter Env. Attack	0.000
+Voice6 Owned Filter Env. Decay	0.001
+Voice6 Owned Filter Env. Sustain	1.00
+Voice6 Owned Filter Env. Release	0.001
+Voice6 Owned VCA Env. Attack	0.000
+Voice6 Owned VCA Env. Decay	0.001
+Voice6 Owned VCA Env. Sustain	1.00
+Voice6 Owned VCA Env. Release	0.001
+Voice6 Owned Voice Effect Dry/Wet	47.6
+Voice6 Owned LFO Vibrato Amount	0.000
+Voice6 Owned LFO Rate	0.500
+Voice6 Owned LFO Delay	0.000
+Voice6 Owned Filter Keyboard Amount	0.000
+Voice6 Owned Filter LFO Amount	0.000
+Voice6 Owned Filter Velocity Amount	0.000
+Voice6 Owned VCA LFO Amount	0.000
+Voice6 Owned VCA Velocity Amount	0.000
+Voice7 Sample Gain	-6.00
+Voice7 Sample Pitch Transpose	-12
+Voice7 Sample Fine	14.4
+Voice7 Trig Delay Sync	On	False | True
+Voice7 Trig Delay Time (Sync)	1/32	1/32 | 1/32.d | 1/16 | 1/16.d | 1/8 | 1/8.d | 1/4 | 1/4.d | 1/2 | 1/2.d | 1 | 1.d
+Voice7 Trig Delay Time (Unsync)	0.000
+Voice7 Trig Delay On/Off	Bypass	Bypass | Active
+Voice7 VCA Level	-0.000
+Voice7 VCA Pan	0.500
+Voice7 LFO Sync	Off	False | True
+Voice7 LFO Variation	0.000
+Voice7 FX Bypass	0.000
+Voice7 FX Reverb Reverb Decay	0.460
+Voice7 FX Reverb Damping	0.593
+Voice7 FX Delay Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1
+Voice7 FX Delay Feedback	0.352
+Voice7 FX Chorus Depth	2.20
+Voice7 FX Chorus Rate	0.990
+Voice7 FX Phaser Phaser Rate	0.570
+Voice7 FX Phaser LFO Amount	1.00
+Voice7 FX Overdrive Tone	1.00
+Voice7 FX Overdrive Overdrive Drive	0.000
+Voice7 FX BitCrusher BitCrusher Bit Depth	16.0
+Voice7 FX BitCrusher Downsample	1.00
+Voice7 FX Param Eq LowShelf Gain	0.000
+Voice7 FX Param Eq Mid 1 Gain	0.000
+Voice7 FX Param Eq HighShelf Gain	0.000
+Voice7 FX Filter Cutoff	20.0
+Voice7 FX Filter Resonnance	0.300
+Voice7 LowNote	C4
+Voice7 HighNote	C#4
+Voice7 LowFadeNote	0
+Voice7 HighFadeNote	0
+Voice7 LowVel	0
+Voice7 HighVel	127
+Voice7 LowFadeVel	0
+Voice7 HighFadeVel	0
+Voice7 Forward/Backward Balance	0.000
+Voice7 Filter Q Velocity Amount	0.000
+Voice7 Filter Env. Attack Velocity Amount	0.000
+Voice7 Pan Alternate Amount	0.000
+Voice7 VCA Env. Attack Velocity Amount	0.000
+Voice7 Owned Filter Frequency	20000
+Voice7 Owned Filter Resonance	0.000
+Voice7 Owned Filter Env. Amount	0.000
+Voice7 Owned Filter Env. Attack	0.000
+Voice7 Owned Filter Env. Decay	0.001
+Voice7 Owned Filter Env. Sustain	1.00
+Voice7 Owned Filter Env. Release	0.001
+Voice7 Owned VCA Env. Attack	0.000
+Voice7 Owned VCA Env. Decay	0.001
+Voice7 Owned VCA Env. Sustain	1.00
+Voice7 Owned VCA Env. Release	0.001
+Voice7 Owned Voice Effect Dry/Wet	49.6
+Voice7 Owned LFO Vibrato Amount	0.000
+Voice7 Owned LFO Rate	0.500
+Voice7 Owned LFO Delay	0.000
+Voice7 Owned Filter Keyboard Amount	0.000
+Voice7 Owned Filter LFO Amount	0.000
+Voice7 Owned Filter Velocity Amount	0.000
+Voice7 Owned VCA LFO Amount	0.000
+Voice7 Owned VCA Velocity Amount	0.000
+Voice8 Sample Gain	-6.00
+Voice8 Sample Pitch Transpose	-12
+Voice8 Sample Fine	0.000
+Voice8 Trig Delay Sync	On	False | True
+Voice8 Trig Delay Time (Sync)	1/32	1/32 | 1/32.d | 1/16 | 1/16.d | 1/8 | 1/8.d | 1/4 | 1/4.d | 1/2 | 1/2.d | 1 | 1.d
+Voice8 Trig Delay Time (Unsync)	0.000
+Voice8 Trig Delay On/Off	Bypass	Bypass | Active
+Voice8 VCA Level	-0.000
+Voice8 VCA Pan	0.500
+Voice8 LFO Sync	Off	False | True
+Voice8 LFO Variation	0.000
+Voice8 FX Bypass	0.000
+Voice8 FX Reverb Reverb Decay	0.460
+Voice8 FX Reverb Damping	0.593
+Voice8 FX Delay Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1
+Voice8 FX Delay Feedback	0.352
+Voice8 FX Chorus Depth	2.20
+Voice8 FX Chorus Rate	0.990
+Voice8 FX Phaser Phaser Rate	0.570
+Voice8 FX Phaser LFO Amount	1.00
+Voice8 FX Overdrive Tone	1.00
+Voice8 FX Overdrive Overdrive Drive	0.000
+Voice8 FX BitCrusher BitCrusher Bit Depth	16.0
+Voice8 FX BitCrusher Downsample	1.00
+Voice8 FX Param Eq LowShelf Gain	0.000
+Voice8 FX Param Eq Mid 1 Gain	0.000
+Voice8 FX Param Eq HighShelf Gain	0.000
+Voice8 FX Filter Cutoff	20.0
+Voice8 FX Filter Resonnance	0.300
+Voice8 LowNote	D4
+Voice8 HighNote	G8
+Voice8 LowFadeNote	0
+Voice8 HighFadeNote	0
+Voice8 LowVel	0
+Voice8 HighVel	127
+Voice8 LowFadeVel	0
+Voice8 HighFadeVel	0
+Voice8 Forward/Backward Balance	0.000
+Voice8 Filter Q Velocity Amount	0.000
+Voice8 Filter Env. Attack Velocity Amount	0.000
+Voice8 Pan Alternate Amount	0.000
+Voice8 VCA Env. Attack Velocity Amount	0.000
+Voice8 Owned Filter Frequency	20000
+Voice8 Owned Filter Resonance	0.000
+Voice8 Owned Filter Env. Amount	0.000
+Voice8 Owned Filter Env. Attack	0.000
+Voice8 Owned Filter Env. Decay	0.001
+Voice8 Owned Filter Env. Sustain	1.00
+Voice8 Owned Filter Env. Release	0.001
+Voice8 Owned VCA Env. Attack	0.000
+Voice8 Owned VCA Env. Decay	0.001
+Voice8 Owned VCA Env. Sustain	1.00
+Voice8 Owned VCA Env. Release	0.001
+Voice8 Owned Voice Effect Dry/Wet	48.8
+Voice8 Owned LFO Vibrato Amount	0.000
+Voice8 Owned LFO Rate	0.500
+Voice8 Owned LFO Delay	0.000
+Voice8 Owned Filter Keyboard Amount	0.000
+Voice8 Owned Filter LFO Amount	0.000
+Voice8 Owned Filter Velocity Amount	0.000
+Voice8 Owned VCA LFO Amount	0.000
+Voice8 Owned VCA Velocity Amount	0.000
+FX1 Dry/Wet	0.000
+FX1 Bypass	On	False | True
+FX1 Reverb Decay	0.460
+FX1 Reverb Predelay	0.020
+FX1 Reverb Damping	0.593
+FX1 Reverb Input LowPass Freq	3000
+FX1 Reverb Input HighPass Freq	272
+FX1 Reverb Size	0.800
+FX1 Reverb Output MS Mix (Stereo)	0.364
+FX1 Delay Time	122
+FX1 Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX1 Delay Midi Sync	ON	False | True
+FX1 Delay Rate Synced Type	Binary	Binary | Ternary | Dotted
+FX1 Delay Feedback	0.352
+FX1 Delay HighPass freq	20.0
+FX1 Delay LowPass freq	20000
+FX1 Delay Stereo Width	0.000
+FX1 Delay Stereo Ping Pong 	1.00
+FX1 Delay Stereo Mode	Stereo	Stereo | Ping Pong
+FX1 Chorus Feedback	0.000
+FX1 Chorus Fixed Delay Time	7.56
+FX1 Chorus Depth	3.28
+FX1 Chorus Rate	0.424
+FX1 Chorus Stereo Mode	Stereo	Mono | Stereo
+FX1 Chorus Voices	2 Voices	1 Voice | 2 Voices | 3 Voices
+FX1 Chorus LFO Shape	Sine	Sine | Triangle
+FX1 Flanger Freq	0.200
+FX1 Flanger MinDelay	0.300
+FX1 Flanger Depth	3.00
+FX1 Flanger Feedback	0.800
+FX1 Flanger Feedback Polarity	Negative	Positive | Negative
+FX1 Flanger Stereo	Stereo	Mono | Stereo
+FX1 Flanger LowPass Cutoff Frequency	13000
+FX1 Flanger HighPass Cutoff Frequency	100
+FX1 Flanger LFO Waveform	Triangle	Sine | Triangle
+FX1 Phaser Rate Unsynced	0.570
+FX1 Phaser Rate Synced	2	4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX1 Phaser Frequency	740
+FX1 Phaser N Poles	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FX1 Phaser Feedback	0.475
+FX1 Phaser LFO Wave	Sine	Sine | Triangle | Saw | Ramp | Square | Sample & Hold
+FX1 Phaser LFO Amount	1.00
+FX1 Phaser Sync Rate Type	Binary	Binary | Ternary | Dotted
+FX1 Phaser Midi Sync	ON	False | True
+FX1 Phaser Stereo	45.0
+FX1 Overdrive Drive	0.000
+FX1 Overdrive Tone	100
+FX1 Overdrive Level	0.500
+FX1 Compressor Release	50.0
+FX1 Compressor Threshold	0.000
+FX1 Compressor Ratio	2.00
+FX1 Compressor Attack	2.00
+FX1 Compressor Auto Make up	OFF	False | True
+FX1 Compressor OutputGain	0.000
+FX1 BitCrusher Bit Depth	16.0
+FX1 BitCrusher Downsample	1.00
+FX1 Filter Frequency	1000
+FX1 Filter Q	0.707
+FX1 Filter Comb Freq	100
+FX1 Param Eq LowShelf Frequency	250
+FX1 Param Eq LowShelf Gain	0.000
+FX1 Param Eq LowShelf Q	0.707
+FX1 Param Eq Peak 1 Frequency	500
+FX1 Param Eq Peak 1 Gain	0.000
+FX1 Param Eq Peak 1 Q	1.23
+FX1 Param Eq Peak 2 Frequency	1000
+FX1 Param Eq Peak 2 Gain	0.000
+FX1 Param Eq Peak 2 Q	1.23
+FX1 Param Eq Peak 3 Frequency	3000
+FX1 Param Eq Peak 3 Gain	0.000
+FX1 Param Eq Peak 3 Q	1.23
+FX1 Param Eq HighShelf Frequency	5000
+FX1 Param Eq HighShelf Gain	0.000
+FX1 Param Eq HighShelf Q	0.707
+FX1 Param Eq Scale	1.00
+FX1 Stereo Pan Amount	0.500
+FX1 Stereo Pan Rate Unsynced	2.00
+FX1 Stereo Pan Rate Synced	1/2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX2 Dry/Wet	0.000
+FX2 Bypass	On	False | True
+FX2 Reverb Decay	0.460
+FX2 Reverb Predelay	0.020
+FX2 Reverb Damping	0.593
+FX2 Reverb Input LowPass Freq	3000
+FX2 Reverb Input HighPass Freq	30.0
+FX2 Reverb Size	0.800
+FX2 Reverb Output MS Mix (Stereo)	0.364
+FX2 Delay Time	122
+FX2 Delay Time Synced	1/8	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX2 Delay Midi Sync	ON	False | True
+FX2 Delay Rate Synced Type	Dotted	Binary | Ternary | Dotted
+FX2 Delay Feedback	0.424
+FX2 Delay HighPass freq	360
+FX2 Delay LowPass freq	2275
+FX2 Delay Stereo Width	0.000
+FX2 Delay Stereo Ping Pong 	0.248
+FX2 Delay Stereo Mode	Ping Pong	Stereo | Ping Pong
+FX2 Chorus Feedback	0.000
+FX2 Chorus Fixed Delay Time	5.00
+FX2 Chorus Depth	2.20
+FX2 Chorus Rate	0.990
+FX2 Chorus Stereo Mode	Stereo	Mono | Stereo
+FX2 Chorus Voices	2 Voices	1 Voice | 2 Voices | 3 Voices
+FX2 Chorus LFO Shape	Sine	Sine | Triangle
+FX2 Flanger Freq	0.200
+FX2 Flanger MinDelay	0.300
+FX2 Flanger Depth	3.00
+FX2 Flanger Feedback	0.800
+FX2 Flanger Feedback Polarity	Negative	Positive | Negative
+FX2 Flanger Stereo	Stereo	Mono | Stereo
+FX2 Flanger LowPass Cutoff Frequency	13000
+FX2 Flanger HighPass Cutoff Frequency	100
+FX2 Flanger LFO Waveform	Triangle	Sine | Triangle
+FX2 Phaser Rate Unsynced	0.570
+FX2 Phaser Rate Synced	2	4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX2 Phaser Frequency	740
+FX2 Phaser N Poles	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FX2 Phaser Feedback	0.475
+FX2 Phaser LFO Wave	Sine	Sine | Triangle | Saw | Ramp | Square | Sample & Hold
+FX2 Phaser LFO Amount	1.00
+FX2 Phaser Sync Rate Type	Binary	Binary | Ternary | Dotted
+FX2 Phaser Midi Sync	ON	False | True
+FX2 Phaser Stereo	45.0
+FX2 Overdrive Drive	0.000
+FX2 Overdrive Tone	100
+FX2 Overdrive Level	0.500
+FX2 Compressor Release	50.0
+FX2 Compressor Threshold	0.000
+FX2 Compressor Ratio	2.00
+FX2 Compressor Attack	2.00
+FX2 Compressor Auto Make up	OFF	False | True
+FX2 Compressor OutputGain	0.000
+FX2 BitCrusher Bit Depth	16.0
+FX2 BitCrusher Downsample	1.00
+FX2 Filter Frequency	1000
+FX2 Filter Q	0.707
+FX2 Filter Comb Freq	100
+FX2 Param Eq LowShelf Frequency	250
+FX2 Param Eq LowShelf Gain	0.000
+FX2 Param Eq LowShelf Q	0.707
+FX2 Param Eq Peak 1 Frequency	500
+FX2 Param Eq Peak 1 Gain	0.000
+FX2 Param Eq Peak 1 Q	1.23
+FX2 Param Eq Peak 2 Frequency	1000
+FX2 Param Eq Peak 2 Gain	0.000
+FX2 Param Eq Peak 2 Q	1.23
+FX2 Param Eq Peak 3 Frequency	3000
+FX2 Param Eq Peak 3 Gain	0.000
+FX2 Param Eq Peak 3 Q	1.23
+FX2 Param Eq HighShelf Frequency	5000
+FX2 Param Eq HighShelf Gain	0.000
+FX2 Param Eq HighShelf Q	0.707
+FX2 Param Eq Scale	1.00
+FX2 Stereo Pan Amount	0.500
+FX2 Stereo Pan Rate Unsynced	2.00
+FX2 Stereo Pan Rate Synced	1/2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX3 Dry/Wet	12.0
+FX3 Bypass	On	False | True
+FX3 Reverb Decay	0.460
+FX3 Reverb Predelay	0.020
+FX3 Reverb Damping	0.133
+FX3 Reverb Input LowPass Freq	8947
+FX3 Reverb Input HighPass Freq	387
+FX3 Reverb Size	0.800
+FX3 Reverb Output MS Mix (Stereo)	0.500
+FX3 Delay Time	122
+FX3 Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX3 Delay Midi Sync	ON	False | True
+FX3 Delay Rate Synced Type	Binary	Binary | Ternary | Dotted
+FX3 Delay Feedback	0.352
+FX3 Delay HighPass freq	20.0
+FX3 Delay LowPass freq	20000
+FX3 Delay Stereo Width	0.000
+FX3 Delay Stereo Ping Pong 	1.00
+FX3 Delay Stereo Mode	Stereo	Stereo | Ping Pong
+FX3 Chorus Feedback	0.000
+FX3 Chorus Fixed Delay Time	13.4
+FX3 Chorus Depth	0.800
+FX3 Chorus Rate	0.399
+FX3 Chorus Stereo Mode	Stereo	Mono | Stereo
+FX3 Chorus Voices	2 Voices	1 Voice | 2 Voices | 3 Voices
+FX3 Chorus LFO Shape	Sine	Sine | Triangle
+FX3 Flanger Freq	0.200
+FX3 Flanger MinDelay	0.300
+FX3 Flanger Depth	3.00
+FX3 Flanger Feedback	0.800
+FX3 Flanger Feedback Polarity	Negative	Positive | Negative
+FX3 Flanger Stereo	Stereo	Mono | Stereo
+FX3 Flanger LowPass Cutoff Frequency	13000
+FX3 Flanger HighPass Cutoff Frequency	100
+FX3 Flanger LFO Waveform	Triangle	Sine | Triangle
+FX3 Phaser Rate Unsynced	0.570
+FX3 Phaser Rate Synced	2	4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX3 Phaser Frequency	740
+FX3 Phaser N Poles	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FX3 Phaser Feedback	0.475
+FX3 Phaser LFO Wave	Sine	Sine | Triangle | Saw | Ramp | Square | Sample & Hold
+FX3 Phaser LFO Amount	1.00
+FX3 Phaser Sync Rate Type	Binary	Binary | Ternary | Dotted
+FX3 Phaser Midi Sync	ON	False | True
+FX3 Phaser Stereo	45.0
+FX3 Overdrive Drive	0.000
+FX3 Overdrive Tone	100
+FX3 Overdrive Level	0.500
+FX3 Compressor Release	50.0
+FX3 Compressor Threshold	0.000
+FX3 Compressor Ratio	2.00
+FX3 Compressor Attack	2.00
+FX3 Compressor Auto Make up	OFF	False | True
+FX3 Compressor OutputGain	0.000
+FX3 BitCrusher Bit Depth	16.0
+FX3 BitCrusher Downsample	1.00
+FX3 Filter Frequency	1000
+FX3 Filter Q	0.707
+FX3 Filter Comb Freq	100
+FX3 Param Eq LowShelf Frequency	250
+FX3 Param Eq LowShelf Gain	0.000
+FX3 Param Eq LowShelf Q	0.707
+FX3 Param Eq Peak 1 Frequency	500
+FX3 Param Eq Peak 1 Gain	0.000
+FX3 Param Eq Peak 1 Q	1.23
+FX3 Param Eq Peak 2 Frequency	1000
+FX3 Param Eq Peak 2 Gain	0.000
+FX3 Param Eq Peak 2 Q	1.23
+FX3 Param Eq Peak 3 Frequency	3000
+FX3 Param Eq Peak 3 Gain	0.000
+FX3 Param Eq Peak 3 Q	1.23
+FX3 Param Eq HighShelf Frequency	5000
+FX3 Param Eq HighShelf Gain	0.000
+FX3 Param Eq HighShelf Q	0.707
+FX3 Param Eq Scale	1.00
+FX3 Stereo Pan Amount	0.500
+FX3 Stereo Pan Rate Unsynced	2.00
+FX3 Stereo Pan Rate Synced	1/2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Pitch Bend	0.000
+AfterTouch	0.000
+Hold	Off	False | True
+All Notes Off	0.000
+All Sounds Off	0.000
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

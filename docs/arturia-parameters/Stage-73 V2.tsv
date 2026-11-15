@@ -1,0 +1,522 @@
+# Stage-73 V2 2.6.5.6366 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+Pickup Distance	0.380
+Pickup Alignment	0.600
+Tuning	440
+Tonebar Resonance	0.319
+Damper Duration	0.034
+Dynamics	40.0
+Hammer Hardness	0.447
+FX Input Gain	12.0
+FX Output Gain	-1.01
+Hammer Noise	0.107
+Damper Noise	-7.62
+Tine Noise	-6.00
+Pickup Noise	-64.0
+Tone Circuit Model	74'=>	<=73' | 74'=>
+Tone Circuit Tone	10.0
+Tone Circuit Bass Boost	5.64
+Tone Circuit / Preamp Volume	6.75
+Preamp Vibrato On	On	False | True
+Preamp Vibrato Speed	5.00
+Preamp Vibrato Intensity	0.000
+Preamp Bass	0.000
+Preamp Treble	0.000
+Enable Power Amp	Off	False | True
+Brightness	0.000
+Timbre	0.496
+Time	0.034
+Movement	0.000
+PitchBend	0.500
+VST3_AfterTouch	0.000
+Hold: if active, any new note event will be sustained	0.000
+VST3_CtrlAllNotesOff	0.000
+VST3_CtrlAllSoundsOff	0.000
+Reverb 1 Bypass	On	False | True
+Reverb 1 Dry/Wet	0.248
+FX1 Chorus Delay	4.99
+FX1 Chorus Depth	1.44
+FX1 Chorus Frequency	0.100
+FX1 Chorus Feedback	0.248
+FX1 Flanger Depth	2.24
+FX1 Flanger Rate	0.539
+FX1 Flanger Feedback	0.456
+FX1 Flanger LowPass fc	10689
+FX1 Flanger HighPass fc	77.1
+FX1 Compressor Threshold	-20.2
+FX1 Compressor Ratio	2.00
+FX1 Compressor Attack	10.0
+FX1 Compressor Release	55.6
+FX1 Compressor OutputGain	0.000
+FX1 Phaser Frequency	640
+FX1 Phaser Feedback	0.614
+FX1 Phaser LFO Amount	0.282
+FX1 Phaser LFO Wave	Triangle	Sine | Triangle | Saw | Ramp | Square | SampleAndHold
+FX1 Phaser Rate Unsynced	0.446
+FX1 Phaser Rate Synced	2.d	8 | 4.d | 8.t | 4 | 2.d | 4.t | 2 | 1.d | 2.t | 1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16 | 1/32.d | 1/16.t | 1/32
+FX1 Phaser Stereo	30.0
+FX1 Delay Time	122
+FX1 Delay Synced	1/4	1/32 | 1/16.t | 1/32.d | 1/16 | 1/8.t | 1/16.d | 1/8 | 1/4.t | 1/8.d | 1/4 | 1/2.t | 1/4.d | 1/2 | 1.t | 1/2.d | 1 | 2.t | 1.d | 2 | 4.t | 2.d | 4 | 8.t | 4.d | 8
+FX1 Delay Feedback	0.300
+FX1 Delay Stereo Spread	0.000
+FX1 Delay HighPass fc	20.0
+FX1 Delay LowPass fc	20000
+FX1 Distortion Bit Crusher Bit Depth	9.10
+FX1 Distortion Bit Crusher Downsampling Factor	1.00
+FX1 Distortion Overdrive Drive	0.616
+FX1 Distortion Overdrive Tone	1.00
+FX1 Distortion Overdrive Level	0.064
+FX1 Distortion Wavefolder Drive	18.0
+FX1 Distortion Wavefolder Output Gain	-10.0
+FX1 Distortion Waveshaper Drive	18.0
+FX1 Distortion Waveshaper Output Gain	-10.0
+FX1 Distortion Overdrive Output Gain	0.000
+FX1 Distortion Tape Drive	0.000
+FX1 Distortion Tape OutputGain	0.000
+FX1 Equalizer LowShelf fc	250
+FX1 Equalizer LowShelf Gain	0.000
+FX1 Equalizer Peak fc	500
+FX1 Equalizer Peak Gain	0.000
+FX1 Equalizer Peak Q	1.23
+FX1 Equalizer HighShelf fc	5000
+FX1 Equalizer HighShelf Gain	0.000
+FX1 (Legacy) Reverb Predelay	0.020
+FX1 (Legacy) Reverb Decay	0.460
+FX1 (Legacy) Reverb Damping	0.600
+FX1 (Legacy) Reverb Input LowPass Freq	8060
+FX1 (Legacy) Reverb Input HighPass Freq	200
+FX1 (Legacy) Reverb Size	1.00
+FX1 (Legacy) Reverb Output MS Mix (Stereo)	0.500
+FX1 Stereo Pan Rate Unsynced	2.00
+FX1 Stereo Pan Rate Synced	2	8 | 4.d | 8.t | 4 | 2.d | 4.t | 2 | 1.d | 2.t | 1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16 | 1/32.d | 1/16.t | 1/32
+FX1 Stereo Pan LFO Waveform	Sine	Sine | Triangle | Saw | Ramp | Square
+FX1 Analog Delay Delay Time	0.500
+FX1 Analog Delay Delay Time Synced	1/16	1/32 | 1/16.t | 1/32.d | 1/16 | 1/8.t | 1/16.d | 1/8 | 1/4.t | 1/8.d | 1/4 | 1/2.t | 1/4.d | 1/2 | 1.t | 1/2.d | 1 | 2.t | 1.d | 2 | 4.t | 2.d | 4 | 8.t | 4.d | 8
+FX1 Analog Delay LFO Rate	5.00
+FX1 Analog Delay Rate Synced	2	8 | 4.d | 8.t | 4 | 2.d | 4.t | 2 | 1.d | 2.t | 1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16 | 1/32.d | 1/16.t | 1/32
+FX1 Analog Delay LFO Depth	0.600
+FX1 Analog Delay Feedback Amount	0.620
+FX1 Analog Delay Feedback Tone	0.680
+FX1 Limiter Input Gain	11.8
+FX1 Limiter Release Time	0.202
+FX1 Limiter Output Level	-12.0
+FX1 Tape Echo Bass	0.000
+FX1 Tape Echo Treble	0.000
+FX1 Tape Echo Repeat Rate	208
+FX1 Tape Echo Delay	1/32	1/32 | 1/16.t | 1/32.d | 1/16 | 1/8.t | 1/16.d | 1/8 | 1/4.t | 1/8.d | 1/4 | 1/2.t | 1/4.d | 1/2 | 1.t | 1/2.d | 1 | 2.t | 1.d | 2 | 4.t | 2.d | 4 | 8.t | 4.d | 8
+FX1 Tape Echo Intensity	0.625
+FX1 Tape Echo Input Volume	1.44
+FX1 Tape Echo Echo Volume	1.00
+FX1 AutoWah Frequency	640
+FX1 AutoWah Threshold	10.0
+FX1 AutoWah Modulation Depth	30.0
+FX1 AutoWah Modulation Rate	2.80
+FX1 Analog Phaser Rate	1.37
+FX1 Analog Phaser Rate Sync	1/4	1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16
+FX1 Analog Phaser Feedback	0.000
+FX1 Analog Phaser Depth	10.0
+FX1 Analog Phaser Pole Number	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FX1 Analog Phaser Sync	Off	False | True
+FX1 Analog Phaser Stereo	Off	False | True
+FX1 Reverb Predelay	0.003
+FX1 Reverb Decay	0.504
+FX1 Reverb Damping	0.644
+FX1 Reverb Input LowPass Freq	7661
+FX1 Reverb Input HighPass Freq	44.0
+FX1 Reverb Size	0.251
+FX1 Reverb Output MS Mix (Stereo)	0.500
+Stereo Pan 2 Bypass	Off	False | True
+Stereo Pan 2 Dry/Wet	0.000
+FX2 Chorus Delay	13.6
+FX2 Chorus Depth	2.96
+FX2 Chorus Frequency	0.580
+FX2 Chorus Feedback	0.165
+FX2 Flanger Depth	2.24
+FX2 Flanger Rate	0.539
+FX2 Flanger Feedback	0.456
+FX2 Flanger LowPass fc	10689
+FX2 Flanger HighPass fc	77.1
+FX2 Compressor Threshold	-20.2
+FX2 Compressor Ratio	2.00
+FX2 Compressor Attack	10.0
+FX2 Compressor Release	55.6
+FX2 Compressor OutputGain	0.000
+FX2 Phaser Frequency	640
+FX2 Phaser Feedback	0.614
+FX2 Phaser LFO Amount	0.282
+FX2 Phaser LFO Wave	Triangle	Sine | Triangle | Saw | Ramp | Square | SampleAndHold
+FX2 Phaser Rate Unsynced	0.446
+FX2 Phaser Rate Synced	2.d	8 | 4.d | 8.t | 4 | 2.d | 4.t | 2 | 1.d | 2.t | 1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16 | 1/32.d | 1/16.t | 1/32
+FX2 Phaser Stereo	30.0
+FX2 Delay Time	122
+FX2 Delay Synced	1/4	1/32 | 1/16.t | 1/32.d | 1/16 | 1/8.t | 1/16.d | 1/8 | 1/4.t | 1/8.d | 1/4 | 1/2.t | 1/4.d | 1/2 | 1.t | 1/2.d | 1 | 2.t | 1.d | 2 | 4.t | 2.d | 4 | 8.t | 4.d | 8
+FX2 Delay Feedback	0.300
+FX2 Delay Stereo Spread	0.000
+FX2 Delay HighPass fc	20.0
+FX2 Delay LowPass fc	20000
+FX2 Distortion Bit Crusher Bit Depth	9.10
+FX2 Distortion Bit Crusher Downsampling Factor	1.00
+FX2 Distortion Overdrive Drive	0.616
+FX2 Distortion Overdrive Tone	1.00
+FX2 Distortion Overdrive Level	0.064
+FX2 Distortion Wavefolder Drive	18.0
+FX2 Distortion Wavefolder Output Gain	-10.0
+FX2 Distortion Waveshaper Drive	18.0
+FX2 Distortion Waveshaper Output Gain	-10.0
+FX2 Distortion Overdrive Output Gain	0.000
+FX2 Distortion Tape Drive	0.000
+FX2 Distortion Tape OutputGain	0.000
+FX2 Equalizer LowShelf fc	250
+FX2 Equalizer LowShelf Gain	0.000
+FX2 Equalizer Peak fc	500
+FX2 Equalizer Peak Gain	0.000
+FX2 Equalizer Peak Q	1.23
+FX2 Equalizer HighShelf fc	5000
+FX2 Equalizer HighShelf Gain	0.000
+FX2 (Legacy) Reverb Predelay	0.020
+FX2 (Legacy) Reverb Decay	0.460
+FX2 (Legacy) Reverb Damping	0.600
+FX2 (Legacy) Reverb Input LowPass Freq	8060
+FX2 (Legacy) Reverb Input HighPass Freq	200
+FX2 (Legacy) Reverb Size	1.00
+FX2 (Legacy) Reverb Output MS Mix (Stereo)	0.500
+FX2 Stereo Pan Rate Unsynced	2.00
+FX2 Stereo Pan Rate Synced	1/8.d	8 | 4.d | 8.t | 4 | 2.d | 4.t | 2 | 1.d | 2.t | 1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16 | 1/32.d | 1/16.t | 1/32
+FX2 Stereo Pan LFO Waveform	Sine	Sine | Triangle | Saw | Ramp | Square
+FX2 Analog Delay Delay Time	0.500
+FX2 Analog Delay Delay Time Synced	1/16	1/32 | 1/16.t | 1/32.d | 1/16 | 1/8.t | 1/16.d | 1/8 | 1/4.t | 1/8.d | 1/4 | 1/2.t | 1/4.d | 1/2 | 1.t | 1/2.d | 1 | 2.t | 1.d | 2 | 4.t | 2.d | 4 | 8.t | 4.d | 8
+FX2 Analog Delay LFO Rate	5.00
+FX2 Analog Delay Rate Synced	2	8 | 4.d | 8.t | 4 | 2.d | 4.t | 2 | 1.d | 2.t | 1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16 | 1/32.d | 1/16.t | 1/32
+FX2 Analog Delay LFO Depth	0.600
+FX2 Analog Delay Feedback Amount	0.620
+FX2 Analog Delay Feedback Tone	0.680
+FX2 Limiter Input Gain	11.8
+FX2 Limiter Release Time	0.202
+FX2 Limiter Output Level	-12.0
+FX2 Tape Echo Bass	0.000
+FX2 Tape Echo Treble	0.000
+FX2 Tape Echo Repeat Rate	208
+FX2 Tape Echo Delay	1/32	1/32 | 1/16.t | 1/32.d | 1/16 | 1/8.t | 1/16.d | 1/8 | 1/4.t | 1/8.d | 1/4 | 1/2.t | 1/4.d | 1/2 | 1.t | 1/2.d | 1 | 2.t | 1.d | 2 | 4.t | 2.d | 4 | 8.t | 4.d | 8
+FX2 Tape Echo Intensity	0.625
+FX2 Tape Echo Input Volume	1.44
+FX2 Tape Echo Echo Volume	1.00
+FX2 AutoWah Frequency	640
+FX2 AutoWah Threshold	10.0
+FX2 AutoWah Modulation Depth	30.0
+FX2 AutoWah Modulation Rate	2.80
+FX2 Analog Phaser Rate	1.37
+FX2 Analog Phaser Rate Sync	1/4	1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16
+FX2 Analog Phaser Feedback	0.000
+FX2 Analog Phaser Depth	10.0
+FX2 Analog Phaser Pole Number	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FX2 Analog Phaser Sync	Off	False | True
+FX2 Analog Phaser Stereo	Off	False | True
+FX2 Reverb Predelay	0.003
+FX2 Reverb Decay	0.460
+FX2 Reverb Damping	0.600
+FX2 Reverb Input LowPass Freq	7661
+FX2 Reverb Input HighPass Freq	44.0
+FX2 Reverb Size	1.08
+FX2 Reverb Output MS Mix (Stereo)	0.500
+Flanger 3 Bypass	On	False | True
+Flanger 3 Dry/Wet	0.412
+FX3 Chorus Delay	13.6
+FX3 Chorus Depth	2.96
+FX3 Chorus Frequency	0.580
+FX3 Chorus Feedback	0.165
+FX3 Flanger Depth	1.89
+FX3 Flanger Rate	0.203
+FX3 Flanger Feedback	0.757
+FX3 Flanger LowPass fc	10689
+FX3 Flanger HighPass fc	77.1
+FX3 Compressor Threshold	-20.2
+FX3 Compressor Ratio	2.00
+FX3 Compressor Attack	10.0
+FX3 Compressor Release	55.6
+FX3 Compressor OutputGain	0.000
+FX3 Phaser Frequency	640
+FX3 Phaser Feedback	0.614
+FX3 Phaser LFO Amount	0.282
+FX3 Phaser LFO Wave	Triangle	Sine | Triangle | Saw | Ramp | Square | SampleAndHold
+FX3 Phaser Rate Unsynced	0.446
+FX3 Phaser Rate Synced	2.d	8 | 4.d | 8.t | 4 | 2.d | 4.t | 2 | 1.d | 2.t | 1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16 | 1/32.d | 1/16.t | 1/32
+FX3 Phaser Stereo	30.0
+FX3 Delay Time	122
+FX3 Delay Synced	1/4	1/32 | 1/16.t | 1/32.d | 1/16 | 1/8.t | 1/16.d | 1/8 | 1/4.t | 1/8.d | 1/4 | 1/2.t | 1/4.d | 1/2 | 1.t | 1/2.d | 1 | 2.t | 1.d | 2 | 4.t | 2.d | 4 | 8.t | 4.d | 8
+FX3 Delay Feedback	0.300
+FX3 Delay Stereo Spread	0.000
+FX3 Delay HighPass fc	20.0
+FX3 Delay LowPass fc	20000
+FX3 Distortion Bit Crusher Bit Depth	9.10
+FX3 Distortion Bit Crusher Downsampling Factor	1.00
+FX3 Distortion Overdrive Drive	0.616
+FX3 Distortion Overdrive Tone	1.00
+FX3 Distortion Overdrive Level	0.064
+FX3 Distortion Wavefolder Drive	18.0
+FX3 Distortion Wavefolder Output Gain	-10.0
+FX3 Distortion Waveshaper Drive	18.0
+FX3 Distortion Waveshaper Output Gain	-10.0
+FX3 Distortion Overdrive Output Gain	0.000
+FX3 Distortion Tape Drive	0.000
+FX3 Distortion Tape OutputGain	0.000
+FX3 Equalizer LowShelf fc	250
+FX3 Equalizer LowShelf Gain	0.000
+FX3 Equalizer Peak fc	500
+FX3 Equalizer Peak Gain	0.000
+FX3 Equalizer Peak Q	1.23
+FX3 Equalizer HighShelf fc	5000
+FX3 Equalizer HighShelf Gain	0.000
+FX3 (Legacy) Reverb Predelay	0.020
+FX3 (Legacy) Reverb Decay	0.460
+FX3 (Legacy) Reverb Damping	0.600
+FX3 (Legacy) Reverb Input LowPass Freq	8060
+FX3 (Legacy) Reverb Input HighPass Freq	200
+FX3 (Legacy) Reverb Size	1.00
+FX3 (Legacy) Reverb Output MS Mix (Stereo)	0.500
+FX3 Stereo Pan Rate Unsynced	2.00
+FX3 Stereo Pan Rate Synced	1/4	8 | 4.d | 8.t | 4 | 2.d | 4.t | 2 | 1.d | 2.t | 1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16 | 1/32.d | 1/16.t | 1/32
+FX3 Stereo Pan LFO Waveform	Sine	Sine | Triangle | Saw | Ramp | Square
+FX3 Analog Delay Delay Time	0.500
+FX3 Analog Delay Delay Time Synced	1/16	1/32 | 1/16.t | 1/32.d | 1/16 | 1/8.t | 1/16.d | 1/8 | 1/4.t | 1/8.d | 1/4 | 1/2.t | 1/4.d | 1/2 | 1.t | 1/2.d | 1 | 2.t | 1.d | 2 | 4.t | 2.d | 4 | 8.t | 4.d | 8
+FX3 Analog Delay LFO Rate	5.00
+FX3 Analog Delay Rate Synced	2	8 | 4.d | 8.t | 4 | 2.d | 4.t | 2 | 1.d | 2.t | 1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16 | 1/32.d | 1/16.t | 1/32
+FX3 Analog Delay LFO Depth	0.600
+FX3 Analog Delay Feedback Amount	0.620
+FX3 Analog Delay Feedback Tone	0.680
+FX3 Limiter Input Gain	11.8
+FX3 Limiter Release Time	0.202
+FX3 Limiter Output Level	-12.0
+FX3 Tape Echo Bass	0.000
+FX3 Tape Echo Treble	0.000
+FX3 Tape Echo Repeat Rate	208
+FX3 Tape Echo Delay	1/32	1/32 | 1/16.t | 1/32.d | 1/16 | 1/8.t | 1/16.d | 1/8 | 1/4.t | 1/8.d | 1/4 | 1/2.t | 1/4.d | 1/2 | 1.t | 1/2.d | 1 | 2.t | 1.d | 2 | 4.t | 2.d | 4 | 8.t | 4.d | 8
+FX3 Tape Echo Intensity	0.625
+FX3 Tape Echo Input Volume	1.44
+FX3 Tape Echo Echo Volume	1.00
+FX3 AutoWah Frequency	640
+FX3 AutoWah Threshold	10.0
+FX3 AutoWah Modulation Depth	30.0
+FX3 AutoWah Modulation Rate	2.80
+FX3 Analog Phaser Rate	1.37
+FX3 Analog Phaser Rate Sync	1/4	1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16
+FX3 Analog Phaser Feedback	0.000
+FX3 Analog Phaser Depth	10.0
+FX3 Analog Phaser Pole Number	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FX3 Analog Phaser Sync	Off	False | True
+FX3 Analog Phaser Stereo	Off	False | True
+FX3 Reverb Predelay	0.003
+FX3 Reverb Decay	0.460
+FX3 Reverb Damping	0.600
+FX3 Reverb Input LowPass Freq	7661
+FX3 Reverb Input HighPass Freq	44.0
+FX3 Reverb Size	1.08
+FX3 Reverb Output MS Mix (Stereo)	0.500
+Equalizer 4 Bypass	Off	False | True
+Equalizer 4 Scale	1.00
+FX4 Chorus Delay	13.6
+FX4 Chorus Depth	2.96
+FX4 Chorus Frequency	0.580
+FX4 Chorus Feedback	0.165
+FX4 Flanger Depth	2.24
+FX4 Flanger Rate	0.539
+FX4 Flanger Feedback	0.456
+FX4 Flanger LowPass fc	10689
+FX4 Flanger HighPass fc	77.1
+FX4 Compressor Threshold	-20.2
+FX4 Compressor Ratio	2.00
+FX4 Compressor Attack	10.0
+FX4 Compressor Release	55.6
+FX4 Compressor OutputGain	0.000
+FX4 Phaser Frequency	640
+FX4 Phaser Feedback	0.614
+FX4 Phaser LFO Amount	0.282
+FX4 Phaser LFO Wave	Triangle	Sine | Triangle | Saw | Ramp | Square | SampleAndHold
+FX4 Phaser Rate Unsynced	0.446
+FX4 Phaser Rate Synced	2.d	8 | 4.d | 8.t | 4 | 2.d | 4.t | 2 | 1.d | 2.t | 1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16 | 1/32.d | 1/16.t | 1/32
+FX4 Phaser Stereo	30.0
+FX4 Delay Time	122
+FX4 Delay Synced	1/4	1/32 | 1/16.t | 1/32.d | 1/16 | 1/8.t | 1/16.d | 1/8 | 1/4.t | 1/8.d | 1/4 | 1/2.t | 1/4.d | 1/2 | 1.t | 1/2.d | 1 | 2.t | 1.d | 2 | 4.t | 2.d | 4 | 8.t | 4.d | 8
+FX4 Delay Feedback	0.300
+FX4 Delay Stereo Spread	0.000
+FX4 Delay HighPass fc	20.0
+FX4 Delay LowPass fc	20000
+FX4 Distortion Bit Crusher Bit Depth	9.10
+FX4 Distortion Bit Crusher Downsampling Factor	1.00
+FX4 Distortion Overdrive Drive	0.616
+FX4 Distortion Overdrive Tone	1.00
+FX4 Distortion Overdrive Level	0.064
+FX4 Distortion Wavefolder Drive	18.0
+FX4 Distortion Wavefolder Output Gain	-10.0
+FX4 Distortion Waveshaper Drive	18.0
+FX4 Distortion Waveshaper Output Gain	-10.0
+FX4 Distortion Overdrive Output Gain	0.000
+FX4 Distortion Tape Drive	0.000
+FX4 Distortion Tape OutputGain	0.000
+FX4 Equalizer LowShelf fc	250
+FX4 Equalizer LowShelf Gain	0.000
+FX4 Equalizer Peak fc	500
+FX4 Equalizer Peak Gain	0.000
+FX4 Equalizer Peak Q	1.23
+FX4 Equalizer HighShelf fc	2179
+FX4 Equalizer HighShelf Gain	0.000
+FX4 (Legacy) Reverb Predelay	0.020
+FX4 (Legacy) Reverb Decay	0.460
+FX4 (Legacy) Reverb Damping	0.600
+FX4 (Legacy) Reverb Input LowPass Freq	8060
+FX4 (Legacy) Reverb Input HighPass Freq	200
+FX4 (Legacy) Reverb Size	1.00
+FX4 (Legacy) Reverb Output MS Mix (Stereo)	0.500
+FX4 Stereo Pan Rate Unsynced	2.00
+FX4 Stereo Pan Rate Synced	2	8 | 4.d | 8.t | 4 | 2.d | 4.t | 2 | 1.d | 2.t | 1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16 | 1/32.d | 1/16.t | 1/32
+FX4 Stereo Pan LFO Waveform	Sine	Sine | Triangle | Saw | Ramp | Square
+FX4 Analog Delay Delay Time	0.500
+FX4 Analog Delay Delay Time Synced	1/16	1/32 | 1/16.t | 1/32.d | 1/16 | 1/8.t | 1/16.d | 1/8 | 1/4.t | 1/8.d | 1/4 | 1/2.t | 1/4.d | 1/2 | 1.t | 1/2.d | 1 | 2.t | 1.d | 2 | 4.t | 2.d | 4 | 8.t | 4.d | 8
+FX4 Analog Delay LFO Rate	5.00
+FX4 Analog Delay Rate Synced	2	8 | 4.d | 8.t | 4 | 2.d | 4.t | 2 | 1.d | 2.t | 1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16 | 1/32.d | 1/16.t | 1/32
+FX4 Analog Delay LFO Depth	0.600
+FX4 Analog Delay Feedback Amount	0.620
+FX4 Analog Delay Feedback Tone	0.680
+FX4 Limiter Input Gain	11.8
+FX4 Limiter Release Time	0.202
+FX4 Limiter Output Level	-12.0
+FX4 Tape Echo Bass	0.000
+FX4 Tape Echo Treble	0.000
+FX4 Tape Echo Repeat Rate	208
+FX4 Tape Echo Delay	1/32	1/32 | 1/16.t | 1/32.d | 1/16 | 1/8.t | 1/16.d | 1/8 | 1/4.t | 1/8.d | 1/4 | 1/2.t | 1/4.d | 1/2 | 1.t | 1/2.d | 1 | 2.t | 1.d | 2 | 4.t | 2.d | 4 | 8.t | 4.d | 8
+FX4 Tape Echo Intensity	0.625
+FX4 Tape Echo Input Volume	1.44
+FX4 Tape Echo Echo Volume	1.00
+FX4 AutoWah Frequency	640
+FX4 AutoWah Threshold	10.0
+FX4 AutoWah Modulation Depth	30.0
+FX4 AutoWah Modulation Rate	2.80
+FX4 Analog Phaser Rate	1.37
+FX4 Analog Phaser Rate Sync	1/4	1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16
+FX4 Analog Phaser Feedback	0.000
+FX4 Analog Phaser Depth	10.0
+FX4 Analog Phaser Pole Number	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FX4 Analog Phaser Sync	Off	False | True
+FX4 Analog Phaser Stereo	Off	False | True
+FX4 Reverb Predelay	0.003
+FX4 Reverb Decay	0.460
+FX4 Reverb Damping	0.600
+FX4 Reverb Input LowPass Freq	7661
+FX4 Reverb Input HighPass Freq	44.0
+FX4 Reverb Size	1.08
+FX4 Reverb Output MS Mix (Stereo)	0.500
+Twin Amp Bass	5.36
+Twin Amp Mid	6.80
+Twin Amp Treble	7.02
+Twin Amp Drive	5.50
+Twin Amp Bright	On	False | True
+Twin Amp Reverb Level	1.00
+Twin Amp Speed	2.51
+Twin Amp Intensity	1.00
+Twin Amp OnAxis	On	False | True
+Rotary Speaker Slow/Fast	Slow	Slow | Fast
+Rotary Speaker Click Volume	0.010
+Rotary Speaker Brake	Run	Run | Stop
+Rotary Speaker Slow Speed	0.651
+Rotary Speaker Fast Speed	6.80
+Rotary Speaker Horn Accel	50.0
+Rotary Speaker Drum Accel	50.0
+Rotary Speaker Horn/Drum Balance	39.6
+Rotary Speaker Stereo Spread	74.1
+Rotary Speaker Unused parameter	0.000
+Rotary Speaker Mix	1.00
+Convolution Reverb Dry/Wet	0.056
+Reverb Dry/Wet	0.000
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

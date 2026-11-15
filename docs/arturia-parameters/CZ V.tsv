@@ -1,0 +1,714 @@
+# CZ V 1.9.4.6366 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+Master Volume	0.000
+Macro 1	0.000
+Macro 2	0.000
+Macro 3	0.000
+Macro 4	0.800
+Master Tune	0
+Octave	-1	-2.0 | -1.0 | 0.0 | 1.0 | 2.0
+Lines Modulation Amount	100
+Line 1 DCW	17.6
+Line 1 Level	100
+Line 1 Pan	0.000
+Line 2 DCW	17.6
+Line 2 Level	100
+Line 2 Pan	0.000
+Line 2 Detune Octave (relatively to Line 1)	0	-3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0
+Line 2 Detune Note (relatively to Line 1)	0	-11.0 | -10.0 | -9.0 | -8.0 | -7.0 | -6.0 | -5.0 | -4.0 | -3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0
+Line 2 Detune Fine (relatively to Line 1)	10
+Unison Detune	1
+Portamento Time	0
+Line Select	Line1+2	Line1Only | Line2Only | Line1+2 | Line1+1'
+Modulation Mode	None	None | Ring | Noise
+Polyphony	Poly	Poly | Legato
+Brightness	0.176
+Timbre	0.000
+Time	0.887
+Movement	0.000
+Noise Source Level	0.000
+Noise Source Color	50.0
+Arp Hold	Off	False | True
+Arp Unsync Rate	2.00
+Arp Sync Rate	1/16	1/2 | 1/4 | 1/8 | 1/16 | 1/32 | 1/64
+Arp Gate Length	50.0
+Arp on/off	Off	False | True
+Arp Sync	On	False | True
+Arp Pattern	As played	As played | Up | Down | Up/Down 1 | Up/Down 2 | Random
+Arp Octave Range	1	1.0 | 2.0 | 3.0 | 4.0
+Vibrato Rate	61
+Vibrato Sync Rate	1/2	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4D | 1/4 | 1/8T | 1/8D | 1/8 | 1/16T | 1/16D | 1/16 | 1/32
+Vibrato Depth	0
+Vibrato Delay	0
+Vibrato Waveform	Triangle	Sine | Square | Triangle | Saw Down | Saw Up | S&H | Noise
+Vibrato Sync	Free	Free | Sync
+Modulation Envelope 1 Rate Multiplier	1.00
+Modulation Envelope 1 Sync Rate	1/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Modulation Envelope 1 Depth	100
+Modulation Envelope 1 ADSR Delay	0.000
+Modulation Envelope 1 ADSR Attack	0.000
+Modulation Envelope 1 ADSR Peak	0.000
+Modulation Envelope 1 ADSR Decay	0.007
+Modulation Envelope 1 ADSR Sustain	1.00
+Modulation Envelope 1 ADSR Release	0.023
+Modulation Envelope 2 Rate Multiplier	1.00
+Modulation Envelope 2 Sync Rate	1/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Modulation Envelope 2 Depth	100
+Modulation Envelope 2 ADSR Delay	0.000
+Modulation Envelope 2 ADSR Attack	0.000
+Modulation Envelope 2 ADSR Peak	0.000
+Modulation Envelope 2 ADSR Decay	0.007
+Modulation Envelope 2 ADSR Sustain	1.00
+Modulation Envelope 2 ADSR Release	0.023
+LFO1 Unsync Rate	2.00
+LFO1 Sync Rate	1/2	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+LFO1 Keytrigs Count	+inf	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | inf
+LFO1 Delay Time	0.001
+LFO1 Waveform	Sine	Sine | Triangle | Saw Down | Saw Up | Square | S&H
+LFO2 Unsync Rate	2.00
+LFO2 Sync Rate	1/2	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+LFO2 Keytrigs Count	+inf	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | inf
+LFO2 Delay Time	0.001
+LFO2 Waveform	Sine	Sine | Triangle | Saw Down | Saw Up | Square | S&H
+Sample and Hold Unsync Rate	2.00
+Sample and Hold Sync Rate	1/2	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Sample and Hold Smooth	0.000
+Line 1 Pitch Envelope Rate Multiplier	3.81
+Line 1 DCW Envelope Rate Multiplier	0.987
+Line 1 Amplitude Envelope Rate Multiplier	0.987
+Line 1 Pitch Envelope Sync Rate	1/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Line 1 DCW Envelope Sync Rate	1/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Line 1 Amplitude Envelope Sync Rate	1/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Line 1 Pitch Envelope Depth	100
+Line 1 DCW Envelope Depth	100
+Line 1 Pitch Envelope Velocity	0	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0
+Line 1 DCW Envelope Velocity	3	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0
+Line 1 Amplitude Envelope Velocity	2	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0
+Line 1 DCW Envelope Keyboard Follow	0	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0
+Line 1 Amplitude Envelope Keyboard Follow	0	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0
+Line 1 Shape A	Saw	Saw | Square | Pulse | DblSine | SawPulse | Reso1 | Reso2 | Reso3 | Custom
+Line 1 Shape B	Saw	Saw | Square | Pulse | DblSine | SawPulse | Reso1 | Reso2 | Reso3 | Custom
+Line 1 Pitch ADSR Delay	0.000
+Line 1 Pitch ADSR Attack	0.000
+Line 1 Pitch ADSR Peak	1.00
+Line 1 Pitch ADSR Decay	0.000
+Line 1 Pitch ADSR Sustain	0.000
+Line 1 Pitch ADSR Release	0.000
+Line 1 DCW ADSR Delay	0.000
+Line 1 DCW ADSR Attack	0.000
+Line 1 DCW ADSR Peak	1.00
+Line 1 DCW ADSR Decay	0.000
+Line 1 DCW ADSR Sustain	0.000
+Line 1 DCW ADSR Release	0.000
+Line 1 Amp ADSR Delay	0.000
+Line 1 Amp ADSR Attack	0.000
+Line 1 Amp ADSR Peak	1.00
+Line 1 Amp ADSR Decay	0.000
+Line 1 Amp ADSR Sustain	1.00
+Line 1 Amp ADSR Release	0.001
+Line 2 Pitch Envelope Rate Multiplier	1.00
+Line 2 DCW Envelope Rate Multiplier	0.987
+Line 2 Amplitude Envelope Rate Multiplier	0.987
+Line 2 Pitch Envelope Sync Rate	1/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Line 2 DCW Envelope Sync Rate	1/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Line 2 Amplitude Envelope Sync Rate	1/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Line 2 Pitch Envelope Depth	100
+Line 2 DCW Envelope Depth	100
+Line 2 Pitch Envelope Velocity	0	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0
+Line 2 DCW Envelope Velocity	1	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0
+Line 2 Amplitude Envelope Velocity	3	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0
+Line 2 DCW Envelope Keyboard Follow	0	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0
+Line 2 Amplitude Envelope Keyboard Follow	0	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0
+Line 2 Shape A	Saw	Saw | Square | Pulse | DblSine | SawPulse | Reso1 | Reso2 | Reso3 | Custom
+Line 2 Shape B	Saw	Saw | Square | Pulse | DblSine | SawPulse | Reso1 | Reso2 | Reso3 | Custom
+Line 2 Pitch ADSR Delay	0.000
+Line 2 Pitch ADSR Attack	0.000
+Line 2 Pitch ADSR Peak	1.00
+Line 2 Pitch ADSR Decay	0.000
+Line 2 Pitch ADSR Sustain	0.000
+Line 2 Pitch ADSR Release	0.000
+Line 2 DCW ADSR Delay	0.000
+Line 2 DCW ADSR Attack	0.000
+Line 2 DCW ADSR Peak	1.00
+Line 2 DCW ADSR Decay	0.000
+Line 2 DCW ADSR Sustain	0.000
+Line 2 DCW ADSR Release	0.000
+Line 2 Amp ADSR Delay	0.000
+Line 2 Amp ADSR Attack	0.000
+Line 2 Amp ADSR Peak	1.00
+Line 2 Amp ADSR Decay	0.000
+Line 2 Amp ADSR Sustain	1.00
+Line 2 Amp ADSR Release	0.001
+FX1 Dry/Wet	34.0
+FX1 Bypass	On	True | False
+FX1 Reverb Predelay	0.020
+FX1 Reverb Decay	0.460
+FX1 Reverb Damping	0.600
+FX1 Reverb LowPass Freq	15000
+FX1 Reverb HighPass Freq	200
+FX1 Reverb Size	1.00
+FX1 Reverb Stereo Width	0.500
+FX1 Delay Time	122
+FX1 Delay Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX1 Delay Feedback	0.352
+FX1 Delay HighPass fc	20.0
+FX1 Delay LowPass fc	20000
+FX1 Delay Stereo Spread	0.000
+FX1 Delay Stereo Width	1.00
+FX1 Delay Stereo Mode	Stereo	Stereo | Ping Pong
+FX1 Chorus Fixed Delay Time	10.1
+FX1 Chorus Depth	2.20
+FX1 Chorus Frequency	0.580
+FX1 Chorus Feedback	0.115
+FX1 Chorus Stereo Mode	Stereo	Mono | Stereo
+FX1 Chorus LFO Shape	Sine	Sine | Square
+FX1 Phaser Frequency	640
+FX1 Phaser N Poles	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FX1 Phaser Feedback	0.614
+FX1 Phaser LFO Amount	0.282
+FX1 Phaser Rate Unsynced	0.446
+FX1 Phaser Rate Synced	2/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX1 Phaser Stereo	30.0
+FX1 Flanger MinDelay	0.030
+FX1 Flanger Depth	0.184
+FX1 Flanger Rate	0.133
+FX1 Flanger Sync Rate	2/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX1 Flanger Feedback	0.616
+FX1 Flanger Feedback Polarity	Negative	Positive | Negative
+FX1 Flanger Stereo	Stereo	Mono | Stereo
+FX1 Flanger LowPass fc	9935
+FX1 Flanger HighPass fc	125
+FX1 Flanger LFO Waveform	Triangle	Sine | Triangle
+FX1 Filter Frequency	1000
+FX1 Filter Q	0.707
+FX1 Filter Comb Freq	100
+FX1 Overdrive Drive	0.000
+FX1 Overdrive Tone	1.00
+FX1 Overdrive Level	0.500
+FX1 Compressor Threshold	20.0
+FX1 Compressor Ratio	2.00
+FX1 Compressor Attack	2.00
+FX1 Compressor Release	50.0
+FX1 Compressor Auto Make up	OFF	False | True
+FX1 Compressor OutputGain	0.000
+FX1 BitCrusher Bit Depth	9.10
+FX1 BitCrusher Downsample	1.00
+FX2 Dry/Wet	26.4
+FX2 Bypass	On	True | False
+FX2 Reverb Predelay	0.041
+FX2 Reverb Decay	0.460
+FX2 Reverb Damping	0.600
+FX2 Reverb LowPass Freq	20000
+FX2 Reverb HighPass Freq	30.0
+FX2 Reverb Size	1.00
+FX2 Reverb Stereo Width	0.406
+FX2 Delay Time	122
+FX2 Delay Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX2 Delay Feedback	0.352
+FX2 Delay HighPass fc	20.0
+FX2 Delay LowPass fc	20000
+FX2 Delay Stereo Spread	0.000
+FX2 Delay Stereo Width	1.00
+FX2 Delay Stereo Mode	Stereo	Stereo | Ping Pong
+FX2 Chorus Fixed Delay Time	13.1
+FX2 Chorus Depth	2.20
+FX2 Chorus Frequency	0.580
+FX2 Chorus Feedback	0.115
+FX2 Chorus Stereo Mode	Stereo	Mono | Stereo
+FX2 Chorus LFO Shape	Sine	Sine | Square
+FX2 Phaser Frequency	640
+FX2 Phaser N Poles	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FX2 Phaser Feedback	0.614
+FX2 Phaser LFO Amount	0.282
+FX2 Phaser Rate Unsynced	0.446
+FX2 Phaser Rate Synced	2/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX2 Phaser Stereo	30.0
+FX2 Flanger MinDelay	0.030
+FX2 Flanger Depth	0.184
+FX2 Flanger Rate	0.133
+FX2 Flanger Sync Rate	2/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX2 Flanger Feedback	0.616
+FX2 Flanger Feedback Polarity	Negative	Positive | Negative
+FX2 Flanger Stereo	Stereo	Mono | Stereo
+FX2 Flanger LowPass fc	9935
+FX2 Flanger HighPass fc	125
+FX2 Flanger LFO Waveform	Triangle	Sine | Triangle
+FX2 Filter Frequency	1000
+FX2 Filter Q	0.707
+FX2 Filter Comb Freq	100
+FX2 Overdrive Drive	0.000
+FX2 Overdrive Tone	1.00
+FX2 Overdrive Level	0.500
+FX2 Compressor Threshold	20.0
+FX2 Compressor Ratio	2.00
+FX2 Compressor Attack	2.00
+FX2 Compressor Release	50.0
+FX2 Compressor Auto Make up	OFF	False | True
+FX2 Compressor OutputGain	0.000
+FX2 BitCrusher Bit Depth	9.10
+FX2 BitCrusher Downsample	1.00
+FX3 Dry/Wet	50.0
+FX3 Bypass	On	True | False
+FX3 Reverb Predelay	0.020
+FX3 Reverb Decay	0.460
+FX3 Reverb Damping	0.600
+FX3 Reverb LowPass Freq	15000
+FX3 Reverb HighPass Freq	200
+FX3 Reverb Size	1.00
+FX3 Reverb Stereo Width	0.500
+FX3 Delay Time	122
+FX3 Delay Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX3 Delay Feedback	0.352
+FX3 Delay HighPass fc	20.0
+FX3 Delay LowPass fc	20000
+FX3 Delay Stereo Spread	0.000
+FX3 Delay Stereo Width	1.00
+FX3 Delay Stereo Mode	Stereo	Stereo | Ping Pong
+FX3 Chorus Fixed Delay Time	13.1
+FX3 Chorus Depth	2.20
+FX3 Chorus Frequency	0.580
+FX3 Chorus Feedback	0.115
+FX3 Chorus Stereo Mode	Stereo	Mono | Stereo
+FX3 Chorus LFO Shape	Sine	Sine | Square
+FX3 Phaser Frequency	640
+FX3 Phaser N Poles	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FX3 Phaser Feedback	0.614
+FX3 Phaser LFO Amount	0.282
+FX3 Phaser Rate Unsynced	0.446
+FX3 Phaser Rate Synced	2/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX3 Phaser Stereo	30.0
+FX3 Flanger MinDelay	0.030
+FX3 Flanger Depth	0.184
+FX3 Flanger Rate	0.133
+FX3 Flanger Sync Rate	2/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX3 Flanger Feedback	0.616
+FX3 Flanger Feedback Polarity	Negative	Positive | Negative
+FX3 Flanger Stereo	Stereo	Mono | Stereo
+FX3 Flanger LowPass fc	9935
+FX3 Flanger HighPass fc	125
+FX3 Flanger LFO Waveform	Triangle	Sine | Triangle
+FX3 Filter Frequency	1000
+FX3 Filter Q	0.707
+FX3 Filter Comb Freq	100
+FX3 Overdrive Drive	0.000
+FX3 Overdrive Tone	1.00
+FX3 Overdrive Level	0.500
+FX3 Compressor Threshold	20.0
+FX3 Compressor Ratio	2.00
+FX3 Compressor Attack	2.00
+FX3 Compressor Release	50.0
+FX3 Compressor Auto Make up	OFF	False | True
+FX3 Compressor OutputGain	0.000
+FX3 BitCrusher Bit Depth	9.10
+FX3 BitCrusher Downsample	1.00
+FX4 Dry/Wet	50.0
+FX4 Bypass	On	True | False
+FX4 Reverb Predelay	0.020
+FX4 Reverb Decay	0.460
+FX4 Reverb Damping	0.600
+FX4 Reverb LowPass Freq	15000
+FX4 Reverb HighPass Freq	200
+FX4 Reverb Size	1.00
+FX4 Reverb Stereo Width	0.500
+FX4 Delay Time	122
+FX4 Delay Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX4 Delay Feedback	0.352
+FX4 Delay HighPass fc	20.0
+FX4 Delay LowPass fc	20000
+FX4 Delay Stereo Spread	0.000
+FX4 Delay Stereo Width	1.00
+FX4 Delay Stereo Mode	Stereo	Stereo | Ping Pong
+FX4 Chorus Fixed Delay Time	13.1
+FX4 Chorus Depth	2.20
+FX4 Chorus Frequency	0.580
+FX4 Chorus Feedback	0.115
+FX4 Chorus Stereo Mode	Stereo	Mono | Stereo
+FX4 Chorus LFO Shape	Sine	Sine | Square
+FX4 Phaser Frequency	640
+FX4 Phaser N Poles	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FX4 Phaser Feedback	0.614
+FX4 Phaser LFO Amount	0.282
+FX4 Phaser Rate Unsynced	0.446
+FX4 Phaser Rate Synced	2/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX4 Phaser Stereo	30.0
+FX4 Flanger MinDelay	0.030
+FX4 Flanger Depth	0.184
+FX4 Flanger Rate	0.133
+FX4 Flanger Sync Rate	2/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX4 Flanger Feedback	0.616
+FX4 Flanger Feedback Polarity	Negative	Positive | Negative
+FX4 Flanger Stereo	Stereo	Mono | Stereo
+FX4 Flanger LowPass fc	9935
+FX4 Flanger HighPass fc	125
+FX4 Flanger LFO Waveform	Triangle	Sine | Triangle
+FX4 Filter Frequency	1000
+FX4 Filter Q	0.707
+FX4 Filter Comb Freq	100
+FX4 Overdrive Drive	0.000
+FX4 Overdrive Tone	1.00
+FX4 Overdrive Level	0.500
+FX4 Compressor Threshold	20.0
+FX4 Compressor Ratio	2.00
+FX4 Compressor Attack	2.00
+FX4 Compressor Release	50.0
+FX4 Compressor Auto Make up	OFF	False | True
+FX4 Compressor OutputGain	0.000
+FX4 BitCrusher Bit Depth	9.10
+FX4 BitCrusher Downsample	1.00
+Mod Amount 1 1	0.128
+Mod Amount 1 2	0.120
+Mod Amount 1 3	0.096
+Mod Amount 1 4	-0.064
+Mod Amount 1 5	0.000
+Mod Amount 1 6	0.000
+Mod Amount 1 7	0.000
+Mod Amount 1 8	0.000
+Mod Amount 1 9	0.000
+Mod Amount 1 10	0.000
+Mod Amount 1 11	0.000
+Mod Amount 1 12	0.000
+Mod Amount 1 13	0.000
+Mod Amount 1 14	0.000
+Mod Amount 1 15	0.000
+Mod Amount 1 16	0.000
+Mod Amount 2 1	0.000
+Mod Amount 2 2	0.000
+Mod Amount 2 3	0.000
+Mod Amount 2 4	0.000
+Mod Amount 2 5	0.520
+Mod Amount 2 6	0.000
+Mod Amount 2 7	0.000
+Mod Amount 2 8	0.000
+Mod Amount 2 9	0.000
+Mod Amount 2 10	0.000
+Mod Amount 2 11	0.000
+Mod Amount 2 12	0.000
+Mod Amount 2 13	0.000
+Mod Amount 2 14	0.000
+Mod Amount 2 15	0.000
+Mod Amount 2 16	0.000
+Mod Amount 3 1	0.000
+Mod Amount 3 2	0.000
+Mod Amount 3 3	0.000
+Mod Amount 3 4	0.000
+Mod Amount 3 5	0.000
+Mod Amount 3 6	0.000
+Mod Amount 3 7	0.544
+Mod Amount 3 8	0.512
+Mod Amount 3 9	0.000
+Mod Amount 3 10	0.000
+Mod Amount 3 11	0.000
+Mod Amount 3 12	0.000
+Mod Amount 3 13	0.000
+Mod Amount 3 14	0.000
+Mod Amount 3 15	0.000
+Mod Amount 3 16	0.000
+Mod Amount 4 1	0.000
+Mod Amount 4 2	0.000
+Mod Amount 4 3	0.000
+Mod Amount 4 4	0.000
+Mod Amount 4 5	0.000
+Mod Amount 4 6	0.000
+Mod Amount 4 7	0.000
+Mod Amount 4 8	0.000
+Mod Amount 4 9	0.000
+Mod Amount 4 10	0.000
+Mod Amount 4 11	0.000
+Mod Amount 4 12	0.000
+Mod Amount 4 13	0.000
+Mod Amount 4 14	0.000
+Mod Amount 4 15	0.000
+Mod Amount 4 16	0.000
+Mod Amount 5 1	0.000
+Mod Amount 5 2	0.000
+Mod Amount 5 3	0.000
+Mod Amount 5 4	0.000
+Mod Amount 5 5	0.000
+Mod Amount 5 6	0.000
+Mod Amount 5 7	0.000
+Mod Amount 5 8	0.000
+Mod Amount 5 9	0.000
+Mod Amount 5 10	0.000
+Mod Amount 5 11	0.000
+Mod Amount 5 12	0.000
+Mod Amount 5 13	0.000
+Mod Amount 5 14	0.000
+Mod Amount 5 15	0.000
+Mod Amount 5 16	0.000
+Mod Amount 6 1	0.000
+Mod Amount 6 2	0.000
+Mod Amount 6 3	0.000
+Mod Amount 6 4	0.000
+Mod Amount 6 5	0.000
+Mod Amount 6 6	0.400
+Mod Amount 6 7	0.000
+Mod Amount 6 8	0.000
+Mod Amount 6 9	0.000
+Mod Amount 6 10	0.000
+Mod Amount 6 11	0.000
+Mod Amount 6 12	0.000
+Mod Amount 6 13	0.000
+Mod Amount 6 14	0.000
+Mod Amount 6 15	0.000
+Mod Amount 6 16	0.000
+Mod Amount 7 1	0.000
+Mod Amount 7 2	0.000
+Mod Amount 7 3	0.000
+Mod Amount 7 4	0.000
+Mod Amount 7 5	0.000
+Mod Amount 7 6	0.000
+Mod Amount 7 7	0.000
+Mod Amount 7 8	0.000
+Mod Amount 7 9	0.000
+Mod Amount 7 10	0.000
+Mod Amount 7 11	0.000
+Mod Amount 7 12	0.000
+Mod Amount 7 13	0.000
+Mod Amount 7 14	0.000
+Mod Amount 7 15	0.000
+Mod Amount 7 16	0.000
+Mod Amount 8 1	0.000
+Mod Amount 8 2	0.000
+Mod Amount 8 3	0.000
+Mod Amount 8 4	0.000
+Mod Amount 8 5	0.000
+Mod Amount 8 6	0.000
+Mod Amount 8 7	0.000
+Mod Amount 8 8	0.000
+Mod Amount 8 9	0.000
+Mod Amount 8 10	0.000
+Mod Amount 8 11	0.000
+Mod Amount 8 12	0.000
+Mod Amount 8 13	0.000
+Mod Amount 8 14	0.000
+Mod Amount 8 15	0.000
+Mod Amount 8 16	0.000
+Mod Amount 9 1	0.000
+Mod Amount 9 2	0.000
+Mod Amount 9 3	0.000
+Mod Amount 9 4	0.000
+Mod Amount 9 5	0.000
+Mod Amount 9 6	0.000
+Mod Amount 9 7	0.000
+Mod Amount 9 8	0.000
+Mod Amount 9 9	1.00
+Mod Amount 9 10	1.00
+Mod Amount 9 11	0.000
+Mod Amount 9 12	0.000
+Mod Amount 9 13	0.000
+Mod Amount 9 14	0.000
+Mod Amount 9 15	0.000
+Mod Amount 9 16	0.000
+Mod Amount 10 1	0.000
+Mod Amount 10 2	0.000
+Mod Amount 10 3	0.000
+Mod Amount 10 4	0.000
+Mod Amount 10 5	0.000
+Mod Amount 10 6	0.000
+Mod Amount 10 7	0.000
+Mod Amount 10 8	0.000
+Mod Amount 10 9	0.000
+Mod Amount 10 10	0.000
+Mod Amount 10 11	0.976
+Mod Amount 10 12	0.000
+Mod Amount 10 13	0.000
+Mod Amount 10 14	0.000
+Mod Amount 10 15	0.000
+Mod Amount 10 16	0.000
+Mod Amount 11 1	0.000
+Mod Amount 11 2	0.000
+Mod Amount 11 3	0.000
+Mod Amount 11 4	0.000
+Mod Amount 11 5	0.000
+Mod Amount 11 6	0.000
+Mod Amount 11 7	0.000
+Mod Amount 11 8	0.000
+Mod Amount 11 9	0.000
+Mod Amount 11 10	0.000
+Mod Amount 11 11	0.000
+Mod Amount 11 12	0.000
+Mod Amount 11 13	0.000
+Mod Amount 11 14	0.000
+Mod Amount 11 15	0.000
+Mod Amount 11 16	0.000
+Mod Amount 12 1	0.000
+Mod Amount 12 2	0.000
+Mod Amount 12 3	0.000
+Mod Amount 12 4	0.000
+Mod Amount 12 5	0.000
+Mod Amount 12 6	0.000
+Mod Amount 12 7	0.000
+Mod Amount 12 8	0.000
+Mod Amount 12 9	0.000
+Mod Amount 12 10	0.000
+Mod Amount 12 11	0.000
+Mod Amount 12 12	0.000
+Mod Amount 12 13	0.000
+Mod Amount 12 14	0.000
+Mod Amount 12 15	0.000
+Mod Amount 12 16	0.000
+Mod Amount 13 1	0.000
+Mod Amount 13 2	0.000
+Mod Amount 13 3	0.000
+Mod Amount 13 4	0.000
+Mod Amount 13 5	0.000
+Mod Amount 13 6	0.000
+Mod Amount 13 7	0.000
+Mod Amount 13 8	0.000
+Mod Amount 13 9	0.000
+Mod Amount 13 10	0.000
+Mod Amount 13 11	0.000
+Mod Amount 13 12	0.000
+Mod Amount 13 13	0.000
+Mod Amount 13 14	0.000
+Mod Amount 13 15	0.000
+Mod Amount 13 16	0.000
+Mod Amount 14 1	0.000
+Mod Amount 14 2	0.000
+Mod Amount 14 3	0.000
+Mod Amount 14 4	0.000
+Mod Amount 14 5	0.000
+Mod Amount 14 6	0.000
+Mod Amount 14 7	0.000
+Mod Amount 14 8	0.000
+Mod Amount 14 9	0.000
+Mod Amount 14 10	0.000
+Mod Amount 14 11	0.000
+Mod Amount 14 12	0.000
+Mod Amount 14 13	0.000
+Mod Amount 14 14	0.000
+Mod Amount 14 15	0.000
+Mod Amount 14 16	0.000
+Mod Amount 15 1	0.000
+Mod Amount 15 2	0.000
+Mod Amount 15 3	0.000
+Mod Amount 15 4	0.000
+Mod Amount 15 5	0.000
+Mod Amount 15 6	0.000
+Mod Amount 15 7	0.000
+Mod Amount 15 8	0.000
+Mod Amount 15 9	0.000
+Mod Amount 15 10	0.000
+Mod Amount 15 11	0.000
+Mod Amount 15 12	0.000
+Mod Amount 15 13	0.000
+Mod Amount 15 14	0.000
+Mod Amount 15 15	0.000
+Mod Amount 15 16	0.000
+Mod Amount 16 1	0.000
+Mod Amount 16 2	0.000
+Mod Amount 16 3	0.000
+Mod Amount 16 4	0.000
+Mod Amount 16 5	0.000
+Mod Amount 16 6	0.000
+Mod Amount 16 7	0.000
+Mod Amount 16 8	0.000
+Mod Amount 16 9	0.000
+Mod Amount 16 10	0.000
+Mod Amount 16 11	0.000
+Mod Amount 16 12	0.000
+Mod Amount 16 13	0.000
+Mod Amount 16 14	0.000
+Mod Amount 16 15	0.000
+Mod Amount 16 16	0.000
+PitchBend	0.500
+ModWheel	0.000
+VST3_CtrlSustainOnOff	0.000
+VST3_CtrlAllNotesOff	0.000
+VST3_AfterTouch	0.000
+VST3_CtrlExpression	0.000
+VST3_CtrlAllSoundsOff	0.000
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

@@ -1,0 +1,332 @@
+# Efx FRAGMENTS 1.3.1.6566 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+On/Off	Active	Active | Bypassed
+Grain Mix	50.0
+Grain Volume	-10.9
+Master Volume	0.000
+Macro 1	9.60
+Macro 2	48.8
+Feedback	-70.0
+Buffer Length	1 bar	1/8 bar | 1/4 bar | 1/2 bar | 1 bar | 3/2 bars | 2 bars | 4 bars
+Freeze	Off	False | True
+Clear	Off	False | True
+PlayHead Retrig	Off	False | True
+Grain Capture	Manual	Speed | Offset | Manual
+Speed	1.00
+Offset Type	Sync	Ms | Sync | Sync Triplets | Sync Dotted
+Offset	100
+Offset Synced	1/64	0 | 1/128 | 1/64 | 1/32 | 1/16 | 1/8 | 1/4 | 1/2
+Position	0.500
+Spray	0.282
+Spray Direction	Both	Before | After | Both
+Grain Quantization	Grid	Off | Trans. | Grid
+Grid Size	16	8.0 | 16.0 | 32.0
+Transient Sensitivity	100
+Grain Release	Texture	Classic | Texture | Rhythmic
+Density	14.4
+Density Type	Sync	Hz | Sync | Sync Triplets | Sync Dotted
+Density Sync	1/4	1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32 | 1/64 | 1/128 | 1/256
+Random Density	0.300
+Random Density Type	Up	Up | Down
+Density-Size Link	Off	False | True
+Size Mode	Ms	Ms | Sync | Sync Triplets | Sync Dotted
+Grain Size Absolute	194
+Grain Size Synced	1/64	1/64 | 1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1/1
+Grain Size Ratio	Step Length * 1	Step Length / 16 | Step Length / 8 | Step Length / 4 | Step Length / 2 | Step Length * 1 | Step Length * 2 | Step Length * 4
+Layers	4	1.0 | 2.0 | 4.0 | 8.0 | 16.0 | 32.0
+Random Layers	0.000
+Random Layers Direction	Both	Up | Down | Both
+Texture Size Type	Off	False | True
+Texture Size Absolute	286
+Texture Size Synced	1/4	1/64 | 1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1/1
+Seq Rate Type	Sync	Sync | Sync Triplets | Sync Dotted
+Rhythmic Offset Type	Sync	Sync | Sync Triplets | Sync Dotted
+Random Size	0.400
+Random Size Type	Bigger	Smaller | Bigger | Both
+Pitch	0.000
+Random Pitch	0.480
+Random Pitch Direction	Up	Up | Down | Both
+Scale	Octaves	Off | Chromatic | Octaves | Fifths | Fourths Fifths | Major | Minor | Pentatonic Major | Pentatonic Minor | Harmonic Minor | Phrygian | Phrygian Dominant | Lydian | Mixolydian | Dorian
+Width	50.0
+Random Direction	0.746
+Grain Crush	Down 2	None | CMI | EMU Hard | EMU Soft | Down 1 | Down 2
+Grain Shape	Trapeze	Triangle | Trapeze | Tukey | Gaussian | Sinc | Expodec | S. Exp | S. RExp
+Grain Shape Param	0.500
+Random Fine	20.0
+Spatializer Rate UnSynced	1.000
+Spatializer Rate Synced	1/2	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Spatializer Spread	60.0
+Spatializer Distance	10.0
+Random Pan	10.0
+Function 1 Rate	0.635
+Function 1 Tempo Div	1/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Function 1 Bipolar	Off	False | True
+Function 1 Scale	1.00
+Function 2 Rate	0.635
+Function 2 Tempo Div	1/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Function 2 Bipolar	Off	False | True
+Function 2 Scale	1.00
+Function 3 Rate	0.635
+Function 3 Tempo Div	1/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Function 3 Bipolar	Off	False | True
+Function 3 Scale	1.00
+Function 4 Rate	0.635
+Function 4 Tempo Div	1/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Function 4 Bipolar	Off	False | True
+Function 4 Scale	1.00
+Function 5 Rate	0.635
+Function 5 Tempo Div	1/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Function 5 Bipolar	Off	False | True
+Function 5 Scale	1.00
+Step Sequencer 5 Rate	1/16	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Step Sequencer 5 Swing	50.0
+Step Sequencer 5 Smooth	0.000
+Step Sequencer 5 Random	0.000
+Step Sequencer 5 Scale	100
+Step Sequencer 1 Rate	1/16	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Step Sequencer 1 Swing	50.0
+Step Sequencer 1 Smooth	0.000
+Step Sequencer 1 Random	0.000
+Step Sequencer 1 Scale	100
+Step Sequencer 2 Rate	1/16	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Step Sequencer 2 Swing	50.0
+Step Sequencer 2 Smooth	0.000
+Step Sequencer 2 Random	0.000
+Step Sequencer 2 Scale	100
+Step Sequencer 3 Rate	1/16	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Step Sequencer 3 Swing	50.0
+Step Sequencer 3 Smooth	0.000
+Step Sequencer 3 Random	0.000
+Step Sequencer 3 Scale	100
+Step Sequencer 4 Rate	1/16	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Step Sequencer 4 Swing	50.0
+Step Sequencer 4 Smooth	0.000
+Step Sequencer 4 Random	0.000
+Step Sequencer 4 Scale	100
+Envelope Follower  Rise	0.000
+Envelope Follower  Fall	0.000
+Envelope Follower  Sensitivity	0.000
+Envelope Follower 4 Unsynced	0.000
+Envelope Follower 4 Synced	1/8	4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32 | 1/64 | 1/128
+Envelope Follower 1 Rise	0.000
+Envelope Follower 1 Fall	0.000
+Envelope Follower 1 Sensitivity	0.000
+Envelope Follower 1 Unsynced	0.000
+Envelope Follower 1 Synced	1/8	4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32 | 1/64 | 1/128
+Envelope Follower 2 Rise	0.000
+Envelope Follower 2 Fall	0.000
+Envelope Follower 2 Sensitivity	0.000
+Envelope Follower 2 Unsynced	0.000
+Envelope Follower 2 Synced	1/8	4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32 | 1/64 | 1/128
+Envelope Follower 3 Rise	0.000
+Envelope Follower 3 Fall	0.000
+Envelope Follower 3 Sensitivity	0.000
+Envelope Follower 3 Unsynced	0.000
+Envelope Follower 3 Synced	1/8	4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32 | 1/64 | 1/128
+Envelope Follower 5  Rise	0.000
+Envelope Follower 5  Fall	0.000
+Envelope Follower 5  Sensitivity	0.000
+Envelope Follower 5 Unsynced	0.000
+Envelope Follower 5 Synced	1/8	4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32 | 1/64 | 1/128
+FX1 Dry / Wet	0.000
+FX1 Filter Frequency	1000
+FX1 Filter Resonance	0.707
+FX1 Filter Comb Freq	100
+FX1 Distortion Drive	18.0
+FX1 Distortion Auto Gain	Off	False | True
+FX1 Distortion Output Gain	-10.5
+FX1 Compressor Threshold	20.0
+FX1 Compressor Ratio	2.00
+FX1 Compressor Attack	2.00
+FX1 Compressor Release	50.0
+FX1 Compressor Auto Make up	Off	False | True
+FX1 Compressor Output Gain	0.000
+FX1 Delay Time	122
+FX1 Delay Synced	1/8	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX1 Delay Feedback	0.352
+FX1 Delay Stereo Spread	0.040
+FX1 Delay Stereo Width	0.700
+FX1 Delay Stereo Mode	Stereo	Stereo | Ping Pong
+FX1 Delay Fine	0.000
+FX1 Pitch Shift Delay Time	122
+FX1 Pitch Shift Delay Synched	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX1 Pitch Shift Delay Feedback	0.000
+FX1 Pitch Shift Delay Pitch Shift	0.000
+FX1 Pitch Shift Delay Spray	16.6
+FX1 Pitch Shift Delay Delay Offset	0.000
+FX1 Pitch Shift Delay Detune	0.000
+FX1 Tape Echo Time	150
+FX1 Tape Echo Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX1 Tape Echo Fine	0.000
+FX1 Tape Echo Intensity	0.350
+FX1 Tape Echo Input Volume	0.000
+FX1 Tape Echo Stereo Spread	0.000
+FX1 Tape Echo Stereo Width	1.00
+FX1 Tape Echo Stereo Mode	Stereo	Stereo | Ping Pong
+FX1 Chorus Delay	13.1
+FX1 Chorus Depth	2.20
+FX1 Chorus Rate	0.580
+FX1 Chorus Feedback	0.115
+FX1 Chorus Stereo Mode	Stereo	Mono | Stereo
+FX1 Chorus LFO Shape	Sine	Sine | Square
+FX1 Flanger MinDelay	0.030
+FX1 Flanger Depth	0.184
+FX1 Flanger Rate	0.153
+FX1 Flanger Sync Rate	2/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX1 Flanger Feedback	0.616
+FX1 Flanger Feedback Polarity	Negative	Positive | Negative
+FX1 Flanger Stereo	Stereo	Mono | Stereo
+FX1 Flanger LFO Waveform	Triangle	Sine | Triangle
+FX1 Reverb Predelay	0.020
+FX1 Reverb Decay	0.460
+FX1 Reverb Damping	0.600
+FX1 Reverb Size	1.00
+FX1 Reverb Width	0.500
+FX2 Dry / Wet	0.000
+FX2 Filter Frequency	1000
+FX2 Filter Resonance	0.707
+FX2 Filter Comb Freq	100
+FX2 Distortion Drive	18.0
+FX2 Distortion Auto Gain	Off	False | True
+FX2 Distortion Output Gain	-10.5
+FX2 Compressor Threshold	20.0
+FX2 Compressor Ratio	2.00
+FX2 Compressor Attack	2.00
+FX2 Compressor Release	50.0
+FX2 Compressor Auto Make up	Off	False | True
+FX2 Compressor Output Gain	0.000
+FX2 Delay Time	122
+FX2 Delay Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX2 Delay Feedback	0.352
+FX2 Delay Stereo Spread	0.000
+FX2 Delay Stereo Width	1.00
+FX2 Delay Stereo Mode	Stereo	Stereo | Ping Pong
+FX2 Delay Fine	0.000
+FX2 Pitch Shift Delay Time	122
+FX2 Pitch Shift Delay Synched	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX2 Pitch Shift Delay Feedback	0.000
+FX2 Pitch Shift Delay Pitch Shift	0.000
+FX2 Pitch Shift Delay Spray	16.6
+FX2 Pitch Shift Delay Delay Offset	0.000
+FX2 Pitch Shift Delay Detune	0.000
+FX2 Tape Echo Time	150
+FX2 Tape Echo Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX2 Tape Echo Fine	0.000
+FX2 Tape Echo Intensity	0.350
+FX2 Tape Echo Input Volume	0.000
+FX2 Tape Echo Stereo Spread	0.000
+FX2 Tape Echo Stereo Width	1.00
+FX2 Tape Echo Stereo Mode	Stereo	Stereo | Ping Pong
+FX2 Chorus Delay	13.1
+FX2 Chorus Depth	2.20
+FX2 Chorus Rate	0.580
+FX2 Chorus Feedback	0.115
+FX2 Chorus Stereo Mode	Stereo	Mono | Stereo
+FX2 Chorus LFO Shape	Sine	Sine | Square
+FX2 Flanger MinDelay	0.030
+FX2 Flanger Depth	0.184
+FX2 Flanger Rate	0.153
+FX2 Flanger Sync Rate	2/1	8/1 | 4/1 | 2/1 | 1/1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX2 Flanger Feedback	0.616
+FX2 Flanger Feedback Polarity	Negative	Positive | Negative
+FX2 Flanger Stereo	Stereo	Mono | Stereo
+FX2 Flanger LFO Waveform	Triangle	Sine | Triangle
+FX2 Reverb Predelay	0.020
+FX2 Reverb Decay	0.460
+FX2 Reverb Damping	0.500
+FX2 Reverb Size	1.39
+FX2 Reverb Width	0.500
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

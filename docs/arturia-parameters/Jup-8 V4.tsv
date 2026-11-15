@@ -1,0 +1,463 @@
+# Jup-8 V4 4.6.4.6366 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+LFO Sync	Hz	Hz | Sync
+LFO Rate (Sync)	1/16	8 | 6 | 4 | 3 | 2 | 3/2 | 1 | 3/4 | 1/2 | 3/8 | 1/3 | 5/16 | 1/4 | 3/16 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+LFO Rate (Unsync)	5.42
+LFO Delay	0.000
+LFO Retrig	Free	Free | Retrig
+LFO Wave Shape	Sine	Sine | Saw | Square | Noise
+Envelope 1 Attack	0.800
+Envelope 1 Decay	1418
+Envelope 1 Sustain	7.41
+Envelope 1 Release	622
+Envelope 1 KYBD Follow	On	False | True
+Envelope 1 Polarity	Off	False | True
+Envelope 2 Attack	0.800
+Envelope 2 Decay	44148
+Envelope 2 Sustain	0.000
+Envelope 2 Release	817
+Envelope 2 KYBD Follow	On	False | True
+Arpeggiator ON/OFF	Off	False | True
+Arpeggiator Rate (Unsync)	10.0
+Arpeggiator Rate (Synced)	1/8 Bar	1 Bar | 3/4 Bar | 1/2 Bar | 3/8 Bar | 1/3 Bar | 5/16 Bar | 1/4 Bar | 3/16 Bar | 1/6 Bar | 1/8 Bar | 1/12 Bar | 1/16 Bar | 1/24 Bar | 1/32 Bar | 1/48 Bar | 1/64 Bar
+Arpeggiator Sync	Sync	Hz | Sync
+Arpeggiator Mode	Ordered	Up | Down | Ordered | Reversed | Inc | Exc | Random
+Arpeggiator Octave Range	3	1.0 | 2.0 | 3.0 | 4.0
+Bender VCO1 ON/OFF	On	False | True
+Bender VCO2 ON/OFF	On	False | True
+Bender VCF ON/OFF	On	False | True
+Bender VCO Amount	+/- 2 semi-tones	+/- 0 semi-tone | +/- 1 semi-tone | +/- 2 semi-tones | +/- 3 semi-tones | +/- 4 semi-tones | +/- 5 semi-tones | +/- 6 semi-tones | +/- 7 semi-tones | +/- 8 semi-tones | +/- 9 semi-tones | +/- 10 semi-tones | +/- 11 semi-tones | +/- 12 semi-tones | +/- 13 semi-tones | +/- 14 semi-tones | +/- 15 semi-tones | +/- 16 semi-tones | +/- 17 semi-tones | +/- 18 semi-tones | +/- 19 semi-tones | +/- 20 semi-tones | +/- 21 semi-tones | +/- 22 semi-tones | +/- 23 semi-tones | +/- 24 semi-tones
+Bender VCF Amount	0.000
+LFO MOD VCO ON/OFF	On	False | True
+LFO MOD VCF ON/OFF	On	False | True
+LFO MOD VCO Amount	0.236
+LFO MOD VCF Amount	0.000
+Mod Wheel	0.000
+LFO 2 Waveform	Square	Sine | Triangle | Saw Up | Saw Down | Square | Sample & Hold
+LFO 2 Sync Mode	Hertz	Hertz | Sync Binary | Sync Triplet | Sync Dotted
+LFO 2 Rate (Unsync)	2.36
+LFO 2 Rate (Sync)	8	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+LFO 2 Fade	0.000
+LFO 2 Warp	0.808
+LFO 3 Waveform	Sine	Sine | Triangle | Saw Up | Saw Down | Square | Sample & Hold
+LFO 3 Sync Mode	Hertz	Hertz | Sync Binary | Sync Triplet | Sync Dotted
+LFO 3 Rate (Unsync)	0.750
+LFO 3 Rate (Sync)	8	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+LFO 3 Fade	0.000
+LFO 3 Warp	0.000
+Mod Mixer Amount	0.536
+LFO 2 Modulation Amount 1	0.000
+LFO 2 Modulation Amount 2	0.000
+LFO 3 Modulation Amount 1	0.000
+LFO 3 Modulation Amount 2	0.000
+Mod Mixer Modulation Amount 1	0.000
+Mod Mixer Modulation Amount 2	0.000
+Mod Mixer Modulation Amount 3	0.000
+Mod Sequencer Modulation Amount 1	0.000
+Mod Sequencer Modulation Amount 2	0.000
+Mod Sequencer Modulation Amount 3	0.000
+Velocity Modulation Amount 1	0.006
+Velocity Modulation Amount 2	-0.008
+Velocity Modulation Amount 3	0.000
+Aftertouch Modulation Amount 1	0.000
+Aftertouch Modulation Amount 2	0.000
+Aftertouch Modulation Amount 3	0.000
+Keyboard Modulation Amount 1	0.000
+Keyboard Modulation Amount 2	0.000
+Keyboard Modulation Amount 3	0.000
+Mod Wheel Modulation Amount 1	0.000
+Mod Wheel Modulation Amount 2	0.000
+Mod Wheel Modulation Amount 3	0.000
+MPE Slide Modulation Amount 1	0.000
+MPE Slide Modulation Amount 2	0.000
+VCO 1 Coarse	8'	16' | 8' | 4' | 2'
+VCO 2 Coarse	0
+VCO 2 Fine tune	0.184
+VCO Sync	Off	VCO 1 | Off | VCO 2
+VCO LFO Modulation	0.000
+VCO Envelope Modulation	0.040
+VCO Pulse-Width Modulation	4.80
+VCO Cross Modulation	0.000
+VCO Pulse-Width Mode	Manual	Env1 Mode | Manual | LFO Mode
+VCO Mod Select	VCO 1&2	VCO 2 | VCO 1&2 | VCO 1
+VCO 1 Waveform	Saw	Triangle | Saw | Rectangle | Square
+VCO 2 Low Freq	Norm	Norm | Low
+VCO 2 Waveform	Saw	Sine | Saw | Rectangle | Noise
+Source Mix	0.508
+HPF Cutoff	5.00
+VCF Cutoff	0.580
+VCF Resonance	0.332
+VCF slope	24db	12.0 | 24.0
+VCF Envelope Modulation	0.748
+VCF Envelope Selector	Env1	Env1 | Env2
+VCF LFO 1 Modulation Amount	0.000
+VCF KYBD Follow Amount	0.296
+VCA Envelope 2 Mod Amount 	1.00
+VCA LFO 1 Modulation Amount	0.000
+Volume	-15.2
+Master Tune	440
+Unison Detune	0.272
+Pan Spread	0.220
+Portamento	0.000
+Portamento ON/OFF	Off	False | True
+Voice Assign	Poly 1	Solo | Unison | Poly 1 | Poly 2
+Modulation Section On/Off	On	False | True
+Sequencer Section On/Off	On	False | True
+Keyboard Section On/Off	On	False | True
+Mod SEQ Bypass	Off	False | True
+FX Routing	Serie	Serie | Parallel
+FX Section On/Off	On	False | True
+Dispersion	Custom	1 | 2 | 3 | Custom
+Pitch Dispersion	0.068
+Pulse-Width Dispersion	0.500
+Envelopes Dispersion	0.400
+Cutoff Dispersion	0.300
+Resonance Dispersion	0.500
+Modulations Dispersion	0.500
+Brightness	0.580
+Timbre	0.391
+Time	1.00
+Movement	0.000
+Hold	Off	False | True
+SEQ Playback Mode	Forward	Forward | Backward | BackAndForth | Random
+SEQ Sync Mode	Sync Binary	BPM | Sync Binary | Sync Triplet | Sync Dotted
+SEQ Rate (BPM)	100.0
+SEQ Rate (Sync)	1/16	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+SEQ Swing	50.0
+SEQ Mod Multiplier	1/24	1/32 | 1/24 | 1/16 | 1/12 | 1/8 | 1/6 | 1/4 | 1/3 | 1/2 | 1 | 2 | 3 | 4 | 5 | 6
+Notes SEQ Bypass	Off	False | True
+Notes SEQ Accent Decay	0.090
+Notes SEQ Accent Env Amount	0.800
+Notes SEQ Glide	0.000
+FX1 Dry/Wet	35.6
+FX1 Bypass	On	False | True
+FX1 Reverb Decay	0.460
+FX1 Reverb Predelay	0.020
+FX1 Reverb Damping	0.085
+FX1 Reverb Input LowPass Freq	6110
+FX1 Reverb Input HighPass Freq	292
+FX1 Reverb Size	0.800
+FX1 Reverb Output MS Mix (Stereo)	0.364
+FX1 Delay Time	122
+FX1 Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX1 Delay Midi Sync	ON	False | True
+FX1 Delay Rate Synced Type	Binary	Binary | Ternary | Dotted
+FX1 Delay Feedback	0.352
+FX1 Delay HighPass freq	20.0
+FX1 Delay LowPass freq	20000
+FX1 Delay Stereo Width	0.000
+FX1 Delay Stereo Ping Pong 	1.00
+FX1 Delay Stereo Mode	Stereo	Stereo | Ping Pong
+FX1 Chorus Feedback	0.515
+FX1 Chorus Fixed Delay Time	0.600
+FX1 Chorus Depth	5.72
+FX1 Chorus Rate	0.324
+FX1 Chorus Stereo Mode	Stereo	Mono | Stereo
+FX1 Chorus Voices	2 Voices	1 Voice | 2 Voices | 3 Voices
+FX1 Chorus LFO Shape	Sine	Sine | Triangle
+FX1 Flanger Freq	0.301
+FX1 Flanger MinDelay	0.300
+FX1 Flanger Depth	2.05
+FX1 Flanger Feedback	0.663
+FX1 Flanger Feedback Polarity	Negative	Positive | Negative
+FX1 Flanger Stereo	Stereo	Mono | Stereo
+FX1 Flanger LowPass Cutoff Frequency	6564
+FX1 Flanger HighPass Cutoff Frequency	107
+FX1 Flanger LFO Waveform	Triangle	Sine | Triangle
+FX1 Phaser Rate Unsynced	0.570
+FX1 Phaser Rate Synced	2	4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX1 Phaser Frequency	740
+FX1 Phaser N Poles	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FX1 Phaser Feedback	0.475
+FX1 Phaser LFO Wave	Sine	Sine | Triangle | Saw | Ramp | Square | Sample & Hold
+FX1 Phaser LFO Amount	1.00
+FX1 Phaser Sync Rate Type	Binary	Binary | Ternary | Dotted
+FX1 Phaser Midi Sync	ON	False | True
+FX1 Phaser Stereo	45.0
+FX1 Overdrive Drive	0.000
+FX1 Overdrive Tone	100
+FX1 Overdrive Level	0.500
+FX1 Compressor Release	50.0
+FX1 Compressor Threshold	0.000
+FX1 Compressor Ratio	2.00
+FX1 Compressor Attack	2.00
+FX1 Compressor Auto Make up	OFF	False | True
+FX1 Compressor OutputGain	0.000
+FX1 BitCrusher Bit Depth	16.0
+FX1 BitCrusher Downsample	1.00
+FX1 Filter Frequency	1000
+FX1 Filter Q	0.707
+FX1 Filter Comb Freq	100
+FX1 Param Eq LowShelf Frequency	250
+FX1 Param Eq LowShelf Gain	0.000
+FX1 Param Eq LowShelf Q	0.707
+FX1 Param Eq Peak 1 Frequency	500
+FX1 Param Eq Peak 1 Gain	0.000
+FX1 Param Eq Peak 1 Q	1.23
+FX1 Param Eq Peak 2 Frequency	1000
+FX1 Param Eq Peak 2 Gain	0.000
+FX1 Param Eq Peak 2 Q	1.23
+FX1 Param Eq Peak 3 Frequency	3000
+FX1 Param Eq Peak 3 Gain	0.000
+FX1 Param Eq Peak 3 Q	1.23
+FX1 Param Eq HighShelf Frequency	5000
+FX1 Param Eq HighShelf Gain	0.000
+FX1 Param Eq HighShelf Q	0.707
+FX1 Param Eq Scale	1.00
+FX1 Stereo Pan Amount	0.500
+FX1 Stereo Pan Rate Unsynced	2.00
+FX1 Stereo Pan Rate Synced	1/2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX2 Dry/Wet	16.4
+FX2 Bypass	On	False | True
+FX2 Reverb Decay	0.460
+FX2 Reverb Predelay	0.020
+FX2 Reverb Damping	0.593
+FX2 Reverb Input LowPass Freq	3000
+FX2 Reverb Input HighPass Freq	30.0
+FX2 Reverb Size	0.800
+FX2 Reverb Output MS Mix (Stereo)	0.364
+FX2 Delay Time	183
+FX2 Delay Time Synced	1/8	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX2 Delay Midi Sync	ON	False | True
+FX2 Delay Rate Synced Type	Dotted	Binary | Ternary | Dotted
+FX2 Delay Feedback	0.392
+FX2 Delay HighPass freq	164
+FX2 Delay LowPass freq	2968
+FX2 Delay Stereo Width	0.092
+FX2 Delay Stereo Ping Pong 	1.00
+FX2 Delay Stereo Mode	Stereo	Stereo | Ping Pong
+FX2 Chorus Feedback	0.000
+FX2 Chorus Fixed Delay Time	5.00
+FX2 Chorus Depth	2.20
+FX2 Chorus Rate	0.990
+FX2 Chorus Stereo Mode	Stereo	Mono | Stereo
+FX2 Chorus Voices	2 Voices	1 Voice | 2 Voices | 3 Voices
+FX2 Chorus LFO Shape	Sine	Sine | Triangle
+FX2 Flanger Freq	0.048
+FX2 Flanger MinDelay	0.427
+FX2 Flanger Depth	3.00
+FX2 Flanger Feedback	0.645
+FX2 Flanger Feedback Polarity	Positive	Positive | Negative
+FX2 Flanger Stereo	Stereo	Mono | Stereo
+FX2 Flanger LowPass Cutoff Frequency	6377
+FX2 Flanger HighPass Cutoff Frequency	92.3
+FX2 Flanger LFO Waveform	Sine	Sine | Triangle
+FX2 Phaser Rate Unsynced	0.570
+FX2 Phaser Rate Synced	2	4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX2 Phaser Frequency	740
+FX2 Phaser N Poles	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FX2 Phaser Feedback	0.475
+FX2 Phaser LFO Wave	Sine	Sine | Triangle | Saw | Ramp | Square | Sample & Hold
+FX2 Phaser LFO Amount	1.00
+FX2 Phaser Sync Rate Type	Binary	Binary | Ternary | Dotted
+FX2 Phaser Midi Sync	ON	False | True
+FX2 Phaser Stereo	45.0
+FX2 Overdrive Drive	0.000
+FX2 Overdrive Tone	100
+FX2 Overdrive Level	0.500
+FX2 Compressor Release	50.0
+FX2 Compressor Threshold	0.000
+FX2 Compressor Ratio	2.00
+FX2 Compressor Attack	2.00
+FX2 Compressor Auto Make up	OFF	False | True
+FX2 Compressor OutputGain	0.000
+FX2 BitCrusher Bit Depth	16.0
+FX2 BitCrusher Downsample	1.00
+FX2 Filter Frequency	20000
+FX2 Filter Q	0.707
+FX2 Filter Comb Freq	100
+FX2 Param Eq LowShelf Frequency	67.1
+FX2 Param Eq LowShelf Gain	3.11
+FX2 Param Eq LowShelf Q	0.707
+FX2 Param Eq Peak 1 Frequency	274
+FX2 Param Eq Peak 1 Gain	1.51
+FX2 Param Eq Peak 1 Q	1.23
+FX2 Param Eq Peak 2 Frequency	1114
+FX2 Param Eq Peak 2 Gain	3.92
+FX2 Param Eq Peak 2 Q	1.23
+FX2 Param Eq Peak 3 Frequency	3000
+FX2 Param Eq Peak 3 Gain	0.000
+FX2 Param Eq Peak 3 Q	1.23
+FX2 Param Eq HighShelf Frequency	5109
+FX2 Param Eq HighShelf Gain	2.66
+FX2 Param Eq HighShelf Q	0.707
+FX2 Param Eq Scale	1.00
+FX2 Stereo Pan Amount	0.500
+FX2 Stereo Pan Rate Unsynced	2.00
+FX2 Stereo Pan Rate Synced	1/2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX3 Dry/Wet	7.20
+FX3 Bypass	On	False | True
+FX3 Reverb Decay	0.460
+FX3 Reverb Predelay	0.020
+FX3 Reverb Damping	0.593
+FX3 Reverb Input LowPass Freq	3000
+FX3 Reverb Input HighPass Freq	30.0
+FX3 Reverb Size	0.800
+FX3 Reverb Output MS Mix (Stereo)	0.364
+FX3 Delay Time	166
+FX3 Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX3 Delay Midi Sync	OFF	False | True
+FX3 Delay Rate Synced Type	Binary	Binary | Ternary | Dotted
+FX3 Delay Feedback	0.352
+FX3 Delay HighPass freq	416
+FX3 Delay LowPass freq	2838
+FX3 Delay Stereo Width	0.097
+FX3 Delay Stereo Ping Pong 	1.00
+FX3 Delay Stereo Mode	Stereo	Stereo | Ping Pong
+FX3 Chorus Feedback	0.000
+FX3 Chorus Fixed Delay Time	5.00
+FX3 Chorus Depth	2.20
+FX3 Chorus Rate	0.990
+FX3 Chorus Stereo Mode	Stereo	Mono | Stereo
+FX3 Chorus Voices	2 Voices	1 Voice | 2 Voices | 3 Voices
+FX3 Chorus LFO Shape	Sine	Sine | Triangle
+FX3 Flanger Freq	0.200
+FX3 Flanger MinDelay	0.300
+FX3 Flanger Depth	3.00
+FX3 Flanger Feedback	0.800
+FX3 Flanger Feedback Polarity	Negative	Positive | Negative
+FX3 Flanger Stereo	Stereo	Mono | Stereo
+FX3 Flanger LowPass Cutoff Frequency	13000
+FX3 Flanger HighPass Cutoff Frequency	100
+FX3 Flanger LFO Waveform	Triangle	Sine | Triangle
+FX3 Phaser Rate Unsynced	0.570
+FX3 Phaser Rate Synced	2	4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX3 Phaser Frequency	740
+FX3 Phaser N Poles	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FX3 Phaser Feedback	0.475
+FX3 Phaser LFO Wave	Sine	Sine | Triangle | Saw | Ramp | Square | Sample & Hold
+FX3 Phaser LFO Amount	1.00
+FX3 Phaser Sync Rate Type	Binary	Binary | Ternary | Dotted
+FX3 Phaser Midi Sync	ON	False | True
+FX3 Phaser Stereo	45.0
+FX3 Overdrive Drive	0.000
+FX3 Overdrive Tone	100
+FX3 Overdrive Level	0.500
+FX3 Compressor Release	50.0
+FX3 Compressor Threshold	-49.3
+FX3 Compressor Ratio	3.97
+FX3 Compressor Attack	0.070
+FX3 Compressor Auto Make up	ON	False | True
+FX3 Compressor OutputGain	0.000
+FX3 BitCrusher Bit Depth	16.0
+FX3 BitCrusher Downsample	1.00
+FX3 Filter Frequency	1000
+FX3 Filter Q	0.707
+FX3 Filter Comb Freq	100
+FX3 Param Eq LowShelf Frequency	53.6
+FX3 Param Eq LowShelf Gain	3.93
+FX3 Param Eq LowShelf Q	1.29
+FX3 Param Eq Peak 1 Frequency	149
+FX3 Param Eq Peak 1 Gain	2.32
+FX3 Param Eq Peak 1 Q	1.23
+FX3 Param Eq Peak 2 Frequency	991
+FX3 Param Eq Peak 2 Gain	7.09
+FX3 Param Eq Peak 2 Q	1.23
+FX3 Param Eq Peak 3 Frequency	5474
+FX3 Param Eq Peak 3 Gain	5.16
+FX3 Param Eq Peak 3 Q	2.33
+FX3 Param Eq HighShelf Frequency	8605
+FX3 Param Eq HighShelf Gain	0.360
+FX3 Param Eq HighShelf Q	0.707
+FX3 Param Eq Scale	1.00
+FX3 Stereo Pan Amount	0.500
+FX3 Stereo Pan Rate Unsynced	2.00
+FX3 Stereo Pan Rate Synced	1/2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Pitch Bend	0.000
+VST3_AfterTouch	0.000
+VST3_CtrlAllNotesOff	0.000
+VST3_CtrlAllSoundsOff	0.000
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

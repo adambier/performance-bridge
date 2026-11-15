@@ -1,0 +1,350 @@
+# Buchla Easel V 1.13.4.6366 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+Mod Osc Freq CV	0.506
+Mod Osc Freq	0.100
+Mod Osc Freq Q	C3
+Mod Osc Waveshape	Square	Triangle | Square | Sawtooth
+Mod Osc Keyboard	On	False | True
+Mod Osc Quantize	On	False | True
+Mod Osc Range	High	Low | High
+Mod Osc Fine	0.000
+Modulation Mode	A.M. Osc	F.M. Osc | A.M. Osc | Bal Ext.
+Modulation CV	0.408
+Modulation	0.000
+Comp Osc Pitch CV	0.000
+Comp Osc Pitch	16.4
+Comp Osc Pitch Q	C0
+Comp Osc Polarity	Positive	Positive | Negative
+Comp Osc Keyboard	On	False | True
+Comp Osc Quantize	On	False | True
+Comp Osc Fine	0.000
+Comp Osc Waveshape	Triangle	Triangle | Square | Impulse
+Comp Osc Wave Mix	0.000
+Comp Osc Timbre CV	0.492
+Comp Osc Timbre	0.000
+Gate 1 Level CV	0.988
+Gate 1 Level	0.000
+Gate 1 Vactrol Time	Medium	Fast | Medium | Slow
+Gate 2 Level CV	0.976
+Gate 2 Level	0.000
+Gate 2 Vactrol Time	Medium	Fast | Medium | Slow
+Gate 1 Mode	Combination	VCA | Combination | LoPassFilter
+Gate 2 Mode	Combination	VCA | Combination | LoPassFilter
+Gate 2 Source	Mod Osc	Gate 1 | Mod Osc | Aux In
+Aux Preamp Src	Noise	Ext. Out. | Noise | Feedback
+Chan A Level	0.500
+Chan B Level	0.500
+Reverb Level	0.264
+Reverb	On	False | True
+Master Volume	0.520
+Keyboard_Polyphony	1	1.0 | 2.0 | 3.0 | 4.0
+Mod Wheel	0.000
+Brightness	0.000
+Timbre	0.000
+Time	0.320
+Movement	0.000
+Seq Voltage 1	0.500
+Seq Voltage 2	0.000
+Seq Voltage 3	0.500
+Seq Voltage 4	0.476
+Seq Voltage 5	0.000
+Seq Gate 1	On	False | True
+Seq Gate 2	On	False | True
+Seq Gate 3	On	False | True
+Seq Gate 4	On	False | True
+Seq Gate 5	On	False | True
+Seq Stages	5	5.0 | 4.0 | 3.0
+Seq Trig Select	Clock	Clock | Pulser | Keyboard
+Random Trig Source	Pulser	Sequencer | Pulser | Keyboard
+Env Attack Rate	1.00
+Env Sustain Rate	0.646
+Env Decay Rate	0.456
+Env Trig Select	Keyboard	Sequencer | Pulser | Keyboard
+Env Mode Select	Sustained	Self | Transient | Sustained
+Pulser Period CV	0.268
+Pulser Period	0.500
+Pulser Trig Select	Sequencer	Sequencer | Pulser | Keyboard
+Pulser Mode	Clock	Clock | Free | Sync
+Pulser Sustain Mode	Hold	Hold | Trig
+Clock Rate	0.000
+Clock Sync Rate	1/16 Bar	4 Bars | 2 Bars | 1 Bars | 1/2 Bar | 1/4 Bar | 1/6 Bar | 1/8 Bar | 1/12 Bar | 1/16 Bar | 1/24 Bar | 1/32 Bar
+Clock Sync	Sync	Sync | Free
+Portamento Slope	0.000
+Arpeggiation Rate	0.000
+Arpeggiation Sync	Sync	Sync | Free
+Arpeggiation Sync Rate	1/16 Bar	4 Bars | 2 Bars | 1 Bars | 1/2 Bar | 1/4 Bar | 1/6 Bar | 1/8 Bar | 1/12 Bar | 1/16 Bar | 1/24 Bar | 1/32 Bar
+Arp Pattern	None	None | Random | Ascending
+Preset Voltage 1	0.000
+Preset Voltage 2	0.202
+Preset Voltage 3	0.274
+Preset Voltage 4	0.000
+Voltage select	1	1.0 | 2.0 | 3.0 | 4.0
+Add to Main	Preset	None | Preset | Octaves
+Function 1 Rate	0.500
+Function 1 Sync Rate	1/2 Bar	8 Bars | 7 Bars | 6 Bars | 5 Bars | 4 Bars | 3 Bars | 2 Bars | 1 Bars | 1/2 Bar | 1/3 Bar | 1/4 Bar | 1/6 Bar | 1/8 Bar | 1/12 Bar | 1/16 Bar | 1/24 Bar | 1/32 Bar
+Function 1 Amount	0.512
+Function 1 Smooth	0.500
+Function 2 Rate	0.500
+Function 2 Sync Rate	1 Bars	8 Bars | 7 Bars | 6 Bars | 5 Bars | 4 Bars | 3 Bars | 2 Bars | 1 Bars | 1/2 Bar | 1/3 Bar | 1/4 Bar | 1/6 Bar | 1/8 Bar | 1/12 Bar | 1/16 Bar | 1/24 Bar | 1/32 Bar
+Function 2 Amount	0.608
+Function 2 Smooth	0.500
+Function 3 Rate	0.500
+Function 3 Sync Rate	8 Bars	8 Bars | 7 Bars | 6 Bars | 5 Bars | 4 Bars | 3 Bars | 2 Bars | 1 Bars | 1/2 Bar | 1/3 Bar | 1/4 Bar | 1/6 Bar | 1/8 Bar | 1/12 Bar | 1/16 Bar | 1/24 Bar | 1/32 Bar
+Function 3 Amount	0.064
+Function 3 Smooth	0.500
+Function 4 Rate	0.500
+Function 4 Sync Rate	8 Bars	8 Bars | 7 Bars | 6 Bars | 5 Bars | 4 Bars | 3 Bars | 2 Bars | 1 Bars | 1/2 Bar | 1/3 Bar | 1/4 Bar | 1/6 Bar | 1/8 Bar | 1/12 Bar | 1/16 Bar | 1/24 Bar | 1/32 Bar
+Function 4 Amount	0.000
+Function 4 Smooth	0.500
+Function 5 Rate	0.400
+Function 5 Sync Rate	2 Bars	8 Bars | 7 Bars | 6 Bars | 5 Bars | 4 Bars | 3 Bars | 2 Bars | 1 Bars | 1/2 Bar | 1/3 Bar | 1/4 Bar | 1/6 Bar | 1/8 Bar | 1/12 Bar | 1/16 Bar | 1/24 Bar | 1/32 Bar
+Function 5 Amount	0.000
+Function 5 Smooth	0.500
+Right Hand Rate	0.250
+Right Hand Sync Rate	1/4	1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+Right Hand Gate Length	1.00
+Right Hand Gate Length Random	0.000
+Gravity Amount X 1	0.000
+Gravity Amount X 2	0.000
+Gravity Amount Y 1	0.000
+Gravity Amount Y 2	0.000
+Gravity Impact Gate Length	0.500
+Gravity Force Coefficient	1	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0
+Gravity Random Throw Direction	0.000
+Gravity Loop Rate	0.500
+Gravity Sync Loop Rate	3 Bars	8 Bars | 7 Bars | 6 Bars | 5 Bars | 4 Bars | 3 Bars | 2 Bars | 1 Bar
+FX1 Active	On	False | True
+FX1 Dry/Wet	15.4
+FX1 Delay MIDI Sync	On	False | True
+FX1 Delay Link	0.500
+FX1 Delay Ping Pong	On	False | True
+FX1 Delay Time ch1	1/8	1/128 | 1/64 | 1/32T | 1/32 | 1/16T | 1/16 | 1/8T | 1/16. | 1/8 | 1/4T | 1/8. | 1/4 | 1/2T | 1/4. | 1/2 | 1/2. | 1/1
+FX1 Delay Time ch2	1/8	1/128 | 1/64 | 1/32T | 1/32 | 1/16T | 1/16 | 1/8T | 1/16. | 1/8 | 1/4T | 1/8. | 1/4 | 1/2T | 1/4. | 1/2 | 1/2. | 1/1
+FX1 Delay Feedback ch1	0.236
+FX1 Delay Damping	50.0
+FX1 Phaser Stage1 Rate	6.00
+FX1 Phaser Stage1 Rate Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+FX1 Phaser Feedback	0.500
+FX1 Phaser Stage1 Depth	0.768
+FX1 Phaser Stage2 Rate	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+FX1 Phaser Stage2 Depth	0.728
+FX1 Phaser MIDI Sync	On	False | True
+FX1 Phaser Dual Mode	Off	False | True
+FX1 DubDelay Delay Time	265
+FX1 DubDelay Amount	0.644
+FX1 DubDelay Depth	0.000
+FX1 DubDelay Rate	0.500
+FX1 DubDelay Tone	0.840
+FX1 Flanger Delay Time	48.4
+FX1 Flanger Depth	0.544
+FX1 Flanger Rate	4925
+FX1 Flanger Feedback	1.60
+FX1 Chorus Type	2	1.0 | 2.0 | 3.0
+FX1 Chorus Stereo Width	0.504
+FX1 Chorus Stereo Rate	0.072
+FX1 Chorus Lfo Rate	4.27
+FX1 Chorus Delay	0.000
+FX1 Chorus Amount	0.452
+FX1 Overdrive Drive	0.000
+FX1 Overdrive Damping/Output	1.00
+FX1 Overdrive Gain/Tone	1.00
+FX1 Destroy Clipping	1.00
+FX1 Destroy Bit Reducer	0.750
+FX1 Destroy Tone	0.800
+FX1 Destroy Harm Disto	0.500
+FX1 Destroy Resampler	0.750
+FX1 Destroy Gain	0.500
+FX1 Eq4 Low Freq	160
+FX1 Eq4 Low Gain	0.000
+FX1 Eq4 High Freq	10.5
+FX1 Eq4 High Gain	0.000
+FX1 Eq4 Mid Freq	2625
+FX1 Eq4 Mid Gain	0.000
+FX1 Eq4 Mid Width	0.500
+FX1 Eq4 Mid2 Freq	2625
+FX1 Eq4 Mid2 Gain	0.000
+FX1 Eq4 Mid2 Width	0.500
+FX1 Compressor Threshold	-22.5
+FX1 Compressor Ratio	13.0
+FX1 Compressor Attack	49.7
+FX1 Compressor Release	118
+FX1 Compressor Input gain	0.000
+FX1 Compressor Makeup gain	1.54
+FX1 Reverb Pre-Delay	20.0
+FX1 Reverb Room Size	91.6
+FX1 Reverb Width	100
+FX1 Reverb Tone	3.20
+FX1 Reverb Tame	Off	False | True
+FX1 Reverb Gain	0.000
+FX1 Delay_drywet	1.00
+FX1 AnalogDualPhaser_drywet	1.00
+FX1 AnalogDelay_drywet	1.00
+FX1 Flanger_drywet	1.00
+FX1 MoogModularChorus_drywet	1.00
+FX1 Reverb Dry/Wet	1.00
+FX2 Active	On	False | True
+FX2 Dry/Wet	24.4
+FX2 Delay MIDI Sync	On	False | True
+FX2 Delay Link	0.500
+FX2 Delay Ping Pong	On	False | True
+FX2 Delay Time ch1	1/8	1/128 | 1/64 | 1/32T | 1/32 | 1/16T | 1/16 | 1/8T | 1/16. | 1/8 | 1/4T | 1/8. | 1/4 | 1/2T | 1/4. | 1/2 | 1/2. | 1/1
+FX2 Delay Time ch2	1/8	1/128 | 1/64 | 1/32T | 1/32 | 1/16T | 1/16 | 1/8T | 1/16. | 1/8 | 1/4T | 1/8. | 1/4 | 1/2T | 1/4. | 1/2 | 1/2. | 1/1
+FX2 Delay Feedback ch1	0.236
+FX2 Delay Damping	50.0
+FX2 Phaser Stage1 Rate	6.00
+FX2 Phaser Stage1 Rate Synced	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+FX2 Phaser Feedback	0.500
+FX2 Phaser Stage1 Depth	0.768
+FX2 Phaser Stage2 Rate	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+FX2 Phaser Stage2 Depth	0.728
+FX2 Phaser MIDI Sync	On	False | True
+FX2 Phaser Dual Mode	Off	False | True
+FX2 DubDelay Delay Time	506
+FX2 DubDelay Amount	0.468
+FX2 DubDelay Depth	0.000
+FX2 DubDelay Rate	0.500
+FX2 DubDelay Tone	0.772
+FX2 Flanger Delay Time	48.4
+FX2 Flanger Depth	0.544
+FX2 Flanger Rate	4925
+FX2 Flanger Feedback	1.60
+FX2 Chorus Type	2	1.0 | 2.0 | 3.0
+FX2 Chorus Stereo Width	0.504
+FX2 Chorus Stereo Rate	0.072
+FX2 Chorus Lfo Rate	4.27
+FX2 Chorus Delay	0.000
+FX2 Chorus Amount	0.452
+FX2 Overdrive Drive	0.000
+FX2 Overdrive Damping/Output	0.592
+FX2 Overdrive Gain/Tone	0.776
+FX2 Destroy Clipping	1.00
+FX2 Destroy Bit Reducer	0.750
+FX2 Destroy Tone	0.800
+FX2 Destroy Harm Disto	0.500
+FX2 Destroy Resampler	0.750
+FX2 Destroy Gain	0.500
+FX2 Eq4 Low Freq	160
+FX2 Eq4 Low Gain	0.000
+FX2 Eq4 High Freq	10.5
+FX2 Eq4 High Gain	0.000
+FX2 Eq4 Mid Freq	2625
+FX2 Eq4 Mid Gain	0.000
+FX2 Eq4 Mid Width	0.500
+FX2 Eq4 Mid2 Freq	2625
+FX2 Eq4 Mid2 Gain	0.000
+FX2 Eq4 Mid2 Width	0.500
+FX2 Compressor Threshold	-22.5
+FX2 Compressor Ratio	13.0
+FX2 Compressor Attack	49.7
+FX2 Compressor Release	118
+FX2 Compressor Input gain	0.000
+FX2 Compressor Makeup gain	1.54
+FX2 Reverb Pre-Delay	0.000
+FX2 Reverb Room Size	47.5
+FX2 Reverb Width	50.0
+FX2 Reverb Tone	0.000
+FX2 Reverb Tame	Off	False | True
+FX2 Reverb Gain	0.000
+FX2 Delay_drywet	1.00
+FX2 AnalogDualPhaser_drywet	1.00
+FX2 AnalogDelay_drywet	1.00
+FX2 Flanger_drywet	1.00
+FX2 MoogModularChorus_drywet	1.00
+FX2 Reverb Dry/Wet	1.00
+AfterTouch	0.000
+All Notes Off	0.000
+All Sounds Off	0.000
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

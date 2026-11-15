@@ -1,0 +1,312 @@
+# ARP 2600 V3 3.13.4.6366 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+Width Osc1	0.500
+Fine Tune Osc1	0.997
+Coarse Tune Osc1	3.00
+Amount FM1 Osc1	0.555
+Amount FM2 Osc1	0.664
+Amount FM3 Osc1	0.414
+Amount FM4 Osc1	0.500
+Amount PWM Osc1	0.000
+Range Osc1	1 octave below	Low: 0.3 - 30 Hz | 2 octaves below | 1 octave below | Tuned | 1 octave above
+Synchronisation Osc1	Synchro 2 -> 1	Synchro Off | Synchro 2 -> 1
+Osc1 Invert Saw	Off	True | False
+Width Osc2	0.500
+Fine Tune Osc2	1.00
+Coarse Tune Osc2	0.375
+Amount FM1 Osc2	1.00
+Amount FM2 Osc2	0.000
+Amount FM3 Osc2	0.000
+Amount FM4 Osc2	0.000
+Amount PWM Osc2	0.000
+Range Osc2	1 octave below	Low: 0.3 - 30 Hz | 2 octaves below | 1 octave below | Tuned | 1 octave above
+Synchronisation Osc2	0.000
+Osc2 Invert Saw	Off	True | False
+Width Osc3	0.484
+Fine Tune Osc3	1.00
+Coarse Tune Osc3	0.375
+Amount FM1 Osc3	1.00
+Amount FM2 Osc3	0.000
+Amount FM3 Osc3	0.000
+Amount FM4 Osc3	0.000
+Amount PWM Osc3	0.000
+Range Osc3	1 octave below	Low: 0.3 - 30 Hz | 2 octaves below | 1 octave below | Tuned | 1 octave above
+Synchronisation Osc3	0.000
+Osc3 Invert Saw	Off	True | False
+Fine Tune Filter	0.500
+Coarse Tune Filter	0.711
+Resonance Filter	0.000
+Notch Frequency Filter	0.687
+Amount Audio In1 Filter	1.00
+Amount Audio In2 Filter	0.984
+Amount Audio In3 Filter	1.00
+Amount Audio In4 Filter	1.00
+Amount Audio In5 Filter	0.906
+Amount FM1 Filter	0.859
+Amount FM2 Filter	0.648
+Amount FM3 Filter	0.461
+Type Filter	Low pass 12dB	Notch 12dB | Band pass 12dB | High pass 12dB | Low pass 12dB | Low pass 24dB
+Attack Envelope1	0.220
+Decay Envelope1	0.406
+Sustain Envelope1	0.000
+Release Envelope1	0.461
+Attack Envelope2	0.000
+Release Envelope2	0.383
+Start Envelope	0.000
+Envelope Trigg Choice	S&H Trigg	S&H Trigg | Keyboard Trigg
+Amount Audio1 Vca	1.00
+Amount Audio2 Vca	1.00
+Amount Am Lin. Vca	1.00
+Amount Am Exp. Vca	1.00
+Amount Audio1 Mixer	0.000
+Amount Audio2 Mixer	1.00
+Panoramic Mixer	0.476
+Amount Left Reverb	0.000
+Amount Right Reverb	0.000
+Amount Audio Env.Follow.	0.000
+Amount Audio1 Ring Mod.	0.687
+Amount Audio2 Ring Mod.	0.773
+Timbral Noise	0.000
+Level Noise	0.000
+Level Sample&Hold	0.000
+Rate Sample&Hold	0.000
+Portamento Time	0.500
+Amount External Audio	0.000
+General Volume	0.635
+General Tune	1.00
+RingMod DC	0.000
+RingMod HQ	0.000
+Mode	Unison 4 Voices	Polyphonic | Unison 4 Voices | Monophonic
+Polyphony	3	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 16.0 | 32.0
+Voice Detune	0.547
+Keyboard Hold	Off	Hold | Off
+Portamento	0.000
+Playing Mode	Retrigg	Retrigg | Legato
+A440 generation	Off	False | True
+Osc. Coarse Bender	0.000
+Mod Wheel	0.000
+Brightness	0.711
+Timbre	0.000
+Time	0.434
+Movement	0.459
+Mix In 1-2 Volt. Proc.	1.00
+Mix In 3-4 Volt. Proc.	1.00
+Mix In 5-6 Volt. Proc.	0.500
+Mix In 7-8 Volt. Proc.	0.000
+Lag In 1-2 Volt. Proc.	0.265
+Lag In 3-4 Volt. Proc.	0.000
+Lag In 5-6 Volt. Proc.	0.000
+Lag In 7-8 Volt. Proc.	0.000
+Amount AM 1-2 Volt. Proc.	0.500
+Amount AM 3-4 Volt. Proc.	0.500
+Amount AM 5-6 Volt. Proc.	0.500
+Amount AM 7-8 Volt. Proc.	0.500
+Linl 3-4 Volt. Proc.	Off	Off | Link 3-4 -> 1-2
+Linl 5-6 Volt. Proc.	Off	Off | Link 5-6 -> 3-4
+Linl 7-8 Volt. Proc.	Off	Off | Link 7-8 -> 5-6
+Inverse 1/2	0.000
+Inverse 3/4	1.00
+Inverse 5/6	0.000
+Inverse 7/8	0.000
+Amount In Tracking1	0.500
+Amount In Tracking2	0.500
+Amount In Tracking3	0.500
+Amount In Tracking4	0.500
+Smooth Tracking1	0.023
+Smooth Tracking2	0.000
+Smooth Tracking3	0.500
+Smooth Tracking4	0.500
+Frequency Tracking1	0.258
+Frequency Tracking2	0.200
+Frequency Tracking3	0.500
+Frequency Tracking4	0.500
+Synchro Tracking1	0.000
+Synchro Tracking2	0.000
+Synchro Tracking3	0.000
+Synchro Tracking4	0.000
+Lfo Speed	0.000
+Vibrato Depth	0.000
+Vibrato Delay	0.000
+Amount AM Lfo	0.727
+Lfo Mode	Midi Sync	Free | Midi Sync
+Mode Sample&Hold	Free	Midi Sync | Free
+Chorus Rate	0.562
+Chorus Depth	0.188
+Chorus Dry/Wet	0.398
+Delay FeedBack Left	0.078
+Delay FeedBack Right	0.320
+Delay Dry/Wet	0.602
+Delay Time Left	0.555
+Delay Time Right	0.398
+Delay Mode	Midi Sync	Free | Midi Sync
+Sequencer Set Step 1	24.0
+Sequencer Set Step 2	0.375
+Sequencer Set Step 3	11.6
+Sequencer Set Step 4	0.000
+Sequencer Set Step 5	-11.6
+Sequencer Set Step 6	0.375
+Sequencer Set Step 7	7.12
+Sequencer Set Step 8	0.000
+Sequencer Set Step 9	9.75
+Sequencer Set Step 10	0.375
+Sequencer Set Step 11	6.75
+Sequencer Set Step 12	0.375
+Sequencer Set Step 13	-1.88
+Sequencer Set Step 14	9.75
+Sequencer Set Step 15	2.62
+Sequencer Set Step 16	11.6
+Sequencer Rate	0.629
+Sequencer Amount FM	0.000
+Sequencer Amount PWM	0.000
+Sequencer Pulse Width	0.001
+Sequencer Step Size	16/1	16/1 | 8/2
+Sequencer Seq/Random	Sequential	Sequential | Random
+Sequencer Midi Sync.	Midi Sync	Free | Midi Sync
+Bus 3 Mode	Off	Reset | Off | Skip
+Sequencer Trig. Mode	Gate	Trig | Gate
+Sequencer On/Off	0.000
+Sequencer Bus Switch 1	Bus 1	Bus 3 (reset/skip function) | Bus 2 | Bus 1
+Sequencer Bus Switch 2	Bus 1	Bus 3 (reset/skip function) | Bus 2 | Bus 1
+Sequencer Bus Switch 3	Bus 2	Bus 3 (reset/skip function) | Bus 2 | Bus 1
+Sequencer Bus Switch 4	Bus 1	Bus 3 (reset/skip function) | Bus 2 | Bus 1
+Sequencer Bus Switch 5	Bus 1	Bus 3 (reset/skip function) | Bus 2 | Bus 1
+Sequencer Bus Switch 6	Bus 2	Bus 3 (reset/skip function) | Bus 2 | Bus 1
+Sequencer Bus Switch 7	Bus 1	Bus 3 (reset/skip function) | Bus 2 | Bus 1
+Sequencer Bus Switch 8	Bus 1	Bus 3 (reset/skip function) | Bus 2 | Bus 1
+Sequencer Bus Switch 9	Bus 1	Bus 3 (reset/skip function) | Bus 2 | Bus 1
+Sequencer Bus Switch 10	Bus 2	Bus 3 (reset/skip function) | Bus 2 | Bus 1
+Sequencer Bus Switch 11	Bus 1	Bus 3 (reset/skip function) | Bus 2 | Bus 1
+Sequencer Bus Switch 12	Bus 1	Bus 3 (reset/skip function) | Bus 2 | Bus 1
+Sequencer Bus Switch 13	Bus 2	Bus 3 (reset/skip function) | Bus 2 | Bus 1
+Sequencer Bus Switch 14	Bus 1	Bus 3 (reset/skip function) | Bus 2 | Bus 1
+Sequencer Bus Switch 15	Bus 2	Bus 3 (reset/skip function) | Bus 2 | Bus 1
+Sequencer Bus Switch 16	Bus 1	Bus 3 (reset/skip function) | Bus 2 | Bus 1
+Delay On	1.00
+Chorus On	1.00
+Unassigned 1	0.500
+Unassigned 2	0.500
+Unassigned 3	0.500
+Deprecated 1	0.000
+Deprecated 2	0.000
+Deprecated 3	0.000
+Deprecated 4	0.000
+Deprecated 5	0.000
+Deprecated 6	0.000
+Deprecated 7	0.000
+Deprecated 8	0.000
+Deprecated 9	0.000
+Deprecated 10	0.000
+Deprecated 11	0.000
+Deprecated 12	0.000
+Deprecated 13	0.000
+Deprecated 14	0.000
+Deprecated 15	0.000
+Deprecated 16	0.000
+Deprecated 17	0.000
+Deprecated 18	0.000
+Sequencer Next Step	0.000
+Sequencer Reset	1.00
+Pitch Bend	0.500
+AfterTouch	0.000
+Sustain	0.000
+All Notes Off	0.000
+Omni Mode Off	0.000
+Omni Mode On	0.000
+Poly Mode On/Off	0.000
+Poly Mode On	0.000
+All Sounds Off	0.000
+Unassigned 5	0.500
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

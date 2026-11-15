@@ -1,0 +1,122 @@
+# Efx REFRACT 1.1.1.6566 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+On/Off	Active	Active | Bypassed
+Mix	50.0
+Refraction	50.0
+Voices	4	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0
+Mode FX	BandPass	Bypass | BandPass | Comb Filter | BitCrusher | Distortion | Harmony
+Input Gain	0.000
+Output Gain	0.000
+Highpass	150
+Lowpass	20000
+Bandpass Filter Cutoff Frequency	1000
+Bandpass Filter Resonance	0.020
+Comb Filter Cutoff Frequency	1000
+Comb Filter Resonance	0.250
+BitCrusher Downsample Ratio	1.00
+BitCrusher Bit Depth	16.0
+Distortion Drive Amount	0.000
+Distortion Algorithm	Tape	Tape | Germanium | Soft Bounce | Sine Folder
+Harmony Spray	0.000
+Harmony Chord	OCT	OCT | 5 | Minor | Minor 7 | Minor 9 | MAJOR | 7 | MAJOR 7 | MAJOR 9 | 6/9 | Sus 2 | Sus 4
+Refraction LFO Amount	0.000
+Mode FX LFO Amount	0.000
+LFO Shape	Sine	Sine | Triangle | Saw | Square | Sample & Hold | Sample & Glide
+Rate Type	Sync	Hertz | Sync | Sync Straight | Sync Triplets | Sync Dotted
+Rate (Hertz)	0.200
+Rate (Sync)	1	16 | 8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Rate (Sync All)	1	24 | 16 | 12 | 16.t | 8 | 6 | 8.t | 4 | 3 | 4.t | 2 | 1.5 | 2.t | 1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16 | 1/32.d | 1/16.t | 1/32 | 1/32.t
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

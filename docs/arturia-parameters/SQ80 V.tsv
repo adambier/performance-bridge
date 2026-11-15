@@ -1,0 +1,968 @@
+# SQ80 V 1.6.5.6366 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+Master Volume	-17.9
+Envelope Reset	Off	False | True
+Envelope Full Cycle	Off	False | True
+Glide Time	0.000
+Unison Detune	30.0
+Effect Routing	Serial	Serial | Parallel
+Effect Section On/Off	On	False | True
+Bus 1 Level	0.000
+Bus 2 Level	0.000
+Mod Wheel	0.000
+Tune	440
+Bend Range	2	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0
+Bend Mode	All	All | Held
+Mono	Off	False | True
+Voice Allocation	Off	False | True
+Unison_On	Off	False | True
+Tune Mod Source 1	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+Tune Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+Tune Mod Amount 1	0.000
+Tune Mod Amount 2	0.000
+Effect1 Dry/Wet Mod Source 1	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+Effect1 Dry/Wet Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+Effect1 Main Param Mod Source 1	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+Effect1 Main Param Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+Effect1 Dry/Wet Mod Amount 1	0.000
+Effect1 Dry/Wet Mod Amount 2	0.000
+Effect1 Main Param Mod Amount 1	0.000
+Effect1 Main Param Mod Amount 2	0.000
+Effect2 Dry/Wet Mod Source 1	ModWheel	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+Effect2 Dry/Wet Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+Effect2 Main Param Mod Source 1	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+Effect2 Main Param Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+Effect2 Dry/Wet Mod Amount 1	0.000
+Effect2 Dry/Wet Mod Amount 2	0.000
+Effect2 Main Param Mod Amount 1	0.000
+Effect2 Main Param Mod Amount 2	0.000
+Effect3 Dry/Wet Mod Source 1	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+Effect3 Dry/Wet Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+Effect3 Main Param Mod Source 1	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+Effect3 Main Param Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+Effect3 Dry/Wet Mod Amount 1	0.000
+Effect3 Dry/Wet Mod Amount 2	0.000
+Effect3 Main Param Mod Amount 1	0.000
+Effect3 Main Param Mod Amount 2	0.000
+Effect4 Dry/Wet Mod Source 1	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+Effect4 Dry/Wet Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+Effect4 Main Param Mod Source 1	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+Effect4 Main Param Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+Effect4 Dry/Wet Mod Amount 1	0.000
+Effect4 Dry/Wet Mod Amount 2	0.000
+Effect4 Main Param Mod Amount 1	0.000
+Effect4 Main Param Mod Amount 2	0.000
+Glide Time Mod Source 1	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+Glide Time Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+Glide Time Mod Amount 1	0.000
+Glide Time Mod Amount 2	0.000
+Filter Cutoff Dispersion	0.000
+Filter Resonance Dispersion	0.312
+DCA4 DCA4 Amplitude Dispersion	0.000
+Brightness	0.180
+Timbre	0.876
+Time	0.788
+Movement	0.880
+DCO1 Octave	0	-2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0 | 4.0
+DCO1 Semi	0	-12.0 | -11.0 | -10.0 | -9.0 | -8.0 | -7.0 | -6.0 | -5.0 | -4.0 | -3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0
+DCO1 Fine	8.80
+DCO1 Wave	SAW
+DCO1 Transwave Position	0.597
+DCO1 Transwaves	EL PNO
+DCO1 SQ80 Hidden Waves	0
+DCO1 ESQ1 Hidden Waves	0
+DCO2 Octave	-1	-2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0 | 4.0
+DCO2 Semi	0	-12.0 | -11.0 | -10.0 | -9.0 | -8.0 | -7.0 | -6.0 | -5.0 | -4.0 | -3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0
+DCO2 Fine	-6.40
+DCO2 Wave	SAW
+DCO2 Transwave Position	0.481
+DCO2 Transwaves	SQR  2
+DCO2 SQ80 Hidden Waves	0
+DCO2 ESQ1 Hidden Waves	0
+DCO3 Octave	-1	-2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0 | 4.0
+DCO3 Semi	0	-12.0 | -11.0 | -10.0 | -9.0 | -8.0 | -7.0 | -6.0 | -5.0 | -4.0 | -3.0 | -2.0 | -1.0 | 0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0
+DCO3 Fine	4.00
+DCO3 Wave	SAW
+DCO3 Transwave Position	0.000
+DCO3 Transwaves	SAW
+DCO3 SQ80 Hidden Waves	0
+DCO3 ESQ1 Hidden Waves	0
+DCO 2 Sync	Off	False | True
+DCO 2 AM	0.000
+DCO Waveform Reset	Off	False | True
+DCO1 Pitch Mod Source 1	LFO 2	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCO1 Pitch Mod Source 2	ModWheel	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCO1 Position Mod Source 1	LFO 1	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCO1 Position Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCO1 Pitch Mod Amount 1	0.007
+DCO1 Pitch Mod Amount 2	0.003
+DCO1 Position Mod Amount 1	-0.009
+DCO1 Position Mod Amount 2	0.000
+DCO2 Pitch Mod Source 1	LFO 2	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCO2 Pitch Mod Source 2	ModWheel	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCO2 Position Mod Source 1	LFO 1	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCO2 Position Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCO2 Pitch Mod Amount 1	-0.007
+DCO2 Pitch Mod Amount 2	-0.002
+DCO2 Position Mod Amount 1	0.561
+DCO2 Position Mod Amount 2	0.000
+DCO3 Pitch Mod Source 1	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCO3 Pitch Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCO3 Position Mod Source 1	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCO3 Position Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCO3 Pitch Mod Amount 1	0.000
+DCO3 Pitch Mod Amount 2	0.000
+DCO3 Position Mod Amount 1	0.000
+DCO3 Position Mod Amount 2	0.000
+DCO 2 AM Mod Source 1	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCO 2 AM Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCO 2 AM Mod Amount 1	0.000
+DCO 2 AM Mod Amount 2	0.000
+DCA1 ON/OFF	On	False | True
+DCA1 Level	1.00
+DCA2 ON/OFF	On	False | True
+DCA2 Level	0.887
+DCA3 ON/OFF	On	False | True
+DCA3 Level	0.004
+DCA4 Level	1.00
+DCA4 Pan	0.000
+DCA1 Mod Source 1	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCA1 Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCA1 Mod Amount 1	0.000
+DCA1 Mod Amount 2	0.000
+DCA2 Mod Source 1	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCA2 Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCA2 Mod Amount 1	0.000
+DCA2 Mod Amount 2	0.000
+DCA3 Mod Source 1	ModWheel	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCA3 Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCA3 Mod Amount 1	1.00
+DCA3 Mod Amount 2	0.000
+DCA 4 Pan Mod Source 1	LFO 3	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCA 4 Pan Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCA 4 Level Mod Source 1	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCA 4 Level Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+DCA 4 Level Mod Amount 1	0.000
+DCA 4 Level Mod Amount 2	0.000
+DCA 4 Pan Mod Amount 1	-0.329
+DCA 4 Pan Mod Amount 2	0.000
+Filter Cutoff Frequency	48.4
+Filter Resonance	0.859
+Filter Keyboard Tracking	0.732
+VCF Cutoff Mod Source 1	Env 1	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+VCF Cutoff Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+VCF Resonance Mod Source 1	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+VCF Resonance Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+VCF Resonance Mod Amount 1	0.000
+VCF Resonance Mod Amount 2	0.000
+VCF Cutoff Mod Amount 1	0.686
+VCF Cutoff Mod Amount 2	0.000
+Envelope1 Type	DADSR	SQ80 | MSEG | DADSR
+Envelope1 SQ80 Level 1	63.0
+Envelope1 SQ80 Level 2	55.0
+Envelope1 SQ80 Level 3	55.0
+Envelope1 SQ80 Time 1	0
+Envelope1 SQ80 Time 2	30
+Envelope1 SQ80 Time 3	30
+Envelope1 SQ80 Release Time	5
+Envelope1 SQ80 Release	Off	False | True
+Envelope1 SQ80 Velocity Attack	0.000
+Envelope1 SQ80 Velocity Level	0.000
+Envelope1 SQ80 Velocity Level Response	Linear	Linear | Exp
+Envelope1 SQ80 Keyboard Decay Scaling	0.000
+Envelope1 MSEG Polarity	Off	False | True
+Envelope1 MSEG Velocity Level	0.000
+Envelope1 MSEG Keyboard Time	0.000
+Envelope1 MSEG Rate Unsynced	0.223
+Envelope1 MSEG Rate Synced	1	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Envelope1 MSEG Rate Type	Hertz	Hertz | Sync | Sync Triplets | Sync Dotted
+Envelope1 MSEG Loop	Off	False | True
+Envelope1 DADSR Delay	0.000
+Envelope1 DADSR Attack	1.72
+Envelope1 DADSR Decay	5.96
+Envelope1 DADSR Sustain	0.246
+Envelope1 DADSR Release	4.20
+Envelope1 DADSR Velocity Level	0.848
+Envelope1 DADSR Keyboard Time Level	0.000
+Envelope2 Type	SQ80	SQ80 | MSEG | DADSR
+Envelope2 SQ80 Level 1	63.0
+Envelope2 SQ80 Level 2	55.0
+Envelope2 SQ80 Level 3	55.0
+Envelope2 SQ80 Time 1	0
+Envelope2 SQ80 Time 2	30
+Envelope2 SQ80 Time 3	30
+Envelope2 SQ80 Release Time	5
+Envelope2 SQ80 Release	Off	False | True
+Envelope2 SQ80 Velocity Attack	0.000
+Envelope2 SQ80 Velocity Level	0.000
+Envelope2 SQ80 Velocity Level Response	Linear	Linear | Exp
+Envelope2 SQ80 Keyboard Decay Scaling	0.000
+Envelope2 MSEG Polarity	Off	False | True
+Envelope2 MSEG Velocity Level	0.000
+Envelope2 MSEG Keyboard Time	0.000
+Envelope2 MSEG Rate Unsynced	0.223
+Envelope2 MSEG Rate Synced	1	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Envelope2 MSEG Rate Type	Hertz	Hertz | Sync | Sync Triplets | Sync Dotted
+Envelope2 MSEG Loop	Off	False | True
+Envelope2 DADSR Delay	0.000
+Envelope2 DADSR Attack	0.000
+Envelope2 DADSR Decay	0.349
+Envelope2 DADSR Sustain	1.00
+Envelope2 DADSR Release	0.100
+Envelope2 DADSR Velocity Level	0.000
+Envelope2 DADSR Keyboard Time Level	0.000
+Envelope3 Type	SQ80	SQ80 | MSEG | DADSR
+Envelope3 SQ80 Level 1	63.0
+Envelope3 SQ80 Level 2	55.0
+Envelope3 SQ80 Level 3	55.0
+Envelope3 SQ80 Time 1	27
+Envelope3 SQ80 Time 2	30
+Envelope3 SQ80 Time 3	30
+Envelope3 SQ80 Release Time	5
+Envelope3 SQ80 Release	Off	False | True
+Envelope3 SQ80 Velocity Attack	0.000
+Envelope3 SQ80 Velocity Level	0.000
+Envelope3 SQ80 Velocity Level Response	Linear	Linear | Exp
+Envelope3 SQ80 Keyboard Decay Scaling	0.000
+Envelope3 MSEG Polarity	Off	False | True
+Envelope3 MSEG Velocity Level	0.000
+Envelope3 MSEG Keyboard Time	0.000
+Envelope3 MSEG Rate Unsynced	0.223
+Envelope3 MSEG Rate Synced	1	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Envelope3 MSEG Rate Type	Hertz	Hertz | Sync | Sync Triplets | Sync Dotted
+Envelope3 MSEG Loop	Off	False | True
+Envelope3 DADSR Delay	0.000
+Envelope3 DADSR Attack	0.000
+Envelope3 DADSR Decay	0.349
+Envelope3 DADSR Sustain	1.00
+Envelope3 DADSR Release	0.100
+Envelope3 DADSR Velocity Level	0.000
+Envelope3 DADSR Keyboard Time Level	0.000
+Envelope4 Type	DADSR	SQ80 | MSEG | DADSR
+Envelope4 SQ80 Level 1	63.0
+Envelope4 SQ80 Level 2	55.0
+Envelope4 SQ80 Level 3	55.0
+Envelope4 SQ80 Time 1	0
+Envelope4 SQ80 Time 2	30
+Envelope4 SQ80 Time 3	30
+Envelope4 SQ80 Release Time	5
+Envelope4 SQ80 Release	Off	False | True
+Envelope4 SQ80 Velocity Attack	0.000
+Envelope4 SQ80 Velocity Level	0.000
+Envelope4 SQ80 Velocity Level Response	Linear	Linear | Exp
+Envelope4 SQ80 Keyboard Decay Scaling	0.000
+Envelope4 MSEG Polarity	Off	False | True
+Envelope4 MSEG Velocity Level	0.000
+Envelope4 MSEG Keyboard Time	0.000
+Envelope4 MSEG Rate Unsynced	0.223
+Envelope4 MSEG Rate Synced	1	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Envelope4 MSEG Rate Type	Hertz	Hertz | Sync | Sync Triplets | Sync Dotted
+Envelope4 MSEG Loop	Off	False | True
+Envelope4 DADSR Delay	0.000
+Envelope4 DADSR Attack	0.645
+Envelope4 DADSR Decay	20.0
+Envelope4 DADSR Sustain	0.805
+Envelope4 DADSR Release	4.85
+Envelope4 DADSR Velocity Level	0.372
+Envelope4 DADSR Keyboard Time Level	0.000
+LFO1 Waveform	Triangle	Triangle | Ramp | Square | Noise | Sine | Saw
+LFO1 Rate Unsync	0.310
+LFO1 Rate Sync	1/32	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+LFO1 Rate Type	Hertz	Hertz | Sync | Sync Triplets | Sync Dotted
+LFO1 Initial Level	0.000
+LFO1 Amplitude	1.00
+LFO1 Delay	0.000
+LFO1 Human	Off	False | True
+LFO1 Reset	Off	False | True
+LFO1 Poly	Off	False | True
+LFO2 Waveform	Triangle	Triangle | Ramp | Square | Noise | Sine | Saw
+LFO2 Rate Unsync	3.78
+LFO2 Rate Sync	1/32	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+LFO2 Rate Type	Hertz	Hertz | Sync | Sync Triplets | Sync Dotted
+LFO2 Initial Level	0.000
+LFO2 Amplitude	1.00
+LFO2 Delay	0.000
+LFO2 Human	Off	False | True
+LFO2 Reset	Off	False | True
+LFO2 Poly	On	False | True
+LFO3 Waveform	Triangle	Triangle | Ramp | Square | Noise | Sine | Saw
+LFO3 Rate Unsync	0.297
+LFO3 Rate Sync	1/32	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+LFO3 Rate Type	Hertz	Hertz | Sync | Sync Triplets | Sync Dotted
+LFO3 Initial Level	0.000
+LFO3 Amplitude	1.00
+LFO3 Delay	0.000
+LFO3 Human	Off	False | True
+LFO3 Reset	Off	False | True
+LFO3 Poly	On	False | True
+Arpeggiator ON/OFF	Off	False | True
+Arpeggiator Rate (Unsync)	8.02
+Arpeggiator Rate (Synced)	1/16	1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32 | 1/64
+Arpeggiator Rate Type	Sync	Hertz | Sync | Sync Triplets | Sync Dotted
+Arpeggiator Mode	Up	Up | Down | Ordered | Reversed | Inc | Exc | Random
+Arpeggiator Octave Range	1	1.0 | 2.0 | 3.0 | 4.0
+ModMixer Source 1	LFO 1	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-X | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch
+ModMixer Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-X | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch
+ModMixer Operator	Multiply	Multiply | Diff | Divide | Crossfade | Lag | Sum
+ModMixer Amount	0.000
+LFO1 Rate Mod Source 1	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+LFO1 Rate Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+LFO1 Amp Mod Source 1	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+LFO1 Amp Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+LFO1 Rate Mod Amount 1	0.000
+LFO1 Rate Mod Amount 2	0.000
+LFO1 Amp Mod Amount 1	0.000
+LFO1 Amp Mod Amount 2	0.000
+LFO2 Rate Mod Source 1	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+LFO2 Rate Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+LFO2 Amp Mod Source 1	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+LFO2 Amp Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+LFO2 Rate Mod Amount 1	0.000
+LFO2 Rate Mod Amount 2	0.000
+LFO2 Amp Mod Amount 1	0.000
+LFO2 Amp Mod Amount 2	0.000
+LFO3 Rate Mod Source 1	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+LFO3 Rate Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+LFO3 Amp Mod Source 1	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+LFO3 Amp Mod Source 2	None	None | LFO 1 | LFO 2 | LFO 3 | Env 1 | Env 2 | Env 3 | Env 4 (DCA 4) | Velocity | Velocity-Exp | Keyboard 1 | Keyboard 2 | ModWheel | Expression | Breath | Aftertouch | ModMixer
+LFO3 Rate Mod Amount 1	0.000
+LFO3 Rate Mod Amount 2	0.000
+LFO3 Amp Mod Amount 1	0.000
+LFO3 Amp Mod Amount 2	0.000
+FX1 Dry/Wet	65.6
+FX1 Reverb Decay	0.460
+FX1 Delay Time	300
+FX1 Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX1 Chorus Feedback	0.000
+FX1 Flanger Freq	0.159
+FX1 Phaser Rate Unsynced	0.570
+FX1 Phaser Rate Synced	1	4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX1 Overdrive Drive Deprecated	0.000
+FX1 Compressor Release	50.0
+FX1 BitCrusher Bit Depth	16.0
+FX1 Filter Frequency	1000
+FX1 On/Off	On	False | True
+FX1 Reverb Predelay	0.003
+FX1 Reverb Damping	0.593
+FX1 Reverb Input LowPass Freq	7661
+FX1 Reverb Input HighPass Freq	44.0
+FX1 Reverb Size	1.08
+FX1 Reverb Output MS Mix (Stereo)	0.364
+FX1 Delay Feedback	0.400
+FX1 Delay HighPass freq	125
+FX1 Delay LowPass freq	7500
+FX1 Delay Stereo Width	0.060
+FX1 Delay Stereo Ping Pong 	0.500
+FX1 Delay Stereo Mode	Stereo	Stereo | Ping Pong
+FX1 Chorus Fixed Delay Time	5.00
+FX1 Chorus Depth	2.20
+FX1 Chorus Rate	0.990
+FX1 Chorus Stereo Mode	Stereo	Mono | Stereo
+FX1 Chorus Voices	2	1.0 | 2.0 | 3.0
+FX1 Chorus LFO Shape	Sine	Sine | Triangle
+FX1 Chorus JUN-6 Manual Rate	0.400
+FX1 Chorus JUN-6 Manual Sync Rate	1/2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX1 Chorus JUN-6 Manual Depth	4.44
+FX1 Chorus JUN-6 Manual Phase Offset	180
+FX1 Flanger MinDelay	1.36
+FX1 Flanger Depth	4.98
+FX1 Flanger Feedback	0.391
+FX1 Flanger Feedback Polarity	Positive	Positive | Negative
+FX1 Flanger Stereo	Stereo	Mono | Stereo
+FX1 Flanger LowPass Cutoff Frequency	8927
+FX1 Flanger HighPass Cutoff Frequency	54.8
+FX1 Flanger LFO Waveform	Triangle	Sine | Triangle
+FX1 Phaser Frequency	740
+FX1 Phaser N Poles	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FX1 Phaser Feedback	0.475
+FX1 Phaser LFO Wave	Sine	Sine | Triangle | Saw | Ramp | Square | Sample & Hold
+FX1 Phaser LFO Amount	1.00
+FX1 Phaser Sync Rate Type	Sync	Sync | Sync Triplets | Sync Dotted
+FX1 Phaser Midi Sync	ON	False | True
+FX1 Phaser Stereo	45.0
+FX1 Overdrive Tone	1.00
+FX1 Overdrive Level Deprecated	0.500
+FX1 Compressor Threshold	0.000
+FX1 Compressor Ratio	2.00
+FX1 Compressor Attack	2.00
+FX1 Compressor Auto Make up	OFF	False | True
+FX1 Compressor OutputGain	0.000
+FX1 BitCrusher Downsample	1.00
+FX1 Filter Q	0.707
+FX1 Filter Comb Freq	100
+FX1 Param Eq LowShelf Frequency	250
+FX1 Param Eq LowShelf Gain	0.000
+FX1 Param Eq LowShelf Q	0.707
+FX1 Param Eq Peak 1 Frequency	500
+FX1 Param Eq Peak 1 Gain	0.000
+FX1 Param Eq Peak 1 Q	1.23
+FX1 Param Eq Peak 2 Frequency	1000
+FX1 Param Eq Peak 2 Gain	0.000
+FX1 Param Eq Peak 2 Q	1.23
+FX1 Param Eq Peak 3 Frequency	3000
+FX1 Param Eq Peak 3 Gain	0.000
+FX1 Param Eq Peak 3 Q	1.23
+FX1 Param Eq HighShelf Frequency	5000
+FX1 Param Eq HighShelf Gain	0.000
+FX1 Param Eq HighShelf Q	0.707
+FX1 Param Eq Deprecated Param 3	1.00
+FX1 Stereo Pan Amount	0.500
+FX1 Stereo Pan Rate Unsynced	2.00
+FX1 Stereo Pan Rate Synced	1/2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX1 Stereo Pan Mode	Linear	Linear | Natural
+FX1 Stereo Pan Invert	Off	False | True
+FX1 Stereo Pan Deprecated Param 1	Off	False | True
+FX1 Stereo Pan Deprecated Param 2	120
+FX1 Pitch Shift Delay Time	122
+FX1 Pitch Shift Delay Synched	1/32	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX1 Pitch Shift Delay Feedback	0.000
+FX1 Pitch Shift Delay Pitch Shift	12.0
+FX1 Pitch Shift Delay Spray	0.000
+FX1 Pitch Shift Delay HP Freq	145
+FX1 Pitch Shift Delay LP Freq	6164
+FX1 Pitch Shift Delay Delay Offset	-4.96
+FX1 Pitch Shift Delay Detune	16.8
+FX1 TapeEcho Time	150
+FX1 TapeEcho Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX1 TapeEcho Fine	0.000
+FX1 TapeEcho Intensity	0.350
+FX1 TapeEcho Input Volume	0.000
+FX1 TapeEcho Stereo Spread	0.053
+FX1 TapeEcho Stereo Width	1.00
+FX1 TapeEcho Stereo Mode	Stereo	Stereo | Ping Pong
+FX1 Multiband Compressor Low Bypass	On	False | True
+FX1 Multiband Compressor High Bypass	On	False | True
+FX1 Multiband Compressor Low Mid Crossover	150
+FX1 Multiband Compressor Mid High Crossover	2500
+FX1 Multiband Compressor Output	0.000
+FX1 Multiband Compressor Input	0.000
+FX1 Multiband Compressor Attack	0.000
+FX1 Multiband Compressor Release	0.000
+FX1 Multiband Compressor Low Output Gain	0.000
+FX1 Multiband Compressor Low Below Threshold	-36.0
+FX1 Multiband Compressor Low Above Threshold	-6.00
+FX1 Multiband Compressor Low Below Ratio	1.000
+FX1 Multiband Compressor Low Above Ratio	1.00
+FX1 Multiband Compressor Mid Output Gain	0.000
+FX1 Multiband Compressor Mid Below Threshold	-36.0
+FX1 Multiband Compressor Mid Above Threshold	-6.00
+FX1 Multiband Compressor Mid Below Ratio	1.000
+FX1 Multiband Compressor Mid Above Ratio	1.00
+FX1 Multiband Compressor High Output Gain	0.000
+FX1 Multiband Compressor High Below Threshold	-36.0
+FX1 Multiband Compressor High Above Threshold	-6.00
+FX1 Multiband Compressor High Below Ratio	1.000
+FX1 Multiband Compressor High Above Ratio	1.00
+FX1 Distortion Wavefolder Type	Sine	Sine | Tri
+FX1 Distortion Drive	18.0
+FX1 Distortion Auto	On	False | True
+FX1 Distortion Output	-10.0
+FX1 Distortion Filter Cutoff	120
+FX1 Distortion Filter Resonance	0.707
+FX1 Distortion Filter Mode	High Pass	Low Pass | High Pass | Band Pass
+FX1 Distortion Filter Routing	Pre	Pre | Post
+FX1 Distortion Filter On/Off	Off	False | True
+FX1 Distortion Filter Dark	Off	False | True
+FX2 Dry/Wet	17.8
+FX2 Reverb Decay	0.460
+FX2 Delay Time	300
+FX2 Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX2 Chorus Feedback	0.000
+FX2 Flanger Freq	0.200
+FX2 Phaser Rate Unsynced	0.570
+FX2 Phaser Rate Synced	1	4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX2 Overdrive Drive Deprecated	0.000
+FX2 Compressor Release	50.0
+FX2 BitCrusher Bit Depth	16.0
+FX2 Filter Frequency	1000
+FX2 On/Off	On	False | True
+FX2 Reverb Predelay	0.003
+FX2 Reverb Damping	0.593
+FX2 Reverb Input LowPass Freq	7661
+FX2 Reverb Input HighPass Freq	44.0
+FX2 Reverb Size	1.08
+FX2 Reverb Output MS Mix (Stereo)	0.364
+FX2 Delay Feedback	0.400
+FX2 Delay HighPass freq	125
+FX2 Delay LowPass freq	7500
+FX2 Delay Stereo Width	0.060
+FX2 Delay Stereo Ping Pong 	0.500
+FX2 Delay Stereo Mode	Stereo	Stereo | Ping Pong
+FX2 Chorus Fixed Delay Time	5.00
+FX2 Chorus Depth	2.20
+FX2 Chorus Rate	0.990
+FX2 Chorus Stereo Mode	Stereo	Mono | Stereo
+FX2 Chorus Voices	2	1.0 | 2.0 | 3.0
+FX2 Chorus LFO Shape	Sine	Sine | Triangle
+FX2 Chorus JUN-6 Manual Rate	1.06
+FX2 Chorus JUN-6 Manual Sync Rate	1/2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX2 Chorus JUN-6 Manual Depth	2.37
+FX2 Chorus JUN-6 Manual Phase Offset	106
+FX2 Flanger MinDelay	0.300
+FX2 Flanger Depth	3.00
+FX2 Flanger Feedback	0.800
+FX2 Flanger Feedback Polarity	Negative	Positive | Negative
+FX2 Flanger Stereo	Stereo	Mono | Stereo
+FX2 Flanger LowPass Cutoff Frequency	13000
+FX2 Flanger HighPass Cutoff Frequency	100
+FX2 Flanger LFO Waveform	Triangle	Sine | Triangle
+FX2 Phaser Frequency	740
+FX2 Phaser N Poles	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FX2 Phaser Feedback	0.475
+FX2 Phaser LFO Wave	Sine	Sine | Triangle | Saw | Ramp | Square | Sample & Hold
+FX2 Phaser LFO Amount	1.00
+FX2 Phaser Sync Rate Type	Sync	Sync | Sync Triplets | Sync Dotted
+FX2 Phaser Midi Sync	ON	False | True
+FX2 Phaser Stereo	45.0
+FX2 Overdrive Tone	1.00
+FX2 Overdrive Level Deprecated	0.500
+FX2 Compressor Threshold	0.000
+FX2 Compressor Ratio	2.00
+FX2 Compressor Attack	2.00
+FX2 Compressor Auto Make up	OFF	False | True
+FX2 Compressor OutputGain	0.000
+FX2 BitCrusher Downsample	1.00
+FX2 Filter Q	0.707
+FX2 Filter Comb Freq	100
+FX2 Param Eq LowShelf Frequency	250
+FX2 Param Eq LowShelf Gain	0.000
+FX2 Param Eq LowShelf Q	0.707
+FX2 Param Eq Peak 1 Frequency	500
+FX2 Param Eq Peak 1 Gain	0.000
+FX2 Param Eq Peak 1 Q	1.23
+FX2 Param Eq Peak 2 Frequency	1000
+FX2 Param Eq Peak 2 Gain	0.000
+FX2 Param Eq Peak 2 Q	1.23
+FX2 Param Eq Peak 3 Frequency	3000
+FX2 Param Eq Peak 3 Gain	0.000
+FX2 Param Eq Peak 3 Q	1.23
+FX2 Param Eq HighShelf Frequency	5000
+FX2 Param Eq HighShelf Gain	0.000
+FX2 Param Eq HighShelf Q	0.707
+FX2 Param Eq Deprecated Param 3	1.00
+FX2 Stereo Pan Amount	0.500
+FX2 Stereo Pan Rate Unsynced	2.00
+FX2 Stereo Pan Rate Synced	1/2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX2 Stereo Pan Mode	Linear	Linear | Natural
+FX2 Stereo Pan Invert	Off	False | True
+FX2 Stereo Pan Deprecated Param 1	Off	False | True
+FX2 Stereo Pan Deprecated Param 2	120
+FX2 Pitch Shift Delay Time	16.0
+FX2 Pitch Shift Delay Synched	1/16	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX2 Pitch Shift Delay Feedback	0.000
+FX2 Pitch Shift Delay Pitch Shift	12.0
+FX2 Pitch Shift Delay Spray	152
+FX2 Pitch Shift Delay HP Freq	102
+FX2 Pitch Shift Delay LP Freq	5123
+FX2 Pitch Shift Delay Delay Offset	-2.70
+FX2 Pitch Shift Delay Detune	11.2
+FX2 TapeEcho Time	150
+FX2 TapeEcho Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX2 TapeEcho Fine	0.000
+FX2 TapeEcho Intensity	0.350
+FX2 TapeEcho Input Volume	0.000
+FX2 TapeEcho Stereo Spread	0.000
+FX2 TapeEcho Stereo Width	1.00
+FX2 TapeEcho Stereo Mode	Stereo	Stereo | Ping Pong
+FX2 Multiband Compressor Low Bypass	On	False | True
+FX2 Multiband Compressor High Bypass	On	False | True
+FX2 Multiband Compressor Low Mid Crossover	150
+FX2 Multiband Compressor Mid High Crossover	2500
+FX2 Multiband Compressor Output	0.000
+FX2 Multiband Compressor Input	0.000
+FX2 Multiband Compressor Attack	0.000
+FX2 Multiband Compressor Release	0.000
+FX2 Multiband Compressor Low Output Gain	0.000
+FX2 Multiband Compressor Low Below Threshold	-36.0
+FX2 Multiband Compressor Low Above Threshold	-6.00
+FX2 Multiband Compressor Low Below Ratio	1.000
+FX2 Multiband Compressor Low Above Ratio	1.00
+FX2 Multiband Compressor Mid Output Gain	0.000
+FX2 Multiband Compressor Mid Below Threshold	-36.0
+FX2 Multiband Compressor Mid Above Threshold	-6.00
+FX2 Multiband Compressor Mid Below Ratio	1.000
+FX2 Multiband Compressor Mid Above Ratio	1.00
+FX2 Multiband Compressor High Output Gain	0.000
+FX2 Multiband Compressor High Below Threshold	-36.0
+FX2 Multiband Compressor High Above Threshold	-6.00
+FX2 Multiband Compressor High Below Ratio	1.000
+FX2 Multiband Compressor High Above Ratio	1.00
+FX2 Distortion Wavefolder Type	Sine	Sine | Tri
+FX2 Distortion Drive	18.0
+FX2 Distortion Auto	On	False | True
+FX2 Distortion Output	-10.0
+FX2 Distortion Filter Cutoff	120
+FX2 Distortion Filter Resonance	0.707
+FX2 Distortion Filter Mode	High Pass	Low Pass | High Pass | Band Pass
+FX2 Distortion Filter Routing	Pre	Pre | Post
+FX2 Distortion Filter On/Off	Off	False | True
+FX2 Distortion Filter Dark	Off	False | True
+FX3 Dry/Wet	29.9
+FX3 Reverb Decay	0.693
+FX3 Delay Time	300
+FX3 Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX3 Chorus Feedback	0.000
+FX3 Flanger Freq	0.200
+FX3 Phaser Rate Unsynced	0.570
+FX3 Phaser Rate Synced	1	4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX3 Overdrive Drive Deprecated	0.000
+FX3 Compressor Release	50.0
+FX3 BitCrusher Bit Depth	16.0
+FX3 Filter Frequency	1000
+FX3 On/Off	On	False | True
+FX3 Reverb Predelay	0.000
+FX3 Reverb Damping	0.345
+FX3 Reverb Input LowPass Freq	2084
+FX3 Reverb Input HighPass Freq	140
+FX3 Reverb Size	0.974
+FX3 Reverb Output MS Mix (Stereo)	0.364
+FX3 Delay Feedback	0.568
+FX3 Delay HighPass freq	142
+FX3 Delay LowPass freq	5173
+FX3 Delay Stereo Width	0.060
+FX3 Delay Stereo Ping Pong 	0.500
+FX3 Delay Stereo Mode	Ping Pong	Stereo | Ping Pong
+FX3 Chorus Fixed Delay Time	9.11
+FX3 Chorus Depth	3.80
+FX3 Chorus Rate	0.648
+FX3 Chorus Stereo Mode	Stereo	Mono | Stereo
+FX3 Chorus Voices	3	1.0 | 2.0 | 3.0
+FX3 Chorus LFO Shape	Triangle	Sine | Triangle
+FX3 Chorus JUN-6 Manual Rate	1.00
+FX3 Chorus JUN-6 Manual Sync Rate	1/2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX3 Chorus JUN-6 Manual Depth	3.11
+FX3 Chorus JUN-6 Manual Phase Offset	180
+FX3 Flanger MinDelay	0.300
+FX3 Flanger Depth	3.00
+FX3 Flanger Feedback	0.800
+FX3 Flanger Feedback Polarity	Negative	Positive | Negative
+FX3 Flanger Stereo	Stereo	Mono | Stereo
+FX3 Flanger LowPass Cutoff Frequency	13000
+FX3 Flanger HighPass Cutoff Frequency	100
+FX3 Flanger LFO Waveform	Triangle	Sine | Triangle
+FX3 Phaser Frequency	740
+FX3 Phaser N Poles	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FX3 Phaser Feedback	0.475
+FX3 Phaser LFO Wave	Sine	Sine | Triangle | Saw | Ramp | Square | Sample & Hold
+FX3 Phaser LFO Amount	1.00
+FX3 Phaser Sync Rate Type	Sync	Sync | Sync Triplets | Sync Dotted
+FX3 Phaser Midi Sync	ON	False | True
+FX3 Phaser Stereo	45.0
+FX3 Overdrive Tone	1.00
+FX3 Overdrive Level Deprecated	0.500
+FX3 Compressor Threshold	0.000
+FX3 Compressor Ratio	2.00
+FX3 Compressor Attack	2.00
+FX3 Compressor Auto Make up	OFF	False | True
+FX3 Compressor OutputGain	0.000
+FX3 BitCrusher Downsample	1.00
+FX3 Filter Q	0.707
+FX3 Filter Comb Freq	100
+FX3 Param Eq LowShelf Frequency	250
+FX3 Param Eq LowShelf Gain	0.000
+FX3 Param Eq LowShelf Q	0.707
+FX3 Param Eq Peak 1 Frequency	500
+FX3 Param Eq Peak 1 Gain	0.000
+FX3 Param Eq Peak 1 Q	1.23
+FX3 Param Eq Peak 2 Frequency	1000
+FX3 Param Eq Peak 2 Gain	0.000
+FX3 Param Eq Peak 2 Q	1.23
+FX3 Param Eq Peak 3 Frequency	3000
+FX3 Param Eq Peak 3 Gain	0.000
+FX3 Param Eq Peak 3 Q	1.23
+FX3 Param Eq HighShelf Frequency	5000
+FX3 Param Eq HighShelf Gain	0.000
+FX3 Param Eq HighShelf Q	0.707
+FX3 Param Eq Deprecated Param 3	1.00
+FX3 Stereo Pan Amount	0.500
+FX3 Stereo Pan Rate Unsynced	2.00
+FX3 Stereo Pan Rate Synced	1/2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX3 Stereo Pan Mode	Linear	Linear | Natural
+FX3 Stereo Pan Invert	Off	False | True
+FX3 Stereo Pan Deprecated Param 1	Off	False | True
+FX3 Stereo Pan Deprecated Param 2	120
+FX3 Pitch Shift Delay Time	122
+FX3 Pitch Shift Delay Synched	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX3 Pitch Shift Delay Feedback	0.000
+FX3 Pitch Shift Delay Pitch Shift	0.000
+FX3 Pitch Shift Delay Spray	16.6
+FX3 Pitch Shift Delay HP Freq	20.0
+FX3 Pitch Shift Delay LP Freq	20000
+FX3 Pitch Shift Delay Delay Offset	0.000
+FX3 Pitch Shift Delay Detune	0.000
+FX3 TapeEcho Time	150
+FX3 TapeEcho Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX3 TapeEcho Fine	0.000
+FX3 TapeEcho Intensity	0.350
+FX3 TapeEcho Input Volume	0.000
+FX3 TapeEcho Stereo Spread	0.000
+FX3 TapeEcho Stereo Width	1.00
+FX3 TapeEcho Stereo Mode	Stereo	Stereo | Ping Pong
+FX3 Multiband Compressor Low Bypass	On	False | True
+FX3 Multiband Compressor High Bypass	On	False | True
+FX3 Multiband Compressor Low Mid Crossover	150
+FX3 Multiband Compressor Mid High Crossover	2500
+FX3 Multiband Compressor Output	0.000
+FX3 Multiband Compressor Input	0.000
+FX3 Multiband Compressor Attack	0.000
+FX3 Multiband Compressor Release	0.000
+FX3 Multiband Compressor Low Output Gain	0.000
+FX3 Multiband Compressor Low Below Threshold	-36.0
+FX3 Multiband Compressor Low Above Threshold	-6.00
+FX3 Multiband Compressor Low Below Ratio	1.000
+FX3 Multiband Compressor Low Above Ratio	1.00
+FX3 Multiband Compressor Mid Output Gain	0.000
+FX3 Multiband Compressor Mid Below Threshold	-36.0
+FX3 Multiband Compressor Mid Above Threshold	-6.00
+FX3 Multiband Compressor Mid Below Ratio	1.000
+FX3 Multiband Compressor Mid Above Ratio	1.00
+FX3 Multiband Compressor High Output Gain	0.000
+FX3 Multiband Compressor High Below Threshold	-36.0
+FX3 Multiband Compressor High Above Threshold	-6.00
+FX3 Multiband Compressor High Below Ratio	1.000
+FX3 Multiband Compressor High Above Ratio	1.00
+FX3 Distortion Wavefolder Type	Sine	Sine | Tri
+FX3 Distortion Drive	18.0
+FX3 Distortion Auto	On	False | True
+FX3 Distortion Output	-10.0
+FX3 Distortion Filter Cutoff	120
+FX3 Distortion Filter Resonance	0.707
+FX3 Distortion Filter Mode	High Pass	Low Pass | High Pass | Band Pass
+FX3 Distortion Filter Routing	Pre	Pre | Post
+FX3 Distortion Filter On/Off	Off	False | True
+FX3 Distortion Filter Dark	Off	False | True
+FX4 Dry/Wet	45.7
+FX4 Reverb Decay	0.693
+FX4 Delay Time	300
+FX4 Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX4 Chorus Feedback	0.076
+FX4 Flanger Freq	0.200
+FX4 Phaser Rate Unsynced	0.570
+FX4 Phaser Rate Synced	1	4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX4 Overdrive Drive Deprecated	0.000
+FX4 Compressor Release	50.0
+FX4 BitCrusher Bit Depth	16.0
+FX4 Filter Frequency	1000
+FX4 On/Off	On	False | True
+FX4 Reverb Predelay	0.000
+FX4 Reverb Damping	0.245
+FX4 Reverb Input LowPass Freq	3182
+FX4 Reverb Input HighPass Freq	111
+FX4 Reverb Size	0.985
+FX4 Reverb Output MS Mix (Stereo)	0.364
+FX4 Delay Feedback	0.400
+FX4 Delay HighPass freq	125
+FX4 Delay LowPass freq	7500
+FX4 Delay Stereo Width	0.060
+FX4 Delay Stereo Ping Pong 	0.500
+FX4 Delay Stereo Mode	Stereo	Stereo | Ping Pong
+FX4 Chorus Fixed Delay Time	14.2
+FX4 Chorus Depth	5.00
+FX4 Chorus Rate	0.437
+FX4 Chorus Stereo Mode	Stereo	Mono | Stereo
+FX4 Chorus Voices	3	1.0 | 2.0 | 3.0
+FX4 Chorus LFO Shape	Sine	Sine | Triangle
+FX4 Chorus JUN-6 Manual Rate	0.400
+FX4 Chorus JUN-6 Manual Sync Rate	1/2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX4 Chorus JUN-6 Manual Depth	4.44
+FX4 Chorus JUN-6 Manual Phase Offset	180
+FX4 Flanger MinDelay	0.300
+FX4 Flanger Depth	3.00
+FX4 Flanger Feedback	0.800
+FX4 Flanger Feedback Polarity	Negative	Positive | Negative
+FX4 Flanger Stereo	Stereo	Mono | Stereo
+FX4 Flanger LowPass Cutoff Frequency	13000
+FX4 Flanger HighPass Cutoff Frequency	100
+FX4 Flanger LFO Waveform	Triangle	Sine | Triangle
+FX4 Phaser Frequency	740
+FX4 Phaser N Poles	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FX4 Phaser Feedback	0.475
+FX4 Phaser LFO Wave	Sine	Sine | Triangle | Saw | Ramp | Square | Sample & Hold
+FX4 Phaser LFO Amount	1.00
+FX4 Phaser Sync Rate Type	Sync	Sync | Sync Triplets | Sync Dotted
+FX4 Phaser Midi Sync	ON	False | True
+FX4 Phaser Stereo	45.0
+FX4 Overdrive Tone	1.00
+FX4 Overdrive Level Deprecated	0.500
+FX4 Compressor Threshold	0.000
+FX4 Compressor Ratio	2.00
+FX4 Compressor Attack	2.00
+FX4 Compressor Auto Make up	OFF	False | True
+FX4 Compressor OutputGain	0.000
+FX4 BitCrusher Downsample	1.00
+FX4 Filter Q	0.707
+FX4 Filter Comb Freq	100
+FX4 Param Eq LowShelf Frequency	250
+FX4 Param Eq LowShelf Gain	0.000
+FX4 Param Eq LowShelf Q	0.707
+FX4 Param Eq Peak 1 Frequency	500
+FX4 Param Eq Peak 1 Gain	0.000
+FX4 Param Eq Peak 1 Q	1.23
+FX4 Param Eq Peak 2 Frequency	1000
+FX4 Param Eq Peak 2 Gain	0.000
+FX4 Param Eq Peak 2 Q	1.23
+FX4 Param Eq Peak 3 Frequency	3000
+FX4 Param Eq Peak 3 Gain	0.000
+FX4 Param Eq Peak 3 Q	1.23
+FX4 Param Eq HighShelf Frequency	5000
+FX4 Param Eq HighShelf Gain	0.000
+FX4 Param Eq HighShelf Q	0.707
+FX4 Param Eq Deprecated Param 3	1.00
+FX4 Stereo Pan Amount	0.500
+FX4 Stereo Pan Rate Unsynced	2.00
+FX4 Stereo Pan Rate Synced	1/2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX4 Stereo Pan Mode	Linear	Linear | Natural
+FX4 Stereo Pan Invert	Off	False | True
+FX4 Stereo Pan Deprecated Param 1	Off	False | True
+FX4 Stereo Pan Deprecated Param 2	120
+FX4 Pitch Shift Delay Time	122
+FX4 Pitch Shift Delay Synched	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX4 Pitch Shift Delay Feedback	0.000
+FX4 Pitch Shift Delay Pitch Shift	0.000
+FX4 Pitch Shift Delay Spray	16.6
+FX4 Pitch Shift Delay HP Freq	20.0
+FX4 Pitch Shift Delay LP Freq	20000
+FX4 Pitch Shift Delay Delay Offset	0.000
+FX4 Pitch Shift Delay Detune	0.000
+FX4 TapeEcho Time	150
+FX4 TapeEcho Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX4 TapeEcho Fine	0.000
+FX4 TapeEcho Intensity	0.350
+FX4 TapeEcho Input Volume	0.000
+FX4 TapeEcho Stereo Spread	0.000
+FX4 TapeEcho Stereo Width	1.00
+FX4 TapeEcho Stereo Mode	Stereo	Stereo | Ping Pong
+FX4 Multiband Compressor Low Bypass	On	False | True
+FX4 Multiband Compressor High Bypass	On	False | True
+FX4 Multiband Compressor Low Mid Crossover	150
+FX4 Multiband Compressor Mid High Crossover	2500
+FX4 Multiband Compressor Output	0.000
+FX4 Multiband Compressor Input	0.000
+FX4 Multiband Compressor Attack	0.000
+FX4 Multiband Compressor Release	0.000
+FX4 Multiband Compressor Low Output Gain	0.000
+FX4 Multiband Compressor Low Below Threshold	-36.0
+FX4 Multiband Compressor Low Above Threshold	-6.00
+FX4 Multiband Compressor Low Below Ratio	1.000
+FX4 Multiband Compressor Low Above Ratio	1.00
+FX4 Multiband Compressor Mid Output Gain	0.000
+FX4 Multiband Compressor Mid Below Threshold	-36.0
+FX4 Multiband Compressor Mid Above Threshold	-6.00
+FX4 Multiband Compressor Mid Below Ratio	1.000
+FX4 Multiband Compressor Mid Above Ratio	1.00
+FX4 Multiband Compressor High Output Gain	0.000
+FX4 Multiband Compressor High Below Threshold	-36.0
+FX4 Multiband Compressor High Above Threshold	-6.00
+FX4 Multiband Compressor High Below Ratio	1.000
+FX4 Multiband Compressor High Above Ratio	1.00
+FX4 Distortion Wavefolder Type	Sine	Sine | Tri
+FX4 Distortion Drive	18.0
+FX4 Distortion Auto	On	False | True
+FX4 Distortion Output	-10.0
+FX4 Distortion Filter Cutoff	120
+FX4 Distortion Filter Resonance	0.707
+FX4 Distortion Filter Mode	High Pass	Low Pass | High Pass | Band Pass
+FX4 Distortion Filter Routing	Pre	Pre | Post
+FX4 Distortion Filter On/Off	Off	False | True
+FX4 Distortion Filter Dark	Off	False | True
+Pitch Bend	0.000
+AfterTouch	0.000
+Hold	Off	False | True
+All Notes Off	0.000
+All Sounds Off	0.000
+Expression	0.000
+Breath	0.000
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

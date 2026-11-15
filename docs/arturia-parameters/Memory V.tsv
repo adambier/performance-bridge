@@ -1,0 +1,554 @@
+# Memory V 1.0.0.8646 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+Macro1	0.048
+Macro2	0.124
+Macro3	0.000
+Macro4	0.808
+Master Volume	-5.63
+Master Tune	440
+LFO Amount	0.098
+Transpose	0.000
+Vintage	2.16
+Pitch 2	0.000
+Pitch 3	0.000
+Sync 1 To 3	Off	False | True
+Sync 2 To 1	On	False | True
+Low	Off	False | True
+Kbd Control	On	False | True
+Noise	0.000
+Filter Envelope Osc 3 Amount	On	False | True
+Invert	On	False | True
+Voice Mod Filter	On	False | True
+Osc 3 Amount	0.000
+Filter Envelope Amount	0.840
+LFO Waveform	Tri	Tri | Saw | Ramp | Pulse | SnH
+LFO Rate (Hertz)	3.59
+LFO Rate (Sync All)	8	24 | 16 | 12 | 32/3 | 8 | 6 | 16/3 | 4 | 3 | 8/3 | 2 | 3/2 | 4/3 | 1 | 3/4 | 2/3 | 1/2 | 3/8 | 1/3 | 1/4 | 3/16 | 1/6 | 1/8 | 3/32 | 1/12 | 1/16 | 3/64 | 1/24 | 1/32 | 1/48
+LFO Rate (Sync)	1	16 | 8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+LFO Rate Type	Hertz	Hertz | Sync | Sync.s | Sync.t | Sync.d
+LFO Retrig	Poly	Mono | Poly
+Modwheel LFO Amount	0.000
+Amp Env Attack	0.003
+Amp Env Decay	4.18
+Amp Env Sustain	36.8
+Amp Env Release	8.63
+Filter Env Attack	0.003
+Filter Env Decay	4.93
+Filter Env Sustain	0.000
+Filter Env Release	7.40
+Glide Time	0.005
+Glide Legato	Off	False | True
+Unison	Off	False | True
+Unison Detune	0.000
+Stereo Spread	2.00
+Unison Voice Nb	5	2.0 | 3.0 | 4.0 | 5.0 | 6.0
+Envelope Mode	Legato	Retrig | Legato
+Volume	-6.00
+Pan	0.000
+Velocity Filter	On	False | True
+Velocity Volume	On	False | True
+Velocity Amount	3.68
+LFO Pan	On	False | True
+Voice Mod Pan	Off	False | True
+LFO Volume	Off	False | True
+Voice Mod Volume	On	False | True
+Retrig From Zero	Off	False | True
+Keytrack Envelope Times	Off	False | True
+Entire Attack	Off	False | True
+Velocity Envelope Times	Off	False | True
+Mono Priority	Last	Low | High | Last
+Pitch Dispersion	0.500
+Level Dispersion	0.500
+PW Dispersion	0.500
+Cutoff Dispersion	0.500
+Emphasis Dispersion	0.500
+Modulation Dispersion	0.500
+Envelope Dispersion	0.500
+Mod Wheel	0.000
+FX Routing	Serie	Serie | Parallel | DualSerie
+OSC1 Octave	8'	16' | 8' | 4' | 2'
+OSC1 Square ON/OFF	Off	False | True
+OSC1 Ramp ON/OFF	On	False | True
+OSC1 Triangle ON/OFF	Off	False | True
+OSC1 Square Pulse Width	50.0
+OSC1 Level	9.36
+OSC2 Octave	8'	16' | 8' | 4' | 2'
+OSC2 Square ON/OFF	Off	False | True
+OSC2 Ramp ON/OFF	On	False | True
+OSC2 Triangle ON/OFF	Off	False | True
+OSC2 Square Pulse Width	50.0
+OSC2 Level	10.0
+OSC3 Octave	8'	16' | 8' | 4' | 2'
+OSC3 Square ON/OFF	Off	False | True
+OSC3 Ramp ON/OFF	Off	False | True
+OSC3 Triangle ON/OFF	On	False | True
+OSC3 Square Pulse Width	50.0
+OSC3 Level	8.00
+Voice Mod Pitch1	Off	False | True
+Voice Mod Pitch2	On	False | True
+Voice Mod PW1	Off	False | True
+Voice Mod PW2	Off	False | True
+LFO Pitch1	On	False | True
+LFO Pitch2	Off	False | True
+LFO Pitch3	On	False | True
+LFO PW1	Off	False | True
+LFO PW2	Off	False | True
+LFO PW3	Off	False | True
+Cutoff	17.9
+Emphasis	2.45
+Contour Amount	48.0
+Drive	0.000
+LFO Filter	Off	False | True
+Keyboard	2.38
+Emphasis Bass Compensation	Off	False | True
+12dB	24Db	24.0 | 12.0
+MultiArp Enable	Off	False | True
+MultiArp Master Frequency (BPM)	120
+MultiArp Master Frequency (Sync All)	1/16	6 | 4 | 3 | 8/3 | 2 | 3/2 | 4/3 | 1 | 3/4 | 2/3 | 1/2 | 3/8 | 1/3 | 1/4 | 3/16 | 1/6 | 1/8 | 3/32 | 1/12 | 1/16 | 3/64 | 1/24 | 1/32 | 3/128 | 1/48 | 1/64 | 1/96
+MultiArp Master Frequency (Sync)	1/8	4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32 | 1/64
+MultiArp Rate Type	Sync	BPM | Sync | Sync.s | Sync.t | Sync.d
+MultiArp Master Gate	80.0
+MultiArp Root Note	C	C | C# | D | D# | E | F | F# | G | G# | A | A# | B
+MultiArp Scale	Chromatic	Chromatic | Major | Natural Minor | Harmonic Minor | Melodic Minor | Lydian | Mixolydian | Dorian | Phrygian | Locrian | Major Penta | Minor Penta | Blues | Fifth | Custom
+Arp 1 Enable	On	False | True
+Arp 1	Up	Up | Down | Up & Down | Down & Up | Random (Other) | Random Once | As Played | Ground Up | Ground Down | Ground Up & Down | Climb Up | Climb Down | Climb Up & Down | Ceiling Up | Ceiling Down | Stairs Up | Stairs Down | Spin Up | Spin Down | Alberti Up | Alberti Down | 8 Bit | Bass | Bounce | Converge | Dance | Groove | Pulse 1 | Pulse 2 | Swirl
+Arp 1 Rate Multiplier	x1	/8 | /6 | /4 | /3 | /2 | /1.5 | x1 | x1.5 | x2 | x3 | x4 | x6 | x8
+Arp 1 Gate Multiplier	1.00
+Arp 1 Transpose	0
+Arp 1 Octave	1.00
+Arp 1 Start Offset	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0
+Arp 1 Retrig	Off	Off | Note | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8 | 16
+Arp 1 Random	0.000
+Arp 1 Note Repeat	1	1.0 | 2.0 | 3.0 | 4.0
+Arp 1 Velocity	0.000
+Arp 2 Enable	Off	False | True
+Arp 2	Climb Down	Up | Down | Up & Down | Down & Up | Random (Other) | Random Once | As Played | Ground Up | Ground Down | Ground Up & Down | Climb Up | Climb Down | Climb Up & Down | Ceiling Up | Ceiling Down | Stairs Up | Stairs Down | Spin Up | Spin Down | Alberti Up | Alberti Down | 8 Bit | Bass | Bounce | Converge | Dance | Groove | Pulse 1 | Pulse 2 | Swirl
+Arp 2 Rate Multiplier	x1	/8 | /6 | /4 | /3 | /2 | /1.5 | x1 | x1.5 | x2 | x3 | x4 | x6 | x8
+Arp 2 Gate Multiplier	1.00
+Arp 2 Transpose	0
+Arp 2 Octave	2.02
+Arp 2 Start Offset	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0
+Arp 2 Retrig	Off	Off | Note | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8 | 16
+Arp 2 Random	0.000
+Arp 2 Note Repeat	1	1.0 | 2.0 | 3.0 | 4.0
+Arp 2 Velocity	0.000
+Arp 3 Enable	Off	False | True
+Arp 3	Ground Up	Up | Down | Up & Down | Down & Up | Random (Other) | Random Once | As Played | Ground Up | Ground Down | Ground Up & Down | Climb Up | Climb Down | Climb Up & Down | Ceiling Up | Ceiling Down | Stairs Up | Stairs Down | Spin Up | Spin Down | Alberti Up | Alberti Down | 8 Bit | Bass | Bounce | Converge | Dance | Groove | Pulse 1 | Pulse 2 | Swirl
+Arp 3 Rate Multiplier	/2	/8 | /6 | /4 | /3 | /2 | /1.5 | x1 | x1.5 | x2 | x3 | x4 | x6 | x8
+Arp 3 Gate Multiplier	0.634
+Arp 3 Transpose	-12
+Arp 3 Octave	1.00
+Arp 3 Start Offset	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0
+Arp 3 Retrig	Off	Off | Note | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8 | 16
+Arp 3 Random	0.000
+Arp 3 Note Repeat	1	1.0 | 2.0 | 3.0 | 4.0
+Arp 3 Velocity	0.000
+Arp 4 Enable	Off	False | True
+Arp 4	Climb Down	Up | Down | Up & Down | Down & Up | Random (Other) | Random Once | As Played | Ground Up | Ground Down | Ground Up & Down | Climb Up | Climb Down | Climb Up & Down | Ceiling Up | Ceiling Down | Stairs Up | Stairs Down | Spin Up | Spin Down | Alberti Up | Alberti Down | 8 Bit | Bass | Bounce | Converge | Dance | Groove | Pulse 1 | Pulse 2 | Swirl
+Arp 4 Rate Multiplier	x1	/8 | /6 | /4 | /3 | /2 | /1.5 | x1 | x1.5 | x2 | x3 | x4 | x6 | x8
+Arp 4 Gate Multiplier	0.530
+Arp 4 Transpose	12
+Arp 4 Octave	2.50
+Arp 4 Start Offset	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0
+Arp 4 Retrig	1	Off | Note | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8 | 16
+Arp 4 Random	0.000
+Arp 4 Note Repeat	1	1.0 | 2.0 | 3.0 | 4.0
+Arp 4 Velocity	0.000
+Sequencer 1 Length	16	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Sequencer 1 Rate Sync	1/4	1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Sequencer 1 Rate Hertz	1.000
+Sequencer 1 Rate Type	Sync	Hertz | Sync | Sync.s | Sync.t | Sync.d
+Sequencer 1 Swing	50.0
+Sequencer 1 Smooth	0.000
+Sequencer 1 Random Amount	100
+Sequencer 1 Playback	Forward	Forward | Backward | Back & Forth | Random
+Sequencer 1 Random Auto Regen	Off	Off | 1 Bar | 2 Bars | 4 Bars | 8 Bars
+Sequencer 1 Scale	100
+Sequencer 1 Polarity	Unipolar	Unipolar | Bipolar
+Sequencer 1 Retrig	Free	Free | Mono | Legato | Arp Start | Other Modulator 1 | Other Modulator 2
+Sequencer 2 Length	16	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Sequencer 2 Rate Sync	1/4	1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Sequencer 2 Rate Hertz	1.000
+Sequencer 2 Rate Type	Sync	Hertz | Sync | Sync.s | Sync.t | Sync.d
+Sequencer 2 Swing	50.0
+Sequencer 2 Smooth	0.000
+Sequencer 2 Random Amount	100
+Sequencer 2 Playback	Forward	Forward | Backward | Back & Forth | Random
+Sequencer 2 Random Auto Regen	Off	Off | 1 Bar | 2 Bars | 4 Bars | 8 Bars
+Sequencer 2 Scale	100
+Sequencer 2 Polarity	Unipolar	Unipolar | Bipolar
+Sequencer 2 Retrig	Free	Free | Mono | Legato | Arp Start | Other Modulator 1 | Other Modulator 2
+Sequencer 3 Length	16	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Sequencer 3 Rate Sync	1/4	1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Sequencer 3 Rate Hertz	1.000
+Sequencer 3 Rate Type	Sync	Hertz | Sync | Sync.s | Sync.t | Sync.d
+Sequencer 3 Swing	50.0
+Sequencer 3 Smooth	0.000
+Sequencer 3 Random Amount	100
+Sequencer 3 Playback	Forward	Forward | Backward | Back & Forth | Random
+Sequencer 3 Random Auto Regen	Off	Off | 1 Bar | 2 Bars | 4 Bars | 8 Bars
+Sequencer 3 Scale	100
+Sequencer 3 Polarity	Unipolar	Unipolar | Bipolar
+Sequencer 3 Retrig	Free	Free | Mono | Legato | Arp Start | Other Modulator 1 | Other Modulator 2
+Random 1 Smooth	0.000
+Random 1 Rate Sync	1/4	16 | 8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Random 1 Rate Hertz	0.488
+Random 1 Rate Type	Sync	Hertz | Sync | Sync.s | Sync.t | Sync.d | Freeze
+Random 1 Polarity	Off	False | True
+Random 1 Scale	100
+Random 1 Jitter	0.000
+Random 1 Distance	100
+Random 1 Retrig	Off	Off | Poly | Mono | Legato | Arp Start | Other Modulator 1 | Other Modulator 2
+Random 2 Smooth	0.000
+Random 2 Rate Sync	1/4	16 | 8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Random 2 Rate Hertz	0.488
+Random 2 Rate Type	Sync	Hertz | Sync | Sync.s | Sync.t | Sync.d | Freeze
+Random 2 Polarity	Off	False | True
+Random 2 Scale	100
+Random 2 Jitter	0.000
+Random 2 Distance	100
+Random 2 Retrig	Off	Off | Poly | Mono | Legato | Arp Start | Other Modulator 1 | Other Modulator 2
+Random 3 Smooth	0.000
+Random 3 Rate Sync	1/4	16 | 8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Random 3 Rate Hertz	0.488
+Random 3 Rate Type	Sync	Hertz | Sync | Sync.s | Sync.t | Sync.d | Freeze
+Random 3 Polarity	Off	False | True
+Random 3 Scale	100
+Random 3 Jitter	0.000
+Random 3 Distance	100
+Random 3 Retrig	Off	Off | Poly | Mono | Legato | Arp Start | Other Modulator 1 | Other Modulator 2
+Function 1 Rate Sync	1/4	16 | 8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Function 1 Rate Hertz	1.00
+Function 1 Rate Type	Sync	Hertz | Sync | Sync.s | Sync.t | Sync.d
+Function 1 Polarity	Unipolar	Unipolar | Bipolar
+Function 1 Retrig	Poly	Poly | Mono | Legato | Arp Start | Other Modulator 1 | Other Modulator 2
+Function 1 Scale	100
+Function 1 Smooth	0.002
+Function 2 Rate Sync	1/4	16 | 8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Function 2 Rate Hertz	0.161
+Function 2 Rate Type	Hertz	Hertz | Sync | Sync.s | Sync.t | Sync.d
+Function 2 Polarity	Bipolar	Unipolar | Bipolar
+Function 2 Retrig	Poly	Poly | Mono | Legato | Arp Start | Other Modulator 1 | Other Modulator 2
+Function 2 Scale	100
+Function 2 Smooth	0.002
+Function 3 Rate Sync	1/4	16 | 8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Function 3 Rate Hertz	4.20
+Function 3 Rate Type	Hertz	Hertz | Sync | Sync.s | Sync.t | Sync.d
+Function 3 Polarity	Bipolar	Unipolar | Bipolar
+Function 3 Retrig	Poly	Poly | Mono | Legato | Arp Start | Other Modulator 1 | Other Modulator 2
+Function 3 Scale	0.000
+Function 3 Smooth	0.002
+Envelope 1 Delay	0.000
+Envelope 1 Attack	846
+Envelope 1 Decay	4.60
+Envelope 1 Sustain	0.751
+Envelope 1 Release	6.16
+Envelope 1 Scale	100
+Envelope 1 Keyboard Time Amount	0.000
+Envelope 1 Velocity Time Amount	0.000
+Envelope 1 Velocity Scale Amount	0.000
+Envelope 1 Attack Curve	0.000
+Envelope 1 Decay Curve	0.000
+Envelope 1 Release Curve	0.000
+Envelope 1 Retrig	Poly	Poly | Mono | Legato | Arp Start
+Envelope 2 Delay	0.000
+Envelope 2 Attack	1.00
+Envelope 2 Decay	0.300
+Envelope 2 Sustain	0.700
+Envelope 2 Release	0.100
+Envelope 2 Scale	100
+Envelope 2 Keyboard Time Amount	0.000
+Envelope 2 Velocity Time Amount	0.000
+Envelope 2 Velocity Scale Amount	0.000
+Envelope 2 Attack Curve	0.000
+Envelope 2 Decay Curve	0.000
+Envelope 2 Release Curve	0.000
+Envelope 2 Retrig	Poly	Poly | Mono | Legato | Arp Start
+Envelope 3 Delay	0.000
+Envelope 3 Attack	1.00
+Envelope 3 Decay	0.300
+Envelope 3 Sustain	0.700
+Envelope 3 Release	0.100
+Envelope 3 Scale	100
+Envelope 3 Keyboard Time Amount	0.000
+Envelope 3 Velocity Time Amount	0.000
+Envelope 3 Velocity Scale Amount	0.000
+Envelope 3 Attack Curve	0.000
+Envelope 3 Decay Curve	0.000
+Envelope 3 Release Curve	0.000
+Envelope 3 Retrig	Poly	Poly | Mono | Legato | Arp Start
+Voice Modulator 1 Scale	100
+Voice Modulator 2 Scale	100
+Voice Modulator 3 Scale	100
+Pitch Bend	0.000
+AfterTouch	0.000
+Hold	Off	False | True
+All Notes Off	0.000
+All Sounds Off	0.000
+FX Dry/Wet	27.6
+FX Bypass	On	False | True
+FX Send/Insert Mode	Insert	Insert | Send
+FX Send Level	-70.0
+FX Reverb Decay	0.460
+FX Reverb Predelay	0.200
+FX Reverb Damping	0.600
+FX Reverb Input LowPass Freq	15000
+FX Reverb Input HighPass Freq	200
+FX Reverb Size	0.800
+FX Reverb Output MS Mix (Stereo)	0.500
+FX Delay Delay Time	605
+FX Delay Delay Fine	0.000
+FX Delay Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX Delay Feedback	0.595
+FX Delay HighPass freq	368
+FX Delay LowPass freq	1772
+FX Delay Stereo Width	0.103
+FX Delay Stereo Ping Pong 	1.00
+FX Delay Stereo Mode	Ping Pong	Stereo | Ping Pong
+FX Chorus Feedback	0.000
+FX Chorus Fixed Delay Time	5.00
+FX Chorus Depth	2.20
+FX Chorus Freq	0.990
+FX Chorus Stereo Mode	Stereo	Mono | Stereo
+FX Chorus Voices	2	1.0 | 2.0 | 3.0
+FX Chorus LFO Shape	Sine	Sine | Triangle
+FX Flanger MinDelay	0.300
+FX Flanger Depth	3.00
+FX Flanger Freq	0.200
+FX Flanger Sync Rate	2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX Flanger Feedback	0.800
+FX Flanger Feedback Polarity	Negative	Positive | Negative
+FX Flanger Stereo	Stereo	Mono | Stereo
+FX Flanger LowPass Cutoff Frequency	13000
+FX Flanger HighPass Cutoff Frequency	100
+FX Flanger LFO Waveform	Triangle	Sine | Triangle
+FX Phaser Frequency	740
+FX Phaser N Poles	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FX Phaser Rate Unsynced	0.570
+FX Phaser Rate Synced	1	4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX Phaser Feedback	0.475
+FX Phaser LFO Wave	Sine	Sine | Triangle | Saw | Ramp | Square | Sample & Hold
+FX Phaser LFO Amount	1.00
+FX Phaser Stereo	45.0
+FX Compressor Threshold	0.000
+FX Compressor Ratio	2.00
+FX Compressor Attack	2.00
+FX Compressor Release	50.0
+FX Compressor Auto Make up	OFF	False | True
+FX Compressor OutputGain	0.000
+FX BitCrusher Bitdepth	16.0
+FX BitCrusher Downsample	1.00
+FX BitCrusher Jitter	0.000
+FX BitCrusher Scale	0.000
+FX BitCrusher HP Freq	20.0
+FX BitCrusher LP Freq	20000
+FX Param Eq LowShelf Frequency	250
+FX Param Eq LowShelf Gain	0.000
+FX Param Eq LowShelf Q	0.707
+FX Param Eq Peak 1 Frequency	500
+FX Param Eq Peak 1 Gain	0.000
+FX Param Eq Peak 1 Q	1.23
+FX Param Eq Peak 2 Frequency	1000
+FX Param Eq Peak 2 Gain	0.000
+FX Param Eq Peak 2 Q	1.23
+FX Param Eq Peak 3 Frequency	3000
+FX Param Eq Peak 3 Gain	0.000
+FX Param Eq Peak 3 Q	1.23
+FX Param Eq HighShelf Frequency	5000
+FX Param Eq HighShelf Gain	0.000
+FX Param Eq HighShelf Q	0.707
+FX Stereo Pan Rate Unsynced	2.00
+FX Stereo Pan Rate Synced	1/2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX Stereo Pan Pan	0.000
+FX Chorus JUN-6 Manual Rate	2.75
+FX Chorus JUN-6 Manual Sync Rate	1/4	4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX Chorus JUN-6 Manual Depth	2.68
+FX Chorus JUN-6 Manual Phase Offset	94.2
+FX Tape Echo Time	150
+FX Tape Echo Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX Tape Echo Fine	0.000
+FX Tape Echo Intensity	0.350
+FX Tape Echo Stereo Spread	0.060
+FX Tape Echo Stereo Width	1.00
+FX Tape Echo Stereo Mode	Stereo	Stereo | Ping Pong
+FX Tape Echo Input Volume	0.000
+FX Pitch Delay Time	122
+FX Pitch Delay Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX Pitch Delay Feedback	0.000
+FX Pitch Delay Pitch Shift	0.000
+FX Pitch Delay Spray	16.6
+FX Pitch Delay HP Freq	20.0
+FX Pitch Delay LP Freq	20000
+FX Pitch Delay Delay Offset	0.000
+FX Pitch Delay Detune	0.000
+FX Multiband Compressor Low Bypass	Off	True | False
+FX Multiband Compressor High Bypass	Off	True | False
+FX Multiband Compressor Low Mid Crossover	88.3
+FX Multiband Compressor Mid High Crossover	2500
+FX Multiband Compressor Output	0.000
+FX Multiband Compressor Input	5.22
+FX Multiband Compressor Attack	0.000
+FX Multiband Compressor Release	0.001
+FX Multiband Compressor Low Output Gain	2.23
+FX Multiband Compressor Low Below Threshold	-40.8
+FX Multiband Compressor Low Above Threshold	-33.8
+FX Multiband Compressor Low Below Ratio	4.17
+FX Multiband Compressor Low Above Ratio	66.9
+FX Multiband Compressor Mid Output Gain	2.44
+FX Multiband Compressor Mid Below Threshold	-41.8
+FX Multiband Compressor Mid Above Threshold	-30.2
+FX Multiband Compressor Mid Below Ratio	4.17
+FX Multiband Compressor Mid Above Ratio	66.9
+FX Multiband Compressor High Output Gain	0.000
+FX Multiband Compressor High Below Threshold	-40.8
+FX Multiband Compressor High Above Threshold	-35.5
+FX Multiband Compressor High Below Ratio	4.17
+FX Multiband Compressor High Above Ratio	101
+FX BL-20 Flanger Feedback	0.565
+FX BL-20 Flanger LFO Rate	0.250
+FX BL-20 Flanger LFO Synced	2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX BL-20 Flanger LFO Depth	1.00
+FX BL-20 Flanger Wide	On	False | True
+FX BL-20 Flanger Mono Input	Stereo	Stereo | Mono
+FX BL-20 Flanger Delay	0.000
+FX Super Unison Voices	5	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0
+FX Super Unison Stereo Width	1.00
+FX Super Unison Detune	40.0
+FX Super Unison Rate	0.350
+FX Super Unison HPFCutoff	250
+FX Super Unison LPFCutoff	20000
+FX Super Unison Retrig	On	True | False
+FX Trance Gate Shape	Triangle	Triangle | Decay | Rise | Trapeze | Classic
+FX Trance Gate Morph	0.000
+FX Trance Gate Reset	Off	Off | 1 Bar | 2 Bars | 4 Bars | 8 Bars | 16 Bars
+FX Trance Gate Rate	1/32	1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX Trance Gate Length	8
+FX Trance Gate Ratchet	1	1.0 | 2.0 | 3.0 | 4.0
+FX Trance Gate Retrig	Off	False | True
+FX Distortion Output	-7.95
+FX Distortion Bias	0.082
+FX Distortion Auto Gain	On	False | True
+FX Distortion Drive	14.4
+FX Distortion Low Gain	16.1
+FX Distortion Peak Frequency	854
+FX Distortion Peak Gain	6.34
+FX Distortion Peak Bandwidth	0.749
+FX Filter Drive	0.000
+FX Filter Type	Classic LP12
+FX Filter Cutoff	20000
+FX Filter Resonance	0.000
+FX Filter Key tracking	0.000
+FX Filter Ripple Dry Level	0.000
+FX Filter Ripple Drive	0.000
+FX Filter Ripple Feedback	0.000
+FX Filter Ripple Shaper Mode	Drive	Drive | Feedback Negative | Feedback Positive
+FX Filter Reverb Damping	0.000
+FX Filter Reverb Drive	0.000
+FX Filter Cluster Mode	Peak9	Peak9 | Peak18 | BP12 | BP24 | LP+HP12 | LP+HP24 | Notch24
+FX Filter Cluster Number	3	1.0 | 2.0 | 3.0 | 4.0 | 5.0
+FX Filter Cluster Spread	0.250
+FX Filter Phaser Feedback	0.000
+FX Filter Phaser Poles Number	4	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FX Filter LoFi Frequency	44100
+FX Filter LoFi Pre-Filter On/Off	Off	False | True
+FX Filter LoFi Pre-Filter Freq Shift	0.000
+FX Filter LoFi Post-Filter On/Off	Off	False | True
+FX Filter LoFi Post-Filter Freq Shift	0.000
+FX Filter LoFi Jitter	0.000
+FX Filter Rage Drive	0.000
+FX Filter Surgeon Spread	50.0
+FX Trance Gate Rotate	Off	False | True
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

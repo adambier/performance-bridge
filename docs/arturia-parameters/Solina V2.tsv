@@ -1,0 +1,197 @@
+# Solina V2 2.13.4.6366 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+Poly Mode	On	False | True
+Velocity Level	0.000
+Velocity Brightness	0.000
+Aftertouch Level	0.000
+Aftertouch Brightness	0.000
+Vibrato	2.40
+Tremolo	-0.768
+Contrabass	Off	False | True
+Cello	Off	False | True
+Bass Sustain	582
+Bass Volume	-10.9
+Viola	On	False | True
+Violin	Off	False | True
+Trumpet	Off	False | True
+Horn	Off	False | True
+Humana	On	False | True
+Upper Sustain	2129
+Upper Volume	-8.42
+Crescendo	-12.3
+Ensemble On/Off	Off	False | True
+Ensemble Stereo	Mono	Mono | Stereo
+Master Volume	7.20
+Mod Amount	0.000
+Mod Wheel	0.000
+Pitch Amount	200
+Brightness	0.500
+Timbre	0.333
+Time	0.500
+Movement	0.500
+LFO Delay	102
+LFO Fade	235
+LFO Waveform	Saw Down	Random | Square | Saw Down | Saw Up | Triangle
+LFO Rate	10.6
+LFO Sync	Off	False | True
+LFO Ratio	1/8	8/1 | 4/1 | 3/1 | 2/1 | 1/1. | 1/1 | 1/2. | 1/1T | 1/2 | 1/4. | 1/2T | 1/4 | 1/8. | 1/4T | 1/8 | 1/8T | 1/16 | 1/32 | 1/64
+LFO Retrigger	Off	False | True
+VCF Cutoff	20000
+VCF Resonance	0.000
+VCF Modulation	0.000
+VCF Envelope	0.000
+VCF Attack	0.000
+VCF Release	0.000
+Arp On/Off	Off	Off | On | Hold
+Arp Rate	9.13
+Arp Sync	On	False | True
+Arp Ratio	1/4	2 | 7/4 | 3/2 | 5/4 | 1 | 3/4 | 1/2 | 1/4 | 1/4T | 1/8 | 1/8T | 1/16 | 1/16T | 1/32 | 1/32T | 1/64 | 1/64T | 1/128 | 1/128T | 1/256
+Arp Mode	Random	Random | Excl | Down | Up
+Resonator Mode	Low	Bypass | Low | Band | High
+Resonator Cutoff 1	128
+Resonator Resonance 1	10.0
+Resonator Gain 1	-4.08
+Resonator Cutoff 2	856
+Resonator Resonance 2	0.500
+Resonator Gain 2	-0.003
+Resonator Cutoff 3	2970
+Resonator Resonance 3	0.500
+Resonator Gain 3	0.602
+FX 1 Type	Chorus	Phaser | Chorus
+FX 1 Mix	40.4
+Phaser Rate 1	2.51
+Phaser Ratio 1	Tempo / 7	Tempo / 15 | Tempo / 14 | Tempo / 13 | Tempo / 12 | Tempo / 11 | Tempo / 10 | Tempo / 9 | Tempo / 8 | Tempo / 7 | Tempo / 6 | Tempo / 5 | Tempo / 4 | Tempo / 3 | Tempo / 2 | 1/4 | 1/8
+Phaser Feedback 1	82.4
+Phaser Depth 1	49.6
+Phaser Dual Mode	On	False | True
+Phaser Rate 2	9.42
+Phaser Ratio 2	Tempo / 7	Tempo / 15 | Tempo / 14 | Tempo / 13 | Tempo / 12 | Tempo / 11 | Tempo / 10 | Tempo / 9 | Tempo / 8 | Tempo / 7 | Tempo / 6 | Tempo / 5 | Tempo / 4 | Tempo / 3 | Tempo / 2 | 1/4 | 1/8
+Phaser Feedback 2	78.8
+Phaser Depth 2	39.2
+Phaser Sync	Off	False | True
+Chorus Type	2	3.0 | 2.0 | 1.0
+Chorus Rate	3.39
+Chorus Amount	14.8
+Chorus Stereo Rate	0.336
+Chorus Stereo Width	8.00
+Chorus Delay	5.89
+FX 2 Type	Analog Delay	Analog Delay | Digital Delay
+FX 2 Mix	0.000
+Analog Delay Time	667
+Analog Delay Feedback	30.0
+Analog Delay FB Tone	35.2
+Analog Delay LFO Depth	8.00
+Analog Delay LFO Rate	3.50
+Digital Delay Time 1	190
+Digital Delay Ratio 1	1/4	1/128 | 1/64 | 1/32T | 1/32 | 1/16T | 1/16 | 1/8T | 1/16. | 1/8 | 1/4T | 1/8. | 1/4 | 1/2T | 1/4. | 1/2 | 1/2. | 1/1
+Digital Delay Feedback 1	34.0
+Digital Delay Link	Off	False | True
+Digital Delay Time 2	190
+Digital Delay Ratio 2	1/8	1/128 | 1/64 | 1/32T | 1/32 | 1/16T | 1/16 | 1/8T | 1/16. | 1/8 | 1/4T | 1/8. | 1/4 | 1/2T | 1/4. | 1/2 | 1/2. | 1/1
+Digital Delay Feedback 2	24.0
+Digital Delay Ping-Pong	On	False | True
+Digital Delay Damping	68.4
+Digital Delay Sync	On	False | True
+Reverb Mix	35.6
+Reverb Model	RV-2 Low-Cut	Eminent 310 | King Medium | RV-1 RIAA | RV-2 High-Cut | RV-2 Flat | RV-2 Low-Cut | DEP-5 R20 Short | DEP-5 R61 Short | DEP-5 H14 Long | DEP-5 H76 Medium | DEP-5 P1 Short | DEP-5 P1 Medium | DEP-5 P1 Long | DEP-5 P1 XL | DEP-5 S1 Medium | DEP-5 S1 Long | DEP-5 NLR | RSP-550 Hall 3.5 | RSP-550 Room 2.5 | RSP-550 Room 4.0 | RSP-550 Plate Warm | RSP-550 Plate Long | RSP-550 Black Hole | RSP-550 Shimmer
+VST3_PitchBend	-0.000
+VST3_AfterTouch	0.000
+VST3_CtrlAllNotesOff	0.000
+Unassigned 1	0.500
+Unassigned 2	0.500
+VST3_CtrlSustainOnOff	0.000
+VST3_CtrlAllSoundsOff	0.000
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

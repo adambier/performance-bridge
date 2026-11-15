@@ -1,0 +1,198 @@
+# Clavinet V 1.13.4.6366 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+Tuning	440
+Strings Resonance	0.687
+Mute	0.000
+Release Time	0.626
+Dynamics	49.6
+Hammer Noise	0.649
+Hammer Hardness	0.770
+Pickup A/B Switch	A	A | B
+Pickup C/D Switch	C	C | D
+Key Release Noise	-21.7
+Pickup Noise	-14.6
+Start Loading Effects	0.500
+FX in slot 1	Auto-Wah	Wah | Auto-Wah
+FX in slot 2	Flanger	Flanger | Phaser | Chorus | Delay | Compressor | Overdrive | Vocal Filter
+FX in slot 3	Phaser	Flanger | Phaser | Chorus | Delay | Compressor | Overdrive | Vocal Filter
+FX in slot 4	Chorus	Flanger | Phaser | Chorus | Delay | Compressor | Overdrive | Vocal Filter
+FX in slot 5	Delay	Flanger | Phaser | Chorus | Delay | Compressor | Overdrive | Vocal Filter
+LastParamLoaded	1.00
+Tone Soft	On	False | True
+Tone Medium	On	False | True
+Tone Treble	On	False | True
+Tone Brillant	On	False | True
+Master Volume	-19.7
+Tone	1.00
+Timbre	0.672
+Time	0.687
+Chorus Type	3	1.0 | 2.0 | 3.0
+Chorus Rate	0.871
+Chorus Amount	50.0
+Chorus Stereo Rate	0.174
+Chorus Stereo Width	17.0
+Chorus Delay	6.14
+Chorus Mix	50.0
+Chorus On/Off	Off	False | True
+Flanger Rate	0.135
+Flanger Depth	12.9
+Flanger Res	0.000
+Flanger Delay	5.00
+Flanger On/Off	Off	False | True
+Phaser Rate	0.860
+Phaser Depth	50.0
+Phaser Feedback	50.0
+Phaser Stereo	50.0
+Phaser On/Off	Off	False | True
+Compressor Thresh	-38.3
+Compressor Ratio	1.88
+Compressor Attack	52.8
+Compressor Release	108
+Compressor Input	0.000
+Compressor Makeup	4.61
+Compressor On/Off	Off	False | True
+Overdrive Drive	0.000
+Overdrive Tone	100
+Overdrive Output	-42.0
+Overdrive On/Off	Off	False | True
+Delay Time	0.366
+Delay Feedback	40.0
+Delay FB Tone	0.000
+Delay LFO Depth	10.0
+Delay LFO Rate	0.256
+Delay Mix	50.0
+Delay On/Off	Off	False | True
+Vocal Filter LFO On/Off	On	False | True
+Vocal Filter LFO rate	1.25
+Vocal Filter Resonance	51.2
+Vocal Filter Mix	100
+A Position X	0.154
+A Position Y	0.654
+E Position X	0.308
+E Position Y	0.250
+I Position X	0.731
+I Position Y	0.231
+O Position X	0.865
+O Position Y	0.731
+U Position X	0.481
+U Position Y	0.846
+Vocal Filter On/Off	Off	False | True
+Deprecated Param 1	0.500
+Deprecated Param 2	0.500
+Wah Pedal	0.000
+Auto Wah Frequency	550
+Auto Wah Threshold	-16.0
+Auto Wah Modulation Depth	30.0
+Auto Wah Auto Rate	2.80
+Auto Wah On/Off	Off	False | True
+Guitar Amp Bass	0.600
+Guitar Amp Mid	0.560
+Guitar Amp Treble	5.00
+Guitar Amp Volume	2.60
+Guitar Amp Bright	Off	False | True
+Guitar Amp Reverb	0.120
+Guitar Amp Speed	5.00
+Guitar Amp Intensity	5.00
+Guitar Amp Master Volume	10.0
+Guitar Amp On Axis	On	False | True
+Guitar Amp On	Off	False | True
+Unassigned	0.500
+VST3_PitchBend	0.500
+VST3_CtrlSustainOnOff	0.000
+VST3_CtrlAllNotesOff	0.000
+AfterTouch	0.000
+VST3_CtrlAllSoundsOff	0.000
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

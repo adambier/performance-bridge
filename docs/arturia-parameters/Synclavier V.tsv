@@ -1,0 +1,926 @@
+# Synclavier V 2.13.4.6366 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+Timbre Volume	-6.2 dB
+Timbre Pan	Center
+Timbre Modulation	0.156
+Timbre Tuning	0 Cents
+Timbre Transpose	No Transposition
+Timbre Chorus	1.0
+Timbre Chorus (Fine)	 0.000
+Timbre Bit Depth	Default	Default | 4 Bits | 6 Bits | 8 Bits | 10 Bits | 12 Bits | 14 Bits | 16 Bits | 18 Bits | 20 Bits | 22 Bits | 24 Bits
+Timbre Vol Env Attack	0.000
+Timbre Vol Env Initial Decay	-0.068
+Timbre Vol Env Final Decay	-0.030
+Timbre Index Env Attack	-0.068
+Timbre Index Env Initial Decay	-0.068
+Timbre Index Env Final Decay	-0.030
+Timbre Repeat	Off	False | True
+Timbre Arpeggiate	Off	False | True
+Timbre BPM Sync	On	False | True
+Timbre Repeat Rate	5.00
+Timbre BPM Multiplier	BPM x 2	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Arpeggiate Pattern		 |  |  |  |  | 
+Timbre Polyphony Mode	Polyphonic	Default | Polyphonic | Polyphonic Retrigger | Monophonic Retrigger | Monophonic Glide
+Timbre Portamento	Off	False | True
+Portamento Shape	Off	False | True
+Portamento Rate	0.100
+Brightness	0.188
+Timbre	0.131
+Time	0.504
+Movement	0.000
+Partial Volume 1	-3.8 dB
+Partial Solo 1	Off	False | True
+Partial Mute 1	Off	False | True
+Partial Pan 1	19L
+Partial Modulation 1	0.088
+Partial Pitch Track 1	Selected	Off | Selected
+Partial Tuning 1	0.0 Cents
+Partial Transpose 1	No Transposition
+Partial Octave 1	440.0 Hz	6.875 | 13.75 | 27.5 | 55.0 | 110.0 | 220.0 | 440.0 | 880.0 | 1760.0
+Partial Chorus 1	1.0
+Partial Chorus (Fine) 1	 0.000
+Partial FM Ratio 1	1.0
+Partial FM Ratio (Fine) 1	+0.019
+Partial Frame Speed 1	1.00
+Volume Envelope Delay 1	0.000
+Volume Envelope Attack 1	0.017
+Volume Envelope Initial Decay 1	0.000
+Volume Envelope Final Decay 1	2.40
+Volume Envelope Peak 1	100
+Volume Envelope Sustain 1	100
+Decay Adjust 1	1.00
+Index Envelope Delay 1	0.000
+Index Envelope Attack 1	0.000
+Index Envelope Initial Decay 1	0.000
+Index Envelope Final Decay 1	3.90
+Index Envelope Peak 1	100
+Index Envelope Sustain 1	100
+Partial Decay Shape 1	Match Synclavier® II	True Exponential | Match Synclavier® II
+Vibrato Wave 1		 |  |  |  |  | 
+Vibrato Attack 1	0.000
+Vibrato Rate 1	5.00
+Vibrato BPM Multiplier 1	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Link Depths 1	Selected	Off | Selected
+Carrier Depth 1	0.000
+Modulator Depth 1	0.000
+Vibrato Invert 1	Off	Off | Selected
+Vibrato Quantize 1	Off	Off | Selected
+Vibrato Bias 1	Off	Off | Selected
+Vibrato Curve 1	Selected	Off | Selected
+Vibrato BPM Sync 1	Off	Off | Selected
+Tremolo Wave 1		 |  | 
+Tremolo Attack 1	0.000
+Tremolo Rate 1	1.95
+Tremolo BPM Multiplier 1	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Tremolo Depth 1	0.0%
+Tremolo Phase 1	180º
+Tremolo Invert 1	Off	Off | Selected
+Tremolo Sync 1	Off	Off | Selected
+Tremolo BPM Sync 1	Off	Off | Selected
+Tremolo Alternate 1	Off	Off | Selected
+Tremolo Curve 1	Selected	Off | Selected
+Partial Volume 2	-8.0 dB
+Partial Solo 2	Off	False | True
+Partial Mute 2	Off	False | True
+Partial Pan 2	11R
+Partial Modulation 2	0.132
+Partial Pitch Track 2	Selected	Off | Selected
+Partial Tuning 2	0.0 Cents
+Partial Transpose 2	No Transposition
+Partial Octave 2	440.0 Hz	6.875 | 13.75 | 27.5 | 55.0 | 110.0 | 220.0 | 440.0 | 880.0 | 1760.0
+Partial Chorus 2	1.0
+Partial Chorus (Fine) 2	 0.000
+Partial FM Ratio 2	1.1
+Partial FM Ratio (Fine) 2	-0.082
+Partial Frame Speed 2	1.00
+Volume Envelope Delay 2	0.000
+Volume Envelope Attack 2	0.011
+Volume Envelope Initial Decay 2	0.000
+Volume Envelope Final Decay 2	2.40
+Volume Envelope Peak 2	100
+Volume Envelope Sustain 2	100
+Decay Adjust 2	1.00
+Index Envelope Delay 2	0.000
+Index Envelope Attack 2	0.000
+Index Envelope Initial Decay 2	0.000
+Index Envelope Final Decay 2	3.90
+Index Envelope Peak 2	100
+Index Envelope Sustain 2	100
+Partial Decay Shape 2	Match Synclavier® II	True Exponential | Match Synclavier® II
+Vibrato Wave 2		 |  |  |  |  | 
+Vibrato Attack 2	0.000
+Vibrato Rate 2	5.00
+Vibrato BPM Multiplier 2	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Link Depths 2	Selected	Off | Selected
+Carrier Depth 2	0.000
+Modulator Depth 2	0.000
+Vibrato Invert 2	Off	Off | Selected
+Vibrato Quantize 2	Off	Off | Selected
+Vibrato Bias 2	Off	Off | Selected
+Vibrato Curve 2	Selected	Off | Selected
+Vibrato BPM Sync 2	Off	Off | Selected
+Tremolo Wave 2		 |  | 
+Tremolo Attack 2	0.000
+Tremolo Rate 2	1.95
+Tremolo BPM Multiplier 2	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Tremolo Depth 2	0.0%
+Tremolo Phase 2	180º
+Tremolo Invert 2	Off	Off | Selected
+Tremolo Sync 2	Off	Off | Selected
+Tremolo BPM Sync 2	Off	Off | Selected
+Tremolo Alternate 2	Off	Off | Selected
+Tremolo Curve 2	Selected	Off | Selected
+Partial Volume 3	-12.0 dB
+Partial Solo 3	Off	False | True
+Partial Mute 3	Off	False | True
+Partial Pan 3	Center
+Partial Modulation 3	0.068
+Partial Pitch Track 3	Selected	Off | Selected
+Partial Tuning 3	0.0 Cents
+Partial Transpose 3	No Transposition
+Partial Octave 3	440.0 Hz	6.875 | 13.75 | 27.5 | 55.0 | 110.0 | 220.0 | 440.0 | 880.0 | 1760.0
+Partial Chorus 3	1.0
+Partial Chorus (Fine) 3	 0.000
+Partial FM Ratio 3	1.0
+Partial FM Ratio (Fine) 3	-0.006
+Partial Frame Speed 3	1.00
+Volume Envelope Delay 3	0.000
+Volume Envelope Attack 3	0.011
+Volume Envelope Initial Decay 3	0.000
+Volume Envelope Final Decay 3	2.40
+Volume Envelope Peak 3	100
+Volume Envelope Sustain 3	100
+Decay Adjust 3	1.00
+Index Envelope Delay 3	0.000
+Index Envelope Attack 3	0.000
+Index Envelope Initial Decay 3	0.000
+Index Envelope Final Decay 3	3.90
+Index Envelope Peak 3	100
+Index Envelope Sustain 3	100
+Partial Decay Shape 3	Match Synclavier® II	True Exponential | Match Synclavier® II
+Vibrato Wave 3		 |  |  |  |  | 
+Vibrato Attack 3	0.000
+Vibrato Rate 3	5.00
+Vibrato BPM Multiplier 3	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Link Depths 3	Selected	Off | Selected
+Carrier Depth 3	0.000
+Modulator Depth 3	0.000
+Vibrato Invert 3	Off	Off | Selected
+Vibrato Quantize 3	Off	Off | Selected
+Vibrato Bias 3	Off	Off | Selected
+Vibrato Curve 3	Selected	Off | Selected
+Vibrato BPM Sync 3	Off	Off | Selected
+Tremolo Wave 3		 |  | 
+Tremolo Attack 3	0.000
+Tremolo Rate 3	1.95
+Tremolo BPM Multiplier 3	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Tremolo Depth 3	0.0%
+Tremolo Phase 3	180º
+Tremolo Invert 3	Off	Off | Selected
+Tremolo Sync 3	Off	Off | Selected
+Tremolo BPM Sync 3	Off	Off | Selected
+Tremolo Alternate 3	Off	Off | Selected
+Tremolo Curve 3	Selected	Off | Selected
+Partial Volume 4	Off
+Partial Solo 4	Off	False | True
+Partial Mute 4	Off	False | True
+Partial Pan 4	Center
+Partial Modulation 4	0.000
+Partial Pitch Track 4	Selected	Off | Selected
+Partial Tuning 4	0.0 Cents
+Partial Transpose 4	No Transposition
+Partial Octave 4	440.0 Hz	6.875 | 13.75 | 27.5 | 55.0 | 110.0 | 220.0 | 440.0 | 880.0 | 1760.0
+Partial Chorus 4	1.0
+Partial Chorus (Fine) 4	 0.000
+Partial FM Ratio 4	1.0
+Partial FM Ratio (Fine) 4	 0.000
+Partial Frame Speed 4	1.00
+Volume Envelope Delay 4	0.000
+Volume Envelope Attack 4	0.000
+Volume Envelope Initial Decay 4	0.000
+Volume Envelope Final Decay 4	0.100
+Volume Envelope Peak 4	100
+Volume Envelope Sustain 4	100
+Decay Adjust 4	1.00
+Index Envelope Delay 4	0.000
+Index Envelope Attack 4	0.000
+Index Envelope Initial Decay 4	0.000
+Index Envelope Final Decay 4	0.100
+Index Envelope Peak 4	100
+Index Envelope Sustain 4	100
+Partial Decay Shape 4	Match Synclavier® II	True Exponential | Match Synclavier® II
+Vibrato Wave 4		 |  |  |  |  | 
+Vibrato Attack 4	0.000
+Vibrato Rate 4	5.00
+Vibrato BPM Multiplier 4	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Link Depths 4	Selected	Off | Selected
+Carrier Depth 4	0.000
+Modulator Depth 4	0.000
+Vibrato Invert 4	Off	Off | Selected
+Vibrato Quantize 4	Off	Off | Selected
+Vibrato Bias 4	Off	Off | Selected
+Vibrato Curve 4	Selected	Off | Selected
+Vibrato BPM Sync 4	Off	Off | Selected
+Tremolo Wave 4		 |  | 
+Tremolo Attack 4	0.000
+Tremolo Rate 4	1.95
+Tremolo BPM Multiplier 4	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Tremolo Depth 4	0.0%
+Tremolo Phase 4	180º
+Tremolo Invert 4	Off	Off | Selected
+Tremolo Sync 4	Off	Off | Selected
+Tremolo BPM Sync 4	Off	Off | Selected
+Tremolo Alternate 4	Off	Off | Selected
+Tremolo Curve 4	Selected	Off | Selected
+Partial Volume 5	Off
+Partial Solo 5	Off	False | True
+Partial Mute 5	Off	False | True
+Partial Pan 5	Center
+Partial Modulation 5	0.000
+Partial Pitch Track 5	Selected	Off | Selected
+Partial Tuning 5	0.0 Cents
+Partial Transpose 5	No Transposition
+Partial Octave 5	440.0 Hz	6.875 | 13.75 | 27.5 | 55.0 | 110.0 | 220.0 | 440.0 | 880.0 | 1760.0
+Partial Chorus 5	1.0
+Partial Chorus (Fine) 5	 0.000
+Partial FM Ratio 5	1.0
+Partial FM Ratio (Fine) 5	 0.000
+Partial Frame Speed 5	1.00
+Volume Envelope Delay 5	0.000
+Volume Envelope Attack 5	0.000
+Volume Envelope Initial Decay 5	0.000
+Volume Envelope Final Decay 5	0.100
+Volume Envelope Peak 5	100
+Volume Envelope Sustain 5	100
+Decay Adjust 5	1.00
+Index Envelope Delay 5	0.000
+Index Envelope Attack 5	0.000
+Index Envelope Initial Decay 5	0.000
+Index Envelope Final Decay 5	0.100
+Index Envelope Peak 5	100
+Index Envelope Sustain 5	100
+Partial Decay Shape 5	Match Synclavier® II	True Exponential | Match Synclavier® II
+Vibrato Wave 5		 |  |  |  |  | 
+Vibrato Attack 5	0.000
+Vibrato Rate 5	5.00
+Vibrato BPM Multiplier 5	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Link Depths 5	Selected	Off | Selected
+Carrier Depth 5	0.000
+Modulator Depth 5	0.000
+Vibrato Invert 5	Off	Off | Selected
+Vibrato Quantize 5	Off	Off | Selected
+Vibrato Bias 5	Off	Off | Selected
+Vibrato Curve 5	Selected	Off | Selected
+Vibrato BPM Sync 5	Off	Off | Selected
+Tremolo Wave 5		 |  | 
+Tremolo Attack 5	0.000
+Tremolo Rate 5	1.95
+Tremolo BPM Multiplier 5	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Tremolo Depth 5	0.0%
+Tremolo Phase 5	180º
+Tremolo Invert 5	Off	Off | Selected
+Tremolo Sync 5	Off	Off | Selected
+Tremolo BPM Sync 5	Off	Off | Selected
+Tremolo Alternate 5	Off	Off | Selected
+Tremolo Curve 5	Selected	Off | Selected
+Partial Volume 6	Off
+Partial Solo 6	Off	False | True
+Partial Mute 6	Off	False | True
+Partial Pan 6	Center
+Partial Modulation 6	0.000
+Partial Pitch Track 6	Selected	Off | Selected
+Partial Tuning 6	0.0 Cents
+Partial Transpose 6	No Transposition
+Partial Octave 6	440.0 Hz	6.875 | 13.75 | 27.5 | 55.0 | 110.0 | 220.0 | 440.0 | 880.0 | 1760.0
+Partial Chorus 6	1.0
+Partial Chorus (Fine) 6	 0.000
+Partial FM Ratio 6	1.0
+Partial FM Ratio (Fine) 6	 0.000
+Partial Frame Speed 6	1.00
+Volume Envelope Delay 6	0.000
+Volume Envelope Attack 6	0.000
+Volume Envelope Initial Decay 6	0.000
+Volume Envelope Final Decay 6	0.100
+Volume Envelope Peak 6	100
+Volume Envelope Sustain 6	100
+Decay Adjust 6	1.00
+Index Envelope Delay 6	0.000
+Index Envelope Attack 6	0.000
+Index Envelope Initial Decay 6	0.000
+Index Envelope Final Decay 6	0.100
+Index Envelope Peak 6	100
+Index Envelope Sustain 6	100
+Partial Decay Shape 6	Match Synclavier® II	True Exponential | Match Synclavier® II
+Vibrato Wave 6		 |  |  |  |  | 
+Vibrato Attack 6	0.000
+Vibrato Rate 6	5.00
+Vibrato BPM Multiplier 6	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Link Depths 6	Selected	Off | Selected
+Carrier Depth 6	0.000
+Modulator Depth 6	0.000
+Vibrato Invert 6	Off	Off | Selected
+Vibrato Quantize 6	Off	Off | Selected
+Vibrato Bias 6	Off	Off | Selected
+Vibrato Curve 6	Selected	Off | Selected
+Vibrato BPM Sync 6	Off	Off | Selected
+Tremolo Wave 6		 |  | 
+Tremolo Attack 6	0.000
+Tremolo Rate 6	1.95
+Tremolo BPM Multiplier 6	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Tremolo Depth 6	0.0%
+Tremolo Phase 6	180º
+Tremolo Invert 6	Off	Off | Selected
+Tremolo Sync 6	Off	Off | Selected
+Tremolo BPM Sync 6	Off	Off | Selected
+Tremolo Alternate 6	Off	Off | Selected
+Tremolo Curve 6	Selected	Off | Selected
+Partial Volume 7	Off
+Partial Solo 7	Off	False | True
+Partial Mute 7	Off	False | True
+Partial Pan 7	Center
+Partial Modulation 7	0.000
+Partial Pitch Track 7	Selected	Off | Selected
+Partial Tuning 7	0.0 Cents
+Partial Transpose 7	No Transposition
+Partial Octave 7	440.0 Hz	6.875 | 13.75 | 27.5 | 55.0 | 110.0 | 220.0 | 440.0 | 880.0 | 1760.0
+Partial Chorus 7	1.0
+Partial Chorus (Fine) 7	 0.000
+Partial FM Ratio 7	1.0
+Partial FM Ratio (Fine) 7	 0.000
+Partial Frame Speed 7	1.00
+Volume Envelope Delay 7	0.000
+Volume Envelope Attack 7	0.000
+Volume Envelope Initial Decay 7	0.000
+Volume Envelope Final Decay 7	0.100
+Volume Envelope Peak 7	100
+Volume Envelope Sustain 7	100
+Decay Adjust 7	1.00
+Index Envelope Delay 7	0.000
+Index Envelope Attack 7	0.000
+Index Envelope Initial Decay 7	0.000
+Index Envelope Final Decay 7	0.100
+Index Envelope Peak 7	100
+Index Envelope Sustain 7	100
+Partial Decay Shape 7	Match Synclavier® II	True Exponential | Match Synclavier® II
+Vibrato Wave 7		 |  |  |  |  | 
+Vibrato Attack 7	0.000
+Vibrato Rate 7	5.00
+Vibrato BPM Multiplier 7	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Link Depths 7	Selected	Off | Selected
+Carrier Depth 7	0.000
+Modulator Depth 7	0.000
+Vibrato Invert 7	Off	Off | Selected
+Vibrato Quantize 7	Off	Off | Selected
+Vibrato Bias 7	Off	Off | Selected
+Vibrato Curve 7	Selected	Off | Selected
+Vibrato BPM Sync 7	Off	Off | Selected
+Tremolo Wave 7		 |  | 
+Tremolo Attack 7	0.000
+Tremolo Rate 7	1.95
+Tremolo BPM Multiplier 7	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Tremolo Depth 7	0.0%
+Tremolo Phase 7	180º
+Tremolo Invert 7	Off	Off | Selected
+Tremolo Sync 7	Off	Off | Selected
+Tremolo BPM Sync 7	Off	Off | Selected
+Tremolo Alternate 7	Off	Off | Selected
+Tremolo Curve 7	Selected	Off | Selected
+Partial Volume 8	Off
+Partial Solo 8	Off	False | True
+Partial Mute 8	Off	False | True
+Partial Pan 8	Center
+Partial Modulation 8	0.000
+Partial Pitch Track 8	Selected	Off | Selected
+Partial Tuning 8	0.0 Cents
+Partial Transpose 8	No Transposition
+Partial Octave 8	440.0 Hz	6.875 | 13.75 | 27.5 | 55.0 | 110.0 | 220.0 | 440.0 | 880.0 | 1760.0
+Partial Chorus 8	1.0
+Partial Chorus (Fine) 8	 0.000
+Partial FM Ratio 8	1.0
+Partial FM Ratio (Fine) 8	 0.000
+Partial Frame Speed 8	1.00
+Volume Envelope Delay 8	0.000
+Volume Envelope Attack 8	0.000
+Volume Envelope Initial Decay 8	0.000
+Volume Envelope Final Decay 8	0.100
+Volume Envelope Peak 8	100
+Volume Envelope Sustain 8	100
+Decay Adjust 8	1.00
+Index Envelope Delay 8	0.000
+Index Envelope Attack 8	0.000
+Index Envelope Initial Decay 8	0.000
+Index Envelope Final Decay 8	0.100
+Index Envelope Peak 8	100
+Index Envelope Sustain 8	100
+Partial Decay Shape 8	Match Synclavier® II	True Exponential | Match Synclavier® II
+Vibrato Wave 8		 |  |  |  |  | 
+Vibrato Attack 8	0.000
+Vibrato Rate 8	5.00
+Vibrato BPM Multiplier 8	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Link Depths 8	Selected	Off | Selected
+Carrier Depth 8	0.000
+Modulator Depth 8	0.000
+Vibrato Invert 8	Off	Off | Selected
+Vibrato Quantize 8	Off	Off | Selected
+Vibrato Bias 8	Off	Off | Selected
+Vibrato Curve 8	Selected	Off | Selected
+Vibrato BPM Sync 8	Off	Off | Selected
+Tremolo Wave 8		 |  | 
+Tremolo Attack 8	0.000
+Tremolo Rate 8	1.95
+Tremolo BPM Multiplier 8	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Tremolo Depth 8	0.0%
+Tremolo Phase 8	180º
+Tremolo Invert 8	Off	Off | Selected
+Tremolo Sync 8	Off	Off | Selected
+Tremolo BPM Sync 8	Off	Off | Selected
+Tremolo Alternate 8	Off	Off | Selected
+Tremolo Curve 8	Selected	Off | Selected
+Partial Volume 9	Off
+Partial Solo 9	Off	False | True
+Partial Mute 9	Off	False | True
+Partial Pan 9	Center
+Partial Modulation 9	0.000
+Partial Pitch Track 9	Selected	Off | Selected
+Partial Tuning 9	0.0 Cents
+Partial Transpose 9	No Transposition
+Partial Octave 9	440.0 Hz	6.875 | 13.75 | 27.5 | 55.0 | 110.0 | 220.0 | 440.0 | 880.0 | 1760.0
+Partial Chorus 9	1.0
+Partial Chorus (Fine) 9	 0.000
+Partial FM Ratio 9	1.0
+Partial FM Ratio (Fine) 9	 0.000
+Partial Frame Speed 9	1.00
+Volume Envelope Delay 9	0.000
+Volume Envelope Attack 9	0.000
+Volume Envelope Initial Decay 9	0.000
+Volume Envelope Final Decay 9	0.100
+Volume Envelope Peak 9	100
+Volume Envelope Sustain 9	100
+Decay Adjust 9	1.00
+Index Envelope Delay 9	0.000
+Index Envelope Attack 9	0.000
+Index Envelope Initial Decay 9	0.000
+Index Envelope Final Decay 9	0.100
+Index Envelope Peak 9	100
+Index Envelope Sustain 9	100
+Partial Decay Shape 9	Match Synclavier® II	True Exponential | Match Synclavier® II
+Vibrato Wave 9		 |  |  |  |  | 
+Vibrato Attack 9	0.000
+Vibrato Rate 9	5.00
+Vibrato BPM Multiplier 9	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Link Depths 9	Selected	Off | Selected
+Carrier Depth 9	0.000
+Modulator Depth 9	0.000
+Vibrato Invert 9	Off	Off | Selected
+Vibrato Quantize 9	Off	Off | Selected
+Vibrato Bias 9	Off	Off | Selected
+Vibrato Curve 9	Selected	Off | Selected
+Vibrato BPM Sync 9	Off	Off | Selected
+Tremolo Wave 9		 |  | 
+Tremolo Attack 9	0.000
+Tremolo Rate 9	1.95
+Tremolo BPM Multiplier 9	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Tremolo Depth 9	0.0%
+Tremolo Phase 9	180º
+Tremolo Invert 9	Off	Off | Selected
+Tremolo Sync 9	Off	Off | Selected
+Tremolo BPM Sync 9	Off	Off | Selected
+Tremolo Alternate 9	Off	Off | Selected
+Tremolo Curve 9	Selected	Off | Selected
+Partial Volume 10	Off
+Partial Solo 10	Off	False | True
+Partial Mute 10	Off	False | True
+Partial Pan 10	Center
+Partial Modulation 10	0.000
+Partial Pitch Track 10	Selected	Off | Selected
+Partial Tuning 10	0.0 Cents
+Partial Transpose 10	No Transposition
+Partial Octave 10	440.0 Hz	6.875 | 13.75 | 27.5 | 55.0 | 110.0 | 220.0 | 440.0 | 880.0 | 1760.0
+Partial Chorus 10	1.0
+Partial Chorus (Fine) 10	 0.000
+Partial FM Ratio 10	1.0
+Partial FM Ratio (Fine) 10	 0.000
+Partial Frame Speed 10	1.00
+Volume Envelope Delay 10	0.000
+Volume Envelope Attack 10	0.000
+Volume Envelope Initial Decay 10	0.000
+Volume Envelope Final Decay 10	0.100
+Volume Envelope Peak 10	100
+Volume Envelope Sustain 10	100
+Decay Adjust 10	1.00
+Index Envelope Delay 10	0.000
+Index Envelope Attack 10	0.000
+Index Envelope Initial Decay 10	0.000
+Index Envelope Final Decay 10	0.100
+Index Envelope Peak 10	100
+Index Envelope Sustain 10	100
+Partial Decay Shape 10	Match Synclavier® II	True Exponential | Match Synclavier® II
+Vibrato Wave 10		 |  |  |  |  | 
+Vibrato Attack 10	0.000
+Vibrato Rate 10	5.00
+Vibrato BPM Multiplier 10	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Link Depths 10	Selected	Off | Selected
+Carrier Depth 10	0.000
+Modulator Depth 10	0.000
+Vibrato Invert 10	Off	Off | Selected
+Vibrato Quantize 10	Off	Off | Selected
+Vibrato Bias 10	Off	Off | Selected
+Vibrato Curve 10	Selected	Off | Selected
+Vibrato BPM Sync 10	Off	Off | Selected
+Tremolo Wave 10		 |  | 
+Tremolo Attack 10	0.000
+Tremolo Rate 10	1.95
+Tremolo BPM Multiplier 10	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Tremolo Depth 10	0.0%
+Tremolo Phase 10	180º
+Tremolo Invert 10	Off	Off | Selected
+Tremolo Sync 10	Off	Off | Selected
+Tremolo BPM Sync 10	Off	Off | Selected
+Tremolo Alternate 10	Off	Off | Selected
+Tremolo Curve 10	Selected	Off | Selected
+Partial Volume 11	Off
+Partial Solo 11	Off	False | True
+Partial Mute 11	Off	False | True
+Partial Pan 11	Center
+Partial Modulation 11	0.000
+Partial Pitch Track 11	Selected	Off | Selected
+Partial Tuning 11	0.0 Cents
+Partial Transpose 11	No Transposition
+Partial Octave 11	440.0 Hz	6.875 | 13.75 | 27.5 | 55.0 | 110.0 | 220.0 | 440.0 | 880.0 | 1760.0
+Partial Chorus 11	1.0
+Partial Chorus (Fine) 11	 0.000
+Partial FM Ratio 11	1.0
+Partial FM Ratio (Fine) 11	 0.000
+Partial Frame Speed 11	1.00
+Volume Envelope Delay 11	0.000
+Volume Envelope Attack 11	0.000
+Volume Envelope Initial Decay 11	0.000
+Volume Envelope Final Decay 11	0.100
+Volume Envelope Peak 11	100
+Volume Envelope Sustain 11	100
+Decay Adjust 11	1.00
+Index Envelope Delay 11	0.000
+Index Envelope Attack 11	0.000
+Index Envelope Initial Decay 11	0.000
+Index Envelope Final Decay 11	0.100
+Index Envelope Peak 11	100
+Index Envelope Sustain 11	100
+Partial Decay Shape 11	Match Synclavier® II	True Exponential | Match Synclavier® II
+Vibrato Wave 11		 |  |  |  |  | 
+Vibrato Attack 11	0.000
+Vibrato Rate 11	5.00
+Vibrato BPM Multiplier 11	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Link Depths 11	Selected	Off | Selected
+Carrier Depth 11	0.000
+Modulator Depth 11	0.000
+Vibrato Invert 11	Off	Off | Selected
+Vibrato Quantize 11	Off	Off | Selected
+Vibrato Bias 11	Off	Off | Selected
+Vibrato Curve 11	Selected	Off | Selected
+Vibrato BPM Sync 11	Off	Off | Selected
+Tremolo Wave 11		 |  | 
+Tremolo Attack 11	0.000
+Tremolo Rate 11	1.95
+Tremolo BPM Multiplier 11	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Tremolo Depth 11	0.0%
+Tremolo Phase 11	180º
+Tremolo Invert 11	Off	Off | Selected
+Tremolo Sync 11	Off	Off | Selected
+Tremolo BPM Sync 11	Off	Off | Selected
+Tremolo Alternate 11	Off	Off | Selected
+Tremolo Curve 11	Selected	Off | Selected
+Partial Volume 12	Off
+Partial Solo 12	Off	False | True
+Partial Mute 12	Off	False | True
+Partial Pan 12	Center
+Partial Modulation 12	0.000
+Partial Pitch Track 12	Selected	Off | Selected
+Partial Tuning 12	0.0 Cents
+Partial Transpose 12	No Transposition
+Partial Octave 12	440.0 Hz	6.875 | 13.75 | 27.5 | 55.0 | 110.0 | 220.0 | 440.0 | 880.0 | 1760.0
+Partial Chorus 12	1.0
+Partial Chorus (Fine) 12	 0.000
+Partial FM Ratio 12	1.0
+Partial FM Ratio (Fine) 12	 0.000
+Partial Frame Speed 12	1.00
+Volume Envelope Delay 12	0.000
+Volume Envelope Attack 12	0.000
+Volume Envelope Initial Decay 12	0.000
+Volume Envelope Final Decay 12	0.100
+Volume Envelope Peak 12	100
+Volume Envelope Sustain 12	100
+Decay Adjust 12	1.00
+Index Envelope Delay 12	0.000
+Index Envelope Attack 12	0.000
+Index Envelope Initial Decay 12	0.000
+Index Envelope Final Decay 12	0.100
+Index Envelope Peak 12	100
+Index Envelope Sustain 12	100
+Partial Decay Shape 12	Match Synclavier® II	True Exponential | Match Synclavier® II
+Vibrato Wave 12		 |  |  |  |  | 
+Vibrato Attack 12	0.000
+Vibrato Rate 12	5.00
+Vibrato BPM Multiplier 12	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Link Depths 12	Selected	Off | Selected
+Carrier Depth 12	0.000
+Modulator Depth 12	0.000
+Vibrato Invert 12	Off	Off | Selected
+Vibrato Quantize 12	Off	Off | Selected
+Vibrato Bias 12	Off	Off | Selected
+Vibrato Curve 12	Selected	Off | Selected
+Vibrato BPM Sync 12	Off	Off | Selected
+Tremolo Wave 12		 |  | 
+Tremolo Attack 12	0.000
+Tremolo Rate 12	1.95
+Tremolo BPM Multiplier 12	BPM x 1	BPM / 8 | BPM / 6 | BPM / 5 | BPM / 4 | BPM / 3 | BPM / 2 | BPM x 1 | BPM x 2 | BPM x 3 | BPM x 4 | BPM x 5 | BPM x 6 | BPM x 8
+Tremolo Depth 12	0.0%
+Tremolo Phase 12	180º
+Tremolo Invert 12	Off	Off | Selected
+Tremolo Sync 12	Off	Off | Selected
+Tremolo BPM Sync 12	Off	Off | Selected
+Tremolo Alternate 12	Off	Off | Selected
+Tremolo Curve 12	Selected	Off | Selected
+Partial File Tuning 1	0.0 Cents
+Partial File MIDI Key 1	A3
+Partial File Volume 1	0.0 dB
+Partial File Tuning 2	-17.1 Cents
+Partial File MIDI Key 2	C3
+Partial File Volume 2	0.0 dB
+Partial File Tuning 3	0.0 Cents
+Partial File MIDI Key 3	A3
+Partial File Volume 3	0.0 dB
+Partial File Tuning 4	0.0 Cents
+Partial File MIDI Key 4	A3
+Partial File Volume 4	0.0 dB
+Partial File Tuning 5	0.0 Cents
+Partial File MIDI Key 5	A3
+Partial File Volume 5	0.0 dB
+Partial File Tuning 6	0.0 Cents
+Partial File MIDI Key 6	A3
+Partial File Volume 6	0.0 dB
+Partial File Tuning 7	0.0 Cents
+Partial File MIDI Key 7	A3
+Partial File Volume 7	0.0 dB
+Partial File Tuning 8	0.0 Cents
+Partial File MIDI Key 8	A3
+Partial File Volume 8	0.0 dB
+Partial File Tuning 9	0.0 Cents
+Partial File MIDI Key 9	A3
+Partial File Volume 9	0.0 dB
+Partial File Tuning 10	0.0 Cents
+Partial File MIDI Key 10	A3
+Partial File Volume 10	0.0 dB
+Partial File Tuning 11	0.0 Cents
+Partial File MIDI Key 11	A3
+Partial File Volume 11	0.0 dB
+Partial File Tuning 12	0.0 Cents
+Partial File MIDI Key 12	A3
+Partial File Volume 12	0.0 dB
+Effect1 Selector	Delay	Bypass | Flanger | Phaser | Chorus | Delay | Reverb | DubDelay
+Effect1 Active	On	False | True
+Effect1 DRYWET	50.0
+Effect1 Delay_Midi_Sync	0.500
+Effect1 Delay_lock_ctrl_delay_time	On	False | True
+Effect1 Delay_Ping_Pong_on	0.500
+Effect1 Delay_time_ch1	342
+Effect1 Delay_time_ch2	623
+Effect1 Delay_feedback_ch1	39.2
+Effect1 Delay_feedback_ch2	29.6
+Effect1 Delay_filter_cutoff	66.0
+Effect1 Delay_dry_wet	36.4
+Effect1 AnalogDualPhaser_lfo_rate_1	6.00
+Effect1 AnalogDualPhaser_feedback_1	50.0
+Effect1 AnalogDualPhaser_lfo_amount_1	76.8
+Effect1 AnalogDualPhaser_lfo_rate_2	6.00
+Effect1 AnalogDualPhaser_feedback_2	50.0
+Effect1 AnalogDualPhaser_lfo_amount_2	72.8
+Effect1 AnalogDualPhaser_lfo_shape_1	Off	False | True
+Effect1 AnalogDualPhaser_lfo_shape_2	Off	False | True
+Effect1 AnalogDualPhaser_midi_sync	0.500
+Effect1 AnalogDualPhaser_invert_lfo	0.000
+Effect1 AnalogDualPhaser_dry_wet	50.0
+Effect1 DubDelay_delay_time	506
+Effect1 DubDelay_feedback	46.8
+Effect1 DubDelay_LFO_depth	0.000
+Effect1 DubDelay_LFO_rate	0.500
+Effect1 DubDelay_feedback_tone	77.2
+Effect1 DubDelay_dry_wet	50.0
+Effect1 Flanger_delay	0.484
+Effect1 Flanger_depth	54.4
+Effect1 Flanger_rate	4925
+Effect1 Flanger_feedback	1.60
+Effect1 Flanger_dry_wet	50.0
+Effect1 Chorus_TypeEffet	2	1.0 | 2.0 | 3.0
+Effect1 Chorus_StereoProfondeur	50.4
+Effect1 Chorus_StereoRate	0.072
+Effect1 Chorus_LfoRate	4.27
+Effect1 Chorus_DelaiNominal	0.000
+Effect1 Chorus_LfoProfondeur	45.2
+Effect1 Chorus_dry_wet	32.4
+Effect1 Reverb_gain	0.500
+Effect1 Reverb_damping	50.0
+Effect1 Reverb_bandwidth	38.0
+Effect1 Reverb_predelay_feed_forward	63.0
+Effect1 Reverb_decay	95.0
+Effect1 Reverb_predelay_feed_back	50.0
+Effect1 Reverb_predelay_time	6.80
+Effect1 Reverb_dry_wet	50.0
+Effect2 Selector	Reverb	Bypass | Flanger | Phaser | Chorus | Delay | Reverb | DubDelay
+Effect2 Active	On	False | True
+Effect2 DRYWET	50.0
+Effect2 Delay_Midi_Sync	0.500
+Effect2 Delay_lock_ctrl_delay_time	On	False | True
+Effect2 Delay_Ping_Pong_on	0.500
+Effect2 Delay_time_ch1	607
+Effect2 Delay_time_ch2	623
+Effect2 Delay_feedback_ch1	23.6
+Effect2 Delay_feedback_ch2	29.6
+Effect2 Delay_filter_cutoff	50.0
+Effect2 Delay_dry_wet	28.0
+Effect2 AnalogDualPhaser_lfo_rate_1	6.00
+Effect2 AnalogDualPhaser_feedback_1	50.0
+Effect2 AnalogDualPhaser_lfo_amount_1	76.8
+Effect2 AnalogDualPhaser_lfo_rate_2	6.00
+Effect2 AnalogDualPhaser_feedback_2	50.0
+Effect2 AnalogDualPhaser_lfo_amount_2	72.8
+Effect2 AnalogDualPhaser_lfo_shape_1	Off	False | True
+Effect2 AnalogDualPhaser_lfo_shape_2	Off	False | True
+Effect2 AnalogDualPhaser_midi_sync	0.500
+Effect2 AnalogDualPhaser_invert_lfo	0.000
+Effect2 AnalogDualPhaser_dry_wet	50.0
+Effect2 DubDelay_delay_time	506
+Effect2 DubDelay_feedback	46.8
+Effect2 DubDelay_LFO_depth	0.000
+Effect2 DubDelay_LFO_rate	0.500
+Effect2 DubDelay_feedback_tone	77.2
+Effect2 DubDelay_dry_wet	50.0
+Effect2 Flanger_delay	0.484
+Effect2 Flanger_depth	54.4
+Effect2 Flanger_rate	4925
+Effect2 Flanger_feedback	1.60
+Effect2 Flanger_dry_wet	50.0
+Effect2 Chorus_TypeEffet	2	1.0 | 2.0 | 3.0
+Effect2 Chorus_StereoProfondeur	50.4
+Effect2 Chorus_StereoRate	0.072
+Effect2 Chorus_LfoRate	4.27
+Effect2 Chorus_DelaiNominal	0.000
+Effect2 Chorus_LfoProfondeur	45.2
+Effect2 Chorus_dry_wet	32.4
+Effect2 Reverb_gain	0.500
+Effect2 Reverb_damping	31.2
+Effect2 Reverb_bandwidth	66.8
+Effect2 Reverb_predelay_feed_forward	50.2
+Effect2 Reverb_decay	75.4
+Effect2 Reverb_predelay_feed_back	48.0
+Effect2 Reverb_predelay_time	13.6
+Effect2 Reverb_dry_wet	32.0
+Effect3 Selector	Bypass	Bypass | Flanger | Phaser | Chorus | Delay | Reverb | DubDelay
+Effect3 Active	On	False | True
+Effect3 DRYWET	50.0
+Effect3 Delay_Midi_Sync	0.500
+Effect3 Delay_lock_ctrl_delay_time	On	False | True
+Effect3 Delay_Ping_Pong_on	0.500
+Effect3 Delay_time_ch1	607
+Effect3 Delay_time_ch2	623
+Effect3 Delay_feedback_ch1	23.6
+Effect3 Delay_feedback_ch2	29.6
+Effect3 Delay_filter_cutoff	50.0
+Effect3 Delay_dry_wet	28.0
+Effect3 AnalogDualPhaser_lfo_rate_1	6.00
+Effect3 AnalogDualPhaser_feedback_1	50.0
+Effect3 AnalogDualPhaser_lfo_amount_1	76.8
+Effect3 AnalogDualPhaser_lfo_rate_2	6.00
+Effect3 AnalogDualPhaser_feedback_2	50.0
+Effect3 AnalogDualPhaser_lfo_amount_2	72.8
+Effect3 AnalogDualPhaser_lfo_shape_1	Off	False | True
+Effect3 AnalogDualPhaser_lfo_shape_2	Off	False | True
+Effect3 AnalogDualPhaser_midi_sync	0.500
+Effect3 AnalogDualPhaser_invert_lfo	0.000
+Effect3 AnalogDualPhaser_dry_wet	50.0
+Effect3 DubDelay_delay_time	506
+Effect3 DubDelay_feedback	46.8
+Effect3 DubDelay_LFO_depth	0.000
+Effect3 DubDelay_LFO_rate	0.500
+Effect3 DubDelay_feedback_tone	77.2
+Effect3 DubDelay_dry_wet	50.0
+Effect3 Flanger_delay	0.484
+Effect3 Flanger_depth	54.4
+Effect3 Flanger_rate	4925
+Effect3 Flanger_feedback	1.60
+Effect3 Flanger_dry_wet	50.0
+Effect3 Chorus_TypeEffet	2	1.0 | 2.0 | 3.0
+Effect3 Chorus_StereoProfondeur	50.4
+Effect3 Chorus_StereoRate	0.072
+Effect3 Chorus_LfoRate	4.27
+Effect3 Chorus_DelaiNominal	0.000
+Effect3 Chorus_LfoProfondeur	45.2
+Effect3 Chorus_dry_wet	32.4
+Effect3 Reverb_gain	0.500
+Effect3 Reverb_damping	50.0
+Effect3 Reverb_bandwidth	50.0
+Effect3 Reverb_predelay_feed_forward	50.0
+Effect3 Reverb_decay	50.0
+Effect3 Reverb_predelay_feed_back	50.0
+Effect3 Reverb_predelay_time	6.80
+Effect3 Reverb_dry_wet	50.0
+VST3_PitchBend	0.500
+VST3_CtrlModWheel	0.000
+VST3_CtrlExpression	0.500
+VST3_AfterTouch	0.000
+VST3_CtrlSustainOnOff	0.000
+VST3_CtrlAllNotesOff	0.000
+VST3_CtrlAllSoundsOff	0.000
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

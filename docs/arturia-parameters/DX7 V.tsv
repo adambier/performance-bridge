@@ -1,0 +1,1046 @@
+# DX7 V 1.13.4.6366 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+Key Transpose	C3
+Master Tuning	0
+Algorithm	5
+Feedback	6.00
+Pitch EG	100
+Pitch Bend Range	2	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0 | 17.0 | 18.0 | 19.0 | 20.0 | 21.0 | 22.0 | 23.0 | 24.0
+Pitch Bend Step	0	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0 | 17.0 | 18.0 | 19.0 | 20.0 | 21.0 | 22.0 | 23.0 | 24.0
+Porta On/Off	Off	False | True
+Mono Porta Mode	Fingered	Fingered | Full-Time
+Poly Porta Mode	Retain	Retain | Follow
+Porta Gliss	Off	False | True
+Porta Time	0
+Poly Mode	Poly	Mono | Poly
+Unison Detune	0.000
+DAC Resolution	Vintage	Vintage | Modern
+FX Mix 1	-6.00
+FX Mix 2	-6.00
+Macro 1	0.000
+Macro 2	0.000
+Macro 3	0.000
+Macro 4	0.000
+Volume	1.71
+Velocity Range	DX7	DX7 | Full
+Brightness	0.482
+Timbre	1.00
+Time	0.500
+Movement	0.000
+Op 1  Mute	Off	True | False
+Op 1  Detune	3
+Op 1  Pitch EG On/Off	On	False | True
+Op 1  EG Mode	DX7	DX7 | DADSR | MSEG
+Op 1  Osc On/Off	On	False | True
+Op 1  Osc Wave	Sine	Sine | Cosine | Parabola | Triangle | Round Square | Hard Square | Integrated Saw | Round Saw | Hard Saw | Sine^2 | Half Sine | Half Sine^2 | Alt Sine | Alt Sine^2 | Camel Sine | Camel Sine^2 | Abs Sine | Pulse Sine | Derived Square | Additive 1 | Additive 2 | Additive 3 | Additive 4 | Additive 5 | Additive 6
+Op 1  Polarity	Normal	Normal | Inverted
+Op 1  Osc Mode	Ratio	Ratio | Fixed
+Op 1  Osc Retrig	Off	False | True
+Op 1  Freq Coarse	1
+Op 1  Freq Fine	0.000
+Op 1  Freq Fixed	10.0
+Op 1  Filter On/Off	On	False | True
+Op 1  Filter Mode	Low-Pass	Low-Pass | Band-Pass | High-Pass
+Op 1  Filter Cutoff	20000
+Op 1  Filter Res	0.000
+Op 1  Filter Kbd Follow	Off	False | True
+Op 1  Feedback	0.000
+Op 1  Output Level	99
+Op 1  Carrier Pan	0.000
+Op 1  Velocity Sens	2	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0
+Op 1  Amp Mod Sens	0	0.0 | 1.0 | 2.0 | 3.0
+Op 1  DADSR Delay	0.000
+Op 1  DADSR Attack	0.000
+Op 1  DADSR Decay	1.00
+Op 1  DADSR Release	0.030
+Op 1  DADSR Peak	1.00
+Op 1  DADSR Sustain	1.00
+Op 1 EG Rate 1	96.0
+Op 1 EG Rate 2	25.0
+Op 1 EG Rate 3	25.0
+Op 1 EG Rate 4	67.0
+Op 1 EG Level 1	99.0
+Op 1 EG Level 2	75.0
+Op 1 EG Level 3	0.000
+Op 1  EG Level 4	0.000
+Op 1  MSEG Loop On/Off	Off	False | True
+Op 1  MS Loop Start	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 1  MS Sync Loop Start	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 1  MSEG Loop End	3	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 1  MSEG Sync Loop End	3	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 1  MSEG Sync On/Off	Off	False | True
+Op 1  Key Rate Scale	3	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0
+Op 1  Rate Multiply	1.000
+Op 1  Rate Multiply Sync	1	0.125 | 0.25 | 0.5 | 0.75 | 1.0 | 2.0 | 4.0 | 8.0
+Op 2  Mute	Off	True | False
+Op 2  Detune	0
+Op 2  Pitch EG On/Off	On	False | True
+Op 2  EG Mode	DX7	DX7 | DADSR | MSEG
+Op 2  Osc On/Off	On	False | True
+Op 2  Osc Wave	Sine	Sine | Cosine | Parabola | Triangle | Round Square | Hard Square | Integrated Saw | Round Saw | Hard Saw | Sine^2 | Half Sine | Half Sine^2 | Alt Sine | Alt Sine^2 | Camel Sine | Camel Sine^2 | Abs Sine | Pulse Sine | Derived Square | Additive 1 | Additive 2 | Additive 3 | Additive 4 | Additive 5 | Additive 6
+Op 2  Polarity	Normal	Normal | Inverted
+Op 2  Osc Mode	Ratio	Ratio | Fixed
+Op 2  Osc Retrig	Off	False | True
+Op 2  Freq Coarse	14
+Op 2  Freq Fine	0.000
+Op 2  Freq Fixed	100.0
+Op 2  Filter On/Off	Off	False | True
+Op 2  Filter Mode	Low-Pass	Low-Pass | Band-Pass | High-Pass
+Op 2  Filter Cutoff	20000
+Op 2  Filter Res	0.000
+Op 2  Filter Kbd Follow	Off	False | True
+Op 2  Feedback	0.000
+Op 2  Output Level	58
+Op 2  Carrier Pan	0.000
+Op 2  Velocity Sens	7	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0
+Op 2  Amp Mod Sens	0	0.0 | 1.0 | 2.0 | 3.0
+Op 2  DADSR Delay	0.000
+Op 2  DADSR Attack	0.000
+Op 2  DADSR Decay	1.00
+Op 2  DADSR Release	0.030
+Op 2  DADSR Peak	1.00
+Op 2  DADSR Sustain	1.00
+Op 2 EG Rate 1	95.0
+Op 2 EG Rate 2	50.0
+Op 2 EG Rate 3	35.0
+Op 2 EG Rate 4	78.0
+Op 2 EG Level 1	99.0
+Op 2 EG Level 2	75.0
+Op 2 EG Level 3	0.000
+Op 2  EG Level 4	0.000
+Op 2  MSEG Loop On/Off	Off	False | True
+Op 2  MS Loop Start	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 2  MS Sync Loop Start	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 2  MSEG Loop End	3	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 2  MSEG Sync Loop End	3	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 2  MSEG Sync On/Off	Off	False | True
+Op 2  Key Rate Scale	3	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0
+Op 2  Rate Multiply	1.000
+Op 2  Rate Multiply Sync	1	0.125 | 0.25 | 0.5 | 0.75 | 1.0 | 2.0 | 4.0 | 8.0
+Op 3  Mute	Off	True | False
+Op 3  Detune	0
+Op 3  Pitch EG On/Off	On	False | True
+Op 3  EG Mode	DX7	DX7 | DADSR | MSEG
+Op 3  Osc On/Off	On	False | True
+Op 3  Osc Wave	Sine	Sine | Cosine | Parabola | Triangle | Round Square | Hard Square | Integrated Saw | Round Saw | Hard Saw | Sine^2 | Half Sine | Half Sine^2 | Alt Sine | Alt Sine^2 | Camel Sine | Camel Sine^2 | Abs Sine | Pulse Sine | Derived Square | Additive 1 | Additive 2 | Additive 3 | Additive 4 | Additive 5 | Additive 6
+Op 3  Polarity	Normal	Normal | Inverted
+Op 3  Osc Mode	Ratio	Ratio | Fixed
+Op 3  Osc Retrig	Off	False | True
+Op 3  Freq Coarse	1
+Op 3  Freq Fine	0.000
+Op 3  Freq Fixed	10.0
+Op 3  Filter On/Off	Off	False | True
+Op 3  Filter Mode	Low-Pass	Low-Pass | Band-Pass | High-Pass
+Op 3  Filter Cutoff	20000
+Op 3  Filter Res	0.000
+Op 3  Filter Kbd Follow	Off	False | True
+Op 3  Feedback	0.000
+Op 3  Output Level	99
+Op 3  Carrier Pan	0.000
+Op 3  Velocity Sens	2	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0
+Op 3  Amp Mod Sens	0	0.0 | 1.0 | 2.0 | 3.0
+Op 3  DADSR Delay	0.000
+Op 3  DADSR Attack	0.000
+Op 3  DADSR Decay	1.00
+Op 3  DADSR Release	0.030
+Op 3  DADSR Peak	1.00
+Op 3  DADSR Sustain	1.00
+Op 3 EG Rate 1	95.0
+Op 3 EG Rate 2	20.0
+Op 3 EG Rate 3	20.0
+Op 3 EG Rate 4	50.0
+Op 3 EG Level 1	99.0
+Op 3 EG Level 2	95.0
+Op 3 EG Level 3	0.000
+Op 3  EG Level 4	0.000
+Op 3  MSEG Loop On/Off	Off	False | True
+Op 3  MS Loop Start	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 3  MS Sync Loop Start	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 3  MSEG Loop End	3	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 3  MSEG Sync Loop End	3	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 3  MSEG Sync On/Off	Off	False | True
+Op 3  Key Rate Scale	3	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0
+Op 3  Rate Multiply	1.000
+Op 3  Rate Multiply Sync	1	0.125 | 0.25 | 0.5 | 0.75 | 1.0 | 2.0 | 4.0 | 8.0
+Op 4  Mute	Off	True | False
+Op 4  Detune	0
+Op 4  Pitch EG On/Off	On	False | True
+Op 4  EG Mode	DX7	DX7 | DADSR | MSEG
+Op 4  Osc On/Off	On	False | True
+Op 4  Osc Wave	Sine	Sine | Cosine | Parabola | Triangle | Round Square | Hard Square | Integrated Saw | Round Saw | Hard Saw | Sine^2 | Half Sine | Half Sine^2 | Alt Sine | Alt Sine^2 | Camel Sine | Camel Sine^2 | Abs Sine | Pulse Sine | Derived Square | Additive 1 | Additive 2 | Additive 3 | Additive 4 | Additive 5 | Additive 6
+Op 4  Polarity	Normal	Normal | Inverted
+Op 4  Osc Mode	Ratio	Ratio | Fixed
+Op 4  Osc Retrig	Off	False | True
+Op 4  Freq Coarse	1
+Op 4  Freq Fine	0.000
+Op 4  Freq Fixed	10.0
+Op 4  Filter On/Off	Off	False | True
+Op 4  Filter Mode	Low-Pass	Low-Pass | Band-Pass | High-Pass
+Op 4  Filter Cutoff	20000
+Op 4  Filter Res	0.000
+Op 4  Filter Kbd Follow	Off	False | True
+Op 4  Feedback	0.000
+Op 4  Output Level	89
+Op 4  Carrier Pan	0.000
+Op 4  Velocity Sens	6	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0
+Op 4  Amp Mod Sens	0	0.0 | 1.0 | 2.0 | 3.0
+Op 4  DADSR Delay	0.000
+Op 4  DADSR Attack	0.000
+Op 4  DADSR Decay	1.00
+Op 4  DADSR Release	0.030
+Op 4  DADSR Peak	1.00
+Op 4  DADSR Sustain	1.00
+Op 4 EG Rate 1	95.0
+Op 4 EG Rate 2	29.0
+Op 4 EG Rate 3	20.0
+Op 4 EG Rate 4	50.0
+Op 4 EG Level 1	99.0
+Op 4 EG Level 2	95.0
+Op 4 EG Level 3	0.000
+Op 4  EG Level 4	0.000
+Op 4  MSEG Loop On/Off	Off	False | True
+Op 4  MS Loop Start	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 4  MS Sync Loop Start	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 4  MSEG Loop End	3	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 4  MSEG Sync Loop End	3	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 4  MSEG Sync On/Off	Off	False | True
+Op 4  Key Rate Scale	3	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0
+Op 4  Rate Multiply	1.000
+Op 4  Rate Multiply Sync	1	0.125 | 0.25 | 0.5 | 0.75 | 1.0 | 2.0 | 4.0 | 8.0
+Op 5  Mute	Off	True | False
+Op 5  Detune	-7
+Op 5  Pitch EG On/Off	On	False | True
+Op 5  EG Mode	DX7	DX7 | DADSR | MSEG
+Op 5  Osc On/Off	On	False | True
+Op 5  Osc Wave	Sine	Sine | Cosine | Parabola | Triangle | Round Square | Hard Square | Integrated Saw | Round Saw | Hard Saw | Sine^2 | Half Sine | Half Sine^2 | Alt Sine | Alt Sine^2 | Camel Sine | Camel Sine^2 | Abs Sine | Pulse Sine | Derived Square | Additive 1 | Additive 2 | Additive 3 | Additive 4 | Additive 5 | Additive 6
+Op 5  Polarity	Normal	Normal | Inverted
+Op 5  Osc Mode	Ratio	Ratio | Fixed
+Op 5  Osc Retrig	Off	False | True
+Op 5  Freq Coarse	1
+Op 5  Freq Fine	0.000
+Op 5  Freq Fixed	10.0
+Op 5  Filter On/Off	Off	False | True
+Op 5  Filter Mode	Low-Pass	Low-Pass | Band-Pass | High-Pass
+Op 5  Filter Cutoff	20000
+Op 5  Filter Res	0.000
+Op 5  Filter Kbd Follow	Off	False | True
+Op 5  Feedback	0.000
+Op 5  Output Level	99
+Op 5  Carrier Pan	0.000
+Op 5  Velocity Sens	0	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0
+Op 5  Amp Mod Sens	0	0.0 | 1.0 | 2.0 | 3.0
+Op 5  DADSR Delay	0.000
+Op 5  DADSR Attack	0.000
+Op 5  DADSR Decay	1.00
+Op 5  DADSR Release	0.030
+Op 5  DADSR Peak	1.00
+Op 5  DADSR Sustain	1.00
+Op 5 EG Rate 1	95.0
+Op 5 EG Rate 2	20.0
+Op 5 EG Rate 3	20.0
+Op 5 EG Rate 4	50.0
+Op 5 EG Level 1	99.0
+Op 5 EG Level 2	95.0
+Op 5 EG Level 3	0.000
+Op 5  EG Level 4	0.000
+Op 5  MSEG Loop On/Off	Off	False | True
+Op 5  MS Loop Start	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 5  MS Sync Loop Start	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 5  MSEG Loop End	3	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 5  MSEG Sync Loop End	3	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 5  MSEG Sync On/Off	Off	False | True
+Op 5  Key Rate Scale	3	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0
+Op 5  Rate Multiply	1.000
+Op 5  Rate Multiply Sync	1	0.125 | 0.25 | 0.5 | 0.75 | 1.0 | 2.0 | 4.0 | 8.0
+Op 6  Mute	Off	True | False
+Op 6  Detune	7
+Op 6  Pitch EG On/Off	On	False | True
+Op 6  EG Mode	DX7	DX7 | DADSR | MSEG
+Op 6  Osc On/Off	On	False | True
+Op 6  Osc Wave	Sine	Sine | Cosine | Parabola | Triangle | Round Square | Hard Square | Integrated Saw | Round Saw | Hard Saw | Sine^2 | Half Sine | Half Sine^2 | Alt Sine | Alt Sine^2 | Camel Sine | Camel Sine^2 | Abs Sine | Pulse Sine | Derived Square | Additive 1 | Additive 2 | Additive 3 | Additive 4 | Additive 5 | Additive 6
+Op 6  Polarity	Normal	Normal | Inverted
+Op 6  Osc Mode	Ratio	Ratio | Fixed
+Op 6  Osc Retrig	Off	False | True
+Op 6  Freq Coarse	1
+Op 6  Freq Fine	0.000
+Op 6  Freq Fixed	10.0
+Op 6  Filter On/Off	Off	False | True
+Op 6  Filter Mode	Low-Pass	Low-Pass | Band-Pass | High-Pass
+Op 6  Filter Cutoff	20000
+Op 6  Filter Res	0.000
+Op 6  Filter Kbd Follow	Off	False | True
+Op 6  Feedback	0.000
+Op 6  Output Level	79
+Op 6  Carrier Pan	0.000
+Op 6  Velocity Sens	6	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0
+Op 6  Amp Mod Sens	0	0.0 | 1.0 | 2.0 | 3.0
+Op 6  DADSR Delay	0.000
+Op 6  DADSR Attack	0.000
+Op 6  DADSR Decay	1.00
+Op 6  DADSR Release	0.030
+Op 6  DADSR Peak	1.00
+Op 6  DADSR Sustain	1.00
+Op 6 EG Rate 1	95.0
+Op 6 EG Rate 2	29.0
+Op 6 EG Rate 3	20.0
+Op 6 EG Rate 4	50.0
+Op 6 EG Level 1	99.0
+Op 6 EG Level 2	95.0
+Op 6 EG Level 3	0.000
+Op 6  EG Level 4	0.000
+Op 6  MSEG Loop On/Off	Off	False | True
+Op 6  MS Loop Start	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 6  MS Sync Loop Start	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 6  MSEG Loop End	3	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 6  MSEG Sync Loop End	3	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Op 6  MSEG Sync On/Off	Off	False | True
+Op 6  Key Rate Scale	3	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0
+Op 6  Rate Multiply	1.000
+Op 6  Rate Multiply Sync	1	0.125 | 0.25 | 0.5 | 0.75 | 1.0 | 2.0 | 4.0 | 8.0
+Pitch EG Mode	DX7	DX7 | DADSR | MSEG
+Pitch DADSR Delay	0.000
+Pitch DADSR Attack	0.000
+Pitch DADSR Decay	0.309
+Pitch DADSR Release	0.000
+Pitch DADSR Peak	1.00
+Pitch DADSR Sustain	0.000
+Pitch EG Rate 1	94.0
+Pitch EG Rate 2	67.0
+Pitch EG Rate 3	95.0
+Pitch EG Rate 4	60.0
+Pitch EG Level 1	50.0
+Pitch EG Level 2	50.0
+Pitch EG Level 3	50.0
+Pitch EG Level 4	50.0
+Pitch MSEG Loop On/Off	Off	False | True
+Pitch MS Loop Start	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Pitch MS Sync Loop Start	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+ MSEG Loop End	3	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+ MSEG Sync Loop End	3	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Pitch MSEG Sync On/Off	Off	False | True
+Pitch Key Rate Scale	0	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0
+Pitch Rate Multiply	1.000
+Pitch Rate Multiply Sync	1	0.125 | 0.25 | 0.5 | 0.75 | 1.0 | 2.0 | 4.0 | 8.0
+Mod 1  EG Mode	MSEG	DX7 | DADSR | MSEG
+Mod 1 EG Rate 1	99.0
+Mod 1 EG Rate 2	99.0
+Mod 1 EG Rate 3	99.0
+Mod 1 EG Rate 4	99.0
+Mod 1 EG Level 1	99.0
+Mod 1 EG Level 2	99.0
+Mod 1 EG Level 3	99.0
+Mod 1 EG Level 4	99.0
+Mod 1  DADSR Delay	0.000
+Mod 1  DADSR Attack	0.000
+Mod 1  DADSR Decay	1.000
+Mod 1  DADSR Release	0.047
+Mod 1  DADSR Peak	1.00
+Mod 1  DADSR Sustain	1.00
+Mod 1  MSEG Loop On/Off	Off	False | True
+Mod 1  MS Loop Start	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Mod 1  MS Sync Loop Start	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Mod 1  MSEG Loop End	3	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Mod 1  MSEG Sync Loop End	3	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Mod 1  MSEG Sync On/Off	Off	False | True
+Mod 1  Key Rate Scale	0	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0
+Mod 1  Rate Multiply	1.000
+Mod 1  Rate Multiply Sync	1	0.125 | 0.25 | 0.5 | 0.75 | 1.0 | 2.0 | 4.0 | 8.0
+Mod 2  EG Mode	MSEG	DX7 | DADSR | MSEG
+Mod 2 EG Rate 1	99.0
+Mod 2 EG Rate 2	99.0
+Mod 2 EG Rate 3	99.0
+Mod 2 EG Rate 4	99.0
+Mod 2 EG Level 1	99.0
+Mod 2 EG Level 2	99.0
+Mod 2 EG Level 3	99.0
+Mod 2 EG Level 4	99.0
+Mod 2  DADSR Delay	0.000
+Mod 2  DADSR Attack	0.000
+Mod 2  DADSR Decay	1.000
+Mod 2  DADSR Release	0.047
+Mod 2  DADSR Peak	1.00
+Mod 2  DADSR Sustain	1.00
+Mod 2  MSEG Loop On/Off	Off	False | True
+Mod 2  MS Loop Start	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Mod 2  MS Sync Loop Start	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Mod 2  MSEG Loop End	3	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Mod 2  MSEG Sync Loop End	3	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Mod 2  MSEG Sync On/Off	Off	False | True
+Mod 2  Key Rate Scale	0	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0
+Mod 2  Rate Multiply	1.000
+Mod 2  Rate Multiply Sync	1	0.125 | 0.25 | 0.5 | 0.75 | 1.0 | 2.0 | 4.0 | 8.0
+Seq On/Off	On	False | True
+Seq Sync	On	False | True
+Seq Resolution	1.00
+Seq Tempo	1/16	1/32 | 1/24 | 1/16 | 1/12 | 1/8 | 1/6 | 1/4 | 1/3 | 1/2 | 1/1 | 2/1 | 3/1 | 4/1 | 5/1 | 6/1 | 7/1 | 8/1
+Seq Mode	Forward	Forward | Backward | Back & Forth | Random
+Seq Free Run	Off	False | True
+Seq Steps	8
+Seq Amount 1	0.000
+Seq Amount 2	0.000
+Seq Amount 3	0.000
+Seq Amount 4	0.000
+Seq Amount 5	0.000
+Seq Amount 6	0.000
+Seq Amount 7	0.000
+Seq Amount 8	0.000
+Seq Amount 9	0.000
+Seq Amount 10	0.000
+Seq Amount 11	0.000
+Seq Amount 12	0.000
+Seq Amount 13	0.000
+Seq Amount 14	0.000
+Seq Amount 15	0.000
+Seq Amount 16	0.000
+Seq Amount 17	0.000
+Seq Amount 18	0.000
+Seq Amount 19	0.000
+Seq Amount 20	0.000
+Seq Amount 21	0.000
+Seq Amount 22	0.000
+Seq Amount 23	0.000
+Seq Amount 24	0.000
+Seq Amount 25	0.000
+Seq Amount 26	0.000
+Seq Amount 27	0.000
+Seq Amount 28	0.000
+Seq Amount 29	0.000
+Seq Amount 30	0.000
+Seq Amount 31	0.000
+Seq Amount 32	0.000
+Seq Ramp 1	Off	False | True
+Seq Ramp 2	Off	False | True
+Seq Ramp 3	Off	False | True
+Seq Ramp 4	Off	False | True
+Seq Ramp 5	Off	False | True
+Seq Ramp 6	Off	False | True
+Seq Ramp 7	Off	False | True
+Seq Ramp 8	Off	False | True
+Seq Ramp 9	Off	False | True
+Seq Ramp 10	Off	False | True
+Seq Ramp 11	Off	False | True
+Seq Ramp 12	Off	False | True
+Seq Ramp 13	Off	False | True
+Seq Ramp 14	Off	False | True
+Seq Ramp 15	Off	False | True
+Seq Ramp 16	Off	False | True
+Seq Ramp 17	Off	False | True
+Seq Ramp 18	Off	False | True
+Seq Ramp 19	Off	False | True
+Seq Ramp 20	Off	False | True
+Seq Ramp 21	Off	False | True
+Seq Ramp 22	Off	False | True
+Seq Ramp 23	Off	False | True
+Seq Ramp 24	Off	False | True
+Seq Ramp 25	Off	False | True
+Seq Ramp 26	Off	False | True
+Seq Ramp 27	Off	False | True
+Seq Ramp 28	Off	False | True
+Seq Ramp 29	Off	False | True
+Seq Ramp 30	Off	False | True
+Seq Ramp 31	Off	False | True
+Seq Ramp 32	Off	False | True
+Seq Gate 1	Off	False | True
+Seq Gate 2	Off	False | True
+Seq Gate 3	Off	False | True
+Seq Gate 4	Off	False | True
+Seq Gate 5	Off	False | True
+Seq Gate 6	Off	False | True
+Seq Gate 7	Off	False | True
+Seq Gate 8	Off	False | True
+Seq Gate 9	Off	False | True
+Seq Gate 10	Off	False | True
+Seq Gate 11	Off	False | True
+Seq Gate 12	Off	False | True
+Seq Gate 13	Off	False | True
+Seq Gate 14	Off	False | True
+Seq Gate 15	Off	False | True
+Seq Gate 16	Off	False | True
+Seq Gate 17	Off	False | True
+Seq Gate 18	Off	False | True
+Seq Gate 19	Off	False | True
+Seq Gate 20	Off	False | True
+Seq Gate 21	Off	False | True
+Seq Gate 22	Off	False | True
+Seq Gate 23	Off	False | True
+Seq Gate 24	Off	False | True
+Seq Gate 25	Off	False | True
+Seq Gate 26	Off	False | True
+Seq Gate 27	Off	False | True
+Seq Gate 28	Off	False | True
+Seq Gate 29	Off	False | True
+Seq Gate 30	Off	False | True
+Seq Gate 31	Off	False | True
+Seq Gate 32	Off	False | True
+LFO 1 Wave	Sine	Triangle | Saw Down | Saw Up | Square | Sine | Sample/Hold
+LFO 1 Rate	34
+LFO 1 Rate Sync	1/4	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+LFO 1 Delay	33
+LFO 1 PMD	0
+LFO 1 AMD	0
+LFO 1 Retrig	Off	False | True
+LFO 1 Sync	Off	False | True
+Pitch Mod Sens	3	0.0 | 1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0
+LFO 2 Wave	Triangle	Triangle | Saw Down | Saw Up | Square | Sine | Sample/Hold
+LFO 2 Rate	35
+LFO 2 Rate Sync	1/4	8/1 | 7/1 | 6/1 | 5/1 | 4/1 | 3/1 | 2/1 | 1/1 | 1/2 | 1/3 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32
+LFO 2 Delay	0
+LFO 2 Retrig	On	False | True
+LFO 2 Sync	Off	False | True
+Arp On/Off	Off	False | True
+Arp Hold	Off	False | True
+Arp Sync	On	False | True
+Arp Rate	50.0
+Arp Ratio	1/16	1/1 | 1/2 | 1/4 | 1/6 | 1/8 | 1/12 | 1/16 | 1/24 | 1/32 | 1/64
+Arp Pattern	As Played	As Played | Up | Down | Up & Down (In) | Up & Down (Ex) | Random
+Arp Octave	1	1.0 | 2.0 | 3.0 | 4.0 | 5.0
+Mod Matrix Amount 1	0.000
+Mod Matrix Amount 2	0.000
+Mod Matrix Amount 3	0.000
+Mod Matrix Amount 4	0.000
+Mod Matrix Amount 5	0.000
+Mod Matrix Amount 6	0.000
+Mod Matrix Amount 7	0.000
+Mod Matrix Amount 8	0.000
+Mod Matrix Amount 9	0.000
+Mod Matrix Amount 10	0.000
+Mod Matrix Amount 11	0.000
+Mod Matrix Amount 12	0.000
+Mod Matrix Amount 13	0.000
+Mod Matrix Amount 14	0.000
+Mod Matrix Amount 15	0.000
+Mod Matrix Amount 16	0.000
+Mod Matrix Amount 17	0.000
+Mod Matrix Amount 18	0.000
+Mod Matrix Amount 19	0.000
+Mod Matrix Amount 20	0.000
+Mod Matrix Amount 21	0.000
+Mod Matrix Amount 22	0.000
+Mod Matrix Amount 23	0.000
+Mod Matrix Amount 24	0.000
+Mod Matrix Amount 25	0.000
+Mod Matrix Amount 26	0.000
+Mod Matrix Amount 27	0.000
+Mod Matrix Amount 28	0.000
+Mod Matrix Amount 29	0.000
+Mod Matrix Amount 30	0.000
+Mod Matrix Amount 31	0.000
+Mod Matrix Amount 32	0.000
+Mod Matrix Amount 33	0.000
+Mod Matrix Amount 34	0.000
+Mod Matrix Amount 35	0.000
+Mod Matrix Amount 36	0.000
+Mod Matrix Amount 37	0.000
+Mod Matrix Amount 38	0.000
+Mod Matrix Amount 39	0.000
+Mod Matrix Amount 40	0.000
+Mod Matrix Amount 41	0.000
+Mod Matrix Amount 42	0.000
+Mod Matrix Amount 43	0.000
+Mod Matrix Amount 44	0.000
+Mod Matrix Amount 45	0.000
+Mod Matrix Amount 46	0.000
+Mod Matrix Amount 47	0.000
+Mod Matrix Amount 48	0.000
+Mod Matrix Amount 49	0.000
+Mod Matrix Amount 50	0.000
+Mod Matrix Amount 51	0.000
+Mod Matrix Amount 52	0.000
+Mod Matrix Amount 53	0.000
+Mod Matrix Amount 54	0.000
+Mod Matrix Amount 55	0.601
+Mod Matrix Amount 56	0.000
+Mod Matrix Amount 57	0.000
+Mod Matrix Amount 58	0.000
+Mod Matrix Amount 59	0.000
+Mod Matrix Amount 60	0.000
+Mod Matrix Amount 61	0.000
+Mod Matrix Amount 62	0.000
+Mod Matrix Amount 63	0.000
+Mod Matrix Amount 64	1.00
+Mod Matrix Amount 65	0.000
+Mod Matrix Amount 66	0.000
+Mod Matrix Amount 67	0.000
+Mod Matrix Amount 68	0.000
+Mod Matrix Amount 69	0.000
+Mod Matrix Amount 70	0.000
+Mod Matrix Amount 71	0.000
+Mod Matrix Amount 72	0.000
+Mod Matrix Amount 73	0.000
+Mod Matrix Amount 74	0.000
+Mod Matrix Amount 75	0.000
+Mod Matrix Amount 76	0.000
+Mod Matrix Amount 77	0.000
+Mod Matrix Amount 78	0.000
+Mod Matrix Amount 79	0.000
+Mod Matrix Amount 80	0.000
+Mod Matrix Amount 81	0.000
+Mod Matrix Amount 82	0.000
+Mod Matrix Amount 83	0.000
+Mod Matrix Amount 84	0.000
+Mod Matrix Amount 85	0.000
+Mod Matrix Amount 86	0.000
+Mod Matrix Amount 87	0.000
+Mod Matrix Amount 88	0.000
+Mod Matrix Amount 89	0.000
+Mod Matrix Amount 90	0.000
+Mod Matrix Amount 91	0.000
+Mod Matrix Amount 92	0.000
+Mod Matrix Amount 93	0.000
+Mod Matrix Amount 94	0.000
+Mod Matrix Amount 95	0.000
+Mod Matrix Amount 96	0.000
+Mod Matrix Amount 97	0.000
+Mod Matrix Amount 98	0.000
+Mod Matrix Amount 99	0.000
+Mod Matrix Amount 100	0.000
+Mod Matrix Amount 101	0.000
+Mod Matrix Amount 102	0.000
+Mod Matrix Amount 103	0.000
+Mod Matrix Amount 104	0.000
+Mod Matrix Amount 105	0.000
+Mod Matrix Amount 106	0.000
+Mod Matrix Amount 107	0.000
+Mod Matrix Amount 108	0.000
+Mod Matrix Amount 109	0.000
+Mod Matrix Amount 110	0.000
+Mod Matrix Amount 111	0.000
+Mod Matrix Amount 112	0.000
+Mod Matrix Amount 113	0.000
+Mod Matrix Amount 114	0.000
+Mod Matrix Amount 115	0.000
+Mod Matrix Amount 116	0.000
+Mod Matrix Amount 117	0.000
+Mod Matrix Amount 118	0.000
+Mod Matrix Amount 119	0.000
+Mod Matrix Amount 120	0.000
+Mod Matrix Amount 121	0.000
+Mod Matrix Amount 122	0.000
+Mod Matrix Amount 123	0.000
+Mod Matrix Amount 124	0.000
+Mod Matrix Amount 125	0.000
+Mod Matrix Amount 126	0.000
+Mod Matrix Amount 127	0.000
+Mod Matrix Amount 128	0.000
+Mod Matrix Amount 129	0.900
+Mod Matrix Amount 130	0.900
+Mod Matrix Amount 131	0.900
+Mod Matrix Amount 132	0.900
+Mod Matrix Amount 133	0.900
+Mod Matrix Amount 134	0.000
+Mod Matrix Amount 135	0.000
+Mod Matrix Amount 136	0.000
+Mod Matrix Amount 137	0.000
+Mod Matrix Amount 138	0.000
+Mod Matrix Amount 139	0.000
+Mod Matrix Amount 140	0.000
+Mod Matrix Amount 141	0.000
+Mod Matrix Amount 142	0.020
+Mod Matrix Amount 143	0.000
+Mod Matrix Amount 144	0.000
+Mod Matrix Amount 145	0.000
+Mod Matrix Amount 146	0.000
+Mod Matrix Amount 147	0.000
+Mod Matrix Amount 148	0.000
+Mod Matrix Amount 149	0.000
+Mod Matrix Amount 150	0.000
+Mod Matrix Amount 151	-1.00
+Mod Matrix Amount 152	0.000
+Mod Matrix Amount 153	0.000
+Mod Matrix Amount 154	0.000
+Mod Matrix Amount 155	0.000
+Mod Matrix Amount 156	0.000
+Mod Matrix Amount 157	0.000
+Mod Matrix Amount 158	0.000
+Mod Matrix Amount 159	0.000
+Mod Matrix Amount 160	-1.00
+Mod Matrix Amount 161	0.000
+Mod Matrix Amount 162	0.000
+Mod Matrix Amount 163	0.000
+Mod Matrix Amount 164	0.000
+Mod Matrix Amount 165	0.000
+Mod Matrix Amount 166	0.000
+Mod Matrix Amount 167	0.000
+Mod Matrix Amount 168	0.000
+Mod Matrix Amount 169	0.000
+Mod Matrix Amount 170	0.000
+Mod Matrix Amount 171	0.000
+Mod Matrix Amount 172	0.000
+Mod Matrix Amount 173	0.000
+Mod Matrix Amount 174	0.000
+Mod Matrix Amount 175	0.000
+Mod Matrix Amount 176	0.000
+Mod Matrix Amount 177	0.000
+Mod Matrix Amount 178	0.000
+Mod Matrix Amount 179	0.000
+Mod Matrix Amount 180	0.000
+Mod Matrix Amount 181	0.000
+Mod Matrix Amount 182	0.000
+Mod Matrix Amount 183	0.000
+Mod Matrix Amount 184	0.000
+Mod Matrix Amount 185	0.000
+Mod Matrix Amount 186	0.000
+Mod Matrix Amount 187	0.000
+Mod Matrix Amount 188	0.000
+Mod Matrix Amount 189	0.000
+Mod Matrix Amount 190	0.000
+Mod Matrix Amount 191	0.000
+Mod Matrix Amount 192	0.000
+FX 1  Type	Empty	Empty | Phaser | Flanger | Analog Delay | Delay | Analog Chorus | Reverb | Param EQ | Filter | Overdrive | Destroy | Compressor
+FX 1  Bypass	Off	False | True
+FX 1  Dry/Wet	50.0
+FX 1  Analog Delay Time	106
+FX 1  Analog Delay Amount	60.0
+FX 1  Analog Delay Tone	60.0
+FX 1  Analog Delay Rate	0.074
+FX 1  Analog Delay Depth	23.2
+FX 1  Chorus Type	2	1.0 | 2.0 | 3.0
+FX 1  Chorus Rate	0.150
+FX 1  Chorus Amount	20.0
+FX 1  Chorus Delay	7.00
+FX 1  Chorus Stereo Width	10.0
+FX 1  Delay Time	300
+FX 1  Delay Time Sync	1/8	1/128 | 1/64 | 1/32T | 1/32 | 1/16T | 1/16 | 1/8T | 1/16. | 1/8 | 1/4T | 1/8. | 1/4 | 1/2T | 1/4. | 1/2 | 1/2. | 1/1
+FX 1  Delay Feedback	50.0
+FX 1  Delay Sync	Off	False | True
+FX 1  Delay Pingpong	Off	False | True
+FX 1  Phaser Stage 1 Rate	0.300
+FX 1  Phaser Stage 1 Rate Sync	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+FX 1  Phaser Stage 1 Depth	22.0
+FX 1  Phaser Stage 2 Rate	0.300
+FX 1  Phaser Stage 2 Rate Sync	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+FX 1  Phaser Stage 2 Depth	22.0
+FX 1  Phaser Feedback	70.0
+FX 1  Phaser Sync	Off	False | True
+FX 1  Phaser Dual Mode	Off	False | True
+FX 1  Reverb Delay	20.0
+FX 1  Reverb Size	91.6
+FX 1  Reverb Width	100
+FX 1  Reverb Tone	3.20
+FX 1  Reverb Tame	Off	False | True
+FX 1  Reverb Gain	0.000
+FX 1  Filter Mode	Low-Pass	Low-Pass | Band-Pass | High-Pass
+FX 1  Filter Cutoff	2500
+FX 1  Filter Resonance	6.00
+FX 1  Distortion Drive	0.000
+FX 1  Distortion Tone	100
+FX 1  Distortion Output	20.0
+FX 1  Flanger Rate	0.224
+FX 1  Flanger Depth	80.0
+FX 1  Flanger Delay Time	2.40
+FX 1  Flanger Feedback	80.0
+FX 1  Destroy Resamp	82.4
+FX 1  Destroy Bit Res	16	4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+FX 1  Destroy Harm Dist	20.0
+FX 1  Destroy Clipping	0.000
+FX 1  Destroy Tone	6871
+FX 1  Destroy Gain	0.000
+FX 1  Param EQ Lo Freq	47.6
+FX 1  Param EQ Lo Gain	0.000
+FX 1  Param EQ Mid Freq	718
+FX 1  Param EQ Mid Width	50.0
+FX 1  Param EQ Mid Gain	0.000
+FX 1  Param EQ Hi Freq	2870
+FX 1  Param EQ Hi Gain	0.000
+FX 1  Compressor Input	0.000
+FX 1  Compressor Thresh	-36.0
+FX 1  Compressor Ratio	3.00
+FX 1  Compressor Attack	50.0
+FX 1  Compressor Release	80.0
+FX 1  Compressor Make Up	4.00
+FX 1  Param EQ View	Curve	Curve | Knobs
+FX 1  Compressor Gain Reduction	0.000
+FX 2  Type	Empty	Empty | Phaser | Flanger | Analog Delay | Delay | Analog Chorus | Reverb | Param EQ | Filter | Overdrive | Destroy | Compressor
+FX 2  Bypass	Off	False | True
+FX 2  Dry/Wet	50.0
+FX 2  Analog Delay Time	106
+FX 2  Analog Delay Amount	60.0
+FX 2  Analog Delay Tone	60.0
+FX 2  Analog Delay Rate	0.074
+FX 2  Analog Delay Depth	23.2
+FX 2  Chorus Type	2	1.0 | 2.0 | 3.0
+FX 2  Chorus Rate	0.150
+FX 2  Chorus Amount	20.0
+FX 2  Chorus Delay	7.00
+FX 2  Chorus Stereo Width	10.0
+FX 2  Delay Time	300
+FX 2  Delay Time Sync	1/8	1/128 | 1/64 | 1/32T | 1/32 | 1/16T | 1/16 | 1/8T | 1/16. | 1/8 | 1/4T | 1/8. | 1/4 | 1/2T | 1/4. | 1/2 | 1/2. | 1/1
+FX 2  Delay Feedback	50.0
+FX 2  Delay Sync	Off	False | True
+FX 2  Delay Pingpong	Off	False | True
+FX 2  Phaser Stage 1 Rate	0.300
+FX 2  Phaser Stage 1 Rate Sync	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+FX 2  Phaser Stage 1 Depth	22.0
+FX 2  Phaser Stage 2 Rate	0.300
+FX 2  Phaser Stage 2 Rate Sync	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+FX 2  Phaser Stage 2 Depth	22.0
+FX 2  Phaser Feedback	70.0
+FX 2  Phaser Sync	Off	False | True
+FX 2  Phaser Dual Mode	Off	False | True
+FX 2  Reverb Delay	20.0
+FX 2  Reverb Size	91.6
+FX 2  Reverb Width	100
+FX 2  Reverb Tone	3.20
+FX 2  Reverb Tame	Off	False | True
+FX 2  Reverb Gain	0.000
+FX 2  Filter Mode	Low-Pass	Low-Pass | Band-Pass | High-Pass
+FX 2  Filter Cutoff	2500
+FX 2  Filter Resonance	6.00
+FX 2  Distortion Drive	0.000
+FX 2  Distortion Tone	100
+FX 2  Distortion Output	20.0
+FX 2  Flanger Rate	0.224
+FX 2  Flanger Depth	80.0
+FX 2  Flanger Delay Time	2.40
+FX 2  Flanger Feedback	80.0
+FX 2  Destroy Resamp	82.4
+FX 2  Destroy Bit Res	16	4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+FX 2  Destroy Harm Dist	20.0
+FX 2  Destroy Clipping	0.000
+FX 2  Destroy Tone	6871
+FX 2  Destroy Gain	0.000
+FX 2  Param EQ Lo Freq	47.6
+FX 2  Param EQ Lo Gain	0.000
+FX 2  Param EQ Mid Freq	718
+FX 2  Param EQ Mid Width	50.0
+FX 2  Param EQ Mid Gain	0.000
+FX 2  Param EQ Hi Freq	2870
+FX 2  Param EQ Hi Gain	0.000
+FX 2  Compressor Input	0.000
+FX 2  Compressor Thresh	-36.0
+FX 2  Compressor Ratio	3.00
+FX 2  Compressor Attack	50.0
+FX 2  Compressor Release	80.0
+FX 2  Compressor Make Up	4.00
+FX 2  Param EQ View	Curve	Curve | Knobs
+FX 2  Compressor Gain Reduction	0.000
+FX 3  Type	Empty	Empty | Phaser | Flanger | Analog Delay | Delay | Analog Chorus | Reverb | Param EQ | Filter | Overdrive | Destroy | Compressor
+FX 3  Bypass	Off	False | True
+FX 3  Dry/Wet	50.0
+FX 3  Analog Delay Time	106
+FX 3  Analog Delay Amount	60.0
+FX 3  Analog Delay Tone	60.0
+FX 3  Analog Delay Rate	0.074
+FX 3  Analog Delay Depth	23.2
+FX 3  Chorus Type	2	1.0 | 2.0 | 3.0
+FX 3  Chorus Rate	0.150
+FX 3  Chorus Amount	20.0
+FX 3  Chorus Delay	7.00
+FX 3  Chorus Stereo Width	10.0
+FX 3  Delay Time	300
+FX 3  Delay Time Sync	1/8	1/128 | 1/64 | 1/32T | 1/32 | 1/16T | 1/16 | 1/8T | 1/16. | 1/8 | 1/4T | 1/8. | 1/4 | 1/2T | 1/4. | 1/2 | 1/2. | 1/1
+FX 3  Delay Feedback	50.0
+FX 3  Delay Sync	Off	False | True
+FX 3  Delay Pingpong	Off	False | True
+FX 3  Phaser Stage 1 Rate	0.300
+FX 3  Phaser Stage 1 Rate Sync	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+FX 3  Phaser Stage 1 Depth	22.0
+FX 3  Phaser Stage 2 Rate	0.300
+FX 3  Phaser Stage 2 Rate Sync	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+FX 3  Phaser Stage 2 Depth	22.0
+FX 3  Phaser Feedback	70.0
+FX 3  Phaser Sync	Off	False | True
+FX 3  Phaser Dual Mode	Off	False | True
+FX 3  Reverb Delay	20.0
+FX 3  Reverb Size	91.6
+FX 3  Reverb Width	100
+FX 3  Reverb Tone	3.20
+FX 3  Reverb Tame	Off	False | True
+FX 3  Reverb Gain	0.000
+FX 3  Filter Mode	Low-Pass	Low-Pass | Band-Pass | High-Pass
+FX 3  Filter Cutoff	2500
+FX 3  Filter Resonance	6.00
+FX 3  Distortion Drive	0.000
+FX 3  Distortion Tone	100
+FX 3  Distortion Output	20.0
+FX 3  Flanger Rate	0.224
+FX 3  Flanger Depth	80.0
+FX 3  Flanger Delay Time	2.40
+FX 3  Flanger Feedback	80.0
+FX 3  Destroy Resamp	82.4
+FX 3  Destroy Bit Res	16	4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+FX 3  Destroy Harm Dist	20.0
+FX 3  Destroy Clipping	0.000
+FX 3  Destroy Tone	6871
+FX 3  Destroy Gain	0.000
+FX 3  Param EQ Lo Freq	47.6
+FX 3  Param EQ Lo Gain	0.000
+FX 3  Param EQ Mid Freq	718
+FX 3  Param EQ Mid Width	50.0
+FX 3  Param EQ Mid Gain	0.000
+FX 3  Param EQ Hi Freq	2870
+FX 3  Param EQ Hi Gain	0.000
+FX 3  Compressor Input	0.000
+FX 3  Compressor Thresh	-36.0
+FX 3  Compressor Ratio	3.00
+FX 3  Compressor Attack	50.0
+FX 3  Compressor Release	80.0
+FX 3  Compressor Make Up	4.00
+FX 3  Param EQ View	Curve	Curve | Knobs
+FX 3  Compressor Gain Reduction	0.000
+FX 4  Type	Empty	Empty | Phaser | Flanger | Analog Delay | Delay | Analog Chorus | Reverb | Param EQ | Filter | Overdrive | Destroy | Compressor
+FX 4  Bypass	Off	False | True
+FX 4  Dry/Wet	50.0
+FX 4  Analog Delay Time	106
+FX 4  Analog Delay Amount	60.0
+FX 4  Analog Delay Tone	60.0
+FX 4  Analog Delay Rate	0.074
+FX 4  Analog Delay Depth	23.2
+FX 4  Chorus Type	2	1.0 | 2.0 | 3.0
+FX 4  Chorus Rate	0.150
+FX 4  Chorus Amount	20.0
+FX 4  Chorus Delay	7.00
+FX 4  Chorus Stereo Width	10.0
+FX 4  Delay Time	300
+FX 4  Delay Time Sync	1/8	1/128 | 1/64 | 1/32T | 1/32 | 1/16T | 1/16 | 1/8T | 1/16. | 1/8 | 1/4T | 1/8. | 1/4 | 1/2T | 1/4. | 1/2 | 1/2. | 1/1
+FX 4  Delay Feedback	50.0
+FX 4  Delay Sync	Off	False | True
+FX 4  Delay Pingpong	Off	False | True
+FX 4  Phaser Stage 1 Rate	0.300
+FX 4  Phaser Stage 1 Rate Sync	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+FX 4  Phaser Stage 1 Depth	22.0
+FX 4  Phaser Stage 2 Rate	0.300
+FX 4  Phaser Stage 2 Rate Sync	7/4	15/4 | 7/2 | 13/4 | 3/1 | 11/4 | 5/2 | 9/4 | 2/1 | 7/4 | 3/2 | 5/4 | 1/1 | 3/4 | 1/2 | 1/4 | 1/8
+FX 4  Phaser Stage 2 Depth	22.0
+FX 4  Phaser Feedback	70.0
+FX 4  Phaser Sync	Off	False | True
+FX 4  Phaser Dual Mode	Off	False | True
+FX 4  Reverb Delay	20.0
+FX 4  Reverb Size	91.6
+FX 4  Reverb Width	100
+FX 4  Reverb Tone	3.20
+FX 4  Reverb Tame	Off	False | True
+FX 4  Reverb Gain	0.000
+FX 4  Filter Mode	Low-Pass	Low-Pass | Band-Pass | High-Pass
+FX 4  Filter Cutoff	2500
+FX 4  Filter Resonance	6.00
+FX 4  Distortion Drive	0.000
+FX 4  Distortion Tone	100
+FX 4  Distortion Output	20.0
+FX 4  Flanger Rate	0.224
+FX 4  Flanger Depth	80.0
+FX 4  Flanger Delay Time	2.40
+FX 4  Flanger Feedback	80.0
+FX 4  Destroy Resamp	82.4
+FX 4  Destroy Bit Res	16	4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+FX 4  Destroy Harm Dist	20.0
+FX 4  Destroy Clipping	0.000
+FX 4  Destroy Tone	6871
+FX 4  Destroy Gain	0.000
+FX 4  Param EQ Lo Freq	47.6
+FX 4  Param EQ Lo Gain	0.000
+FX 4  Param EQ Mid Freq	718
+FX 4  Param EQ Mid Width	50.0
+FX 4  Param EQ Mid Gain	0.000
+FX 4  Param EQ Hi Freq	2870
+FX 4  Param EQ Hi Gain	0.000
+FX 4  Compressor Input	0.000
+FX 4  Compressor Thresh	-36.0
+FX 4  Compressor Ratio	3.00
+FX 4  Compressor Attack	50.0
+FX 4  Compressor Release	80.0
+FX 4  Compressor Make Up	4.00
+FX 4  Param EQ View	Curve	Curve | Knobs
+FX 4  Compressor Gain Reduction	0.000
+VST3_AfterTouch	0.000
+Pitch Bend	0.500
+Mod Wheel	0.000
+VST3_CtrlBreath	0.000
+VST3_CtrlExpression	1.00
+VST3_CtrlSustainOnOff	0.000
+VST3_CtrlAllNotesOff	0.000
+VST3_CtrlAllSoundsOff	0.000
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

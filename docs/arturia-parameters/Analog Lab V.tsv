@@ -1,0 +1,549 @@
+# Analog Lab V 5.12.6.6914 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+Master	0.000
+P1 FXA Active	On	False | True
+P1 FXB Active	On	False | True
+P2 FXA Active	Off	False | True
+P2 FXB Active	Off	False | True
+MapControllerTab	Slot1	Live | Slot1 | Slot2
+MapFilterMode	Preset	Category | Preset
+Macro 1	0.000
+Macro 2	0.000
+Macro 3	0.000
+Macro 4	0.000
+Master Bass	0.000
+Master Mid	0.000
+Master Treble	0.000
+P1 Volume	0.303
+P1 Brightness	0.223
+P1 Chorus Mode	0.670
+P1 Timbre	0.423
+P1 Delay Mix	0.460
+P1 Time	0.628
+P1 Reverb Mix	0.212
+P1 Movement	0.000
+P1 Portamento	0.000
+P1 Param9	0.000
+P1 Param10	0.000
+P1 VCF Cutoff	0.250
+P1 VCF Resonance	0.000
+P1 VCF Env	0.504
+P1 VCF LFO	0.000
+P1 Attack	0.113
+P1 Decay	0.200
+P1 Sustain	0.392
+P1 Release	0.040
+P1 Param19	0.000
+P1 Pan	0.500
+P1 Active	On	False | True
+P1 Send Delay	On	False | True
+P1 Send Reverb	On	False | True
+P2 Param0	0.000
+P2 Param1	0.000
+P2 Param2	0.000
+P2 Param3	0.000
+P2 Param4	0.000
+P2 Param5	0.000
+P2 Param6	0.000
+P2 Param7	0.000
+P2 Param8	0.000
+P2 Param9	0.000
+P2 Param10	0.000
+P2 Param11	0.000
+P2 Param12	0.000
+P2 Param13	0.000
+P2 Param14	0.000
+P2 Param15	0.000
+P2 Param16	0.000
+P2 Param17	0.000
+P2 Param18	0.000
+P2 Param19	0.000
+P2 Volume	0.000
+P2 Pan	0.500
+P2 Active	On	False | True
+P2 Send Delay	On	False | True
+P2 Send Reverb	On	False | True
+Global Pitch Bend	0.500
+Global Mod Wheel	0.000
+Global AfterTouch	0.000
+Global Sustain	0.000
+Global Expression	1.00
+All Notes Off	0.000
+All Sounds Off	0.000
+Omni Mode Off	0.000
+Omni Mode On	0.000
+Poly Mode On/Off	0.000
+Poly Mode On	0.000
+Global Sustenuto On/Off	0.000
+Global Soft Pedal On/Off	0.000
+Global Breath	0.000
+OnlySlot1 Pitch Bend Deprecated	0.500
+OnlySlot1 Mod Wheel Deprecated	0.000
+OnlySlot1 AfterTouch Deprecated	0.000
+OnlySlot1 Sustain Deprecated	0.000
+OnlySlot1 Expression Deprecated	1.00
+OnlySlot1 All Notes Off Deprecated	0.000
+OnlySlot1 All Sounds Off Deprecated	0.000
+OnlySlot1 Omni Mode Off Deprecated	0.000
+OnlySlot1 Omni Mode On Deprecated	0.000
+OnlySlot1 Poly Mode On/Off Deprecated	0.000
+OnlySlot1 Poly Mode On Deprecated	0.000
+OnlySlot1 Sustenuto On/Off Deprecated	0.000
+OnlySlot1 Soft Pedal On/Off Deprecated	0.000
+OnlySlot1 Breath Deprecated	0.000
+OnlySlot2 Pitch Bend Deprecated	0.500
+OnlySlot2 Mod Wheel Deprecated	0.000
+OnlySlot2 AfterTouch Deprecated	0.000
+OnlySlot2 Sustain Deprecated	0.000
+OnlySlot2 Expression Deprecated	1.00
+OnlySlot2 All Notes Off Deprecated	0.000
+OnlySlot2 All Sounds Off Deprecated	0.000
+OnlySlot2 Omni Mode Off Deprecated	0.000
+OnlySlot2 Omni Mode On Deprecated	0.000
+OnlySlot2 Poly Mode On/Off Deprecated	0.000
+OnlySlot2 Poly Mode On Deprecated	0.000
+OnlySlot2 Sustenuto On/Off Deprecated	0.000
+OnlySlot2 Soft Pedal On/Off Deprecated	0.000
+OnlySlot2 Breath Deprecated	0.000
+Empty	0.500
+FXA Dry/Wet	0.000
+FXA Unused parameter	0.000
+FXA Active	On	False | True
+FXA Multi Filter Frequency	1000
+FXA Multi Filter Q	0.707
+FXA Multi Filter Comb Freq	100
+FXA Parametric EQ LowShelf fc	250
+FXA Parametric EQ LowShelf Gain	0.000
+FXA Parametric EQ LowShelf Q	0.707
+FXA Parametric EQ Peak 1 fc	500
+FXA Parametric EQ Peak 1 Gain	0.000
+FXA Parametric EQ Peak 1 Q	1.23
+FXA Parametric EQ HighShelf fc	5000
+FXA Parametric EQ HighShelf Gain	0.000
+FXA Parametric EQ HighShelf Q	0.707
+FXA Parametric EQ UNASSIGNED	1.00
+FXA Compressor Threshold	0.000
+FXA Compressor Ratio	2.00
+FXA Compressor Attack	10.0
+FXA Compressor Release	50.0
+FXA Compressor Auto Make up	OFF	False | True
+FXA Compressor OutputGain	0.000
+FXA Distortion Bit Depth	9.10
+FXA Distortion Downsampling Factor	1.00
+FXA Distortion Overdrive Drive	0.616
+FXA Distortion Overdrive Tone	1.00
+FXA Distortion Overdrive Level	0.064
+FXA Distortion Wavefolder Drive	18.0
+FXA Distortion Wavefolder Output Gain	-10.0
+FXA Distortion Waveshaper Drive	18.0
+FXA Distortion Waveshaper Output Gain	-10.0
+FXA Distortion Overdrive Output Gain	-12.0
+FXA Chorus Fixed Delay Time	13.1
+FXA Chorus Depth	2.20
+FXA Chorus Frequency	0.580
+FXA Chorus Feedback	0.115
+FXA Chorus Stereo Mode	Stereo	Mono | Stereo
+FXA Chorus LFO Shape	Sine	Sine | Square
+FXA Flanger Min Delay	0.030
+FXA Flanger Depth	0.184
+FXA Flanger Rate	0.133
+FXA Flanger Sync Rate	2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FXA Flanger Feedback	0.616
+FXA Flanger Feedback Polarity	Negative	Positive | Negative
+FXA Flanger Stereo	Stereo	Mono | Stereo
+FXA Flanger LowPass fc	9935
+FXA Flanger HighPass fc	125
+FXA Flanger LFO Waveform	Triangle	Sine | Triangle
+FXA Phaser Frequency	640
+FXA Phaser N Poles	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FXA Phaser Feedback	0.614
+FXA Phaser LFO Amount	0.282
+FXA Phaser Rate Unsynced	0.446
+FXA Phaser Rate Synced	8.t	8 | 4.d | 8.t | 4 | 2.d | 4.t | 2 | 1.d | 2.t | 1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16 | 1/32.d | 1/16.t | 1/32
+FXA Phaser Stereo	30.0
+FXA StereoPan UNASSIGNED	0.500
+FXA StereoPan Rate Unsynced	2.00
+FXA StereoPan Rate Synced	2.d	8 | 4.d | 8.t | 4 | 2.d | 4.t | 2 | 1.d | 2.t | 1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16 | 1/32.d | 1/16.t | 1/32
+FXA AnalogPhaser Rate	1.37
+FXA AnalogPhaser Rate Sync	1/4	1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16
+FXA AnalogPhaser Feedback	0.000
+FXA AnalogPhaser Depth	10.0
+FXA AnalogPhaser Pole Number	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FXA AnalogPhaser Sync	Off	False | True
+FXA AnalogPhaser Stereo	Off	False | True
+FXA Wah Frequency	640
+FXA Wah Threshold	0.000
+FXA Wah Modulation Depth	30.0
+FXA Wah Modulation Rate	2.80
+FXA Twin Amp Bass	5.36
+FXA Twin Amp Treble	5.50
+FXA Twin Amp Drive	5.50
+FXA Twin Amp Output Gain	0.000
+FXA Twin Amp Bright	Off	False | True
+FXA Twin Amp OnAxis	On	False | True
+FXA Rotary Speaker Slow/Fast	Slow	Slow | Fast
+FXA Rotary Speaker Click Volume	0.010
+FXA Rotary Speaker Brake	Run	Run | Stop
+FXA Rotary Speaker Horn/Drum Balance	39.6
+FXA Rotary Speaker Stereo Spread	74.1
+FXA Parametric EQ Peak 2 Cutoff Deprecated	0.500
+FXA Parametric EQ Peak 2 Gain Deprecated	0.500
+FXA Parametric EQ Peak 2 Q Deprecated	0.500
+FXA Parametric EQ Peak 3 fc Deprecated	0.500
+FXA Parametric EQ Peak 3 Gain Deprecated	0.500
+FXA Parametric EQ Peak 3 Q Deprecated	0.500
+FXB Dry/Wet	0.000
+FXB Unused parameter	0.000
+FXB Active	On	False | True
+FXB Multi Filter Frequency	1000
+FXB Multi Filter Q	0.707
+FXB Multi Filter Comb Freq	100
+FXB Parametric EQ LowShelf fc	250
+FXB Parametric EQ LowShelf Gain	0.000
+FXB Parametric EQ LowShelf Q	0.707
+FXB Parametric EQ Peak 1 fc	500
+FXB Parametric EQ Peak 1 Gain	0.000
+FXB Parametric EQ Peak 1 Q	1.23
+FXB Parametric EQ HighShelf fc	5000
+FXB Parametric EQ HighShelf Gain	0.000
+FXB Parametric EQ HighShelf Q	0.707
+FXB Parametric EQ UNASSIGNED	1.00
+FXB Compressor Threshold	0.000
+FXB Compressor Ratio	2.00
+FXB Compressor Attack	10.0
+FXB Compressor Release	50.0
+FXB Compressor Auto Make up	OFF	False | True
+FXB Compressor OutputGain	0.000
+FXB Distortion Bit Depth	9.10
+FXB Distortion Downsampling Factor	1.00
+FXB Distortion Overdrive Drive	0.616
+FXB Distortion Overdrive Tone	1.00
+FXB Distortion Overdrive Level	0.064
+FXB Distortion Wavefolder Drive	18.0
+FXB Distortion Wavefolder Output Gain	-10.0
+FXB Distortion Waveshaper Drive	18.0
+FXB Distortion Waveshaper Output Gain	-10.0
+FXB Distortion Overdrive Output Gain	0.000
+FXB Chorus Fixed Delay Time	13.1
+FXB Chorus Depth	2.20
+FXB Chorus Frequency	0.580
+FXB Chorus Feedback	0.115
+FXB Chorus Stereo Mode	Stereo	Mono | Stereo
+FXB Chorus LFO Shape	Sine	Sine | Square
+FXB Flanger Min Delay	0.030
+FXB Flanger Depth	0.184
+FXB Flanger Rate	0.133
+FXB Flanger Sync Rate	2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FXB Flanger Feedback	0.616
+FXB Flanger Feedback Polarity	Negative	Positive | Negative
+FXB Flanger Stereo	Stereo	Mono | Stereo
+FXB Flanger LowPass fc	9935
+FXB Flanger HighPass fc	125
+FXB Flanger LFO Waveform	Triangle	Sine | Triangle
+FXB Phaser Frequency	640
+FXB Phaser N Poles	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FXB Phaser Feedback	0.614
+FXB Phaser LFO Amount	0.282
+FXB Phaser Rate Unsynced	0.446
+FXB Phaser Rate Synced	8.t	8 | 4.d | 8.t | 4 | 2.d | 4.t | 2 | 1.d | 2.t | 1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16 | 1/32.d | 1/16.t | 1/32
+FXB Phaser Stereo	30.0
+FXB StereoPan UNASSIGNED	0.500
+FXB StereoPan Rate Unsynced	2.00
+FXB StereoPan Rate Synced	2.d	8 | 4.d | 8.t | 4 | 2.d | 4.t | 2 | 1.d | 2.t | 1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16 | 1/32.d | 1/16.t | 1/32
+FXB AnalogPhaser Rate	0.500
+FXB AnalogPhaser Rate Sync	1.t	1 | 1/2.d | 1.t | 1/2 | 1/4.d | 1/2.t | 1/4 | 1/8.d | 1/4.t | 1/8 | 1/16.d | 1/8.t | 1/16
+FXB AnalogPhaser Feedback	1.98
+FXB AnalogPhaser Depth	8.00
+FXB AnalogPhaser Pole Number	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FXB AnalogPhaser Sync	Off	False | True
+FXB AnalogPhaser Stereo	On	False | True
+FXB Wah Frequency	640
+FXB Wah Threshold	0.000
+FXB Wah Modulation Depth	30.0
+FXB Wah Modulation Rate	2.80
+FXB Twin Amp Bass	5.36
+FXB Twin Amp Treble	5.50
+FXB Twin Amp Drive	5.50
+FXB Twin Amp Output Gain	0.000
+FXB Twin Amp Bright	Off	False | True
+FXB Twin Amp OnAxis	On	False | True
+FXB Rotary Speaker Slow/Fast	Slow	Slow | Fast
+FXB Rotary Speaker Click Volume	0.010
+FXB Rotary Speaker Brake	Run	Run | Stop
+FXB Rotary Speaker Horn/Drum Balance	39.6
+FXB Rotary Speaker Stereo Spread	74.1
+FXB Parametric EQ Peak 2 Cutoff Deprecated	0.500
+FXB Parametric EQ Peak 2 Gain Deprecated	0.500
+FXB Parametric EQ Peak 2 Q Deprecated	0.500
+FXB Parametric EQ Peak 3 fc Deprecated	0.500
+FXB Parametric EQ Peak 3 Gain Deprecated	0.500
+FXB Parametric EQ Peak 3 Q Deprecated	0.500
+Delay Volume	-70.0
+Delay Active	On	False | True
+Delay Time	240
+Delay Synced	1/4	1/32 | 1/16.t | 1/32.d | 1/16 | 1/8.t | 1/16.d | 1/8 | 1/4.t | 1/8.d | 1/4 | 1/2.t | 1/4.d | 1/2 | 1.t | 1/2.d | 1 | 2.t | 1.d | 2 | 4.t | 2.d | 4 | 8.t | 4.d | 8
+Delay Feedback	0.385
+Delay HighPass fc	105
+Delay LowPass fc	6495
+Delay Stereo Spread	0.040
+Delay Stereo Width	0.700
+Delay Stereo Mode	Stereo	Stereo | Ping Pong
+Tape Delay Time	150
+Tape Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+Tape Delay Intensity	0.350
+Tape Delay Input Volume	0.000
+Tape Delay Stereo Spread	0.000
+Tape Delay Stereo Width	1.00
+Tape Delay HighPass fc	20.0
+Tape Delay LowPass fc	20000
+Tape Delay Stereo Mode	Stereo	Stereo | Ping Pong
+Analog Delay DelayLeft	0.500
+Analog Delay DelayRight	0.500
+Analog Delay DelayLeftSynced	1/4	1/32 | 1/16.t | 1/32.d | 1/16 | 1/8.t | 1/16.d | 1/8 | 1/4.t | 1/8.d | 1/4 | 1/2.t | 1/4.d | 1/2 | 1.t | 1/2.d | 1 | 2.t | 1.d | 2
+Analog Delay DelayRightSynced	1/4	1/32 | 1/16.t | 1/32.d | 1/16 | 1/8.t | 1/16.d | 1/8 | 1/4.t | 1/8.d | 1/4 | 1/2.t | 1/4.d | 1/2 | 1.t | 1/2.d | 1 | 2.t | 1.d | 2
+Analog Delay DelayLinked	Off	False | True
+Analog Delay MidiSync	Off	False | True
+Analog Delay Feedback	0.000
+Analog Delay Chorus	0.000
+Analog Delay Stereo	100
+Analog Delay HighPass fc	20.0
+Analog Delay LowPass fc	20000
+Reverb Volume	-36.1
+Reverb Active	On	False | True
+Reverb Pre delay	0.020
+Reverb Decay	0.460
+Reverb Damping	0.600
+Reverb LowPass Freq	7661
+Reverb HighPass Freq	150
+Reverb Size	1.00
+Reverb Output MS Mix (Stereo)	0.500
+ControllerTabSelect1	0.000
+ControllerTabSelect2	0.000
+ControllerTabSelect3	0.000
+HardwareControl0	0.000
+Distortion Mix	0.000
+Phaser Mix	0.000
+HardwareControl10	0.000
+HardwareControl19	0.000
+Channel1 AfterTouch	0.000
+Channel1 Expression	1.00
+Channel1 Sustenuto On/Off	0.000
+Channel1 Soft Pedal On/Off	0.000
+Channel1 Breath	0.000
+Channel2 AfterTouch	0.000
+Channel2 Expression	1.00
+Channel2 Sustenuto On/Off	0.000
+Channel2 Soft Pedal On/Off	0.000
+Channel2 Breath	0.000
+Channel3 AfterTouch	0.000
+Channel3 Expression	1.00
+Channel3 Sustenuto On/Off	0.000
+Channel3 Soft Pedal On/Off	0.000
+Channel3 Breath	0.000
+Channel4 AfterTouch	0.000
+Channel4 Expression	1.00
+Channel4 Sustenuto On/Off	0.000
+Channel4 Soft Pedal On/Off	0.000
+Channel4 Breath	0.000
+Channel5 AfterTouch	0.000
+Channel5 Expression	1.00
+Channel5 Sustenuto On/Off	0.000
+Channel5 Soft Pedal On/Off	0.000
+Channel5 Breath	0.000
+Channel6 AfterTouch	0.000
+Channel6 Expression	1.00
+Channel6 Sustenuto On/Off	0.000
+Channel6 Soft Pedal On/Off	0.000
+Channel6 Breath	0.000
+Channel7 AfterTouch	0.000
+Channel7 Expression	1.00
+Channel7 Sustenuto On/Off	0.000
+Channel7 Soft Pedal On/Off	0.000
+Channel7 Breath	0.000
+Channel8 AfterTouch	0.000
+Channel8 Expression	1.00
+Channel8 Sustenuto On/Off	0.000
+Channel8 Soft Pedal On/Off	0.000
+Channel8 Breath	0.000
+Channel9 AfterTouch	0.000
+Channel9 Expression	1.00
+Channel9 Sustenuto On/Off	0.000
+Channel9 Soft Pedal On/Off	0.000
+Channel9 Breath	0.000
+Channel10 AfterTouch	0.000
+Channel10 Expression	1.00
+Channel10 Sustenuto On/Off	0.000
+Channel10 Soft Pedal On/Off	0.000
+Channel10 Breath	0.000
+Channel11 AfterTouch	0.000
+Channel11 Expression	1.00
+Channel11 Sustenuto On/Off	0.000
+Channel11 Soft Pedal On/Off	0.000
+Channel11 Breath	0.000
+Channel12 AfterTouch	0.000
+Channel12 Expression	1.00
+Channel12 Sustenuto On/Off	0.000
+Channel12 Soft Pedal On/Off	0.000
+Channel12 Breath	0.000
+Channel13 AfterTouch	0.000
+Channel13 Expression	1.00
+Channel13 Sustenuto On/Off	0.000
+Channel13 Soft Pedal On/Off	0.000
+Channel13 Breath	0.000
+Channel14 AfterTouch	0.000
+Channel14 Expression	1.00
+Channel14 Sustenuto On/Off	0.000
+Channel14 Soft Pedal On/Off	0.000
+Channel14 Breath	0.000
+Channel15 AfterTouch	0.000
+Channel15 Expression	1.00
+Channel15 Sustenuto On/Off	0.000
+Channel15 Soft Pedal On/Off	0.000
+Channel15 Breath	0.000
+Channel16 AfterTouch	0.000
+Channel16 Expression	1.00
+Channel16 Sustenuto On/Off	0.000
+Channel16 Soft Pedal On/Off	0.000
+Channel16 Breath	0.000
+Channel1 Pitch Bend	0.500
+Channel1 Mod Wheel	0.000
+Channel1 Sustain	0.000
+Channel2 Pitch Bend	0.500
+Channel2 Mod Wheel	0.000
+Channel2 Sustain	0.000
+Channel3 Pitch Bend	0.500
+Channel3 Mod Wheel	0.000
+Channel3 Sustain	0.000
+Channel4 Pitch Bend	0.500
+Channel4 Mod Wheel	0.000
+Channel4 Sustain	0.000
+Channel5 Pitch Bend	0.500
+Channel5 Mod Wheel	0.000
+Channel5 Sustain	0.000
+Channel6 Pitch Bend	0.500
+Channel6 Mod Wheel	0.000
+Channel6 Sustain	0.000
+Channel7 Pitch Bend	0.500
+Channel7 Mod Wheel	0.000
+Channel7 Sustain	0.000
+Channel8 Pitch Bend	0.500
+Channel8 Mod Wheel	0.000
+Channel8 Sustain	0.000
+Channel9 Pitch Bend	0.500
+Channel9 Mod Wheel	0.000
+Channel9 Sustain	0.000
+Channel10 Pitch Bend	0.500
+Channel10 Mod Wheel	0.000
+Channel10 Sustain	0.000
+Channel11 Pitch Bend	0.500
+Channel11 Mod Wheel	0.000
+Channel11 Sustain	0.000
+Channel12 Pitch Bend	0.500
+Channel12 Mod Wheel	0.000
+Channel12 Sustain	0.000
+Channel13 Pitch Bend	0.500
+Channel13 Mod Wheel	0.000
+Channel13 Sustain	0.000
+Channel14 Pitch Bend	0.500
+Channel14 Mod Wheel	0.000
+Channel14 Sustain	0.000
+Channel15 Pitch Bend	0.500
+Channel15 Mod Wheel	0.000
+Channel15 Sustain	0.000
+Channel16 Pitch Bend	0.500
+Channel16 Mod Wheel	0.000
+Channel16 Sustain	0.000
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

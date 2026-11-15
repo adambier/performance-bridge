@@ -1,0 +1,257 @@
+# MiniFreak V 5.1.1.6945 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+Osc1 Coarse	0.000
+Osc1 Type	SawX	Basic Waves | SuperWave | Harmo | KarplusStr | VAnalog | Waveshaper | Two Op. FM | Formant | Speech | Modal | Noise | Bass | SawX | Harm | Audio In | Wavetable | Sample | Cloud Grains | Hit Grains | Frozen | Skan | Particle | Lick | Raster
+Osc1 Wave	0.661
+Osc1 Timbre	0.000
+Osc1 Shape	0.053
+Osc1 Volume	1.00
+Osc2 Coarse	0.000
+Osc2 Type	Basic Waves	Basic Waves | SuperWave | Harmo | KarplusStr | VAnalog | Waveshaper | Two Op. FM | Formant | Chords | Speech | Modal | Noise | Bass | SawX | Harm | FM / RM | Multi Filter | Surgeon Filter | Comb Filter | Phaser Filter | Destroy | Dummy
+Osc2 Wave	0.500
+Osc2 Timbre	0.000
+Osc2 Shape	0.000
+Osc2 Volume	0.000
+Glide	0.000
+Cutoff	0.278
+Reso	0.739
+Env Amt	0.652
+VCA	0.000
+Attack	0.153
+Decay	0.685
+Sustain	0.222
+Release	0.378
+Rise	0.000
+Fall	0.500
+Hold	0.000
+LFO1 Wave	Sin	Sin | Tri | Saw | Sqr | SnH | SlewSNH | ExpSaw | ExpRamp | Shaper
+LFO1 Rate	0.300
+LFO1 Rate (Synced)	1/4	8d | 8 | 4d | 8t | 4 | 2d | 4t | 2 | 1d | 2t | 1 | 1/2d | 1t | 1/2 | 1/4d | 1/2t | 1/4 | 1/8d | 1/4t | 1/8 | 1/16d | 1/8t | 1/16 | 1/32d | 1/16t | 1/32 | 1/32t
+LFO2 Wave	SnH	Sin | Tri | Saw | Sqr | SnH | SlewSNH | ExpSaw | ExpRamp | Shaper
+LFO2 Rate	0.000
+LFO2 Rate (Synced)	1/32t	8d | 8 | 4d | 8t | 4 | 2d | 4t | 2 | 1d | 2t | 1 | 1/2d | 1t | 1/2 | 1/4d | 1/2t | 1/4 | 1/8d | 1/4t | 1/8 | 1/16d | 1/8t | 1/16 | 1/32d | 1/16t | 1/32 | 1/32t
+Macro 1	0.023
+Macro 2	0.016
+Uni Spread	0.042
+Mod 1:1	0.000
+Mod 1:2	0.000
+Mod 1:3	0.000
+Mod 1:4	0.000
+Mod 2:1	0.000
+Mod 2:2	0.000
+Mod 2:3	0.000
+Mod 2:4	0.000
+Mod 3:1	0.000
+Mod 3:2	0.000
+Mod 3:3	0.000
+Mod 3:4	0.000
+Mod 4:1	0.000
+Mod 4:2	0.163
+Mod 4:3	0.168
+Mod 4:4	0.000
+Mod 5:1	0.000
+Mod 5:2	-0.506
+Mod 5:3	0.000
+Mod 5:4	0.000
+Mod 6:1	0.000
+Mod 6:2	0.000
+Mod 6:3	0.000
+Mod 6:4	0.000
+Mod 7:1	0.000
+Mod 7:2	0.000
+Mod 7:3	0.000
+Mod 7:4	0.000
+Mod 1:5	0.000
+Mod 1:6	0.000
+Mod 1:7	0.000
+Mod 1:8	0.000
+Mod 1:9	0.000
+Mod 1:10	0.000
+Mod 1:11	0.000
+Mod 1:12	0.000
+Mod 1:13	0.000
+Mod 2:5	0.000
+Mod 2:6	0.000
+Mod 2:7	0.000
+Mod 2:8	0.000
+Mod 2:9	0.000
+Mod 2:10	0.000
+Mod 2:11	0.000
+Mod 2:12	0.000
+Mod 2:13	0.000
+Mod 3:5	0.000
+Mod 3:6	0.000
+Mod 3:7	0.000
+Mod 3:8	0.000
+Mod 3:9	0.000
+Mod 3:10	0.000
+Mod 3:11	0.000
+Mod 3:12	0.000
+Mod 3:13	0.000
+Mod 4:5	0.000
+Mod 4:6	0.000
+Mod 4:7	0.000
+Mod 4:8	0.000
+Mod 4:9	0.000
+Mod 4:10	0.000
+Mod 4:11	0.000
+Mod 4:12	0.000
+Mod 4:13	0.000
+Mod 5:5	0.000
+Mod 5:6	0.000
+Mod 5:7	0.000
+Mod 5:8	0.000
+Mod 5:9	0.000
+Mod 5:10	0.000
+Mod 5:11	0.000
+Mod 5:12	0.000
+Mod 5:13	0.000
+Mod 6:5	0.000
+Mod 6:6	0.000
+Mod 6:7	0.000
+Mod 6:8	0.000
+Mod 6:9	0.000
+Mod 6:10	0.000
+Mod 6:11	0.000
+Mod 6:12	0.000
+Mod 6:13	0.000
+Mod 7:5	0.000
+Mod 7:6	0.000
+Mod 7:7	0.000
+Mod 7:8	0.000
+Mod 7:9	0.000
+Mod 7:10	0.000
+Mod 7:11	0.000
+Mod 7:12	0.000
+Mod 7:13	0.000
+Vib AM	0.000
+Pitch 1	0.000
+Pitch 2	0.000
+LFO1 AM	1.00
+LFO2 AM	1.00
+CycEnv AM	1.00
+Vibrato Rate	0.031
+Time 1	0.045
+Intensity 1	0.620
+Amount 1	0.200
+Time 2	0.357
+Intensity 2	0.622
+Amount 2	0.000
+Time 3	0.614
+Intensity 3	0.715
+Amount 3	0.547
+Gate	50
+Spice	0.000
+Arp Mode	Up	Up | Down | UpDown | Random | Walk | Pattern | Order | Poly
+Arp Repeat	Off	False | True
+Arp ratchet	Off	False | True
+Arp Mutate	Off	False | True
+Arp Random Octave	Off	False | True
+Octave range	0	0.0 | 1.0 | 2.0 | 3.0
+Mod Wheel	0.000
+Master Volume	0.000
+Filter FM	0.000
+Pan	0.000
+MxCtrl Val	0.000
+Stereo	0.000
+Brightness	0.278
+Timbre	0.739
+Dice	Off	False | True
+Pitch Bend	0.000
+AfterTouch	0.000
+All Notes Off	0.000
+All Sounds Off	0.000
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

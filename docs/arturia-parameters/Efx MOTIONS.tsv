@@ -1,0 +1,603 @@
+# Efx MOTIONS 1.1.1.6566 (VST3), read 2026-11-15
+parameter	value as loaded	values it can take
+On/Off	Active	Active | Bypassed
+Dry/Wet	100
+Output	0.000
+Filter Motion Amount	94.0
+Filter Polarity	Unipolar	Unipolar | Bipolar
+Filter Dry/Wet	100
+Drive Motion Amount	100
+Drive Polarity	Unipolar	Unipolar | Bipolar
+Noise Motion Amount	100
+Drive Dry/Wet	100
+Surgeon Spread	50.0
+Phaser Feedback	0.000
+FX Bus Off/On	On	False | True
+Filter Envelope Seq Length	32
+Filter Envelope Seq Gate	16.0
+Filter Envelope Seq Reset	Off	Off | 1 bar | 2 bars | 4 bars | 8 bars | 16 bars
+Filter Envelope Seq Density	62.0
+Filter Transient Sensitivity	50.0
+Filter Transient Threshold	-50.0
+Filter Transient Sidechain	Audio In	Audio In | Sidechain
+Filter Transient Input HP Filter	20.0
+Filter Transient Input LP Filter	20000
+Filter Mode	Clean 12dB LP	Clean 12dB LP | Clean 12dB HP | Clean 12dB BP | Clean 12dB Notch | Clean 24dB LP | Clean 24dB HP | Clean 24dB BP | Clean 24dB Notch | Warm 12dB LP | Warm 12dB HP | Warm 12dB BP | Warm 12dB Notch | Grit 12dB LP | Grit 6dB HP | Surgeon LP | Surgeon HP | Surgeon BP | Surgeon Notch | Phaser 2p | Phaser 4p | Phaser 6p | Phaser 8p | Phaser 10p | Phaser 12p
+Filter Cutoff	20.0
+Filter Resonance	0.000
+Filter Output	0.000
+Filter Attack	5.00
+Filter Release	0.150
+Filter Threshold	-50.0
+Filter Sidechain	Input	Input | Sidechain
+Filter Input Gain	0.000
+Filter Rate Sync	1/16	16 | 8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Filter Rate Hertz	1.00
+Filter Rate Type	Sync Straight	Hertz | Sync | Sync Straight | Sync Triplets | Sync Dotted
+Filter Stereo Offset	0.000
+Filter Stereo Rate	0.000
+Filter Stereo Offset Mode	Rate Offset	Phase Offset | Rate Offset
+Filter Dynamics Amount	0.000
+Filter Smooth	0.002
+Filter On/Off	On	False | True
+Drive Envelope Seq Length	8
+Drive Envelope Seq Gate	75.0
+Drive Envelope Seq Reset	Off	Off | 1 bar | 2 bars | 4 bars | 8 bars | 16 bars
+Drive Envelope Seq Density	33.0
+Drive Transient Sensitivity	50.0
+Drive Transient Threshold	-50.0
+Drive Transient Sidechain	Audio In	Audio In | Sidechain
+Drive Transient Input HP Filter	20.0
+Drive Transient Input LP Filter	20000
+Drive Mode	SoftClip	SoftClip | Tape | Asymmetrical | HardClip | Soft Bounce | Hard Bounce | Sine Fold | Germanium | Stairs | Core
+Drive Drive	0.000
+Drive Output	0.000
+Drive Attack	5.00
+Drive Release	0.150
+Drive Threshold	-50.0
+Drive Sidechain	Input	Input | Sidechain
+Drive Input Gain	0.000
+Drive Rate Sync	1	16 | 8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Drive Rate Hertz	1.00
+Drive Rate Type	Sync Straight	Hertz | Sync | Sync Straight | Sync Triplets | Sync Dotted
+Drive Stereo Offset	0.000
+Drive Stereo Rate	0.000
+Drive Stereo Offset Mode	Phase Offset	Phase Offset | Rate Offset
+Drive Dynamics Amount	0.000
+Drive Smooth	0.002
+Drive On/Off	Off	False | True
+Noise Envelope Seq Length	8
+Noise Envelope Seq Gate	75.0
+Noise Envelope Seq Reset	Off	Off | 1 bar | 2 bars | 4 bars | 8 bars | 16 bars
+Noise Envelope Seq Density	33.0
+Noise Transient Sensitivity	50.0
+Noise Transient Threshold	-50.0
+Noise Transient Sidechain	Audio In	Audio In | Sidechain
+Noise Transient Input HP Filter	20.0
+Noise Transient Input LP Filter	20000
+Noise Tune	0.000
+Noise Filter	0.000
+Noise Stereo	100
+Noise Level	0.000
+Noise Attack	5.00
+Noise Release	0.150
+Noise Threshold	-50.0
+Noise Sidechain	Input	Input | Sidechain
+Noise Input Gain	0.000
+Noise Rate Sync	1	16 | 8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Noise Rate Hertz	1.00
+Noise Rate Type	Sync Straight	Hertz | Sync | Sync Straight | Sync Triplets | Sync Dotted
+Noise Stereo Offset	0.000
+Noise Stereo Rate	0.000
+Noise Stereo Offset Mode	Phase Offset	Phase Offset | Rate Offset
+Noise Dynamics Amount	0.000
+Noise Smooth	0.002
+Noise On/Off	Off	False | True
+Volume Envelope Seq Length	8
+Volume Envelope Seq Gate	75.0
+Volume Envelope Seq Reset	Off	Off | 1 bar | 2 bars | 4 bars | 8 bars | 16 bars
+Volume Envelope Seq Density	33.0
+Volume Transient Sensitivity	50.0
+Volume Transient Threshold	-50.0
+Volume Transient Sidechain	Audio In	Audio In | Sidechain
+Volume Transient Input HP Filter	20.0
+Volume Transient Input LP Filter	20000
+Volume Volume	0.000
+Volume Motion Amount	100
+Volume Attack	5.00
+Volume Release	0.150
+Volume Threshold	-50.0
+Volume Sidechain	Input	Input | Sidechain
+Volume Input Gain	0.000
+Volume Rate Sync	1	16 | 8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Volume Rate Hertz	1.00
+Volume Rate Type	Sync Straight	Hertz | Sync | Sync Straight | Sync Triplets | Sync Dotted
+Volume Stereo Offset	0.000
+Volume Stereo Rate	0.000
+Volume Stereo Offset Mode	Phase Offset	Phase Offset | Rate Offset
+Volume Dynamics Amount	0.000
+Volume Smooth	0.002
+Volume On/Off	Off	False | True
+Pan Envelope Seq Length	8
+Pan Envelope Seq Gate	75.0
+Pan Envelope Seq Reset	Off	Off | 1 bar | 2 bars | 4 bars | 8 bars | 16 bars
+Pan Envelope Seq Density	33.0
+Pan Transient Sensitivity	50.0
+Pan Transient Threshold	-50.0
+Pan Transient Sidechain	Audio In	Audio In | Sidechain
+Pan Transient Input HP Filter	20.0
+Pan Transient Input LP Filter	20000
+Pan Pan	0.500
+Pan Motion Amount	100
+Pan Width	100
+Pan Dry Bass	Off	False | True
+Pan Attack	5.00
+Pan Release	0.150
+Pan Threshold	-50.0
+Pan Sidechain	Input	Input | Sidechain
+Pan Input Gain	0.000
+Pan Rate Sync	4	16 | 8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Pan Rate Hertz	1.00
+Pan Rate Type	Sync Straight	Hertz | Sync | Sync Straight | Sync Triplets | Sync Dotted
+Pan Stereo Offset	0.000
+Pan Stereo Rate	0.000
+Pan Stereo Offset Mode	Phase Offset	Phase Offset | Rate Offset
+Pan Dynamics Amount	0.000
+Pan Smooth	0.002
+Pan On/Off	Off	False | True
+Beat Repeat Rate	1/8	1/2 | 1/4 | 1/8 | 1/16
+Beat Repeat Length	16	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Beat Repeat Dry/Wet	100
+Beat Repeat Pitch Decay	0.000
+Beat Repeat Stop Curve	34.8
+Beat Repeat Roll Decay	21.0
+Beat Repeat Filter	0.000
+Beat Repeat On/Off	On	False | True
+Beat Repeat Output	0.000
+FX1 Dry/Wet	30.8
+FX1 Level	-70.0
+FX1 On/Off	On	False | True
+FX1 Reverb Decay	0.460
+FX1 Reverb Predelay	0.003
+FX1 Reverb Damping	0.593
+FX1 Reverb Input LowPass Freq	7661
+FX1 Reverb Input HighPass Freq	44.0
+FX1 Reverb Size	1.08
+FX1 Reverb Output MS Mix (Stereo)	0.364
+FX1 Delay Delay Time	300
+FX1 Delay Delay Fine	0.000
+FX1 Delay Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX1 Delay Feedback	0.400
+FX1 Delay HighPass freq	125
+FX1 Delay LowPass freq	7500
+FX1 Delay Stereo Spread	0.060
+FX1 Delay Stereo Ping Pong 	0.700
+FX1 Delay Stereo Mode	Stereo	Stereo | Ping Pong
+FX1 Chorus Feedback	0.000
+FX1 Chorus Fixed Delay Time	2.77
+FX1 Chorus Depth	0.560
+FX1 Chorus Freq	5.00
+FX1 Chorus Stereo Mode	Stereo	Mono | Stereo
+FX1 Chorus Voices	1 Voice	1 Voice | 2 Voices | 3 Voices
+FX1 Chorus LFO Shape	Sine	Sine | Triangle
+FX1 Flanger MinDelay	0.300
+FX1 Flanger Depth	3.00
+FX1 Flanger Freq	0.200
+FX1 Flanger Sync Rate	2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX1 Flanger Feedback	0.800
+FX1 Flanger Feedback Polarity	Negative	Positive | Negative
+FX1 Flanger Stereo	Stereo	Mono | Stereo
+FX1 Flanger LowPass Cutoff Frequency	13000
+FX1 Flanger HighPass Cutoff Frequency	100
+FX1 Flanger LFO Waveform	Triangle	Sine | Triangle
+FX1 Phaser Frequency	740
+FX1 Phaser N Poles	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FX1 Phaser Rate Unsynced	0.570
+FX1 Phaser Rate Synced	2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX1 Phaser Feedback	0.475
+FX1 Phaser LFO Wave	Sine	Sine | Triangle | Saw | Ramp | Square | Sample & Hold
+FX1 Phaser LFO Amount	1.00
+FX1 Phaser Stereo	45.0
+FX1 Distortion Overdrive Tone	1.00
+FX1 Distortion Wavefolder Type	Sine	Sine | Tri
+FX1 Distortion Drive	12.4
+FX1 Distortion Output	0.000
+FX1 Distortion Filter Cutoff	156
+FX1 Distortion Filter Resonance	0.602
+FX1 Distortion Filter Mode	HP	LP | HP | BP | Notch
+FX1 Distortion Filter Routing	Pre	Pre | Post
+FX1 Distortion Filter On/Off	Off	False | True
+FX1 Distortion Filter Dark	Off	False | True
+FX1 Compressor Threshold	0.000
+FX1 Compressor Ratio	2.00
+FX1 Compressor Attack	2.00
+FX1 Compressor Release	50.0
+FX1 Compressor Auto Make up	OFF	False | True
+FX1 Compressor OutputGain	0.000
+FX1 BitCrusher Bitdepth	16.0
+FX1 BitCrusher Jitter	0.000
+FX1 BitCrusher Scale	0.000
+FX1 BitCrusher High Pass Freq	20.0
+FX1 BitCrusher Low Pass Freq	20000
+FX1 BitCrusher Frequency	44100
+FX1 Filter Frequency	1000
+FX1 Filter Q	0.707
+FX1 Filter Comb Freq	100
+FX1 Param Eq LowShelf Frequency	250
+FX1 Param Eq LowShelf Gain	0.000
+FX1 Param Eq LowShelf Q	0.707
+FX1 Param Eq Peak 1 Frequency	500
+FX1 Param Eq Peak 1 Gain	0.000
+FX1 Param Eq Peak 1 Q	1.23
+FX1 Param Eq Peak 2 Frequency	1000
+FX1 Param Eq Peak 2 Gain	0.000
+FX1 Param Eq Peak 2 Q	1.23
+FX1 Param Eq Peak 3 Frequency	3000
+FX1 Param Eq Peak 3 Gain	0.000
+FX1 Param Eq Peak 3 Q	1.23
+FX1 Param Eq HighShelf Frequency	5000
+FX1 Param Eq HighShelf Gain	0.000
+FX1 Param Eq HighShelf Q	0.707
+FX1 TapeEcho 1 Time	150
+FX1 TapeEcho 1 Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX1 TapeEcho 1 Fine	0.000
+FX1 TapeEcho 1 Intensity	0.350
+FX1 TapeEcho 1 Stereo Spread	0.060
+FX1 TapeEcho 1 Stereo Width	1.00
+FX1 TapeEcho 1 Stereo Mode	Stereo	Stereo | Ping Pong
+FX1 TapeEcho 1 Input Volume	0.000
+FX1 Pitch Shift Delay 1 Time	122
+FX1 Pitch Shift Delay 1 Synced	1/2	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX1 Pitch Shift Delay 1 Feedback	0.080
+FX1 Pitch Shift Delay 1 Pitch Shift	12.0
+FX1 Pitch Shift Delay 1 Spray	38.2
+FX1 Pitch Shift Delay 1 HP Freq	296
+FX1 Pitch Shift Delay 1 LP Freq	20000
+FX1 Pitch Shift Delay 1 Delay Offset	0.000
+FX1 Pitch Shift Delay 1 Detune	49.4
+FX1 Multiband Compressor 1 Low Bypass	Off	True | False
+FX1 Multiband Compressor 1 High Bypass	Off	True | False
+FX1 Multiband Compressor 1 Low Mid Crossover	88.3
+FX1 Multiband Compressor 1 Mid High Crossover	2500
+FX1 Multiband Compressor 1 Output	0.000
+FX1 Multiband Compressor 1 Input	0.000
+FX1 Multiband Compressor 1 Attack	0.000
+FX1 Multiband Compressor 1 Release	0.001
+FX1 Multiband Compressor 1 Low Output Gain	1.08
+FX1 Multiband Compressor 1 Low Below Threshold	-40.8
+FX1 Multiband Compressor 1 Low Above Threshold	-33.8
+FX1 Multiband Compressor 1 Low Below Ratio	4.17
+FX1 Multiband Compressor 1 Low Above Ratio	66.9
+FX1 Multiband Compressor 1 Mid Output Gain	5.70
+FX1 Multiband Compressor 1 Mid Below Threshold	-41.8
+FX1 Multiband Compressor 1 Mid Above Threshold	-30.2
+FX1 Multiband Compressor 1 Mid Below Ratio	4.17
+FX1 Multiband Compressor 1 Mid Above Ratio	66.9
+FX1 Multiband Compressor 1 High Output Gain	10.3
+FX1 Multiband Compressor 1 High Below Threshold	-40.8
+FX1 Multiband Compressor 1 High Above Threshold	-35.5
+FX1 Multiband Compressor 1 High Below Ratio	4.17
+FX1 Multiband Compressor 1 High Above Ratio	101
+FX1 Super Unison Voices	5	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0
+FX1 Super Unison Stereo Width	1.00
+FX1 Super Unison Detune	40.0
+FX1 Super Unison Rate	0.350
+FX1 Super Unison HPFCutoff	250
+FX1 Super Unison LPFCutoff	20000
+FX2 Dry/Wet	0.000
+FX2 Level	-70.0
+FX2 On/Off	On	False | True
+FX2 Reverb Decay	0.168
+FX2 Reverb Predelay	0.000
+FX2 Reverb Damping	0.785
+FX2 Reverb Input LowPass Freq	7661
+FX2 Reverb Input HighPass Freq	44.0
+FX2 Reverb Size	0.626
+FX2 Reverb Output MS Mix (Stereo)	0.364
+FX2 Delay Delay Time	300
+FX2 Delay Delay Fine	0.000
+FX2 Delay Delay Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX2 Delay Feedback	0.400
+FX2 Delay HighPass freq	125
+FX2 Delay LowPass freq	7500
+FX2 Delay Stereo Spread	0.060
+FX2 Delay Stereo Ping Pong 	0.500
+FX2 Delay Stereo Mode	Stereo	Stereo | Ping Pong
+FX2 Chorus Feedback	0.000
+FX2 Chorus Fixed Delay Time	5.00
+FX2 Chorus Depth	2.20
+FX2 Chorus Freq	0.990
+FX2 Chorus Stereo Mode	Stereo	Mono | Stereo
+FX2 Chorus Voices	2 Voices	1 Voice | 2 Voices | 3 Voices
+FX2 Chorus LFO Shape	Sine	Sine | Triangle
+FX2 Flanger MinDelay	0.300
+FX2 Flanger Depth	3.00
+FX2 Flanger Freq	0.200
+FX2 Flanger Sync Rate	2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX2 Flanger Feedback	0.800
+FX2 Flanger Feedback Polarity	Negative	Positive | Negative
+FX2 Flanger Stereo	Stereo	Mono | Stereo
+FX2 Flanger LowPass Cutoff Frequency	13000
+FX2 Flanger HighPass Cutoff Frequency	100
+FX2 Flanger LFO Waveform	Triangle	Sine | Triangle
+FX2 Phaser Frequency	740
+FX2 Phaser N Poles	6	2.0 | 4.0 | 6.0 | 8.0 | 10.0 | 12.0
+FX2 Phaser Rate Unsynced	0.570
+FX2 Phaser Rate Synced	2	8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+FX2 Phaser Feedback	0.475
+FX2 Phaser LFO Wave	Sine	Sine | Triangle | Saw | Ramp | Square | Sample & Hold
+FX2 Phaser LFO Amount	1.00
+FX2 Phaser Stereo	45.0
+FX2 Distortion Overdrive Tone	1.00
+FX2 Distortion Wavefolder Type	Sine	Sine | Tri
+FX2 Distortion Drive	0.000
+FX2 Distortion Output	0.000
+FX2 Distortion Filter Cutoff	120
+FX2 Distortion Filter Resonance	0.707
+FX2 Distortion Filter Mode	HP	LP | HP | BP | Notch
+FX2 Distortion Filter Routing	Pre	Pre | Post
+FX2 Distortion Filter On/Off	Off	False | True
+FX2 Distortion Filter Dark	Off	False | True
+FX2 Compressor Threshold	0.000
+FX2 Compressor Ratio	2.00
+FX2 Compressor Attack	2.00
+FX2 Compressor Release	50.0
+FX2 Compressor Auto Make up	OFF	False | True
+FX2 Compressor OutputGain	0.000
+FX2 BitCrusher Bitdepth	16.0
+FX2 BitCrusher Jitter	0.000
+FX2 BitCrusher Scale	0.000
+FX2 BitCrusher High Pass Freq	20.0
+FX2 BitCrusher Low Pass Freq	20000
+FX2 BitCrusher Frequency	44100
+FX2 Filter Frequency	1000
+FX2 Filter Q	0.707
+FX2 Filter Comb Freq	100
+FX2 Param Eq LowShelf Frequency	250
+FX2 Param Eq LowShelf Gain	0.000
+FX2 Param Eq LowShelf Q	0.707
+FX2 Param Eq Peak 1 Frequency	500
+FX2 Param Eq Peak 1 Gain	0.000
+FX2 Param Eq Peak 1 Q	1.23
+FX2 Param Eq Peak 2 Frequency	1000
+FX2 Param Eq Peak 2 Gain	0.000
+FX2 Param Eq Peak 2 Q	1.23
+FX2 Param Eq Peak 3 Frequency	3000
+FX2 Param Eq Peak 3 Gain	0.000
+FX2 Param Eq Peak 3 Q	1.23
+FX2 Param Eq HighShelf Frequency	5000
+FX2 Param Eq HighShelf Gain	0.000
+FX2 Param Eq HighShelf Q	0.707
+FX2 TapeEcho 2 Time	150
+FX2 TapeEcho 2 Time Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX2 TapeEcho 2 Fine	0.000
+FX2 TapeEcho 2 Intensity	0.350
+FX2 TapeEcho 2 Stereo Spread	0.060
+FX2 TapeEcho 2 Stereo Width	1.00
+FX2 TapeEcho 2 Stereo Mode	Stereo	Stereo | Ping Pong
+FX2 TapeEcho 2 Input Volume	0.000
+FX2 Pitch Shift Delay 2 Time	122
+FX2 Pitch Shift Delay 2 Synced	1/4	1/32 | 1/16 | 1/8 | 1/4 | 1/2 | 1 | 2 | 4 | 8
+FX2 Pitch Shift Delay 2 Feedback	0.000
+FX2 Pitch Shift Delay 2 Pitch Shift	0.000
+FX2 Pitch Shift Delay 2 Spray	16.6
+FX2 Pitch Shift Delay 2 HP Freq	20.0
+FX2 Pitch Shift Delay 2 LP Freq	20000
+FX2 Pitch Shift Delay 2 Delay Offset	0.000
+FX2 Pitch Shift Delay 2 Detune	0.000
+FX2 Multiband Compressor 2 Low Bypass	Off	True | False
+FX2 Multiband Compressor 2 High Bypass	Off	True | False
+FX2 Multiband Compressor 2 Low Mid Crossover	150
+FX2 Multiband Compressor 2 Mid High Crossover	2500
+FX2 Multiband Compressor 2 Output	0.000
+FX2 Multiband Compressor 2 Input	0.000
+FX2 Multiband Compressor 2 Attack	0.000
+FX2 Multiband Compressor 2 Release	0.000
+FX2 Multiband Compressor 2 Low Output Gain	0.000
+FX2 Multiband Compressor 2 Low Below Threshold	-36.0
+FX2 Multiband Compressor 2 Low Above Threshold	-6.00
+FX2 Multiband Compressor 2 Low Below Ratio	1.000
+FX2 Multiband Compressor 2 Low Above Ratio	1.00
+FX2 Multiband Compressor 2 Mid Output Gain	0.000
+FX2 Multiband Compressor 2 Mid Below Threshold	-36.0
+FX2 Multiband Compressor 2 Mid Above Threshold	-6.00
+FX2 Multiband Compressor 2 Mid Below Ratio	1.000
+FX2 Multiband Compressor 2 Mid Above Ratio	1.00
+FX2 Multiband Compressor 2 High Output Gain	0.000
+FX2 Multiband Compressor 2 High Below Threshold	-36.0
+FX2 Multiband Compressor 2 High Above Threshold	-6.00
+FX2 Multiband Compressor 2 High Below Ratio	1.000
+FX2 Multiband Compressor 2 High Above Ratio	1.00
+FX2 Super Unison Voices	5	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0
+FX2 Super Unison Stereo Width	1.00
+FX2 Super Unison Detune	40.0
+FX2 Super Unison Rate	0.350
+FX2 Super Unison HPFCutoff	250
+FX2 Super Unison LPFCutoff	20000
+Macro 1	0.068
+Macro 2	1.00
+Sequencer 1 Length	16	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Sequencer 1 Rate Sync	1/8	1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Sequencer 1 Rate Hertz	1.000
+Sequencer 1 Rate Type	Sync	Hertz | Sync | Sync Straight | Sync Triplets | Sync Dotted
+Sequencer 1 Swing	50.0
+Sequencer 1 Smooth	0.000
+Sequencer 1 Random Amount	0.000
+Sequencer 1 Playback	Forward	Forward | Backward | Back & Forth | Random
+Sequencer 1 Random Auto Regen	1 Bar	Off | 1 Bar | 2 Bars | 4 Bars | 8 Bars
+Sequencer 1 Scale	100
+Sequencer 1 Polarity	Unipolar	Unipolar | Bipolar
+Sequencer 2 Length	16	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Sequencer 2 Rate Sync	1/8	1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Sequencer 2 Rate Hertz	1.000
+Sequencer 2 Rate Type	Sync	Hertz | Sync | Sync Straight | Sync Triplets | Sync Dotted
+Sequencer 2 Swing	50.0
+Sequencer 2 Smooth	0.000
+Sequencer 2 Random Amount	0.000
+Sequencer 2 Playback	Forward	Forward | Backward | Back & Forth | Random
+Sequencer 2 Random Auto Regen	1 Bar	Off | 1 Bar | 2 Bars | 4 Bars | 8 Bars
+Sequencer 2 Scale	100
+Sequencer 2 Polarity	Unipolar	Unipolar | Bipolar
+Sequencer 3 Length	16	1.0 | 2.0 | 3.0 | 4.0 | 5.0 | 6.0 | 7.0 | 8.0 | 9.0 | 10.0 | 11.0 | 12.0 | 13.0 | 14.0 | 15.0 | 16.0
+Sequencer 3 Rate Sync	1/8	1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Sequencer 3 Rate Hertz	1.000
+Sequencer 3 Rate Type	Sync	Hertz | Sync | Sync Straight | Sync Triplets | Sync Dotted
+Sequencer 3 Swing	50.0
+Sequencer 3 Smooth	0.000
+Sequencer 3 Random Amount	0.000
+Sequencer 3 Playback	Forward	Forward | Backward | Back & Forth | Random
+Sequencer 3 Random Auto Regen	1 Bar	Off | 1 Bar | 2 Bars | 4 Bars | 8 Bars
+Sequencer 3 Scale	100
+Sequencer 3 Polarity	Unipolar	Unipolar | Bipolar
+Random 1 Smooth	0.000
+Random 1 Rate Sync	1	16 | 8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Random 1 Rate Hertz	2.00
+Random 1 Rate Type	Sync	Hertz | Sync | Sync Straight | Sync Triplets | Sync Dotted
+Random 1 Polarity	Off	False | True
+Random 1 Scale	100
+Random 2 Smooth	0.000
+Random 2 Rate Sync	1	16 | 8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Random 2 Rate Hertz	2.00
+Random 2 Rate Type	Sync	Hertz | Sync | Sync Straight | Sync Triplets | Sync Dotted
+Random 2 Polarity	Off	False | True
+Random 2 Scale	100
+Random 3 Smooth	0.000
+Random 3 Rate Sync	1	16 | 8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Random 3 Rate Hertz	2.00
+Random 3 Rate Type	Sync	Hertz | Sync | Sync Straight | Sync Triplets | Sync Dotted
+Random 3 Polarity	Off	False | True
+Random 3 Scale	100
+Envelope Follower 1 Attack	5.08
+Envelope Follower 1 Release	0.300
+Envelope Follower 1 Threshold	-50.0
+Envelope Follower 1 Sidechain	Input	Input | Sidechain
+Envelope Follower 1 Scale	100
+Envelope Follower 1 Input Gain	0.000
+Envelope Follower 2 Attack	5.04
+Envelope Follower 2 Release	0.300
+Envelope Follower 2 Threshold	-50.0
+Envelope Follower 2 Sidechain	Input	Input | Sidechain
+Envelope Follower 2 Scale	100
+Envelope Follower 2 Input Gain	0.000
+Envelope Follower 3 Attack	5.01
+Envelope Follower 3 Release	0.300
+Envelope Follower 3 Threshold	-50.0
+Envelope Follower 3 Sidechain	Input	Input | Sidechain
+Envelope Follower 3 Scale	100
+Envelope Follower 3 Input Gain	0.000
+Function 1 Rate Sync	1	16 | 8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Function 1 Rate Hertz	1.00
+Function 1 Rate Type	Sync	Hertz | Sync | Sync Straight | Sync Triplets | Sync Dotted
+Function 1 Polarity	Unipolar	Unipolar | Bipolar
+Function 1 Scale	100
+Function 2 Rate Sync	1	16 | 8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Function 2 Rate Hertz	1.00
+Function 2 Rate Type	Sync	Hertz | Sync | Sync Straight | Sync Triplets | Sync Dotted
+Function 2 Polarity	Unipolar	Unipolar | Bipolar
+Function 2 Scale	100
+Function 3 Rate Sync	1	16 | 8 | 4 | 2 | 1 | 1/2 | 1/4 | 1/8 | 1/16 | 1/32
+Function 3 Rate Hertz	1.00
+Function 3 Rate Type	Sync	Hertz | Sync | Sync Straight | Sync Triplets | Sync Dotted
+Function 3 Polarity	Unipolar	Unipolar | Bipolar
+Function 3 Scale	100
+Crossover Low Band Split	10.0
+Crossover High Band Split	20000
+Crossover Low Off/On	Off	False | True
+Crossover High Off/On	Off	False | True
+Crossover Slope	12 dB	6.0 | 12.0 | 24.0
+Crossover Low Band Mode	Passed-thru	Filtered | Passed-thru
+Crossover Low/High Crossover Mode	Passed-thru	Filtered | Passed-thru
+VST_ProgramChange_0	0
+VST_ProgramChange_1	0
+VST_ProgramChange_2	0
+VST_ProgramChange_3	0
+VST_ProgramChange_4	0
+VST_ProgramChange_5	0
+VST_ProgramChange_6	0
+VST_ProgramChange_7	0
+VST_ProgramChange_8	0
+VST_ProgramChange_9	0
+VST_ProgramChange_10	0
+VST_ProgramChange_11	0
+VST_ProgramChange_12	0
+VST_ProgramChange_13	0
+VST_ProgramChange_14	0
+VST_ProgramChange_15	0
+Select Preset Timeout	0.500
+Navigate through presets	0.500
+Select Preset	0.500
+Navigate through filters	0.500
+Add/Remove selected filter	0.500
+Select Multi Filter	0.500
+Clear Filters	0.500
+Active Filter Preset	0.500
+Active Filter Category	0.500
+Browse Back	0.500
+SendValuesToMIDIController	0.500
+Previous Preset	0.000
+Next Preset	0.000
+HW Controller Shift	0.000
+Select KeylabMk2 Filter	0.000
+Oct Minus	0.000
+Oct Plus	0.000
+Saves the current preset	0.000
+Undo the last action	0.000
+Redo the last action	0.000
+HardwareDisplayControl1	0.000
+HardwareDisplayControl2	0.000
+HardwareDisplayControl3	0.000
+HardwareDisplayControl4	0.000
+HardwareDisplayControl5	0.000
+HardwareDisplayControl6	0.000
+HardwareDisplayControl7	0.000
+HardwareDisplayControl8	0.000
+HardwareBackControl	0.000
+MPE_PitchBend_0	0.000
+MPE_PitchBend_1	0.000
+MPE_PitchBend_2	0.000
+MPE_PitchBend_3	0.000
+MPE_PitchBend_4	0.000
+MPE_PitchBend_5	0.000
+MPE_PitchBend_6	0.000
+MPE_PitchBend_7	0.000
+MPE_PitchBend_8	0.000
+MPE_PitchBend_9	0.000
+MPE_PitchBend_10	0.000
+MPE_PitchBend_11	0.000
+MPE_PitchBend_12	0.000
+MPE_PitchBend_13	0.000
+MPE_PitchBend_14	0.000
+MPE_PitchBend_15	0.000
+MPE_Aftertouch_0	0.500
+MPE_Aftertouch_1	0.500
+MPE_Aftertouch_2	0.500
+MPE_Aftertouch_3	0.500
+MPE_Aftertouch_4	0.500
+MPE_Aftertouch_5	0.500
+MPE_Aftertouch_6	0.500
+MPE_Aftertouch_7	0.500
+MPE_Aftertouch_8	0.500
+MPE_Aftertouch_9	0.500
+MPE_Aftertouch_10	0.500
+MPE_Aftertouch_11	0.500
+MPE_Aftertouch_12	0.500
+MPE_Aftertouch_13	0.500
+MPE_Aftertouch_14	0.500
+MPE_Aftertouch_15	0.500
+MPE_Brightness_0	0.500
+MPE_Brightness_1	0.500
+MPE_Brightness_2	0.500
+MPE_Brightness_3	0.500
+MPE_Brightness_4	0.500
+MPE_Brightness_5	0.500
+MPE_Brightness_6	0.500
+MPE_Brightness_7	0.500
+MPE_Brightness_8	0.500
+MPE_Brightness_9	0.500
+MPE_Brightness_10	0.500
+MPE_Brightness_11	0.500
+MPE_Brightness_12	0.500
+MPE_Brightness_13	0.500
+MPE_Brightness_14	0.500
+MPE_Brightness_15	0.500
+MPE_GlobalBrightness	0.500

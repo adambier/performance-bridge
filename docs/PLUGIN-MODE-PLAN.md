@@ -545,6 +545,26 @@ and how. What test 16 suggests:
    shape. Whether a preset of two parts can be told from one of one part is open: "P2
    Volume" read "0.000" in one and "-2.33" in the other, two presets in all.
 
+   From the survey of the plugins' parameters (`docs/ARTURIA.md`, test 11): only Analog Lab V
+   has the "P1" names, so dropping them touches no other plugin. Part 2's parameters load as
+   "P2 Param0" to "P2 Param19"; if a Multi renames them (not seen), that tells a Multi by name.
+   And the FX knobs' names can't come from Bitwig: the plugin has no parameter that says which
+   effect a slot holds. They can come by Performance Bridge's relay, which has taken "Chorus
+   Mix" from the instrument's messages to a KeyLab mk3 (`docs/ARTURIA.md`, test 9). With the
+   plugin in Bitwig that would mean two programs writing names to the Roto-Control, Bitwig's
+   extension and Performance Bridge; not tried. In that test the driver asked for each
+   knob's name and had all eight within about 2 s of a preset's loading, with nothing
+   touched, and the asking marked the preset as changed on the instrument's preset screen.
+8. **Two more changes to the names, from the survey** (`docs/ARTURIA.md`, test 11). Of 34,320
+   parameters in 89 Arturia plugins, 92% have names longer than 12 characters and 77% share
+   their first 12 with another parameter of their plugin.
+   - Split joined words before abbreviating ("Env Amp AttackCurve"). Small; part of item 1.
+     The table's "Env Amp Attack Curve" row was a wrong guess at that name.
+   - Where every name on a page starts with the same words, drop them ("FX A1 Reverb
+     Predelay", "FX A1 Reverb Decay", ... to "Predelay", "Decay", ...). Needs no plugin's
+     name, so it singles none out; it does need a page fitted together, which item 1 avoids.
+     A pull request of its own, later.
+
 **Where the extension's code is.** The extension Adam runs was not built from the code in
 Melbourne Instruments' repository (test 16: it sends `0A 18` where that code sends `0A 0F`).
 That repository has the extension as first committed in November 2025. Its author, Eric
