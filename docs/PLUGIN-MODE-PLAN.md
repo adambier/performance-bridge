@@ -616,6 +616,24 @@ and how. What test 16 suggests:
     - First tests, in order: does the plugin inside Bitwig answer a KeyLab's questions on a
       virtual port, with no keyboard; can one run of `sbdev` carry both relays (not checked);
       then the renaming.
+11. **One app or two** (Adam and Claude, 2026-11-15; not decided). The relay is of use to
+    someone with a Roto-Control, Arturia's instruments, and Bitwig, and no RME interface. But
+    one program has to own the Roto-Control (section 2), and the relay already answers its
+    MIX mode itself while passing PLUGIN mode to the DAW, which is what lets one Roto-Control
+    serve TotalMix FX and Bitwig.
+    - Adam likes one integrated app for an owner of all three, and a lighter one for people
+      without RME, though two apps "could be more annoying to test".
+    - Adam's other idea: one bridge app that loads modules to suit the user's hardware.
+    - Claude's reading: the second gives most of the first at less cost, if "module" means
+      a driver built into the app and switched on by what is connected or chosen, as the
+      surfaces are now, and not code loaded at run time (which on macOS brings code signing
+      and notarizing questions that were not looked into). An app with TotalMix FX not set
+      up is then the lighter app. The name "Performance Bridge" already fits both.
+    - The package is in libraries (`RotoControl`, `RotoRelay`, `ArturiaControl`), so a second,
+      small product can still be added later without moving code. A separate repository
+      only if the relay gets users of its own, or for the vendor material's sake.
+    - Not looked at: what the app needs to change to carry the relay, and how the relay
+      behaves when the app's window is closed or the app is busy.
 
 **Where the extension's code is.** The extension Adam runs was not built from the code in
 Melbourne Instruments' repository (test 16: it sends `0A 18` where that code sends `0A 0F`).
