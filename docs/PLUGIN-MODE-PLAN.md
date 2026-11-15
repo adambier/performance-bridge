@@ -402,6 +402,9 @@ each "inference" or "guess" is marked.
 
 1. Which matters most: playing with no DAW, or in one?
 2. Does another plugin format give the host Pigments' macro labels? (Test 16's was not noted.)
+   For Audio Units there is a probe, `sbdev auhost` (branch `au-probe`; written on Linux and
+   never compiled on a Mac): it prints the parameters an Audio Unit gives a host, and what
+   changes when a preset does.
 3. Does a plugin always tell its host when the keyboard moves a control? (B3, unfinished.)
 4. Can a standalone instrument be controlled at more than 7 bits at all (14-bit control changes
    or NRPN through MIDI learn)? Unknown; if so, the standalone path loses its largest limit.
