@@ -64,6 +64,8 @@ words ("inference", "untested").
     (2026-11-15), section 9; firmware 3.3.0.
 [^test-18]: [Test 18](#test-18-2026-11-15-names-shortened-in-bitwig-studio-and-analog-lab-vs-multi-presets)
     (2026-11-15), section 9; firmware not read again.
+[^test-19]: [Test 19](#test-19-2026-11-15-a-fifth-build-in-bitwig-studio-p1-dropped-and-the-page-count)
+    (2026-11-15), section 9; firmware 3.3.0.
 [^totalmix-test-5]: Test 5 (2026-10-28) of the TotalMix FX tests,
     [docs/TOTALMIX-OSC.md](TOTALMIX-OSC.md#test-5-2026-10-28-does-totalmix-fx-echo-a-command),
     section 6.
@@ -396,7 +398,11 @@ and step names.
     click of its main encoder in Device mode, each with the relay's log running.
 14. **A changed page count** (test 18). Bitwig's extension did not tell the Roto-Control that a
     remote controls page had been added until another track was selected.[^test-18] Its code
-    stores the new count and sends nothing (a reading of the fork at `e0cd9eb`).
+    stores the new count and sends nothing (a reading of the fork at `e0cd9eb`). With a
+    drafted change it did (test 19).[^test-19]
+15. **"UnknownParam"** (test 19). Bitwig's extension sent that name for a knob eight times in
+    one burst, each replaced within 3 ms. The word is not in the extension's code, so it is
+    probably Bitwig's own name for a remote control it has not named yet (an inference).
 
 ## 9. Tests
 
@@ -1118,3 +1124,44 @@ page was made. After another track and then this one were selected, the third pa
 section 10, with what is offered to the author. A Multi's macros can be had at full resolution
 with a device page made by hand, one page button away; choosing the page by the kind of preset
 would take code that knows Analog Lab V.
+
+### Test 19 (2026-11-15): a fifth build in Bitwig Studio: "P1" dropped, and the page count
+
+**Setup.** As in test 18, later the same afternoon: `sbdev relay --device "Roto-Control"` at
+`2423001`, started before Bitwig Studio, and a new project with Analog Lab V on one track. The
+extension was a fifth build of the author's fork (`e0cd9eb`) with three drafted changes: names
+shortened one at a time, with joined words split; the plugin's details sent again when the
+number of pages changes; and, for this test only, "P1 " taken off Analog Lab V's names unless
+one of part 2's twenty parameters has a name other than "P2 Param" and a number. One log (1,131
+lines), kept outside this repository, read with a script that prints the names in the LEARN
+PARAM, name-change, and PLUGIN DETAILS messages, not line by line. What Bitwig and Analog Lab V
+showed is from Adam's screenshots ("seen").
+
+- **A preset of one part** ("Classic Jun Keys", a Jun-6). Bitwig's first page showed "P1
+  Brigh...", "P1 Timbre", "P1 Time", "P1 Move...", and the four FX and volume knobs (seen). At
+  124.9 s, once Show Remote Controls was on (PLUGIN DETAILS with three pages), the knobs were
+  sent "Brightness", "Timbre", "Time", "Movement", "FXA Dry/Wet", "FXB Dry/Wet", "Delay Volume",
+  "Reverb Vol". The window's own names were the same but for "Distortion Mix", "Phaser Mix", and
+  "Reverb Volume" (seen).
+- **A Multi** ("A Great Day Multi"). At 274.691 s knobs 3 and 4 were sent "Dynamics" and "St.
+  Width"; at 274.697 s all eight were sent again, as "P1 Bright", "P1 Timbre", "P1 Dynamics",
+  "P1 St. Width", and the same last four. So the test for a Multi answered 6 ms after the first
+  names. Bitwig's list of the plugin's parameters now began "P1 Param0", "P1 Brightness", "P1
+  Param2", "P1 Timbre", where with the preset of one part it began "P1 Volume", "P1 Brightness",
+  "P1 Chorus Mode", "P1 Timbre" (seen): part 1's names change with the preset as well.
+- **A page added.** Adam chose "Add New Page" in the device's page menu, which lists it under
+  Preset Pages, above the three Device Pages (seen). At 448.0 s Bitwig sent PLUGIN DETAILS with
+  four pages, and the Roto-Control's page buttons then went from the first page to the fourth
+  and back three times (its page messages 0 to 3, 457 s to 490 s), with no track or device
+  clicked. The first page was blank (seen), which fits a new, empty preset page put before the
+  device's pages; that order is an inference from the menu.
+- **A burst.** At 142.95 s, after the knobs had been unmapped and the plugin described again
+  (132.5 s and 141.4 s; what Adam did then was not recorded), the eight names came one at a
+  time, and before each the knobs already named were taught again, with "UnknownParam" for the
+  next: 44 messages in 3 ms. Tests 17 and 18's logs have no "UnknownParam".
+
+**Not run.** Pigments, and so the joined words on a device.
+
+**Consequences.** The page count's change works. Dropping "P1" works for a preset of one part,
+and part 2's names told the one Multi tried; one preset of each kind. Adam's notes from the
+session, on Show Remote Controls and new projects, are in `docs/PLUGIN-MODE-PLAN.md`, section 10.

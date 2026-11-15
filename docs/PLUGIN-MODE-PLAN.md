@@ -46,7 +46,10 @@ once when both go through Bitwig, the keyboard in its DAW program and Device mod
 keyboard's Arturia program the plugin is changed without Bitwig being told, and the
 Roto-Control can't follow. That afternoon the name-shortening build ran in Bitwig, and a
 remote controls page made by hand put an Analog Lab V Multi's own macros on the Roto-Control
-at full resolution (`docs/ROTO-CONTROL.md`, test 18).
+at full resolution (`docs/ROTO-CONTROL.md`, test 18). Then every installed Arturia plugin's
+parameters were read with a small host (`docs/ARTURIA.md`, test 11), and a fifth build ran:
+shortened names, a page count that follows, and "P1" dropped for Analog Lab V's presets of one
+part (test 19).
 
 ## 1. The aim
 
@@ -513,8 +516,12 @@ and how. What test 16 suggests:
    | P1 Brilliance | P1 Brillianc | P1Brilliance |
 
    (The "Curve" name is an inference from test 16's cut names.) Kept outside this repository
-   as a commit on the fork's `e0cd9eb` with four tests, which pass; the build with it (the
-   fourth) has not run in Bitwig. A later offer, if the author is receptive: where a cut
+   as a commit on the fork's `e0cd9eb`, now with joined words split (item 8) and five tests,
+   which pass. A build with it (the fifth) ran in Bitwig with Analog Lab V (`docs/ROTO-CONTROL.md`,
+   test 19): "Delay Volume" whole and "Reverb Vol". Pigments' pages are still not checked on
+   the device. Over the survey's 34,320 names (`docs/ARTURIA.md`, test 11) it changes 8,745,
+   and the names that share their 12 characters with another of their plugin go from 26,324
+   to 22,540. A later offer, if the author is receptive: where a cut
    leaves two names on a page the same, squeeze those two further.
 2. **Stored names when Show Remote Controls is off** (`docs/ROTO-CONTROL.md`, section 8, item
    10). The cause is not found. In test 17 Bitwig did answer the stored mappings, once, in a
@@ -533,7 +540,8 @@ and how. What test 16 suggests:
    added in Bitwig, the Roto-Control's page buttons stopped at the old last page until
    another track had been selected. A small change of its own, drafted on the fork's
    `e0cd9eb` (send the plugin's details again when the count changes while the plugin is
-   shown); not run in Bitwig.
+   shown). Run in Bitwig (test 19): a page was added, the details came with four pages, and
+   the Roto-Control reached the fourth with no track selected again.
 7. **Analog Lab V** (test 18; nothing to be written before the author has been asked, and not
    before the first pull requests are in; Adam, 2026-11-15). Three things would make its
    knobs read as its own window and the KeyLab do: dropping the "P1" before a part's
@@ -555,6 +563,9 @@ and how. What test 16 suggests:
    extension and Performance Bridge; not tried. In that test the driver asked for each
    knob's name and had all eight within about 2 s of a preset's loading, with nothing
    touched, and the asking marked the preset as changed on the instrument's preset screen.
+   Tried in a test build (test 19; not for a pull request as it stands): with a preset of
+   one part the knobs read "Brightness", "Timbre", "Time", "Movement"; with a Multi the "P1"
+   stayed, told by part 2's names as above. One preset of each kind.
 8. **Two more changes to the names, from the survey** (`docs/ARTURIA.md`, test 11). Of 34,320
    parameters in 89 Arturia plugins, 92% have names longer than 12 characters and 77% share
    their first 12 with another parameter of their plugin.
@@ -564,6 +575,20 @@ and how. What test 16 suggests:
      Predelay", "FX A1 Reverb Decay", ... to "Predelay", "Decay", ...). Needs no plugin's
      name, so it singles none out; it does need a page fitted together, which item 1 avoids.
      A pull request of its own, later.
+9. **Show Remote Controls has to be on** for the names and pages above, and Bitwig starts a new
+   project with it off. Adam opens a new project each time and has to remember the panel, "a
+   likely point of error" (2026-11-15). Three ways out, none tried:
+   - A project saved with the panel open opens with it open (Adam, seen), and Bitwig can
+     perhaps be set to start with a project. It holds for as long as he starts from that
+     project, and only for the devices in it.
+   - The extension could open the panel itself: Bitwig's API lets a controller set it
+     (`Device.isRemoteControlsSectionVisible()` is settable in API 25, read from the API's
+     classes), and the extension already has a preferences page. As a preference that is off
+     unless chosen, because the author's design uses the panel as the user's switch between
+     the Roto-Control's own learned mappings and Bitwig's pages. A third small pull request,
+     to be asked about with the others.
+   - Performance Bridge hosting or relaying on its own doesn't depend on the panel at all;
+     that weighs for it in section 10's first question, against the work it takes.
 
 **Where the extension's code is.** The extension Adam runs was not built from the code in
 Melbourne Instruments' repository (test 16: it sends `0A 18` where that code sends `0A 0F`).
