@@ -411,10 +411,33 @@ each "inference" or "guess" is marked.
 5. How does a host learn which preset a plugin has loaded?
 6. Is Performance Bridge in the audio path acceptable on stage?
 7. If a host, which plugin format? Audio Units are the cheapest to host on a Mac. Adam asks
-   whether they have a name for being buggy or slow next to other formats. From recollection,
-   not checked: not for speed; for bugs in makers' less-tested Audio Unit builds, and for
-   telling a host less about changed parameter names than VST3 or CLAP do. The probe's result
-   on names matters more than the reputation.
+   whether they have a name for being buggy or slow next to other formats; see below.
+
+**Read on the web, 2026-11-14** (forum posts and one manual; none of it tested here).
+
+- **Pigments and its macro names.** Users on Arturia's forum report that Pigments is the one
+  Arturia instrument that gives neither a KeyLab's screen nor a DAW's automation lanes its
+  macros' names, and that this was first asked for in 2020
+  ([forum thread](https://forum.arturia.com/t/feature-request-display-macro-names-of-pigments-on-the-keylab-screen/7218)).
+  That agrees with test 16 and with `docs/ARTURIA.md`, and says a host of any format is
+  unlikely to get them (question 2), though only the probe would show it.
+- **Changed parameter names, by format.** Plugin developers describe a way to announce a
+  changed name in each of Audio Units, VST3, and AAX, with hosts differing in whether they act
+  on it ([JUCE forum](https://forum.juce.com/t/audioprocessorvaluetreestate-parameter-name-change/34110)).
+  In VST3 the announcement is a restart request, which a widely used framework has sent
+  together with a latency change that some hosts answer with a glitch
+  ([JUCE forum](https://forum.juce.com/t/vst3-parameter-name-changes-dont-work/28313/20)). So
+  the recollection in question 7 that Audio Units tell a host less than VST3 does is not
+  supported by what was found; nothing found bears on speed.
+- **More than 7 bits, standalone** (question 4). An older Arturia manual (Moog Modular V 2.6)
+  describes NRPN in the instrument's MIDI assignment window
+  ([manual page](https://www.manualsdir.com/manuals/39764/arturia-moog-modular-26.html?page=58)).
+  Whether today's instruments still take NRPN, and at what resolution, is a test: assign one
+  in Pigments' MIDI tab and send it from `sbdev`.
+- **Where extensions go.** Bitwig's guide gives Documents/Bitwig Studio/Extensions for a
+  `.bwextension` file ([Bitwig](https://www.bitwig.com/en/community/control_scripts/installation_guide)).
+  Nothing found says what happens when one there has the same identity as one that comes
+  with Bitwig.
 
 **Improving Melbourne Instruments' Bitwig integration** (Adam, 2026-11-14). Its code is
 MIT-licensed. One pull request with every improvement, prepared once each is understood and
