@@ -227,6 +227,12 @@ at a time (`docs/ARTURIA.md`, test 8), so, as with Bitwig, there is one owner in
   the instrument; elsewhere, including Analog Lab V, by asking as the keyboard's touch does,
   which moves a parameter by up to one 7-bit step and marks the preset as changed (Adam's choice
   of the two, 2026-11-14; `--no-ask` turns the asking off).
+- **Flagged for the user-experience review** (Adam, 2026-11-14): whether the bridge should ever
+  write to an instrument only to learn a name. Asking sends values back, which can move a
+  parameter by a 7-bit step and marks the preset as changed; once, before a fix, it sent a value
+  from the preset before and set a macro from 23 to 0 (`docs/ARTURIA.md`, test 9). The other
+  choice is names only once a knob is turned, where no file gives them. Decide before the
+  Arturia driver goes into the app.
 - The mk3's format doesn't name the instrument. The driver knows three by a number in the preset's
   screen (Pigments, Augmented VOICES, Memory V); others show as "Arturia" and get no files.
 
