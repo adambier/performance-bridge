@@ -233,6 +233,21 @@ at a time (`docs/ARTURIA.md`, test 8), so, as with Bitwig, there is one owner in
   from the preset before and set a macro from 23 to 0 (`docs/ARTURIA.md`, test 9). The other
   choice is names only once a knob is turned, where no file gives them. Decide before the
   Arturia driver goes into the app.
+
+  With that choice, the review also decides what a knob shows until its name comes (Adam,
+  2026-11-14). The name field holds 12 characters, in the firmware's font; a trailing "?" already
+  means "value not known". Options:
+  1. The slot's own name, as now ("Macro 1", "Param 1"): short, but reads as if it were the
+     real name, and for Analog Lab V it usually isn't.
+  2. The slot's name marked as pending, by a sign of its own, e.g., "Macro 1~" or "·Macro 1",
+     kept apart from the "?" for an unknown value.
+  3. A hint, "Turn to name" (12 characters), on every knob not yet named: clear, but eight of
+     them at once are noise, and it says nothing of which knob is which.
+  4. Blank: honest, but a blank screen reads as "nothing here", which on this device means a
+     knob with no control.
+  The inference, unchecked, is that 2 is the best fit: a reader learns one sign once, the slot
+  stays recognizable, and it is gone after the first turn. Check it on the device for legibility
+  at playing distance (section 4 of AGENTS.md).
 - The mk3's format doesn't name the instrument. The driver knows three by a number in the preset's
   screen (Pigments, Augmented VOICES, Memory V); others show as "Arturia" and get no files.
 
