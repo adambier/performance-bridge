@@ -27,35 +27,50 @@ public enum RotoNameFit {
         fit([name], to: [length])[0]
     }
 
-    /// The names of one page, each fitted to its length. A word abbreviated in one name is
-    /// abbreviated in all of them, so that a page doesn't read "Delay Volume" beside "Reverb Vol".
+    /// The names of one page, each fitted to its length. A name that fits is left whole, even
+    /// where a word in it is shortened in another name (Adam, 2026-11-15). A word shortened in more
+    /// than one name gets one short form in all of them: the shortest any of them needed.
     public static func fit(_ names: [String], to lengths: [Int]) -> [String] {
-        var used: Set<String> = []
-        for (name, length) in zip(names, lengths) {
-            var words = name.split(separator: " ").map(String.init)
-            var index = words.count - 1
-            while joined(words).count > length, index >= 0 {
-                if let short = abbreviations[words[index].lowercased()] {
-                    used.insert(words[index].lowercased())
-                    words[index] = short
-                }
-                index -= 1
+        var shared: [String: String] = [:]
+        var fitted: [String] = []
+        // A few passes settle the shared short forms.
+        for _ in 0..<4 {
+            var found: [String: String] = [:]
+            fitted = zip(names, lengths).map { name, length in
+                fitOne(name, to: max(length, 0), shared: shared, found: &found)
             }
+            if found == shared { break }
+            shared = found
         }
-        return zip(names, lengths).map { name, length in
-            var words = name.split(separator: " ").map(String.init)
-            for index in words.indices {
-                if used.contains(words[index].lowercased()), let short = abbreviations[words[index].lowercased()] { words[index] = short }
-            }
-            return squeeze(words, to: max(length, 0))
+        return fitted
+    }
+
+    /// One name, shortened only as much as it needs, using a page's shared short forms first.
+    /// Each word it shortens goes into `found`, keeping the shorter of two forms.
+    private static func fitOne(_ name: String, to length: Int, shared: [String: String],
+                               found: inout [String: String]) -> String {
+        let original = name.split(separator: " ").map(String.init)
+        guard !original.isEmpty, joined(original).count > length else { return joined(original) }
+        var words = original
+        var index = words.count - 1
+        while joined(words).count > length, index >= 0 {
+            let key = words[index].lowercased()
+            if let short = shared[key] ?? abbreviations[key] { words[index] = short }
+            index -= 1
         }
+        let text = squeeze(&words, to: length)
+        for (before, after) in zip(original, words) where before != after {
+            let key = before.lowercased()
+            if let known = found[key], known.count <= after.count { continue }
+            found[key] = after
+        }
+        return text
     }
 
     private static func joined(_ words: [String]) -> String { words.joined(separator: " ") }
 
-    /// Closes up spaces, then drops vowels, then cuts.
-    private static func squeeze(_ words: [String], to length: Int) -> String {
-        var words = words
+    /// Closes up spaces, then drops vowels, then cuts. `words` keeps the vowels dropped.
+    private static func squeeze(_ words: inout [String], to length: Int) -> String {
         guard !words.isEmpty else { return "" }
         // Whether a space stands before each word after the first.
         var spaces = [Bool](repeating: true, count: words.count)

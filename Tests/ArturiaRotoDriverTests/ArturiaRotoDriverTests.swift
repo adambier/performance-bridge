@@ -600,10 +600,10 @@ final class ArturiaRotoDriverTests: XCTestCase {
         // "Delay Volume" fits as it is.
         XCTAssertEqual(driver.fromInstrument(mk3Screen("Delay Volume", "-70.0 dB", value: 0, id: 1), now: 1.2).toDevice,
                        [rename(7, "Delay Volume"), show(6, "-70.0 dB")])
-        // "Reverb Volume" doesn't: "Volume" is shortened in both.
+        // "Reverb Volume" doesn't, and "Delay Volume" is not shortened to match it.
         _ = driver.fromKeyboard([0xB0, 16, 5], now: 2)
         XCTAssertEqual(driver.fromInstrument(mk3Screen("Reverb Volume", "-60.0 dB", value: 5, id: 1), now: 2.05).toDevice,
-                       [rename(8, "Reverb Vol"), show(7, "-60.0 dB"), rename(7, "Delay Vol")])
+                       [rename(8, "Reverb Vol"), show(7, "-60.0 dB")])
         // An unknown value's "?" counts toward the 12 characters.
         _ = driver.setParameterNames([93: "F1 Resonance"])
         XCTAssertEqual(driver.fromDevice(.message(.macroPage(0)), now: 3).toDevice[4], learn(5, "F1 Res?", 0))

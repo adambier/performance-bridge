@@ -27,10 +27,21 @@ final class RotoNameFitTests: XCTestCase {
         }
     }
 
-    func testAPageAbbreviatesAWordEverywhere() {
+    func testANameThatFitsIsNotShortenedToMatchItsPage() {
         XCTAssertEqual(RotoNameFit.fit(["Chorus Mix", "Delay Volume", "Reverb Volume"], to: [12, 12, 12]),
-                       ["Chorus Mix", "Delay Vol", "Reverb Vol"])
+                       ["Chorus Mix", "Delay Volume", "Reverb Vol"])
         XCTAssertEqual(RotoNameFit.fit(["Delay Volume", "Phaser Mix"], to: [12, 12]), ["Delay Volume", "Phaser Mix"])
-        XCTAssertEqual(RotoNameFit.fit(["F1 Resonance", "F2 Resonance"], to: [11, 12]), ["F1 Res", "F2 Res"])
+        XCTAssertEqual(RotoNameFit.fit(["F1 Resonance", "F2 Resonance"], to: [11, 12]), ["F1 Res", "F2 Resonance"])
+        XCTAssertEqual(RotoNameFit.fit(["P1 Brightness", "P1 Timbre", "P1 Time", "P1 Movement", "FXA Dry/Wet",
+                                        "FXB Dry/Wet", "Delay Volume", "Reverb Volume"], to: Array(repeating: 12, count: 8)),
+                       ["P1 Bright", "P1 Timbre", "P1 Time", "P1 Movement", "FXA Dry/Wet",
+                        "FXB Dry/Wet", "Delay Volume", "Reverb Vol"])
+    }
+
+    func testAWordShortenedTwiceGetsOneShortForm() {
+        // Alone, the second would need one vowel less ("SaturatinMix").
+        XCTAssertEqual(RotoNameFit.fit("Saturation Mix"), "SaturatinMix")
+        XCTAssertEqual(RotoNameFit.fit(["Tape Saturation Amount", "Saturation Mix"], to: [12, 12]),
+                       ["TapeStrtnAmt", "Strtn Mix"])
     }
 }

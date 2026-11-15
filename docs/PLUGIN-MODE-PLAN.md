@@ -479,7 +479,18 @@ and how. What test 16 suggests:
 
 1. **Names fitted, not cut**, a page at a time, so that different parameters keep different
    names. Drafted against the published code (commit 2d43a72) and built with its tests; kept
-   outside this repository; not run in Bitwig.
+   outside this repository. Run in Bitwig on 2026-11-15, in place of Adam's own copy of the
+   extension (a file in his Extensions folder; Bitwig Studio ships none): with Analog Lab V and
+   Show Remote Controls on, the knobs read "P1 Bright", "P1 Timbre", "P1 Time", "P1 Movement",
+   "FXA Dry/Wet", "FXB Dry/Wet", "Delay Vol", and "Reverb Vol" (seen, and in the log). Then the
+   rule changed (Adam, the same day): **a name that fits on its screen is left whole; a word
+   that has to be shortened gets the same short form wherever it is shortened on the page.**
+   So "Delay Volume" stays whole beside "Reverb Vol". Both the draft and `RotoNameFit` follow
+   it; the second build is not yet run in Bitwig. Pigments' two pages are not yet checked.
+   Next idea (Adam, 2026-11-15; untested): Analog Lab V gives its host "P1" before a part's
+   parameter names, and neither the keyboard nor Analog Lab's window shows it; drop it when no
+   other part number is on the page, so that "P1 Brightness" can read "Brightness". First find
+   out what a preset of two parts sends. A pull request of its own, after item 1.
 2. **Stored names when Show Remote Controls is off** (`docs/ROTO-CONTROL.md`, section 8, item
    10). The cause is not found. In test 17 Bitwig did answer the stored mappings, once, in a
    state that was not identified.
