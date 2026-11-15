@@ -434,6 +434,13 @@ each "inference" or "guess" is marked.
   ([manual page](https://www.manualsdir.com/manuals/39764/arturia-moog-modular-26.html?page=58)).
   Whether today's instruments still take NRPN, and at what resolution, is a test: assign one
   in Pigments' MIDI tab and send it from `sbdev`.
+- **CLAP** (Adam's question). Arturia does not appear to ship its instruments as CLAP plugins:
+  a listing checked in June 2026 gives Pigments' formats as standalone, VST, VST3, AAX, Audio
+  Unit, and NKS, and CLAP is a users' request on Arturia's forum
+  ([forum thread](https://forum.arturia.com/t/feature-request-clap-support-and-per-voice-modulation/1448)).
+  So a CLAP host would not load the instruments this plan is about. To confirm on the Mac:
+  whether /Library/Audio/Plug-Ins/CLAP holds anything of Arturia's. It also means test 16's
+  plugins were VST3 or VST2 (an inference: Bitwig hosts those and CLAP, not Audio Units).
 - **Where extensions go.** Bitwig's guide gives Documents/Bitwig Studio/Extensions for a
   `.bwextension` file ([Bitwig](https://www.bitwig.com/en/community/control_scripts/installation_guide)).
   Nothing found says what happens when one there has the same identity as one that comes
