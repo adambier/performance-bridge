@@ -123,9 +123,10 @@ public enum ArturiaPresetMatch {
     /// asterisk, of names up to 27 long).
     public static let sentNameLength = 15
 
-    /// Whether a preset named `name` would be sent as `sent`.
-    public static func name(_ name: String, matchesSent sent: String) -> Bool {
-        name == sent || (sent.count >= sentNameLength && name.hasPrefix(sent))
+    /// Whether a preset named `name` would be sent as `sent`. With `isWhole`, `sent` is the
+    /// whole name (the mk3's format sends names uncut; seen to 27 characters).
+    public static func name(_ name: String, matchesSent sent: String, isWhole: Bool = false) -> Bool {
+        name == sent || (!isWhole && sent.count >= sentNameLength && name.hasPrefix(sent))
     }
 
     /// The four macro labels of the preset among `candidates` that the instrument has loaded, or
@@ -137,9 +138,11 @@ public enum ArturiaPresetMatch {
     ///   - macroValues: the four macros' values as the instrument reported them (0–127), `nil`
     ///     where unknown.
     ///   - volume: the master volume as reported (0–127), or `nil`.
+    ///   - nameIsWhole: whether `name` is the preset's whole name, not cut to 15 characters.
     public static func macroLabels(among candidates: [ArturiaPresetFile], name: String, kind: String,
-                                   macroValues: [Int?] = [nil, nil, nil, nil], volume: Int? = nil) -> [String?]? {
-        var matches = candidates.filter { Self.name($0.name, matchesSent: name) }
+                                   macroValues: [Int?] = [nil, nil, nil, nil], volume: Int? = nil,
+                                   nameIsWhole: Bool = false) -> [String?]? {
+        var matches = candidates.filter { Self.name($0.name, matchesSent: name, isWhole: nameIsWhole) }
         guard !matches.isEmpty else { return nil }
         if let labels = agreed(matches) { return labels }
         if !kind.isEmpty {

@@ -53,6 +53,8 @@ has not been checked, the text says so in words ("inference", "untested").
     section 6; Analog Lab V standalone, version not read that day.
 [^test-7]: [Test 7](#test-7-2026-11-14-a-roto-control-on-the-keylab-mkiis-profile-through-sbdev-arturia)
     (2026-11-14), section 6; Analog Lab V and Pigments standalone, versions not read that day.
+[^test-8]: [Test 8](#test-8-2026-11-14-a-real-keylab-61-mk3-its-touch-and-a-second-controller-beside-it)
+    (2026-11-14), section 6; Pigments standalone and Adam's KeyLab 61 mk3, versions not read.
 [^files-3]: Read directly on Adam's Mac (read-only) on 2026-11-14, under `/Library/Arturia/`:
     each instrument's `resources/plugin.prefmidi.xml` and `resources/Reference_ParamNames.xml`;
     every file under `Presets/Pigments/` (9,595, by script) and one preset file each of ten
@@ -125,6 +127,14 @@ controller.[^test-6]
 - A profile cannot be added without changing Arturia's files[^files], which this project does not
   do (AGENTS.md, section 4). So a program that wants an instrument's reports has to publish a port
   under one of a real controller's names.
+
+**One controller at a time.** With a real KeyLab 61 mk3 connected, checking a second port that a
+profile matches moved Pigments to that port: the keyboard fell back to its plain mode, and did
+not come back until its own port was unchecked and checked again. That was so for a port named
+"KeyLab mkII 61" (Midi Controller changed to "KeyLab mkII") and for one named "KeyLab 88 mk3
+MIDI" (Midi Controller stayed "KeyLab mk3").[^test-8] So a second controller beside a real KeyLab
+has to sit between the keyboard and the instrument, passing the keyboard's messages on; `sbdev
+arturia --keyboard` does (built, not yet run).
 
 ## 3. From the instrument to the controller
 
@@ -231,6 +241,16 @@ the "KeyLab" profile's format the next two bytes are `7F 42`.
 - **Finer control.** Every assignment in the installed configurations is a 7-bit control change.
   The code also takes NRPN and RPN, but how one would be assigned was not found.[^files][^code]
 
+**Asking for a name: a touch.** A KeyLab mk3's knobs and faders sense touch. Touched and not
+moved, a knob sent the control change of its control with the value it stood at, and Pigments
+answered as to any control change, with the control's name and value for the keyboard's screen.
+There is no touch message.[^test-8] A control change that repeats the value drew the name and
+value text under the mkII's profile too. So a controller can ask for a control's name by sending
+its known value again. It is not free: the value is 7-bit, and Pigments took it, moving a macro
+its preset held at 0.272 to 0.268 (34 of 127) and marking the preset as changed. `ArturiaRotoDriver`
+asks this way for knobs it has no name for, where its host reads no files for the instrument
+(Adam, 2026-11-14).
+
 ### Names from the instrument's own files
 
 Read on Adam's Mac on 2026-11-14, read-only.[^files-3] `ArturiaParameterFiles`, `ArturiaPresetFile`,
@@ -317,6 +337,9 @@ when the app quit, not when a preset loaded, so it can't say what is loaded now.
    showed there before and after test 2 was not recorded.
 6. Can a control be driven, or reported, with more than 7 bits? Not reported, under the mk3's
    profile: 137 values from Pigments were 7-bit (test 5). NRPN in is untried.
+12. Does the relay hold up (`sbdev arturia --keyboard`): the keyboard's screen and touch as
+    before, the Roto-Control's knobs and the keyboard's in step, and how long a note spends in
+    it? Does the keyboard take a knob's value sent in the instrument's format?
 7. Is the plugin, in a DAW, reachable the same way? The reading suggests the controller code is
    in the plugin[^code], but a DAW has its own, better path to a plugin's parameters.
 8. Do Arturia's apps share their MIDI settings, and does that explain why the same step went
@@ -599,3 +622,36 @@ screenshots are marked "seen".
 **Not tested.** The first value of a turn before any text has come shows a percentage ("53%",
 "34%"), as designed; values the instrument reports without a turn (a preset change, a mouse drag)
 show percentages too. Any instrument but these two; the plugins.
+
+### Test 8 (2026-11-14): a real KeyLab 61 mk3: its touch, and a second controller beside it
+
+**Setup.** Adam's Mac and his KeyLab 61 mk3 (ports "KeyLab 61 mk3 MIDI" and "KeyLab 61 mk3 DAW");
+Pigments standalone. `sbdev midi "KeyLab 61 mk3 MIDI"` printed what the keyboard sent; `sbdev
+vport` published a second port. Four short logs, whole, kept outside this repository. What the
+keyboard's screen and Pigments' windows showed is Adam's report ("seen"); what Pigments sent the
+real keyboard could not be logged.
+
+- **Touch, with no instrument running.** Touching encoder 1 and fader 1 sent nothing; the screen
+  showed "Encoder 1" and "Fader 1" with a number (seen). Turning encoder 1 sent control change
+  74, values 0–9.
+- **Touch, with Pigments connected** (the keyboard showing the instrument's picture, "Welcome*",
+  and "Template"; seen). Touching encoder 1 sent control change 74 with value 0, and touching
+  fader 1 control change 73 with value 0 (five messages in all); the screen showed "Macro 1", "0"
+  and "Env Amp Attack", ".537 ms" (seen).
+- **A touch changes the preset** (seen). With "Hanging Threads" just loaded, the Delay macro read
+  0.272; after a touch of encoder 4 it read 0.268, and the preset's name had an asterisk.
+- **A second port, as a KeyLab mkII.** With the keyboard's port and "KeyLab mkII 61" both checked,
+  Midi Controller read "KeyLab mkII" (seen), the virtual port got the lights and the text, and the
+  keyboard's screen showed "Encoder 1" for a touch (seen).
+- **A second port, as another KeyLab mk3** ("KeyLab 88 mk3 MIDI"). Midi Controller read "KeyLab
+  mk3" (seen); the virtual port got the connect messages, all nine values, and the preset's
+  screen; the keyboard's screen still showed "Encoder 1" (seen), and a touch on the keyboard
+  brought nothing to the virtual port.
+- **After the second port went away** the keyboard stayed in its plain mode, with only its own
+  port checked (seen), until that port was unchecked and checked again (seen).
+- **A repeated value under the mkII's profile.** `cc 1 74 40` twice, 8 s apart, to "KeyLab mkII
+  61": each drew "Macro 1", "0.315" three times. On connecting this time Pigments sent all nine
+  values.
+
+**Not tested.** Analog Lab V; whether a touch's value differs from the last the instrument sent
+the keyboard; the relay (`sbdev arturia --keyboard`).

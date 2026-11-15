@@ -49,6 +49,9 @@ Pigments with the mkII port (test 4); after the port went away, Pigments and Ana
 setting (tests 5 and 6). Analog Lab V also recognized the mk3's port by its name before anything
 was exchanged, and offered to update "your KeyLab 61 mk3" to a newer firmware (test 6; declined).
 
+An instrument talks to one controller at a time: a second matching port, checked beside a real
+KeyLab mk3's, took the instrument over, under the mkII's name and under another mk3's (test 8).
+
 ## 3. Knobs
 
 Each profile ties control change numbers to item numbers; the instrument reports a knob under its
@@ -130,6 +133,13 @@ then a subcommand:
   Save, Undo, and Redo (items 15, 13, and 12), and, in Analog Lab V, lights for transpose and
   octave. None was seen. Analog Lab V's second property (items 51–54) is its four part buttons,
   by the profile.
+- **Touch.** A real KeyLab mk3's knob or fader, touched and not moved, sends its control change
+  with the value it stands at, and the instrument answers with screen `1C`; there is no touch
+  message (test 8). The instrument takes the value, which can move the parameter by up to one
+  7-bit step.
+- The number after the color in the preset's screen differed by instrument (45 Pigments, 22
+  Augmented VOICES, 59 Memory V); the inference is that it chooses the picture a real mk3 shows
+  with the preset's name.
 - Not every field has been worked out, and nothing was sent in this format to the instrument.
 
 ## 6. Buttons and other controls (declared; none tested)

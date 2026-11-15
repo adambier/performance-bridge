@@ -163,6 +163,14 @@ public struct ArturiaKeyLabControl: Equatable, Sendable {
     }
 }
 
+/// The two message formats Arturia's instruments use with KeyLab keyboards.
+public enum ArturiaMessageFormat: Equatable, Sendable {
+    /// `ArturiaInstrumentMessage`: the first KeyLab and the KeyLab mkII.
+    case version2
+    /// `ArturiaMk3Message`: the KeyLab mk3.
+    case version3
+}
+
 /// A controller profile of Arturia's instruments: the port names an instrument recognizes, and
 /// the controls it reports values for and takes plain control changes for. Both profiles here use
 /// the same messages (`ArturiaInstrumentMessage`); only the mkII's draws `controlText`.
@@ -173,12 +181,15 @@ public struct ArturiaKeyLabProfile: Equatable, Sendable {
     public var portNames: [String]
     /// The profile's controls (read from the profile file).
     public var controls: [ArturiaKeyLabControl]
+    /// The format of the instrument's messages under this profile.
+    public var messageFormat: ArturiaMessageFormat
 
     /// Makes a profile.
-    public init(name: String, portNames: [String], controls: [ArturiaKeyLabControl]) {
+    public init(name: String, portNames: [String], controls: [ArturiaKeyLabControl], messageFormat: ArturiaMessageFormat = .version2) {
         self.name = name
         self.portNames = portNames
         self.controls = controls
+        self.messageFormat = messageFormat
     }
 
     /// The first KeyLab keyboards ("KeyLab"). Pigments has been seen to pick it for a port named
@@ -202,9 +213,21 @@ public struct ArturiaKeyLabProfile: Equatable, Sendable {
         controls: [74, 71, 76, 77, 93, 18, 19, 16, 17].enumerated()
             .map { ArturiaKeyLabControl(controller: $0.element, item: $0.offset + 1) })
 
+    /// The KeyLab mk3 keyboards ("KeyLab mk3"): the same nine control changes, numbered 0–8, in
+    /// the mk3's message format. Pigments and Analog Lab V picked it by themselves for ports
+    /// named "KeyLab 61 mk3 MIDI" and "KeyLab 88 mk3 MIDI" (tests 5, 6, and 8); the profile
+    /// matches the names anywhere in a port's name.
+    public static let keyLabMk3 = ArturiaKeyLabProfile(
+        name: "KeyLab mk3",
+        portNames: ["KeyLab 49 mk3 MIDI", "KeyLab 61 mk3 MIDI", "KeyLab 88 mk3 MIDI"],
+        controls: [74, 71, 76, 77, 93, 18, 19, 16, 17].enumerated()
+            .map { ArturiaKeyLabControl(controller: $0.element, item: $0.offset) },
+        messageFormat: .version3)
+
     /// The profile whose port names include this one (for the mkII, also with " MIDI" or " (1)"
     /// after it), or `nil`.
     public static func forPortName(_ name: String) -> ArturiaKeyLabProfile? {
+        if keyLabMk3.portNames.contains(name) { return keyLabMk3 }
         if keyLabMkII.portNames.contains(where: { [$0, $0 + " MIDI", $0 + " (1)"].contains(name) }) { return keyLabMkII }
         return keyLab.portNames.contains(name) ? keyLab : nil
     }

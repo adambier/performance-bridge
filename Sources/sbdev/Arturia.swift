@@ -11,8 +11,8 @@ import ArturiaRotoDriver
 import MIDITransport
 
 let arturiaUsage = """
-    Usage: sbdev arturia [--port NAME] [--wait] [--device NAME | --in NAME --out NAME] [--gap MS]
-                         [--no-files] [--trust-files] [--library PATH]
+    Usage: sbdev arturia [--port NAME] [--keyboard NAME] [--wait] [--device NAME | --in NAME --out NAME]
+                         [--gap MS] [--no-files] [--trust-files] [--library PATH] [--no-ask]
         Connects to the Roto-Control, runs the handshake as type 02, and publishes a virtual
         MIDI source and destination named NAME (--port; default "KeyLab mkII 61"), the name
         of a controller an Arturia instrument reports its values to. NAME must be one the
@@ -41,6 +41,19 @@ let arturiaUsage = """
         the knobs stay "Macro 1" to "Macro 4". Files are read only for Pigments, the one
         instrument they have been checked for (--trust-files reads them for any), and not for
         presets in Analog Lab V, which sends its own labels.
+
+        With a real KeyLab mk3 (--keyboard NAME, its MIDI port, e.g., "KeyLab 61 mk3 MIDI"):
+        an instrument talks to one controller at a time, so sbdev sits between the two. It
+        opens the keyboard's port itself, publishes "KeyLab 88 mk3 MIDI" for the instrument
+        (--port for another name), passes everything both ways, and reads the same stream for
+        the Roto-Control, in the mk3's message format. In the instrument, check sbdev's port
+        and uncheck the keyboard's own. A knob moved on either shows on the other. `status`
+        prints how long the keyboard's messages spent in sbdev.
+
+        Where sbdev has no names from files, it asks the instrument for them as a KeyLab mk3
+        does when a knob is touched: it sends each knob's known value again, and the
+        instrument answers with the name and the value in words. This moves a parameter by
+        up to one 7-bit step and marks the preset as changed (seen); --no-ask turns it off.
 
         To try it:
           1. Quit Performance Bridge and every other sbdev tool, and every Arturia app.
@@ -83,6 +96,9 @@ struct ArturiaOptions {
     var readsFiles = true
     var trustsFiles = false
     var library = "/Library/Arturia"
+    var keyboardName: String?
+    var portWasGiven = false
+    var asks = true
     var gapMilliseconds = 5
 }
 
@@ -95,7 +111,9 @@ func parseArturiaOptions(_ arguments: ArraySlice<String>) -> ArturiaOptions {
     }
     while let argument = rest.popFirst() {
         switch argument {
-        case "--port": options.portName = value(argument)
+        case "--port": options.portName = value(argument); options.portWasGiven = true
+        case "--keyboard": options.keyboardName = value(argument)
+        case "--no-ask": options.asks = false
         case "--wait": options.wait = true
         case "--no-files": options.readsFiles = false
         case "--trust-files": options.trustsFiles = true
@@ -110,8 +128,18 @@ func parseArturiaOptions(_ arguments: ArraySlice<String>) -> ArturiaOptions {
         default: fail("Unknown option \(argument).\n\n\(arturiaUsage)")
         }
     }
-    guard ArturiaKeyLabProfile.forPortName(options.portName) != nil else {
-        fail("\"\(options.portName)\" is not a port name of the KeyLab mkII's or the first KeyLab's profile.")
+    if let keyboard = options.keyboardName, !options.portWasGiven {
+        // A mk3 name the keyboard itself doesn't use.
+        options.portName = keyboard.contains("88") ? "KeyLab 49 mk3 MIDI" : "KeyLab 88 mk3 MIDI"
+    }
+    guard let profile = ArturiaKeyLabProfile.forPortName(options.portName) else {
+        fail("\"\(options.portName)\" is not a port name of the KeyLab mk3's, the KeyLab mkII's, or the first KeyLab's profile.")
+    }
+    if options.keyboardName != nil, profile.messageFormat != .version3 {
+        fail("With --keyboard, the port needs a KeyLab mk3's name (e.g., \"KeyLab 88 mk3 MIDI\"), since the keyboard speaks that format.")
+    }
+    if options.keyboardName == options.portName {
+        fail("The port needs a name the keyboard doesn't use.")
     }
     return options
 }
@@ -144,6 +172,9 @@ final class ArturiaSession: @unchecked Sendable {
     private var controls = RotoControlDecoder()
     private var assembler = ArturiaSysExAssembler()
     private var device: MIDIConnection?
+    private var keyboard: MIDIConnection?
+    /// How long each of the keyboard's messages took to pass on, in seconds (the last 20,000).
+    private var relayTimes: [Double] = []
     private let library: ArturiaLibrary?
     /// The instrument and the preset the files were last read for.
     private var namedInstrument: String?
@@ -155,6 +186,7 @@ final class ArturiaSession: @unchecked Sendable {
         library = options.readsFiles ? ArturiaLibrary(root: options.library, trustsUnchecked: options.trustsFiles) : nil
         driver = ArturiaRotoDriver(profile: ArturiaKeyLabProfile.forPortName(options.portName) ?? .keyLabMkII,
                                    waitsForControlMapped: options.wait)
+        driver.asksForNames = options.asks
     }
 
     func connect() {
@@ -168,10 +200,18 @@ final class ArturiaSession: @unchecked Sendable {
             device = try MIDIConnection(clientName: "sbdev arturia", sourceName: options.inName, destinationName: options.outName) { [weak self] bytes in
                 self?.fromDevice(bytes)
             }
+            if let name = options.keyboardName {
+                keyboard = try MIDIConnection(clientName: "sbdev arturia", sourceName: name, destinationName: name) { [weak self] bytes in
+                    self?.fromKeyboard(bytes)
+                }
+            }
         } catch {
             fail("\(error)")
         }
         log("Published a MIDI source and a MIDI destination named \"\(options.portName)\".")
+        if let keyboard {
+            log("Relaying between \"\(keyboard.source.name)\" and that port: check it in the instrument and uncheck the keyboard's own.")
+        }
         log("Listening to \"\(device!.source.name)\", sending to \"\(device!.destination.name)\". Type `help` for commands.")
         sendLocal(local.handshake.start())
     }
@@ -201,13 +241,38 @@ final class ArturiaSession: @unchecked Sendable {
         carryOut(driver.tick(now: now()))
     }
 
-    private func fromInstrument(_ bytes: [UInt8]) {
+    /// The keyboard's bytes go on to the instrument before anything else is done with them.
+    private func fromKeyboard(_ bytes: [UInt8]) {
         let arrived = Date()
+        var failure: Error?
+        do { try port?.send(bytes) } catch { failure = error }
+        let passed = Date().timeIntervalSince(arrived)
         lock.lock()
         defer { lock.unlock() }
-        log(arturiaLine("instrument → sbdev", bytes, "received"), at: arrived)
+        relayTimes.append(passed)
+        if relayTimes.count > 20_000 { relayTimes.removeFirst(10_000) }
+        if let failure { log("   could not pass the keyboard's bytes on: \(failure)") }
+        // Notes, pressure, and the wheels are passed on without a line each.
+        if let status = bytes.first, status == 0xF0 || (0xB0...0xBF).contains(status) {
+            log(arturiaLine("keyboard → instr.", bytes, "passed on"), at: arrived)
+        }
+        carryOut(driver.fromKeyboard(bytes, now: now(arrived)))
+    }
+
+    private func fromInstrument(_ bytes: [UInt8]) {
+        let arrived = Date()
+        var failure: Error?
+        if let keyboard {
+            do { try keyboard.send(bytes) } catch { failure = error }
+        }
+        lock.lock()
+        defer { lock.unlock() }
+        log(arturiaLine("instrument → sbdev", bytes, keyboard == nil ? "received" : "passed on to the keyboard"), at: arrived)
+        if let failure { log("   could not pass the instrument's bytes on: \(failure)") }
         for message in assembler.feed(bytes) {
-            if let parsed = ArturiaInstrumentMessage.parse(message), let words = vportDescribe(parsed, profile: driver.profile) {
+            if driver.profile.messageFormat == .version3 {
+                if let parsed = ArturiaMk3Message.parse(message), let words = arturiaDescribe(parsed) { log("   " + words, at: arrived) }
+            } else if let parsed = ArturiaInstrumentMessage.parse(message), let words = vportDescribe(parsed, profile: driver.profile) {
                 log("   " + words, at: arrived)
             }
         }
@@ -219,6 +284,8 @@ final class ArturiaSession: @unchecked Sendable {
     /// gives the driver what they say. Called with the lock held.
     private func readFiles() {
         guard let library, let instrument = driver.instrumentName else { return }
+        // Names are asked for only where no files are read for them.
+        driver.asksForNames = options.asks && (driver.hostIsAnalogLab || !library.reads(instrument))
         if driver.hostIsAnalogLab {
             // Analog Lab V sends its own labels; what its presets' files say of them is unchecked.
             if namedInstrument != nil {
@@ -241,7 +308,8 @@ final class ArturiaSession: @unchecked Sendable {
         labeledPreset = key
         let values = driver.presetValues
         let found = library.macroLabels(instrument: instrument, preset: preset, kind: driver.presetKind ?? "",
-                                        macroValues: values.macros, volume: values.volume)
+                                        macroValues: values.macros, volume: values.volume,
+                                        nameIsWhole: driver.profile.messageFormat == .version3)
         let words = found.labels.map { "macro labels " + $0.map { $0 ?? "-" }.joined(separator: ", ") } ?? "no macro labels"
         log("   files: \(words), from \(found.read) preset file\(found.read == 1 ? "" : "s") named like \"\(preset)\"")
         carryOut(driver.setPresetLabels(found.labels))
@@ -284,6 +352,11 @@ final class ArturiaSession: @unchecked Sendable {
             guard let port else { log("   not sent: no virtual port"); continue }
             do { try port.send(message) } catch { log("   could not send to the instrument: \(error)") }
         }
+        for message in output.toKeyboard {
+            guard let keyboard else { continue }
+            log(arturiaLine("sbdev → keyboard", message, "a knob's value"))
+            do { try keyboard.send(message) } catch { log("   could not send to the keyboard: \(error)") }
+        }
         for message in output.toDevice {
             let words: String
             switch message {
@@ -317,6 +390,15 @@ final class ArturiaSession: @unchecked Sendable {
 
     private func printStatus() {
         log("profile \(driver.profile.name), \(driver.isInPluginMode ? "PLUGIN" : "MIX") mode, page \(driver.page + 1), plugin \"\(driver.pluginName)\", preset \(driver.presetName.map { "\"\($0)\"" } ?? "not known")\(options.wait ? ", waiting for CONTROL MAPPED" : "")")
+        if keyboard != nil {
+            let sorted = relayTimes.sorted()
+            if sorted.isEmpty {
+                print("             relay: nothing passed on from the keyboard yet")
+            } else {
+                func ms(_ seconds: Double) -> String { String(format: "%.3f ms", seconds * 1000) }
+                print("             relay: \(sorted.count) messages from the keyboard passed on; time in sbdev: median \(ms(sorted[sorted.count / 2])), 99th percentile \(ms(sorted[min(sorted.count - 1, sorted.count * 99 / 100)])), longest \(ms(sorted[sorted.count - 1]))")
+            }
+        }
         for (number, page) in driver.pages.enumerated() {
             for (knob, control) in page.enumerated() {
                 guard let control else { continue }
@@ -345,8 +427,26 @@ final class ArturiaSession: @unchecked Sendable {
     }
 
     func close() {
+        lock.lock()
+        printStatus()
+        lock.unlock()
+        keyboard?.close()
         device?.close()
         port?.close()
+    }
+}
+
+/// What a message in the KeyLab mk3's format says, for the log.
+func arturiaDescribe(_ message: ArturiaMk3Message) -> String? {
+    switch message {
+    case .connect(let on, let id): return "\(on ? "connect" : "disconnect")  (id \(id))"
+    case .property(let item, 1, let value, _): return "value     item \(item) = \(value)"
+    case .property(let item, let index, let value, _): return "property  \(index) of item \(item) = \(value)"
+    case .preset(let name, let isChanged, let kind, let picture, _):
+        return "preset    \"\(name)\"\(isChanged ? " (changed)" : ""), \"\(kind)\", picture \(picture.map(String.init) ?? "-")"
+    case .controlScreen(let valueText, let name, let value, _):
+        return "control   \"\(name)\", \"\(valueText)\", value \(value.map(String.init) ?? "-")"
+    case .other: return nil
     }
 }
 

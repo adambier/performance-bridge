@@ -58,9 +58,17 @@ final class ArturiaLibrary {
     }
 
     /// The instrument's preset files whose names fit a preset's name as sent, read.
-    func presets(instrument: String, sentName: String) -> [(file: URL, preset: ArturiaPresetFile)] {
+    /// If none fits, the folder is listed again once, for a preset added since.
+    func presets(instrument: String, sentName: String, nameIsWhole: Bool = false) -> [(file: URL, preset: ArturiaPresetFile)] {
         guard reads(instrument) else { return [] }
-        let files = paths(instrument: instrument).filter { ArturiaPresetMatch.name($0.key, matchesSent: sentName) }.flatMap(\.value)
+        func fitting() -> [URL] {
+            paths(instrument: instrument).filter { ArturiaPresetMatch.name($0.key, matchesSent: sentName, isWhole: nameIsWhole) }.flatMap(\.value)
+        }
+        var files = fitting()
+        if files.isEmpty {
+            presetPaths[instrument] = nil
+            files = fitting()
+        }
         return files.sorted { $0.path < $1.path }.compactMap { file in
             (try? Data(contentsOf: file)).flatMap { ArturiaPresetFile(bytes: [UInt8]($0)) }.map { (file, $0) }
         }
@@ -68,9 +76,11 @@ final class ArturiaLibrary {
 
     /// The loaded preset's macro labels, with how many files were read, or `nil` labels if no
     /// file matches or the matches differ.
-    func macroLabels(instrument: String, preset: String, kind: String, macroValues: [Int?], volume: Int?) -> (labels: [String?]?, read: Int) {
-        let candidates = presets(instrument: instrument, sentName: preset).map(\.preset)
-        return (ArturiaPresetMatch.macroLabels(among: candidates, name: preset, kind: kind, macroValues: macroValues, volume: volume),
+    func macroLabels(instrument: String, preset: String, kind: String, macroValues: [Int?], volume: Int?,
+                     nameIsWhole: Bool = false) -> (labels: [String?]?, read: Int) {
+        let candidates = presets(instrument: instrument, sentName: preset, nameIsWhole: nameIsWhole).map(\.preset)
+        return (ArturiaPresetMatch.macroLabels(among: candidates, name: preset, kind: kind, macroValues: macroValues, volume: volume,
+                                               nameIsWhole: nameIsWhole),
                 candidates.count)
     }
 }

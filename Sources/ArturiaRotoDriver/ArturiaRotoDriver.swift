@@ -35,6 +35,10 @@ public struct ArturiaRotoOutput: Equatable, Sendable {
     public var toDevice: [ArturiaRotoDeviceMessage]
     /// Complete MIDI messages (control changes) for the instrument, in order.
     public var toInstrument: [[UInt8]]
+    /// Messages for a real keyboard relayed beside the Roto-Control, as raw MIDI bytes: a knob's
+    /// new value in the instrument's own format, so that the keyboard's knob follows a change made
+    /// on the Roto-Control (untested on a keyboard).
+    public var toKeyboard: [[UInt8]] = []
 
     /// Makes an output.
     public init(toDevice: [ArturiaRotoDeviceMessage] = [], toInstrument: [[UInt8]] = []) {
@@ -43,7 +47,7 @@ public struct ArturiaRotoOutput: Equatable, Sendable {
     }
 
     /// Whether there is nothing to send.
-    public var isEmpty: Bool { toDevice.isEmpty && toInstrument.isEmpty }
+    public var isEmpty: Bool { toDevice.isEmpty && toInstrument.isEmpty && toKeyboard.isEmpty }
 }
 
 /// One knob of a page: the control change it sends the instrument, the item the instrument reports
@@ -164,6 +168,36 @@ public struct ArturiaRotoDriver: Sendable {
     private var awaitingText = [TimeInterval?](repeating: nil, count: 8)
     /// For each knob, the value text last shown.
     private var shownText = [String?](repeating: nil, count: 8)
+    /// The control changes lately sent to the instrument, by the driver or by a relayed keyboard,
+    /// newest last: the mk3's control screen does not say which control it is about, so it is
+    /// taken for the newest of these with its value.
+    private var recentChanges: [(controller: Int, value: Int, time: TimeInterval)] = []
+    /// The id the instrument's mk3 messages carry.
+    private var instrumentID = ArturiaMk3Message.instrumentID
+
+    /// Whether the driver asks the instrument for the names of knobs it has none for, by sending
+    /// each such knob's known value again, as a KeyLab mk3 does when a knob is touched
+    /// (docs/ARTURIA.md, test 8). The instrument then takes the value, which has been seen to
+    /// move a parameter by up to one 7-bit step and mark the preset as changed; so a host turns
+    /// this off for an instrument whose names it reads from files (Adam, 2026-11-14).
+    public var asksForNames = true
+    /// How long after the page, the preset, or a value changes the asking starts.
+    public static let askDelaySeconds: TimeInterval = 0.3
+    /// How long an answer is waited for before the next knob is asked.
+    public static let askTimeoutSeconds: TimeInterval = 0.4
+    private var askDue: TimeInterval?
+    /// The items asked since the asking was last set off.
+    private var asked: Set<Int> = []
+    /// The item being asked, and when.
+    private var asking: (item: Int, since: TimeInterval)?
+    /// When each item was last asked, so that its answer's value text is not shown.
+    private var askedAt: [Int: TimeInterval] = [:]
+
+    /// Sets the asking off again, a moment from now.
+    private mutating func askSoon(_ now: TimeInterval) {
+        asked = []
+        askDue = now + Self.askDelaySeconds
+    }
 
     /// Makes a driver for an instrument talking to `profile`. With `waitsForControlMapped`, the
     /// controls are described only when the device asks with CONTROL MAPPED, which is the order of
@@ -361,11 +395,15 @@ public struct ArturiaRotoDriver: Sendable {
     public mutating func fromInstrument<S: Sequence>(_ bytes: S, now: TimeInterval) -> ArturiaRotoOutput where S.Element == UInt8 {
         var output = ArturiaRotoOutput()
         for message in assembler.feed(bytes) {
+            if profile.messageFormat == .version3 {
+                output.toDevice += mk3Message(message, now: now)
+                continue
+            }
             switch ArturiaInstrumentMessage.parse(message) {
             case .value(let item, let value)?:
                 output.toDevice += instrumentValue(item: item, value: min(max(value, 0), 127), now: now)
             case .text(let fields)?:
-                output.toDevice += instrumentText(fields)
+                output.toDevice += instrumentText(fields, now: now)
             case .controlText(let text)?:
                 output.toDevice += controlText(text, now: now)
             case .light(let item, _)? where (31...33).contains(item):
@@ -377,8 +415,46 @@ public struct ArturiaRotoDriver: Sendable {
         return output
     }
 
+    /// The instruments by the number in their preset screen (`ArturiaMk3Message.preset`), each
+    /// seen in one preset: the mk3's format does not name the instrument otherwise.
+    public static let instrumentsByPicture: [Int: String] = [45: "Pigments", 22: "Augmented VOICES", 59: "Memory"]
+
+    /// One message in the mk3's format.
+    private mutating func mk3Message(_ message: [UInt8], now: TimeInterval) -> [ArturiaRotoDeviceMessage] {
+        switch ArturiaMk3Message.parse(message) {
+        case .connect(_, let id)?:
+            instrumentID = id
+            if id == ArturiaMk3Message.analogLabID { hostIsAnalogLab = true }
+            return []
+        case .property(let item, 1, let value, let id)?:
+            instrumentID = id
+            return instrumentValue(item: item, value: min(max(value, 0), 127), now: now)
+        case .property(_, 2, _, _)?:
+            hostIsAnalogLab = true
+            return []
+        case .preset(let name, _, let kind, let picture, let id)?:
+            instrumentID = id
+            if id == ArturiaMk3Message.analogLabID { hostIsAnalogLab = true }
+            return presetInfo(instrument: picture.flatMap { Self.instrumentsByPicture[$0] }, preset: name, kind: kind, now: now)
+        case .controlScreen(let valueText, let name, let value, _)?:
+            // Which control: the newest control change sent with this value in the last second.
+            let since = now - 1
+            guard let change = recentChanges.last(where: { $0.time >= since && (value == nil || $0.value == value) }) else { return [] }
+            return controlText(ArturiaControlText(name: name, valueText: valueText, controller: change.controller, value: change.value), now: now)
+        default:
+            return []
+        }
+    }
+
+    /// Notes a control change sent to the instrument, for `mk3Message`.
+    private mutating func noteChange(controller: Int, value: Int, now: TimeInterval) {
+        recentChanges.append((controller, value, now))
+        if recentChanges.count > 16 { recentChanges.removeFirst(recentChanges.count - 16) }
+    }
+
     private mutating func instrumentValue(item: Int, value: Int, now: TimeInterval) -> [ArturiaRotoDeviceMessage] {
         let wasUnknown = values[item] == nil
+        if wasUnknown, names[item] == nil { askSoon(now) }
         values[item] = value
         guard isInPluginMode, let knob = knob(forItem: item), let control = control(knob) else { return [] }
         var messages: [ArturiaRotoDeviceMessage] = []
@@ -393,9 +469,21 @@ public struct ArturiaRotoDriver: Sendable {
         return messages + valueText(knob, now: now)
     }
 
-    private mutating func instrumentText(_ fields: [ArturiaTextField]) -> [ArturiaRotoDeviceMessage] {
+    private mutating func instrumentText(_ fields: [ArturiaTextField], now: TimeInterval) -> [ArturiaRotoDeviceMessage] {
+        let instrument = fields.first(where: { $0.tag == 1 })?.text
+        guard let preset = fields.first(where: { $0.tag == 2 })?.text else {
+            return presetInfo(instrument: instrument, preset: nil, kind: nil, now: now)
+        }
+        // The asterisk before the name has been seen on every preset in this format; in the mk3's
+        // it follows the name once the preset has been changed.
+        return presetInfo(instrument: instrument, preset: preset.hasPrefix("*") ? String(preset.dropFirst()) : preset,
+                          kind: fields.first(where: { $0.tag == 3 })?.text, now: now)
+    }
+
+    /// The instrument's and the preset's names, from either format's text.
+    private mutating func presetInfo(instrument: String?, preset: String?, kind: String?, now: TimeInterval) -> [ArturiaRotoDeviceMessage] {
         var messages: [ArturiaRotoDeviceMessage] = []
-        if let name = fields.first(where: { $0.tag == 1 })?.text, !name.isEmpty {
+        if let name = instrument, !name.isEmpty {
             instrumentName = name
             let cut = String(name.prefix(RotoSysEx.nameFieldLength - 1))
             if cut != pluginName {
@@ -403,11 +491,7 @@ public struct ArturiaRotoDriver: Sendable {
                 if isInPluginMode { messages += pluginList }
             }
         }
-        if let preset = fields.first(where: { $0.tag == 2 })?.text {
-            // The asterisk before the name has been seen on a preset just loaded; what it means
-            // is not known (docs/ARTURIA.md, section 3).
-            let name = preset.hasPrefix("*") ? String(preset.dropFirst()) : preset
-            let kind = fields.first(where: { $0.tag == 3 })?.text
+        if let name = preset {
             if let previous = presetName, previous != name || presetKind != kind {
                 let before = shownNames
                 presetLabels = [:]
@@ -416,6 +500,7 @@ public struct ArturiaRotoDriver: Sendable {
                     instrumentText = [:]
                 }
                 messages += renames(since: before)
+                askSoon(now)
             }
             presetName = name
             presetKind = kind
@@ -452,9 +537,12 @@ public struct ArturiaRotoDriver: Sendable {
             }
             return messages
         }
+        if asking?.item == item { asking = nil }
         guard isInPluginMode, let knob = knob(forItem: item), let control = control(knob) else { return [] }
         awaitingText[knob] = nil
-        return (nameChanged ? [renamed(knob, control)] : []) + valueText(knob, now: now)
+        // An answer to the driver's own asking shows no value text: nothing was turned.
+        let wasAsked = askedAt[item].map { now - $0 < 0.5 } ?? false
+        return (nameChanged ? [renamed(knob, control)] : []) + (wasAsked ? [] : valueText(knob, now: now))
     }
 
     /// SET CURRENT TRACK NAME with the preset's name, for the MENU window's bottom line. It showed
@@ -473,7 +561,7 @@ public struct ArturiaRotoDriver: Sendable {
     public mutating func fromDevice(_ input: RotoInput, now: TimeInterval) -> ArturiaRotoOutput {
         switch input {
         case .message(let message):
-            return ArturiaRotoOutput(toDevice: deviceMessage(message))
+            return ArturiaRotoOutput(toDevice: deviceMessage(message, now: now))
         case .control(.knob(let knob, let position)):
             return knobMoved(knob, position: position, now: now)
         case .control:
@@ -481,11 +569,12 @@ public struct ArturiaRotoDriver: Sendable {
         }
     }
 
-    private mutating func deviceMessage(_ message: RotoIncoming) -> [ArturiaRotoDeviceMessage] {
+    private mutating func deviceMessage(_ message: RotoIncoming, now: TimeInterval) -> [ArturiaRotoDeviceMessage] {
         switch message {
         case .pluginMode:
             isInPluginMode = true
             resetKnobState()
+            askSoon(now)
             var messages = pluginList
             messages += trackName(onlyIfChanged: false)
             // Unasked LEARN PARAM is this project's own variant: Bitwig's integration sends none
@@ -504,6 +593,7 @@ public struct ArturiaRotoDriver: Sendable {
         case .macroPage(let index):
             page = min(max(index, 0), pages.count - 1)
             resetKnobState()
+            askSoon(now)
             return waitsForControlMapped ? [] : pageControls()
         case .controlMapped(let mapping):
             // A macro is found by its number (1–8), as Bitwig's integration finds it.
@@ -545,7 +635,34 @@ public struct ArturiaRotoDriver: Sendable {
         } else {
             messages += valueText(knob, now: now)
         }
-        return ArturiaRotoOutput(toDevice: messages, toInstrument: [change])
+        noteChange(controller: control.controller, value: value, now: now)
+        var output = ArturiaRotoOutput(toDevice: messages, toInstrument: [change])
+        if profile.messageFormat == .version3 {
+            output.toKeyboard = [ArturiaMk3Message.knobValue(item: control.item, value: value, id: instrumentID)]
+        }
+        return output
+    }
+
+    // MARK: From a relayed keyboard
+
+    /// Takes bytes a real keyboard sent, which the host has passed on to the instrument: a control
+    /// change for one of the profile's controls is a new value, which moves the Roto-Control's
+    /// knob (the instrument reports no value for a change a controller makes), and the instrument
+    /// will answer it with the control's name and value text.
+    public mutating func fromKeyboard<S: Sequence>(_ bytes: S, now: TimeInterval) -> ArturiaRotoOutput where S.Element == UInt8 {
+        let bytes = Array(bytes)
+        var messages: [ArturiaRotoDeviceMessage] = []
+        var index = 0
+        while index + 2 < bytes.count {
+            // Channel 1, as the instruments' configurations assign; anything else is skipped.
+            guard bytes[index] == 0xB0, bytes[index + 1] < 0x80, bytes[index + 2] < 0x80 else { index += 1; continue }
+            let controller = Int(bytes[index + 1]), value = Int(bytes[index + 2])
+            index += 3
+            guard let item = profile.item(forController: controller) else { continue }
+            noteChange(controller: controller, value: value, now: now)
+            messages += instrumentValue(item: item, value: value, now: now)
+        }
+        return ArturiaRotoOutput(toDevice: messages)
     }
 
     // MARK: Time
@@ -556,6 +673,35 @@ public struct ArturiaRotoDriver: Sendable {
     /// has not sent within `textWaitSeconds`.
     public mutating func tick(now: TimeInterval) -> ArturiaRotoOutput {
         guard isInPluginMode else { return ArturiaRotoOutput() }
+        var output = ArturiaRotoOutput(toDevice: heldMessages(now: now))
+        output.toInstrument = ask(now: now)
+        return output
+    }
+
+    /// Asks the instrument for the name of the next knob of the page that has a value and no name
+    /// from the instrument, by sending its value again; one knob at a time, since the mk3's
+    /// answer does not say which knob it is about. Waits while a knob is being turned.
+    private mutating func ask(now: TimeInterval) -> [[UInt8]] {
+        if let waiting = asking {
+            guard now - waiting.since >= Self.askTimeoutSeconds else { return [] }
+            asking = nil
+        }
+        guard asksForNames, let due = askDue, now >= due else { return [] }
+        guard !lastKnobMove.contains(where: { $0.map { now - $0 < 2 * Self.holdSeconds } ?? false }) else { return [] }
+        for knob in 0..<8 {
+            guard let control = control(knob), !asked.contains(control.item), names[control.item] == nil,
+                  let value = values[control.item], let change = profile.controlChange(item: control.item, value: value) else { continue }
+            asked.insert(control.item)
+            asking = (control.item, now)
+            askedAt[control.item] = now
+            noteChange(controller: control.controller, value: value, now: now)
+            return [change]
+        }
+        askDue = nil
+        return []
+    }
+
+    private mutating func heldMessages(now: TimeInterval) -> [ArturiaRotoDeviceMessage] {
         var messages: [ArturiaRotoDeviceMessage] = []
         for knob in 0..<8 {
             guard let control = control(knob), let value = values[control.item] else { continue }
@@ -577,6 +723,6 @@ public struct ArturiaRotoDriver: Sendable {
                 messages += valueText(knob, now: now)
             }
         }
-        return ArturiaRotoOutput(toDevice: messages)
+        return messages
     }
 }

@@ -430,4 +430,110 @@ final class ArturiaRotoDriverTests: XCTestCase {
         _ = driver.fromInstrument(light(31, 127), now: 1)
         XCTAssertTrue(driver.hostIsAnalogLab)
     }
+
+    // MARK: The KeyLab mk3's format, asking, and a relayed keyboard
+
+    private func mk3Value(_ item: UInt8, _ value: UInt8, id: UInt8 = 0x0D) -> [UInt8] {
+        [0xF0, 0x00, 0x20, 0x6B, 0x7F, 0x42, 0x00, id, 0x00, item, 0x01, value, 0x00, 0xF7]
+    }
+
+    private func mk3Preset(_ name: String, _ kind: String, picture: UInt8 = 45, id: UInt8 = 0x0D) -> [UInt8] {
+        [0xF0, 0x00, 0x20, 0x6B, 0x7F, 0x42, 0x00, id, 0x04, 0x10, 0x00] + Array(name.utf8) + [0x00, 0x01, 0x00, 0x00, 0x03]
+            + Array(kind.utf8) + [0x00, 0x04, 0x01, 0x00, 0x05, 0x5D, 0x5D, 0x5D, 0x00, 0x06, picture, 0x00, 0xF7]
+    }
+
+    private func mk3Screen(_ name: String, _ valueText: String, value: UInt8, id: UInt8 = 0x0D) -> [UInt8] {
+        [0xF0, 0x00, 0x20, 0x6B, 0x7F, 0x42, 0x00, id, 0x04, 0x1C, 0x00] + Array(valueText.utf8) + [0x00, 0x01]
+            + Array(name.utf8) + [0x00, 0x02, value, 0x00, 0x03, 0x01, 0x00, 0x04, 0x01, 0x5D, 0x7C, 0x00, 0xF7]
+    }
+
+    private func mk3DriverInPluginMode(asks: Bool = false) -> ArturiaRotoDriver {
+        var driver = ArturiaRotoDriver(profile: .keyLabMk3)
+        driver.asksForNames = asks
+        _ = driver.fromDevice(.message(.pluginMode), now: 0)
+        return driver
+    }
+
+    func testTheMk3sFormat() {
+        var driver = mk3DriverInPluginMode()
+        XCTAssertEqual(driver.pages[0][0], ArturiaRotoControl(controller: 74, item: 0, name: "Macro 1"))
+        XCTAssertEqual(driver.pages[1][0], ArturiaRotoControl(controller: 17, item: 8, name: "Volume"))
+        // A value, then the preset: the instrument is known by the preset screen's picture.
+        XCTAssertEqual(driver.fromInstrument(mk3Value(4, 64), now: 1).toDevice,
+                       [rename(5, "Param 1"), .knob(4, position: ArturiaRotoDriver.position(forValue: 64)), show(4, "50%")])
+        let preset = driver.fromInstrument(mk3Preset("Hang Me Some Melodies*", "Bells"), now: 2).toDevice
+        XCTAssertEqual(driver.instrumentName, "Pigments")
+        XCTAssertEqual(driver.presetName, "Hang Me Some Melodies")
+        XCTAssertEqual(driver.presetKind, "Bells")
+        XCTAssertFalse(driver.hostIsAnalogLab)
+        XCTAssertEqual(preset.last, .message(.currentTrackName("Hang Me Some Melodies")))
+        // A turn: the control change to the instrument, and the value for a keyboard's knob.
+        let turned = driver.fromDevice(.control(.knob(4, position: ArturiaRotoDriver.position(forValue: 80))), now: 3)
+        XCTAssertEqual(turned.toInstrument, [[0xB0, 93, 80]])
+        XCTAssertEqual(turned.toKeyboard, [mk3Value(4, 80)])
+        // The answer doesn't say which control: it is the last change with that value.
+        XCTAssertEqual(driver.fromInstrument(mk3Screen("F1 Cutoff", "1448 Hz", value: 80), now: 3.2).toDevice,
+                       [rename(5, "F1 Cutoff"), show(4, "1448 Hz")])
+        // A screen for a value nothing sent is left alone, as is one that comes a second late.
+        XCTAssertTrue(driver.fromInstrument(mk3Screen("Other", "1", value: 12), now: 3.3).isEmpty)
+        XCTAssertTrue(driver.fromInstrument(mk3Screen("Late", "2", value: 80), now: 4.5).isEmpty)
+        XCTAssertEqual(driver.name(forItem: 4), "F1 Cutoff")
+        // Analog Lab V: its id.
+        _ = driver.fromInstrument(mk3Preset("Fiber Lines", "Poly Lead", picture: 22, id: 1), now: 5)
+        XCTAssertTrue(driver.hostIsAnalogLab)
+        XCTAssertEqual(driver.instrumentName, "Augmented VOICES")
+    }
+
+    func testAskingForNames() {
+        var driver = mk3DriverInPluginMode(asks: true)
+        _ = driver.fromInstrument(mk3Value(0, 90) + mk3Value(1, 64), now: 1)
+        // Not before the delay.
+        XCTAssertTrue(driver.tick(now: 1.2).isEmpty)
+        // Knob 1's value again, then nothing more until it is answered or 0.4 s have passed.
+        XCTAssertEqual(driver.tick(now: 1.31).toInstrument, [[0xB0, 74, 90]])
+        XCTAssertTrue(driver.tick(now: 1.33).isEmpty)
+        // The answer names the knob, and shows no value text.
+        XCTAssertEqual(driver.fromInstrument(mk3Screen("Color", "0.709", value: 90), now: 1.35).toDevice, [rename(1, "Color")])
+        XCTAssertTrue(driver.fromInstrument(mk3Screen("Color", "0.709", value: 90) + mk3Screen("Color", "0.709", value: 90), now: 1.4).isEmpty)
+        // Knob 2 next; unanswered, it is given up after 0.4 s and not asked again.
+        XCTAssertEqual(driver.tick(now: 1.42).toInstrument, [[0xB0, 71, 64]])
+        XCTAssertTrue(driver.tick(now: 1.7).isEmpty)
+        XCTAssertTrue(driver.tick(now: 1.85).isEmpty)
+        XCTAssertTrue(driver.tick(now: 3).isEmpty)
+        // A new preset drops the names and sets the asking off again; a knob being turned puts it off.
+        _ = driver.fromInstrument(mk3Preset("One", "Pad", picture: 22, id: 1), now: 4)
+        _ = driver.fromInstrument(mk3Preset("Two", "Pad", picture: 22, id: 1), now: 5)
+        XCTAssertNil(driver.name(forItem: 0))
+        _ = driver.fromDevice(.control(.knob(7, position: 0)), now: 5.3)
+        XCTAssertTrue(driver.tick(now: 5.4).toInstrument.isEmpty)
+        XCTAssertEqual(driver.tick(now: 5.9).toInstrument, [[0xB0, 74, 90]])
+        // Turned off, nothing is asked.
+        var quiet = mk3DriverInPluginMode(asks: false)
+        _ = quiet.fromInstrument(mk3Value(0, 90), now: 1)
+        XCTAssertTrue(quiet.tick(now: 2).isEmpty)
+    }
+
+    func testAskingUnderTheMkIIsProfile() {
+        var driver = driverInPluginMode()
+        driver.asksForNames = true
+        _ = driver.fromDevice(.message(.macroPage(0)), now: 0)
+        _ = driver.fromInstrument(value(1, 90), now: 1)
+        XCTAssertEqual(driver.tick(now: 1.31).toInstrument, [[0xB0, 74, 90]])
+        XCTAssertEqual(driver.fromInstrument(controlText("Color", "0.709", controller: 74, value: 90), now: 1.35).toDevice, [rename(1, "Color")])
+        XCTAssertTrue(driver.tick(now: 2).isEmpty)
+    }
+
+    func testARelayedKeyboardsKnobMovesTheRotoControls() {
+        var driver = mk3DriverInPluginMode()
+        // Notes and other bytes are left alone; a control change of the profile is a new value.
+        XCTAssertTrue(driver.fromKeyboard([0x90, 60, 100, 0x80, 60, 0], now: 1).isEmpty)
+        XCTAssertTrue(driver.fromKeyboard([0xB0, 1, 64], now: 1.1).isEmpty)
+        XCTAssertEqual(driver.fromKeyboard([0xB0, 74, 40], now: 2).toDevice,
+                       [rename(1, "Macro 1"), .knob(0, position: ArturiaRotoDriver.position(forValue: 40)), show(0, "31%")])
+        // The instrument's answer to the keyboard's change names the Roto-Control's knob too.
+        XCTAssertEqual(driver.fromInstrument(mk3Screen("Timbre", "0.315", value: 40), now: 2.2).toDevice,
+                       [rename(1, "Timbre"), show(0, "0.315")])
+        // A touch on the keyboard sends the same value again: nothing moves.
+        XCTAssertTrue(driver.fromKeyboard([0xB0, 74, 40], now: 3).isEmpty)
+    }
 }

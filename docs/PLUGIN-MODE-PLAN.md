@@ -16,6 +16,13 @@ Pigments and the Roto-Control in step both ways (`docs/ROTO-CONTROL.md`, test 15
 `docs/ARTURIA.md`, test 2). One run each; parts of R2 and of the Pigments run rest on what Adam
 saw, since their logs were not kept whole. R3 (Logic) and A1–A6 are not done.
 
+**Later the same day.** On the KeyLab mkII's profile the Roto-Control showed the instruments' own
+names and value text (`docs/ARTURIA.md`, test 7). Then test 8 changed the design: Adam uses a
+real KeyLab mk3 beside the Roto-Control, and an instrument talks to one controller at a time, so
+the driver has to sit between the keyboard and the instrument, in the mk3's format (section 6,
+"Beside a real KeyLab mk3"). Built, with names read from Pigments' files and asked of the
+instrument elsewhere; none of that has run with the devices (A8–A12).
+
 ## 1. The aim
 
 Adam, 2026-11-13: MIX mode stays on TotalMix FX. A quick switch to PLUGIN mode on the device puts
@@ -186,6 +193,29 @@ them:
   the plugin interface, where Adam has seen Analog Lab V's parameters renamed per preset and the
   single instruments' not (which DAW integration, he did not say). None of the above has been tried with a plugin.
 
+### Beside a real KeyLab mk3 (Adam, 2026-11-14)
+
+Adam needs his KeyLab 61 mk3 and the Roto-Control at once. An instrument talks to one controller
+at a time (`docs/ARTURIA.md`, test 8), so, as with Bitwig, there is one owner in the middle:
+
+- `sbdev arturia --keyboard "KeyLab 61 mk3 MIDI"` opens the keyboard's port and publishes "KeyLab
+  88 mk3 MIDI" for the instrument, where the user checks it and unchecks the keyboard's own port.
+- Everything passes both ways untouched, the keyboard's bytes before anything else is done with
+  them; `status` prints how long they spent in the tool, the part of the delay it can measure.
+- The driver reads the same stream in the mk3's format (`ArturiaMk3Message`): values, the preset,
+  and the name and value screen that follows a control change. That screen doesn't say which
+  control it is about, so it is taken for the newest control change sent with its value.
+- A knob moved on the keyboard moves the Roto-Control's; a knob moved on the Roto-Control is sent
+  to the keyboard as a value in the instrument's own format, so that the keyboard's knob follows
+  (untested: a guess at what the keyboard accepts).
+- When the tool starts or stops, the instrument's port has to be checked again by hand.
+- Names: from the instrument's files where they are read (Pigments), which changes nothing in
+  the instrument; elsewhere, including Analog Lab V, by asking as the keyboard's touch does,
+  which moves a parameter by up to one 7-bit step and marks the preset as changed (Adam's choice
+  of the two, 2026-11-14; `--no-ask` turns the asking off).
+- The mk3's format doesn't name the instrument. The driver knows three by a number in the preset's
+  screen (Pigments, Augmented VOICES, Memory V); others show as "Arturia" and get no files.
+
 ## 7. Tests, in order
 
 Arturia (each a few minutes with `sbdev vport`):
@@ -205,6 +235,12 @@ Arturia (each a few minutes with `sbdev vport`):
   "Hanging Threads", knobs 1–8 should read Timbre, Time, Inharmonicit, Delay, F1 Cutoff, F1
   Resonance, F2 Cutoff, and F2 Resonance before any is turned, and with the "Welcome" template
   Timbre, Time, Unison, and Reverb.**
+- **A11.** The relay with Pigments: the keyboard's picture, screen, and touch as without the tool;
+  names on the Roto-Control from the files before any turn; a knob turned on each device moves
+  the other, and a touch on the keyboard afterward doesn't jump the value back; notes play, with
+  `status` giving the time in the tool; the value-text flash fix and names kept across presets.
+- **A12.** The relay with Analog Lab V: the asking names all eight knobs after a preset loads, one
+  at a time, with no value text flashing; what it does to the preset.
 - **A10.** Analog Lab V: do a preset's first four controls follow its file's macro labels, in
   order (`docs/ARTURIA.md`, section 5, item 11)? Until then no files are read for it.
 - **A8.** The preset-file lookup for macro labels: a second instrument, a user preset, and two
