@@ -58,13 +58,15 @@ words ("inference", "untested").
     rechecked since test 12.
 [^test-15]: [Test 15](#test-15-2026-11-14-a-macro-plugin-and-a-relay-to-bitwig-studio)
     (2026-11-14), section 9; firmware 3.3.0.
+[^test-16]: [Test 16](#test-16-2026-11-14-arturias-plugins-in-bitwig-studio-through-the-relay)
+    (2026-11-14), section 9; firmware 3.3.0.
 [^totalmix-test-5]: Test 5 (2026-10-28) of the TotalMix FX tests,
     [docs/TOTALMIX-OSC.md](TOTALMIX-OSC.md#test-5-2026-10-28-does-totalmix-fx-echo-a-command),
     section 6.
 [^totalmix-meters]: [docs/TOTALMIX-OSC.md](TOTALMIX-OSC.md#3-addresses-this-project-uses),
     section 3, "Meter colors".
 
-**Status.** Fourteen tests so far (section 9), with firmware 3.3.0. Section 8 lists what is still
+**Status.** Sixteen tests so far (section 9), with firmware 3.3.0. Section 8 lists what is still
 open.
 
 ## 1. Two interfaces
@@ -311,7 +313,7 @@ bits is from Bitwig's and Logic's code.[^bitwig][^logic] The rest:
 - **Unchanged values.** Bitwig does not resend a knob position it last sent, except that it resends all eight positions when it switches layers or modes.[^bitwig]
 - **Value text lasts about 2 seconds** on the screen before the name comes back, as the user timed it.[^test-2] It shows on a knob's screen in MIX and PLUGIN modes. On a switch's screen it showed nothing, in either mode, so a switch's state can be shown only by its light and label (seen).[^test-3]
 - **Value text.** Ableton sends SHOW CONTROL VALUE whenever a mapped parameter's value changes, from the knob or from Live, at most 12 times a second with one trailing update, and once when a knob is touched.[^ableton] Bitwig sends value text only in PLUGIN mode, within 100 ms (plugin parameters) or 300 ms (macro parameters) of the knob last moving; in MIX mode it sends none.[^bitwig]
-- **Bitwig's command for value text.** Bitwig sends value text as `0A 0F`, the number the SysEx doc gives REQUEST ROTO SYSEX API VERSION, with the same layout as SHOW CONTROL VALUE.[^bitwig][^sysex-1.6] The inference is that `0A 0F` is an older form, from before SHOW CONTROL VALUE was documented. `RotoControl` sends `0A 18`, as Ableton and Logic do.[^ableton][^logic]
+- **Bitwig's command for value text.** The Bitwig extension Adam runs sent value text as `0A 18` (test 16).[^test-16] The published code sends it as `0A 0F`, the number the SysEx doc gives REQUEST ROTO SYSEX API VERSION, with the same layout as SHOW CONTROL VALUE.[^bitwig][^sysex-1.6] The inference is that `0A 0F` is an older form, from before SHOW CONTROL VALUE was documented. `RotoControl` sends `0A 18`, as Ableton and Logic do.[^ableton][^logic]
 - **Hold-off for the motors.** Bitwig holds back a knob position for 100 ms after the knob last moved on its master and return layer, and has the same rule commented out on its track layer. While touch automation is on, it also ignores the knob for 500 ms after release, and it queues knob positions while it switches modes.[^bitwig] Ableton leaves knob feedback to Live's framework, so its rule is not visible in the integration.[^ableton] Performance Bridge will need its own rule, because TotalMix FX confirms nothing[^totalmix-test-5]: a position from TotalMix FX is a change made elsewhere. The planned rule, an inference, was to hold back positions for a knob while it is touched; test 1 shows a knob turning before its touch CC, so the rule will also have to count recent movement. Test 3 adds that touches often failed to register at all (seen; a double tap sent nothing), so movement is the more reliable sign. Melbourne Instruments removed the touch-sensitivity setting in 2.1.0.[^release-notes]
 
 ## 7. Errata in the SysEx doc
@@ -357,14 +359,21 @@ and step names.
    TRACK, or the track page's TRACK DETAILS for the selected track? `sbdev roto` can send each
    by itself in PLUGIN mode. SET CURRENT TRACK NAME has filled it in three runs of four
    (`docs/ARTURIA.md`, tests 2 and 7); why not in the other is the open part.
-8. **What Bitwig sends for its remote controls** (test 15). The knob names appeared only once
-   Show Remote Controls was on in Bitwig Studio. The plugin had been sent as an ordinary one
-   (type `00`) when it was added, and what was sent after that was not logged. Whether they came as answers to CONTROL MAPPED
-   for mappings stored earlier, or another way, is open; repeat test 15's run 2 with the whole log
-   kept.
+8. **What Bitwig sends for its remote controls.** Answered by test 16: with Show Remote Controls
+   on, Bitwig's integration sends the plugin as a macro plugin (type `01`, under one fixed plugin
+   hash for every plugin) and answers each CONTROL MAPPED with LEARN PARAM.
 9. **Does a macro plugin need stored mappings?** (test 15, run 1). Offer a macro plugin (type
    `01`) under a plugin hash the device has never been sent, and see whether CONTROL MAPPED still
    comes for all eight knobs.
+10. **Bitwig and learned mappings** (test 16). With Show Remote Controls off, the Roto-Control
+    sent CONTROL MAPPED for mappings it had stored (three sets, 20 messages), and Bitwig's
+    integration answered none of them with LEARN PARAM; the knobs showed the names stored with
+    the mappings. Why it didn't answer is open (its code is written to answer); whether those
+    knobs moved their parameters was not tried. Bitwig's controller script console would show
+    the integration's own messages.
+11. **A name change that may not arrive** (test 16). A preset change in Analog Lab V sent new
+    names for knobs 1–3 and none for knob 4, twice. Whether knob 4's name had changed the first
+    time was not noted.
 
 ## 9. Tests
 
@@ -825,3 +834,96 @@ answering CONTROL MAPPED, with no learning step in this run (section 4a, with it
 One program can own the device and hand
 PLUGIN mode, and the transport switches, to Bitwig's integration through a virtual port. Still
 open: section 8, items 7 and 8, and a repeat of run 2 with the whole log kept.
+
+### Test 16 (2026-11-14): Arturia's plugins in Bitwig Studio, through the relay
+
+**Setup.** Adam's Roto-Control (firmware 3.3.0), `sbdev relay --device "Roto-Control"` on branch
+`vport-probe` at `a47c2e0`, and Bitwig Studio 6.1.4 (extension API 25) with Melbourne
+Instruments' controller extension, its two ports set to "PB Roto Relay" (seen), and Takeover
+mode "Catch" (seen). Pigments and Analog Lab V as plugins (the plugin format was not noted), and
+a KeyLab 61 mk3 on Bitwig's own "Arturia KeyLab Mk3" controller. Which build of the extension
+is installed was not checked. These are tests B1 and B2 of `docs/PLUGIN-MODE-PLAN.md`, and the
+start of B3. One log, kept whole (0–1528.7 s, 1,890 messages); the counts below come from a
+script over it, and Adam's notes are marked "seen".
+
+**Starting.** The relay ran the handshake itself (twice: the device sent PING DAW again at
+47.8 s) and reported PLUGIN mode. When Bitwig's ports were changed, the extension's DAW STARTED
+reached the relay (50.899 s) and was dropped; the relay sent it SET PLUGIN MODE, and the
+extension's first message followed 11 ms later, 63 messages in the first 0.1 s. The same
+happened once more, at 1205.8 s; what made the extension start again then was not noted.
+
+**Show Remote Controls off: an ordinary plugin, and mappings stored on the device.**
+
+- Bitwig sent PLUGIN DETAILS with type `00` and a plugin hash that is SHA-1 of the plugin's
+  name ("Pigments", "Analog Lab V"), 8 bytes, each masked to 7 bits.
+- The Roto-Control answered with CONTROL MAPPED for mappings it had stored, none with the macro
+  flag: for Pigments, parameters 1–4 on knobs 1–4; for Analog Lab V, parameters 2, 4, 6, 8, 88,
+  149, 210, and 219 on knobs 1–8 (twice). For parameters 1, 2, 3, 4, 6, and 8 the hash is SHA-1 of
+  "CONTENTS/PID" and the number, 6 bytes masked the same way, so such a parameter has one hash
+  under every plugin; the other four's hashes are not that (their IDs in Bitwig are not known). When these mappings were
+  learned is not known.
+- Bitwig sent no LEARN PARAM in answer to any of the 20 (all 92 LEARN PARAM messages of the run
+  carried the macro flag). The knobs still showed names (seen): "Macro 1" to "Macro 4" for
+  Pigments, with knobs 5–8 blank, and for Analog Lab V "P1 Timbre", "P1 Pan", "P1 Time", "P1
+  Presence", "FXA Dry/Wet", "FXB Dry/Wet", "Delay Volume", "Reverb Volum", whichever preset was
+  loaded. The inference is that the device shows the name stored with each mapping when the
+  host doesn't answer. Whether the knobs moved the parameters in this state was not tried.
+
+**Show Remote Controls on: a macro plugin.**
+
+- Bitwig sent PLUGIN DETAILS with type `01`, the page count (2 for both plugins), and one fixed
+  plugin hash for both plugins (SHA-1 of "MIMacroDefaultDevice").
+- The Roto-Control sent CONTROL MAPPED for knobs 1–8 with the macro flag and the hashes of test
+  15, eight sets in all, after a plugin was selected and after each page change (MACRO PLUGIN
+  PAGE INDEX, four times). Bitwig answered seven sets with eight LEARN PARAM messages each
+  (117 ms later the first time); the eighth set (1193.6 s) came 0.3 s after Bitwig had sent its names
+  unasked, and drew none.
+- **Pigments' names** (sent, and seen): page 1 "Macro 1" to "Macro 4", "Env Amp Atta", "Env Amp
+  Deca", "Env Amp Sust", "Env Amp Rele"; page 2 "Env Amp Atta", "Env Amp Deca", "Env Amp Rele",
+  "Env Amp Mode", "Env 2 Attack", "Env 2 Decay", "Env 2 Sustai", "Env 2 Releas". The preset
+  ("Welcome") labels its macros Timbre, Time, Unison, and Reverb (seen in the plugin's window),
+  so Pigments gives its host the macros' fixed names. The names are cut at 12 characters, and
+  three of page 2's read the same as page 1's; the inference is that they are the envelope's
+  curve parameters. Bitwig's device panel showed "init", not the preset's name (seen).
+- **Analog Lab V's names** follow the preset: "P1 Color", "P1 Morph", "P1 Time", "P1 Motion",
+  "FXA Dry/Wet", "FXB Dry/Wet", "Delay Volume", "Reverb Volum" with a preset whose macros read
+  Color, Morph, Time, and Motion, and "P1 Cutoff", "P1 Distort", "P1 Resonator", "P1 FX" with one
+  that reads Cutoff, Distort, Resonator, and FX (seen in both places).
+- **A preset change** made Bitwig send UNMAP CONTROL for all eight knobs and 36 LEARN PARAM
+  messages within 3 ms, carrying the previous preset's names (1193.3 s). Twice later it sent the
+  message its code builds for a changed name (`0B 0F`, with the knob, its hash, and the name;
+  not in section 4a's table) for knobs 1–3 only: "P1 Brightnes", "P1 Timbre", "P1 Time", and
+  then "P1 Cutoff", "P1 Distort", "P1 Timbre". After the second, the plugin's macros read Cutoff,
+  Distort, Timbre, and FX (seen). No name came for knob 4 either time (section 8, item 11).
+
+**Values.**
+
+- **From the knob.** Knob 5 (Pigments' amp envelope attack) sent 20 positions from 1215 to 1934
+  of 16383, the smallest move 12 units, and each changed the parameter: Bitwig's value text
+  (SHOW CONTROL VALUE, `0A 18`, 15 messages) read 0.605, 0.691, 0.727, 0.755, 1.00, 1.09, 1.21,
+  1.33, 1.47, 2.03, 2.90, 3.62, and 3.88 (ms), and the plugin's window showed 0.75, 1.47, 2.03,
+  2.90, and 3.88 at the times Adam read it. A 7-bit step is 129 units.
+- **To the knob.** While the parameter was dragged in the plugin's window, Bitwig sent knob 5
+  positions a median of 24 ms apart (407 over the whole run), and the knob followed smoothly with no
+  lag noticed (seen).
+- **Echoes.** Of the 27 positions the device sent, Bitwig sent 5 back unchanged within 0.1 s.
+  Nothing was seen to come of it.
+
+**The KeyLab mk3 beside it** (the start of B3). With Analog Lab V selected and Show Remote
+Controls on, the keyboard's encoder 1 moved the plugin's first macro and the keyboard's screen
+showed "Cutoff 0.307" (seen), but Bitwig sent the Roto-Control nothing for knob 1 between the preset change at
+1425.3 s and 1523.0 s, and the knob did not move (seen). On a second turn Bitwig's panel knob jumped
+and then followed (seen), and Bitwig sent knob 1 124 positions in 5.7 s. Whether the knob moved
+then was not noted. The inference is that the first turn changed the macro inside the plugin
+without Bitwig being told; what differed the second time is open.
+
+**The extension that ran is not the published code.** Every value text came as SHOW CONTROL
+VALUE (`0A 18`); the extension's code in roto_control (commit 2d43a72, the newest there on
+2026-11-14) builds `0A 0F` in the three places it sends value text, and `sbdev relay` passes
+such messages unchanged. So the extension installed with Adam's Bitwig Studio 6.1.4 was built
+from other code than was read for this project, and where this record says what "its code"
+does, the code is the published one. Where the installed one comes from was not checked.
+
+**Consequences.** In Bitwig, the knobs work at their full 14 bits in both directions, with the
+host's value text. Names are the plugin's parameter names as the host has them: per preset for
+Analog Lab V, fixed for Pigments, and cut at 12 characters. Section 8, items 10 and 11, are new.

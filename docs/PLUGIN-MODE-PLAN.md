@@ -32,6 +32,11 @@ Lab V as plugins in Bitwig Studio through the existing relay (B1–B3 in section
 gives finer values and names as good, it is the main path, and the standalone relay is for
 playing without a DAW.
 
+**The Bitwig tests** (2026-11-14, evening; `docs/ROTO-CONTROL.md`, test 16). B1 and B2 ran, and B3
+began. Through Bitwig the knobs work at 14 bits both ways with the host's value text, and Analog
+Lab V's per-preset labels arrive; Pigments' macros arrive as "Macro 1" to "Macro 4", and names
+are cut at 12 characters. Section 10 has what follows from that, for review.
+
 ## 1. The aim
 
 Adam, 2026-11-13: MIX mode stays on TotalMix FX. A quick switch to PLUGIN mode on the device puts
@@ -274,10 +279,18 @@ Arturia (each a few minutes with `sbdev vport`):
   eight knobs are named (the preset's labels, "Macro 1", or nothing), with and without Show Remote
   Controls; whether a slow turn moves the parameter in finer steps than 1/127 (the plugin's
   window, or Bitwig's value); whether a change in the plugin's window moves the knob smoothly.
+  **Run (test 16): "Macro 1" to "Macro 4" either way, and with Show Remote Controls four more
+  parameters a page, cut at 12 characters; moves of 12 units of 16383 each changed the
+  parameter; the knob followed the window smoothly.**
 - **B2.** The same with Analog Lab V as a plugin: do its per-preset labels reach the Roto-Control,
-  and when?
+  and when? **Run (test 16): yes, with Show Remote Controls on, as "P1 Color" and so on; without
+  it the device showed names stored with old mappings. After a preset change, names came for
+  knobs 1–3 and not for knob 4, twice; open.**
 - **B3.** The KeyLab 61 mk3 beside it in Bitwig, on its own ports and integration: do both work at
-  once with no relay between them, and what does the keyboard's screen show?
+  once with no relay between them, and what does the keyboard's screen show? **Begun (test 16):
+  the keyboard moved the plugin's macro and showed its name and value; the Roto-Control's knob
+  did not follow the first turn, and Bitwig sent it positions on the second. To finish: does the
+  knob follow, every time, and does a knob turned on the Roto-Control show on the keyboard?**
 - **A11.** The relay with Pigments: the keyboard's picture, screen, and touch as without the tool;
   names on the Roto-Control from the files before any turn; a knob turned on each device moves
   the other, and a touch on the keyboard afterward doesn't jump the value back; notes play, with
@@ -333,6 +346,8 @@ instrument, with values marked unknown until the instrument reports them. Its fi
 5. Before more work on the standalone path: B1–B3, which say whether Bitwig is the better home
    for these instruments (Adam, 2026-11-14).
 
+6. The review of section 10's questions with Adam, before choosing among them.
+
 Each step merges only after the review its tier calls for; until then it lives on a test branch.
 
 ## 9. For `docs/ROTO-CONTROL.md`, once checked
@@ -350,3 +365,64 @@ readings, to be added with their source once a second reader or a test has confi
 - an erratum in the serial API document: ADD PLUGIN's command is printed with SET PLUGIN's bytes;
 - an apparent bug in Bitwig's integration, not to be copied: it unmaps a macro knob with control
   type `01`, which the SysEx doc gives to switches.
+
+## 10. After the Bitwig tests: for review (Adam, 2026-11-14)
+
+Nothing here is decided. Adam raised the questions; the answers are Claude's first reading, and
+each "inference" or "guess" is marked.
+
+**Three routes to an instrument's parameters**, cheapest first:
+
+1. **Bitwig's own integration, improved** (below). Test 16 shows it already gives full
+   resolution, value text, and Analog Lab V's labels. Performance Bridge's part stays the relay:
+   MIX mode on TotalMix FX, PLUGIN mode to the DAW.
+2. **The standalone path** (section 6), for playing with no DAW, with its limits: 7 bits, the
+   start order, and writing to learn names in Analog Lab V.
+3. **Performance Bridge, or a helper, as a plugin host.** It would get what any host gets (full
+   resolution, every parameter, any maker's instruments, no imitation of a keyboard), but not
+   Pigments' preset labels, which Pigments doesn't give its host (test 16). It would also own
+   the audio: the device, buffer, and sample rate, MIDI from the keyboard, plugin windows and
+   state, and a plugin's crash on stage. That makes the app a small live host, a role
+   MainStage, Gig Performer, and Bitwig already fill. Audio Units through Apple's own classes
+   would be the lightest form on a Mac (a guess at the size: a few hundred lines; not checked).
+
+**What the standalone work is good for besides.**
+
+- The preset-file readers are the only source found for Pigments' macro labels, in any host.
+  Missing for that: which preset a hosted Pigments has loaded (Bitwig showed "init").
+- `RotoNameFit` applies wherever names go to a 12-character field.
+- The KeyLab mk3 as a hardware controller for TotalMix FX: its screen and controls take names,
+  value text, and values (`docs/ARTURIA.md`, test 9). An inference; the keyboard's modes and
+  sharing its port with an instrument are untested.
+- Listening without writing: the relay sees the preset's name and each control's name and value.
+- The driver's shape (a macro plugin made from a MIDI source, with holds and stale answers
+  ignored) for hardware synthesizers in PLUGIN mode, with NRPN where a synthesizer has it.
+
+**Questions these raise.**
+
+1. Which matters most: playing with no DAW, or in one?
+2. Does another plugin format give the host Pigments' macro labels? (Test 16's was not noted.)
+3. Does a plugin always tell its host when the keyboard moves a control? (B3, unfinished.)
+4. Can a standalone instrument be controlled at more than 7 bits at all (14-bit control changes
+   or NRPN through MIDI learn)? Unknown; if so, the standalone path loses its largest limit.
+5. How does a host learn which preset a plugin has loaded?
+6. Is Performance Bridge in the audio path acceptable on stage?
+
+**Improving Melbourne Instruments' Bitwig integration** (Adam, 2026-11-14). Its code is
+MIT-licensed. One pull request with every improvement, prepared once each is understood and
+tested, and opened on Adam's word. What test 16 suggests:
+
+1. **Names fitted, not cut**, a page at a time, so that different parameters keep different
+   names. Drafted against the published code (commit 2d43a72) and built with its tests; kept
+   outside this repository; not run in Bitwig.
+2. **Stored names when Show Remote Controls is off** (`docs/ROTO-CONTROL.md`, section 8, item
+   10). The cause is not found.
+3. **A name change that may not arrive** after a preset change (item 11).
+4. **The position sent back** to a knob that just sent it. Looks harmless.
+5. Whatever B3 finds.
+
+Before any of it: **the extension Adam runs was not built from the published code** (test 16:
+it sends `0A 18` where the published code sends `0A 0F`). So the first step is to find where
+the installed one comes from and whether newer source is public; a change made to old code
+may already be made, or may not apply. Also to read first: the repository's issues and pull
+requests, for how outside changes are received. It has no contribution guide.
