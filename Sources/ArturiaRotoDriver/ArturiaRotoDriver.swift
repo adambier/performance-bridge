@@ -226,6 +226,12 @@ public struct ArturiaRotoDriver: Sendable {
     /// How long after an answer the next knob is asked, so that the answer's copies have come.
     public static let askGapSeconds: TimeInterval = 0.2
 
+    /// The items whose values have been reported since the preset last changed. Only these are
+    /// asked: a value from the preset before, sent back to the instrument, would set the new
+    /// preset's parameter to it (seen in test A12, where Analog Lab V reported the new preset's
+    /// values 0.46 s after its name, and an earlier asking set a macro from 23 to 0).
+    private var freshItems: Set<Int> = []
+
     /// Sets the asking off again, a moment from now.
     private mutating func askSoon(_ now: TimeInterval) {
         asked = []
@@ -508,7 +514,12 @@ public struct ArturiaRotoDriver: Sendable {
     /// Roto-Control's knob), rather than showing a percentage meanwhile (seen in test A11).
     private mutating func instrumentValue(item: Int, value: Int, now: TimeInterval, awaitsText: Bool = false) -> [ArturiaRotoDeviceMessage] {
         let wasUnknown = values[item] == nil
-        if wasUnknown, names[item] == nil { askSoon(now) }
+        if !freshItems.contains(item) || (wasUnknown && names[item] == nil) {
+            freshItems.insert(item)
+            // The asking waits until the instrument's values have stopped coming.
+            asked.subtract([item])
+            askDue = now + Self.askDelaySeconds
+        }
         values[item] = value
         guard isInPluginMode, let knob = knob(forItem: item), let control = control(knob) else { return [] }
         var messages: [ArturiaRotoDeviceMessage] = []
@@ -558,7 +569,9 @@ public struct ArturiaRotoDriver: Sendable {
                     instrumentText = [:]
                 }
                 messages += renames(since: before)
-                askSoon(now)
+                freshItems = []
+                asking = nil
+                askDue = nil
             }
             presetName = name
             presetKind = kind
@@ -696,6 +709,7 @@ public struct ArturiaRotoDriver: Sendable {
         }
         let wasUnknown = values[control.item] == nil
         values[control.item] = value
+        freshItems.insert(control.item)
         // The knob's own value is newer than one the instrument sent during the hold.
         heldBack[knob] = false
         var messages: [ArturiaRotoDeviceMessage] = wasUnknown ? [renamed(knob, control)] : []
@@ -760,6 +774,7 @@ public struct ArturiaRotoDriver: Sendable {
         guard !lastKnobMove.contains(where: { $0.map { now - $0 < 2 * Self.holdSeconds } ?? false }) else { return [] }
         for knob in 0..<8 {
             guard let control = control(knob), !asked.contains(control.item), names[control.item] == nil,
+                  freshItems.contains(control.item),
                   let value = values[control.item], let change = profile.controlChange(item: control.item, value: value) else { continue }
             asked.insert(control.item)
             asking = (control.item, now)

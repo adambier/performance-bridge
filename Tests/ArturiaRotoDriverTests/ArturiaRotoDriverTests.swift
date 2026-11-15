@@ -502,10 +502,12 @@ final class ArturiaRotoDriverTests: XCTestCase {
         XCTAssertTrue(driver.tick(now: 1.8).isEmpty)
         XCTAssertTrue(driver.tick(now: 1.97).isEmpty)
         XCTAssertTrue(driver.tick(now: 3).isEmpty)
-        // A new preset drops the names and sets the asking off again; a knob being turned puts it off.
+        // A new preset drops the names; its values set the asking off again; a knob being turned
+        // puts it off.
         _ = driver.fromInstrument(mk3Preset("One", "Pad", picture: 22, id: 1), now: 4)
         _ = driver.fromInstrument(mk3Preset("Two", "Pad", picture: 22, id: 1), now: 5)
         XCTAssertNil(driver.name(forItem: 0))
+        _ = driver.fromInstrument(mk3Value(0, 90, id: 1), now: 5.1)
         _ = driver.fromDevice(.control(.knob(7, position: 0)), now: 5.3)
         XCTAssertTrue(driver.tick(now: 5.4).toInstrument.isEmpty)
         XCTAssertEqual(driver.tick(now: 5.9).toInstrument, [[0xB0, 74, 90]])
@@ -605,5 +607,20 @@ final class ArturiaRotoDriverTests: XCTestCase {
         // An unknown value's "?" counts toward the 12 characters.
         _ = driver.setParameterNames([93: "F1 Resonance"])
         XCTAssertEqual(driver.fromDevice(.message(.macroPage(0)), now: 3).toDevice[4], learn(5, "F1 Res?", 0))
+    }
+
+    func testAfterAPresetChangeOnlyTheNewPresetsValuesAreAsked() {
+        var driver = mk3DriverInPluginMode(asks: true)
+        _ = driver.fromInstrument(mk3Preset("One Blink", "Arpeggio", picture: 31, id: 1), now: 0)
+        _ = driver.fromInstrument(mk3Value(0, 0, id: 1), now: 0.1)
+        _ = driver.tick(now: 0.41)
+        _ = driver.fromInstrument(mk3Screen("Brightness", "0.00", value: 0, id: 1), now: 0.45)
+        // A new preset: nothing is asked until its values come, and then not the old value.
+        _ = driver.fromInstrument(mk3Preset("One Complete Revolution", "Atmosphere", picture: 54, id: 1), now: 10)
+        XCTAssertTrue(driver.tick(now: 10.35).toInstrument.isEmpty)
+        XCTAssertTrue(driver.tick(now: 10.4).toInstrument.isEmpty)
+        _ = driver.fromInstrument(mk3Value(0, 23, id: 1) + mk3Value(1, 64, id: 1), now: 10.46)
+        XCTAssertTrue(driver.tick(now: 10.7).toInstrument.isEmpty, "the values may still be coming")
+        XCTAssertEqual(driver.tick(now: 10.77).toInstrument, [[0xB0, 74, 23]])
     }
 }
