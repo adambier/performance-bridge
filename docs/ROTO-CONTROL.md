@@ -1160,8 +1160,28 @@ showed is from Adam's screenshots ("seen").
   time, and before each the knobs already named were taught again, with "UnknownParam" for the
   next: 44 messages in 3 ms. Tests 17 and 18's logs have no "UnknownParam".
 
-**Not run.** Pigments, and so the joined words on a device.
+**A second run, half an hour later** (the relay started again; a second log of 389 lines, read
+the same way).
 
-**Consequences.** The page count's change works. Dropping "P1" works for a preset of one part,
-and part 2's names told the one Multi tried; one preset of each kind. Adam's notes from the
+- **Pigments.** Bitwig gave two pages. The first: "Macro 1" to "Macro 4", "Env Amp Atk", "Env
+  Amp Dec", "Env Amp Sus", "Env Amp Rel". The second, after the Roto-Control's page button
+  (71.7 s): "EnvAmpAtkCrv", "EnvAmpDecCrv", "EnvAmpRelLnk", "Env Amp Mode", "Env 2 Attack", "Env 2
+  Decay", "Env 2 Sus", "Env 2 Rel". Adam could read the three joined names on the device at
+  playing distance (seen). A name that fits is whole beside one that doesn't ("Env 2 Decay",
+  "Env 2 Sus").
+- **A second Multi** ("Breathe Intro"). With Show Remote Controls on (225.1 s), the knobs were
+  taught "P1 Heart", "P1 Scream", "P1 Wind", "P1 Reverb", and the four FX and volume names: the
+  "P1" kept. In test 18 the same four words were this Multi's own macros, so here part 1's
+  macros and the Multi's have the same names.
+- **A preset of one part after it** (which one was not recorded). At 347.717 s knobs 1 to 4
+  were sent "P1 Frequency", "P1 Time", "P1 Timbre", "P1 Mouvement", and 1 ms later "Frequency",
+  "Time", "Timbre", "Mouvement": the test for a Multi fell back as part 2's names left.
+- **The plugin's name.** The Roto-Control's menu screen read "Analog Lab V" twice, with no
+  preset's name (seen). Bitwig's device panel shows its own preset, "init" (test 19's first
+  screenshot); that Bitwig has no other name to give is an inference.
+
+**Consequences.** The page count's change works. The joined words split, and read well on the
+device. Dropping "P1" works for a preset of one part, and part 2's names told a Multi each
+time: two Multis and two presets of one part, with the names wrong for 6 ms or less at a
+change. Adam's notes from the
 session, on Show Remote Controls and new projects, are in `docs/PLUGIN-MODE-PLAN.md`, section 10.

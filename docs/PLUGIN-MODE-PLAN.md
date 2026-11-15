@@ -518,8 +518,8 @@ and how. What test 16 suggests:
    (The "Curve" name is an inference from test 16's cut names.) Kept outside this repository
    as a commit on the fork's `e0cd9eb`, now with joined words split (item 8) and five tests,
    which pass. A build with it (the fifth) ran in Bitwig with Analog Lab V (`docs/ROTO-CONTROL.md`,
-   test 19): "Delay Volume" whole and "Reverb Vol". Pigments' pages are still not checked on
-   the device. Over the survey's 34,320 names (`docs/ARTURIA.md`, test 11) it changes 8,745,
+   test 19): "Delay Volume" whole and "Reverb Vol", and with Pigments' two pages, where
+   "EnvAmpAtkCrv" and "EnvAmpRelLnk" could be read on the device. Over the survey's 34,320 names (`docs/ARTURIA.md`, test 11) it changes 8,745,
    and the names that share their 12 characters with another of their plugin go from 26,324
    to 22,540. A later offer, if the author is receptive: where a cut
    leaves two names on a page the same, squeeze those two further.
@@ -565,7 +565,10 @@ and how. What test 16 suggests:
    touched, and the asking marked the preset as changed on the instrument's preset screen.
    Tried in a test build (test 19; not for a pull request as it stands): with a preset of
    one part the knobs read "Brightness", "Timbre", "Time", "Movement"; with a Multi the "P1"
-   stayed, told by part 2's names as above. One preset of each kind.
+   stayed, told by part 2's names as above. Two presets of each kind, of 30,802.
+   The Roto-Control's menu screen shows no preset's name with the plugin in Bitwig (test
+   19); the instrument does send it to a KeyLab (`docs/ARTURIA.md`, section 3), so the relay
+   could supply that as well as the effects' names. Not tried.
 8. **Two more changes to the names, from the survey** (`docs/ARTURIA.md`, test 11). Of 34,320
    parameters in 89 Arturia plugins, 92% have names longer than 12 characters and 77% share
    their first 12 with another parameter of their plugin.
