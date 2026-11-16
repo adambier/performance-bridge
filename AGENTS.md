@@ -17,7 +17,7 @@ statement there carries its evidence.
 | License | MIT (`LICENSE`); not affiliated with or endorsed by RME, Melbourne Instruments, OXI Instruments, or Novation |
 | Language, tooling | Swift, `swift-tools-version:5.9`; CI uses the `swift:6.0-noble` image on Linux, Swift 6.2 on Windows, and the runner's Xcode on macOS; XCTest |
 | App platform | macOS 13 or later (`platforms: [.macOS(.v13)]`); SwiftUI plus AppKit; no Xcode project; Sparkle 2 for updates |
-| Library platforms | macOS, Linux, and Windows (CI tests all three on every push and pull request) |
+| Library platforms | macOS, Linux, and Windows (CI tests all three on pushes to `main` and on pull requests; section 5) |
 | TotalMix FX checked | TotalMix FX "2.10 (1)" with a Digiface AES (tests 1–5 in `docs/TOTALMIX-OSC.md`); the second target is an HDSPe MADI FX |
 
 ## 2. Repository map
@@ -219,7 +219,7 @@ Don't:
 
 ## 5. How to verify
 
-- **CI: avoid it as much as possible** (Adam, 2026-11-16). CI (`.github/workflows/tests.yml`) runs on a push to `main` and on a pull request, unless the change touches only Markdown files, `docs/`, or `Design/`. Check locally first: the tests below and the one-module build on a Mac. Keep work on a branch with no pull request until it is ready. Put changes together so fewer pushes run CI. Ask the owner before opening a pull request or pushing a change to `main` that would run CI (Adam, 2026-11-04).
+- **CI** (Adam, 2026-11-16): avoid it as much as possible. CI (`.github/workflows/tests.yml`) runs on a push to `main` and on a pull request, unless the push (for a pull request, the whole pull request) changes only Markdown files, `docs/`, or `Design/`. Merging a pull request into `main` is a push to `main`, so CI runs again. Check locally first: the tests below and, on a Mac, the one-module build (`./make-app.sh debug`, or the `swiftc -typecheck` step in `tests.yml`). Keep work on a branch with no pull request until it is ready (a draft pull request runs CI too). Put changes together so fewer pushes run CI. Ask the owner before opening a pull request or pushing a change to `main` that would run CI (Adam, 2026-11-04).
 - **Tests on Linux and Windows:** `swift test`.
 - **Tests on a Mac:** `PERFORMANCE_BRIDGE_TESTS=1 swift test`. This needs full Xcode, because XCTest is not part of the Command Line Tools.
 - **Against TotalMix FX:**
