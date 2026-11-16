@@ -614,6 +614,17 @@ was tested and how. What test 16 suggests:
     - First tests, in order: does the plugin inside Bitwig answer a KeyLab's questions on a
       virtual port, with no keyboard; can one run of `sbdev` carry both relays (not checked);
       then the renaming.
+    - **The first of those, done** (`docs/ARTURIA.md`, test 12): yes. The parts, each seen
+      working by itself: Performance Bridge publishes a port with a KeyLab mk3's name before
+      the plugin loads, and the plugin takes it as its keyboard with nothing set; Bitwig has
+      that port as a generic controller, so that control changes sent on it reach the
+      plugin; the preset's name comes unasked; and a control's value sent again draws its
+      name ("Distortion Mix"). Still to build and try: passing the plugin's messages on to
+      the real keyboard at the same time, in one program with the Roto-Control's relay.
+    - What it would ask of a user: Performance Bridge running before the plugin loads (a
+      plugin loaded earlier stays on the real keyboard, and one that loses its port shows
+      nothing on the keyboard until it is loaded again), and one more controller in Bitwig's
+      settings, set once.
 11. **One app or two** (Adam and Claude, 2026-11-15; not decided). The relay is of use to
     someone with a Roto-Control, Arturia's instruments, and Bitwig, and no RME interface. But
     one program has to own the Roto-Control (section 2), and the relay already answers its

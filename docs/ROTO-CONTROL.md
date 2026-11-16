@@ -394,8 +394,12 @@ and step names.
 13. **A controller beside the Roto-Control** (test 17). What made Bitwig describe the plugin
     again at 343.6 s, as an ordinary plugin, is not known (the keyboard's change to its DAW
     program is a guess), nor why the keyboard's encoder then changed nothing in Bitwig until
-    the track and the plugin were clicked. To try: the keyboard's change of program, and a
-    click of its main encoder in Device mode, each with the relay's log running.
+    the track and the plugin were clicked. Tried later that day, with Pigments selected and
+    the relay's log running: a click of the keyboard's main encoder, in its DAW program and
+    Device mode, put the keyboard in its Arturia program (seen), and Adam changed it back.
+    The log (195 lines when read) has no message between Bitwig and the Roto-Control after
+    its first second. So the click changes the keyboard's program, and that change did not
+    make Bitwig describe the plugin again; the 343.6 s event is still not explained.
 14. **A changed page count** (test 18). Bitwig's extension did not tell the Roto-Control that a
     remote controls page had been added until another track was selected.[^test-18] Its code
     stores the new count and sends nothing (a reading of the fork at `e0cd9eb`). With a

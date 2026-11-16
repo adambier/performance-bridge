@@ -352,7 +352,10 @@ when the app quit, not when a preset loaded, so it can't say what is loaded now.
    in the plugin[^code], but a DAW has its own, better path to a plugin's parameters. With a
    KeyLab 61 mk3 in its Arturia program, Analog Lab V as a plugin in Bitwig Studio took the
    keyboard's encoder itself, and Bitwig was not told of the change (`docs/ROTO-CONTROL.md`,
-   test 17), which fits the reading.
+   test 17), which fits the reading. Test 12: yes, for Analog Lab V in Bitwig Studio, on a
+   port it finds by name, with its control changes coming through the DAW. Open: Pigments and
+   the single instruments as plugins, and a relay that also passes everything on to a real
+   keyboard, with the plugin in a DAW.
 8. Do Arturia's apps share their MIDI settings, and does that explain why the same step went
    differently from run to run (Adam, 2026-11-14)? Each instrument has settings files of its
    own (section 4), so not by a shared file; when an instrument reads and writes them, and so
@@ -806,3 +809,63 @@ These are counts from the lists, each plugin as it loads.
   names can come by the relay and not by a DAW.
 - The eight Augmented instruments, which have no parameter-name file (section 4), are covered
   here.
+
+### Test 12 (2026-11-15): Analog Lab V as a plugin in Bitwig Studio, and a virtual KeyLab mk3
+
+**Setup.** Adam's Mac; Bitwig Studio 6.1.4 with Analog Lab V 5.12.6 as a plugin on a track,
+preset "Classic Jun Keys"; his KeyLab 61 mk3 connected; no standalone Arturia app open (Adam);
+`sbdev vport "KeyLab 88 mk3 MIDI"` at `1a988c2`, in two runs. Two logs (102 and 98 lines), whole,
+kept outside this repository. What the windows and the keyboard showed is Adam's report and
+screenshots ("seen"). Hosted, the plugin's settings offer no choice of MIDI port (Adam).
+
+**First run** (the plugin added to the track after the port was published).
+
+- **It found the port by itself.** 35.9 s after the port was published, the plugin sent it
+  what the standalone app sends a KeyLab mk3 (test 6): the connect messages, the nine knob
+  values (item 0 at 28, where Bitwig showed "P1 Brightness" at 0.223), the knob screens, and
+  the preset screen with "Classic Jun Keys" and "Classic Synth Keys". Nothing in Bitwig or the
+  plugin had been set.
+- **A control change sent on the port drew nothing** (`item 4 0`, control change 93 with the
+  value the item stood at, 177.9 s).
+- **The real keyboard had lost the plugin.** In its Arturia program it showed no instrument, and
+  a click of its main encoder no longer changed its program (seen). When Adam changed its
+  program by hand, the plugin sent its knob and preset screens to the virtual port (321.4 s
+  and 322.8 s).
+- **Bitwig noticed the port**: "MIDI Input Connected: KeyLab 88 mk3 MIDI was just found", with
+  an "Add Controller" button (seen); closed unused.
+- **With the port removed**, the keyboard still showed no instrument, until the plugin was
+  deleted from the track and added again (seen).
+
+**Second run** (the port published with the plugin already loaded and on the real keyboard).
+
+- **A plugin already loaded stayed where it was.** Nothing came to the port, and the keyboard
+  went on showing "Classic Jun Keys" (seen).
+- **Through Bitwig, a control change reaches the plugin.** Adam added the port in Bitwig's
+  settings as a controller; Bitwig made it "Generic KeyLab 88 mk3 MIDI", with the port as its
+  input (seen). Then `item 4 64` moved the plugin's Distortion Mix knob, the fifth, to about
+  half (seen). So item 4 is the fifth knob here.
+- **The plugin on the real keyboard named nothing for it.** `item 4 64` again and `item 4 70`
+  showed nothing on the keyboard's screen (seen), though a turn of the keyboard's own
+  encoder 5 showed "Distortion Mix" (seen).
+- **The plugin on the virtual port answered.** With the plugin deleted and added again it
+  connected to the virtual port (457.4 s), and the keyboard read "Open an Arturia plugin"
+  (seen). `item 4 70` (517.7 s) drew, 54 ms later, an undecoded `03 0D 11 11 11 00` and a
+  screen with "55 %", "Distortion Mix", and the value 70, three times, and 2.0 s later the
+  preset screen and knob screens: as test 6's standalone answer. The same message again
+  (647.9 s), with the value unchanged, drew the same screen 53 ms later.
+- Afterward the controller was removed from Bitwig, the port closed, and the plugin added
+  again; the keyboard showed the preset (seen).
+
+**Consequences.**
+
+- A plugin chooses its KeyLab when it loads (an inference from three loads): the port
+  published last, if it has a KeyLab mk3's name. It does not look again when that port goes.
+- Hosted, the plugin writes to that port itself and takes control changes from the DAW, not
+  from the port (the first run's silence; an inference). And it answers with a name only on
+  the connection it has, for a control change that reaches it.
+- So a controller can ask the hosted plugin for a control's name, the effect's included, by
+  being its KeyLab and sending the control's value again through the DAW ("Asking for a name",
+  section 4, with its cost: the value is 7-bit). The preset's name comes unasked.
+- Not tried: passing the plugin's messages on to the real keyboard at the same time (test 9
+  did it for the standalone apps), Pigments or a single instrument as a plugin, another DAW,
+  and the plugin's other eight controls.
