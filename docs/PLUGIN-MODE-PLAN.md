@@ -621,6 +621,16 @@ was tested and how. What test 16 suggests:
       plugin; the preset's name comes unasked; and a control's value sent again draws its
       name ("Distortion Mix"). Still to build and try: passing the plugin's messages on to
       the real keyboard at the same time, in one program with the Roto-Control's relay.
+    - **Passing on to the real keyboard, done** (`docs/ARTURIA.md`, test 13), with `sbdev
+      arturia --keyboard` as the relay and Bitwig's extension idle: the keyboard kept its
+      screens, and the Roto-Control got the preset's name and the controls' names, effects
+      included, for Analog Lab V and for Pigments. What that leaves for the one program:
+      Bitwig's extension for the values and pages, with the names put into its messages;
+      asking only with a value the plugin has reported (asking with 0 set a control to 0);
+      and checking that the plugin took the relay's port, which it did in seven loads of
+      eight, and saying so when it did not.
+    - A guide for users has to explain the asterisk that asking leaves by a preset's name
+      (`docs/ARTURIA.md`, section 4).
     - What it would ask of a user: Performance Bridge running before the plugin loads (a
       plugin loaded earlier stays on the real keyboard, and one that loses its port shows
       nothing on the keyboard until it is loaded again), and one more controller in Bitwig's

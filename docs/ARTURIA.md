@@ -259,6 +259,15 @@ its preset held at 0.272 to 0.268 (34 of 127) and marking the preset as changed.
 asks this way for knobs it has no name for, where its host reads no files for the instrument
 (Adam, 2026-11-14).
 
+**Why a preset's name gets an asterisk.** The instruments mark a preset as changed, with an
+asterisk by its name, once any of its controls is set, even to the value it already had as
+nearly as 7 bits can say it. Asking for a name sends a control's value again, so a preset whose
+names were asked for shows the asterisk though nobody turned anything (tests 9 and 13).
+Arturia's own keyboards do the same: a touch of a KeyLab mk3's knob is that same message, and
+it marked the preset too (test 8; and Adam, 2026-11-15, of Arturia's implementation in
+general). Nothing is lost by it: the preset is as it was, to within one 7-bit step for each
+control asked about, and is not saved over. A guide for users should say so.
+
 ### Names from the instrument's own files
 
 Read on Adam's Mac on 2026-11-14, read-only.[^files-3] `ArturiaParameterFiles`, `ArturiaPresetFile`,
@@ -353,9 +362,9 @@ when the app quit, not when a preset loaded, so it can't say what is loaded now.
    KeyLab 61 mk3 in its Arturia program, Analog Lab V as a plugin in Bitwig Studio took the
    keyboard's encoder itself, and Bitwig was not told of the change (`docs/ROTO-CONTROL.md`,
    test 17), which fits the reading. Test 12: yes, for Analog Lab V in Bitwig Studio, on a
-   port it finds by name, with its control changes coming through the DAW. Open: Pigments and
-   the single instruments as plugins, and a relay that also passes everything on to a real
-   keyboard, with the plugin in a DAW.
+   port it finds by name, with its control changes coming through the DAW. Test 13: the same
+   for Pigments, and with a relay that passes everything on to a real keyboard. Open: the
+   single instruments as plugins, and another DAW.
 8. Do Arturia's apps share their MIDI settings, and does that explain why the same step went
    differently from run to run (Adam, 2026-11-14)? Each instrument has settings files of its
    own (section 4), so not by a shared file; when an instrument reads and writes them, and so
@@ -378,6 +387,12 @@ when the app quit, not when a preset loaded, so it can't say what is loaded now.
     of one part doesn't (an inference, not seen), a host could tell the two by name.
 15. Are the Audio Unit's and the standalone app's parameter lists the same as the VST3's
     (test 11)?
+16. What decides which KeyLab port a plugin takes when it loads? With a real KeyLab 61 mk3 and
+    a virtual port of another size's name both present, it took the virtual one in seven loads
+    of eight (tests 12 and 13). The one exception was the first load after the tool that
+    publishes the port had been stopped and started with the plugin loaded. Untried: a
+    virtual port with the real keyboard's own name, two virtual ports, and the real keyboard
+    plugged in after the port is published.
 
 ## 6. Tests
 
@@ -869,3 +884,74 @@ screenshots ("seen"). Hosted, the plugin's settings offer no choice of MIDI port
 - Not tried: passing the plugin's messages on to the real keyboard at the same time (test 9
   did it for the standalone apps), Pigments or a single instrument as a plugin, another DAW,
   and the plugin's other eight controls.
+
+### Test 13 (2026-11-15): the relay with the plugin in Bitwig Studio: keyboard, Roto-Control, and names
+
+**Setup.** As test 12, with Pigments 7.0.1 for the last part; a Roto-Control, in PLUGIN mode;
+`sbdev arturia --wait --device "Roto-Control" --keyboard "KeyLab 61 mk3 MIDI"` at `870ca00`,
+which publishes "KeyLab 49 mk3 MIDI", passes messages both ways between that port and the
+real keyboard, and drives the Roto-Control (test 9). Bitwig's own Roto-Control extension was
+idle, its ports unconnected. Three runs of the tool; the first and third logs (298 and 4,394
+lines) are whole and kept outside this repository; the third overwrote the second's, whose
+names below are from a reading of it before that. "Seen" is Adam's report.
+
+**Run 1** (the plugin added after the port was published; no controller added in Bitwig).
+
+- The plugin connected to the tool's port (47.0 s), and the tool passed its messages on: the
+  keyboard showed the preset (seen), and the Roto-Control showed "Classic Jun Keys".
+- The knobs kept placeholder names ("Macro 1" and so on). The tool's asking went to the port,
+  which the hosted plugin takes nothing from (test 12).
+
+**Run 2** (Bitwig given "Generic KeyLab 49 mk3 MIDI", with the tool's port as its input, as in
+test 12; the tool started again; the plugin deleted and added).
+
+- The Roto-Control got the instrument's own names, the effects' included: "Fifth", "Time",
+  "Chorus Mix", "Phaser Mix", "Delay Volume". After a change of preset, to "Classic Lead", it
+  got that preset's names ("Time", "Brightness", and others). Before the plugin was added
+  again the Roto-Control showed question marks (seen).
+
+**Run 3** (the tool started again with the plugin loaded; then the plugin deleted and added
+four times, the last time as Pigments).
+
+- **First load: the real keyboard.** For 404 s nothing came from the plugin to the tool. The
+  keyboard showed "Classic Jun Keys*" (seen), so the plugin was connected to it directly.
+  A Roto-Control knob still moved the plugin's knob (seen): the tool's control changes reach
+  the plugin through Bitwig's controller whichever port the plugin holds. A knob turned in
+  the plugin's window moved nothing on the Roto-Control (seen). A turn of the keyboard's
+  encoder made the Roto-Control's knob jump to 0 and then follow (seen): the tool passed
+  the keyboard's control changes on and took them as values for a control it had no value
+  for.
+- **Second load: the tool's port** (404.6 s). The preset and the eight knobs' names came, and
+  as Adam turned the keyboard's preset encoder, each preset's name and type in turn (fifty
+  and more, "Classic Keys" to "Clav Delay").
+- **The asking changed the preset.** The tool asks about a knob by sending the value it holds
+  for it, and it asked before the plugin had sent its values. Control changes 19 and 16 went
+  out as 0 (405.3 s and 405.7 s) a second before the plugin reported those two controls at
+  25 and 109 (406.4 s), and control change 74 went out as 71, left from the first load,
+  where the plugin stood at 28. The plugin took all three: "Reverb Volume" came back as
+  "-70.0 dB", value 0. So asking before a value is known is not harmless once the route
+  through the DAW exists; a relay must ask only with a value the plugin has reported.
+- **Third load: the tool's port** (the plugin let the port go at 578.5 s and connected again
+  at 584.0 s).
+- **Pigments: the tool's port** (connected 633.7 s). Its messages carry `0D` where Analog Lab
+  V's carry `01`, after the header (taken here for a number of the product; a guess). It
+  sent the preset "Welcome", "Template", and the names "Macro 1" to "Macro 4", "F1 Cutoff"
+  ("20000 Hz"), "F1 Resonance", and the rest. The keyboard's first encoder (control change
+  74) moved "Macro 1" from 0 to 13, the Roto-Control's knob and value text following
+  ("0.008", "0.016", up to "0.102"); then the Roto-Control's first knob took it on from 14 to
+  45 ("0.354") with no jump.
+
+**Consequences.**
+
+- The whole chain works with the plugin in a DAW, for Analog Lab V and Pigments: the keyboard
+  keeps its screens and controls, a second controller gets the preset's name and each
+  control's name and value text, and both move the same parameters. In this arrangement the
+  second controller's values are 7-bit control changes, not the DAW's own finer parameters.
+- Which port the plugin holds cannot be told from the keyboard's screen while a relay passes
+  the plugin's messages on; only from whether the plugin's messages arrive at the relay.
+  A relay should check that, and say so when the plugin is on the keyboard instead.
+- The plugin took the tool's port in four loads of five here, and in seven of eight with
+  test 12's (open question 16).
+- Not tried: the DAW's own extension driving the Roto-Control's values while the relay
+  supplies only the names (`docs/PLUGIN-MODE-PLAN.md`, section 10, item 10); the single
+  instruments; another DAW.
