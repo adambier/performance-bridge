@@ -219,6 +219,7 @@ Don't:
 
 ## 5. How to verify
 
+- **CI: avoid it as much as possible** (Adam, 2026-11-16). CI (`.github/workflows/tests.yml`) runs on a push to `main` and on a pull request, unless the change touches only Markdown files, `docs/`, or `Design/`. Check locally first: the tests below and the one-module build on a Mac. Keep work on a branch with no pull request until it is ready. Put changes together so fewer pushes run CI. Ask the owner before opening a pull request or pushing a change to `main` that would run CI (Adam, 2026-11-04).
 - **Tests on Linux and Windows:** `swift test`.
 - **Tests on a Mac:** `PERFORMANCE_BRIDGE_TESTS=1 swift test`. This needs full Xcode, because XCTest is not part of the Command Line Tools.
 - **Against TotalMix FX:**
