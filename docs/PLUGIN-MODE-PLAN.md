@@ -482,11 +482,10 @@ each "inference" or "guess" is marked.
 
 **Improving the Roto-Control's Bitwig integration** (Adam, 2026-11-14). The code is
 MIT-licensed. The aim is to have changes accepted into the version most Bitwig users run. So
-(Adam, the same evening, replacing "one pull request with everything"): small pull requests,
-one per coherent change, to the author's fork (below), each prepared once it is understood and
-tested in Bitwig, and opened on Adam's word; Adam introduces himself to the author before the
-first. A commit keeps its usual co-author line, and a description says plainly what was tested
-and how. What test 16 suggests:
+(Adam, the same evening, replacing "one pull request with everything"): small changes, one
+per subject, against the newest public code (below), each prepared once it is understood and
+tested in Bitwig. A commit keeps its usual co-author line, and a description says plainly what
+was tested and how. What test 16 suggests:
 
 1. **Names shortened, not cut.** Three test builds ran or were made on 2026-11-15
    (`docs/ROTO-CONTROL.md`, test 18), and the rule settled in three steps (Adam, that day):
@@ -496,7 +495,7 @@ and how. What test 16 suggests:
    words shortened from the end before anything is cut.
 
    The pull request is narrower (Adam, 2026-11-15, on the grounds that it reads better for
-   most users and is easier for the author to take): common words are abbreviated, the last
+   most users and is the smaller change): common words are abbreviated, the last
    first, only in a name that doesn't fit; spaces are closed up if that alone makes it fit;
    and what still doesn't fit is cut as today. Each name is fitted alone, so nothing has to
    be sent again when another name changes. From the code's own output:
@@ -521,7 +520,7 @@ and how. What test 16 suggests:
    test 19): "Delay Volume" whole and "Reverb Vol", and with Pigments' two pages, where
    "EnvAmpAtkCrv" and "EnvAmpRelLnk" could be read on the device. Over the survey's 34,320 names (`docs/ARTURIA.md`, test 11) it changes 8,745,
    and the names that share their 12 characters with another of their plugin go from 26,324
-   to 22,540. A later offer, if the author is receptive: where a cut
+   to 22,540. A later step: where a cut
    leaves two names on a page the same, squeeze those two further.
 2. **Stored names when Show Remote Controls is off** (`docs/ROTO-CONTROL.md`, section 8, item
    10). The cause is not found. In test 17 Bitwig did answer the stored mappings, once, in a
@@ -543,8 +542,8 @@ and how. What test 16 suggests:
    shown). Run in Bitwig (test 19): a page was added, the details came with four pages, and
    the Roto-Control reached the fourth with no track selected again. A page removed was
    followed the same way (test 20).
-7. **Analog Lab V** (test 18; nothing to be written before the author has been asked, and not
-   before the first pull requests are in; Adam, 2026-11-15). Three things would make its
+7. **Analog Lab V** (test 18; not to be proposed until the general changes are in; Adam,
+   2026-11-15). Three things would make its
    knobs read as its own window and the KeyLab do: dropping the "P1" before a part's
    parameter names; for a preset of two parts, showing the preset's own macros (plugin
    parameters without a prefix) in place of part 1's; and the FX knobs' names ("Chorus Mix"
@@ -588,13 +587,12 @@ and how. What test 16 suggests:
    - The extension could open the panel itself: Bitwig's API lets a controller set it
      (`Device.isRemoteControlsSectionVisible()` is settable in API 25, read from the API's
      classes), and the extension already has a preferences page. As a preference that is off
-     unless chosen, because the author's design uses the panel as the user's switch between
-     the Roto-Control's own learned mappings and Bitwig's pages. A third small pull request,
-     to be asked about with the others.
+     unless chosen, because the extension uses the panel as the user's switch between
+     the Roto-Control's own learned mappings and Bitwig's pages. A third small change.
      Drafted and run (`docs/ROTO-CONTROL.md`, test 20): with the preference on, a plugin
      added to a new project had its panel opened and its pages on the Roto-Control with
-     nothing clicked. The code has a preferences class of the author's that nothing uses,
-     so he may want it done there.
+     nothing clicked. The code has a preferences class that nothing uses, which
+     may be the better place for it.
    - Performance Bridge hosting or relaying on its own doesn't depend on the panel at all;
      that weighs for it in section 10's first question, against the work it takes.
 10. **Both at once: Bitwig for the values, the relay for what a host isn't told** (an idea from
@@ -645,12 +643,10 @@ and how. What test 16 suggests:
 
 **Where the extension's code is.** The extension Adam runs was not built from the code in
 Melbourne Instruments' repository (test 16: it sends `0A 18` where that code sends `0A 0F`).
-That repository has the extension as first committed in November 2025. Its author, Eric
-Ahrens, keeps his later work (April to October 2026) in a fork,
-[ericahrens/roto_control](https://github.com/ericahrens/roto_control), which does send `0A 18`.
-His two pull requests offering that work to Melbourne Instruments' repository (October 2026)
-were closed unmerged, with no comments, and the repository's one issue (July 2026) has no
-answer. So:
+That repository has the extension as first committed in November 2025. Later work (April to
+October 2026) is in a public fork,
+[ericahrens/roto_control](https://github.com/ericahrens/roto_control), which does send `0A 18`,
+and is not in Melbourne Instruments' repository. So:
 
 - the draft of item 1 now applies to the fork's newest code (`e0cd9eb`), builds there against
   extension API 25, and its tests pass; it has still not run in Bitwig;
@@ -663,19 +659,15 @@ answer. So:
   from Melbourne Instruments as far as he remembers. So this Bitwig Studio ships no copy, a
   build is tried by putting it in that folder in place of the July file, and a change reaches
   users through whoever hands out the file. Who does (Melbourne Instruments' download, the
-  author, or a later Bitwig release) is not known, and the statements below about "Bitwig's
+  fork, or a later Bitwig release) is not known, and the statements below about "Bitwig's
   copy" are open with it;
-- the author also writes extensions that come with Bitwig: 458 of the 1,423 commits in
-  Bitwig's public extensions repository
-  ([bitwig/bitwig-extensions](https://github.com/bitwig/bitwig-extensions), counted
-  2026-11-14) are his, from February 2021 to October 2026. The Roto-Control's extension is not
-  in that repository, so where Bitwig builds it from is not known; his fork is the nearest
-  public source (an inference that Bitwig's copy comes from the same work);
-- in his own repositories he has merged four pull requests from outside, all from one
-  contributor, in 2022 and 2023, each small and on one subject, and has not merged seven from
-  another (2025 and 2026). That is the case for small, single-purpose pull requests to the fork.
+- the Roto-Control's extension is not in Bitwig's public extensions repository
+  ([bitwig/bitwig-extensions](https://github.com/bitwig/bitwig-extensions), looked at
+  2026-11-14), so where Bitwig would build it from is not known; the fork is the nearest
+  public source.
 
-That issue, from another integrator, also says two things worth checking before items 2 and 3:
+Melbourne Instruments' repository has one issue (July 2026), from another integrator, which
+says two things worth checking before items 2 and 3:
 that answering CONTROL MAPPED for a stored (learned) plugin caused problems and ignoring it
 works, and that UNMAP CONTROL on a control with a stored mapping deletes the mapping for good.
 Neither is tested here.

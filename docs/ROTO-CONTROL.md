@@ -407,7 +407,7 @@ and step names.
     milliseconds: 44 messages for eight knobs. A reading of the fork at `e0cd9eb`: each
     control's coming to exist sends every existing knob's LEARN PARAM, and its name comes
     in a separate callback after. The word is not in the extension's code, so it is Bitwig's
-    (an inference). Nothing wrong was seen on the device. The author's code, not the drafts';
+    (an inference). Nothing wrong was seen on the device. The extension's own code, not the drafts';
     the drafted preference makes it likelier, by opening the panel before the controls fill.
 
 ## 9. Tests
@@ -957,7 +957,7 @@ VALUE (`0A 18`); the extension's code in roto_control (commit 2d43a72, the newes
 2026-11-14) builds `0A 0F` in the three places it sends value text, and `sbdev relay` passes
 such messages unchanged. So the extension installed with Adam's Bitwig Studio 6.1.4 was built
 from other code than was read for this project, and where this record says what "its code"
-does, the code is the published one. The extension's author keeps later work in a fork
+does, the code is the published one. Later work on the extension is in a fork
 ([ericahrens/roto_control](https://github.com/ericahrens/roto_control), read at `e0cd9eb`), which
 sends value text as `0A 18`; whether the installed extension is built from it was not checked.
 
@@ -1064,7 +1064,7 @@ are new, and items 10 and 11 have more.
 **Setup.** As in test 17, the same afternoon, with `sbdev relay` at `72fa39b` and the
 Roto-Control's extension changed. The extension Adam had been running turned out to be a file
 of his own, `Roto-Control.bwextension` in Documents/Bitwig Studio/Extensions (2026-07-15,
-1,878,202 bytes, version 1.0.2); it was moved aside, and builds of the author's fork (`e0cd9eb`)
+1,878,202 bytes, version 1.0.2); it was moved aside, and builds of the fork (`e0cd9eb`)
 with this project's draft change to the names were put in its place, one after another, with
 Bitwig quit and started in between. One log, kept outside this repository; it was read up to
 2,706 s, and what is said of the messages comes from that part. What the screens and windows
@@ -1127,7 +1127,7 @@ page was made. After another track and then this one were selected, the third pa
 (seen). Section 8, item 14.
 
 **Consequences.** Shortened names work in Bitwig; the rule is in `docs/PLUGIN-MODE-PLAN.md`,
-section 10, with what is offered to the author. A Multi's macros can be had at full resolution
+section 10, with what is proposed for the extension. A Multi's macros can be had at full resolution
 with a device page made by hand, one page button away; choosing the page by the kind of preset
 would take code that knows Analog Lab V.
 
@@ -1135,7 +1135,7 @@ would take code that knows Analog Lab V.
 
 **Setup.** As in test 18, later the same afternoon: `sbdev relay --device "Roto-Control"` at
 `2423001`, started before Bitwig Studio, and a new project with Analog Lab V on one track. The
-extension was a fifth build of the author's fork (`e0cd9eb`) with three drafted changes: names
+extension was a fifth build of the fork (`e0cd9eb`) with three drafted changes: names
 shortened one at a time, with joined words split; the plugin's details sent again when the
 number of pages changes; and, for this test only, "P1 " taken off Analog Lab V's names unless
 one of part 2's twenty parameters has a name other than "P2 Param" and a number. One log (1,131
