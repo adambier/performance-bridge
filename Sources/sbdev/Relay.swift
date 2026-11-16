@@ -7,10 +7,13 @@
 import Foundation
 import RotoControl
 import RotoRelay
+import ArturiaControl
+import ArturiaNameRelay
 import MIDITransport
 
 let relayUsage = """
     Usage: sbdev relay [--port NAME] [--device NAME | --in NAME --out NAME] [--gap MS]
+                       [--keyboard NAME [--keylab-port NAME] [--no-ask] [--no-preset]]
         Connects to the Roto-Control, runs the handshake as Bitwig Studio's type (02), and
         publishes a virtual MIDI source and destination named NAME (--port; default
         "PB Roto Relay"). Messages then pass between the Roto-Control and whatever program
@@ -38,6 +41,23 @@ let relayUsage = """
         --in and --out name them separately. --gap is the pause after each SysEx message sbdev
         itself sends to the Roto-Control (default 5 ms); passed messages are not paused.
 
+        With a KeyLab mk3 (--keyboard NAME, its MIDI port, e.g., "KeyLab 61 mk3 MIDI"), the
+        relay also sits between the keyboard and an Arturia plugin in the host, and puts the
+        plugin's own names on the Roto-Control (docs/PLUGIN-MODE-PLAN.md, section 10, item 10;
+        untested as a whole). It publishes a second port under another KeyLab mk3's name
+        ("KeyLab 49 mk3 MIDI"; --keylab-port for another), which a plugin loaded afterward has
+        been seen to take for its keyboard, and passes everything both ways. For Analog Lab V
+        on the host's first page of controls it then:
+          - replaces a knob's name with the plugin's ("FXA Dry/Wet" becomes "Chorus Mix")
+          - sends the preset's name as the track's name (--no-preset turns this off)
+          - asks the plugin for names it has not sent, by sending a knob's value again; this
+            moves the parameter to the nearest of 128 steps and marks the preset as changed
+            (--no-ask turns it off; names then come only as the keyboard's knobs are turned)
+        Before the test, also in Bitwig Studio (Settings, Controllers): add the KeyLab port
+        as a controller ("Generic", with the port as its input), so that control changes sent
+        on it reach the plugin. Then add the plugin to a track (one loaded earlier stays on
+        the keyboard itself: delete it and add it again).
+
         Each line has the time since starting, the direction, the bytes, and the rule:
           device → host, host → device   passed on
           device → local                 left for sbdev's own MIX-mode page and handshake
@@ -45,6 +65,8 @@ let relayUsage = """
                                          the mode for a host that has started again)
           local → device                 sent by sbdev's handshake or MIX-mode page
           dropped host, dropped device   sent nowhere
+          plugin → keyboard, keyboard → plugin   passed on (with --keyboard)
+          names → device, names → plugin         a name put in, or asked for (with --keyboard)
         The stand-in MIX page is minimal: track names and send names only, with no levels,
         lights, or meters, and nothing happens when a MIX-mode control is moved.
 
@@ -62,6 +84,10 @@ struct RelayOptions {
     var outName = "Roto"
     var portName = "PB Roto Relay"
     var gapMilliseconds = 5
+    var keyboardName: String?
+    var keyLabPortName: String?
+    var asks = true
+    var showsPreset = true
 }
 
 func parseRelayOptions(_ arguments: ArraySlice<String>) -> RelayOptions {
@@ -80,9 +106,24 @@ func parseRelayOptions(_ arguments: ArraySlice<String>) -> RelayOptions {
         case "--gap":
             guard let gap = Int(value(argument)), gap >= 0 else { fail("--gap needs a number of milliseconds.") }
             options.gapMilliseconds = gap
+        case "--keyboard": options.keyboardName = value(argument)
+        case "--keylab-port": options.keyLabPortName = value(argument)
+        case "--no-ask": options.asks = false
+        case "--no-preset": options.showsPreset = false
         case "-h", "--help": print(relayUsage); exit(0)
         default: fail("Unknown option \(argument).\n\n\(relayUsage)")
         }
+    }
+    if let keyboard = options.keyboardName {
+        // A mk3 name the keyboard itself doesn't use, as `sbdev arturia` chooses it.
+        let port = options.keyLabPortName ?? (keyboard.contains("49") ? "KeyLab 88 mk3 MIDI" : "KeyLab 49 mk3 MIDI")
+        guard ArturiaKeyLabProfile.forPortName(port)?.messageFormat == .version3 else {
+            fail("--keylab-port needs a KeyLab mk3's port name (e.g., \"KeyLab 88 mk3 MIDI\").")
+        }
+        guard port != keyboard else { fail("The KeyLab port needs a name the keyboard doesn't use.") }
+        options.keyLabPortName = port
+    } else if options.keyLabPortName != nil || !options.asks || !options.showsPreset {
+        fail("--keylab-port, --no-ask, and --no-preset need --keyboard.")
     }
     return options
 }
@@ -155,9 +196,20 @@ final class RelaySession: @unchecked Sendable {
     private var local = RelayLocalOwner()
     private var device: MIDIConnection?
     private var port: VirtualMIDIPort?
+    /// With --keyboard: the names, the keyboard, and the port the plugin takes for a KeyLab.
+    private var names: ArturiaNameRelay?
+    private var keyboard: MIDIConnection?
+    private var keyLabPort: VirtualMIDIPort?
+    private var pluginMessages = ArturiaSysExAssembler()
 
     init(options: RelayOptions) {
         self.options = options
+        if options.keyboardName != nil {
+            var names = ArturiaNameRelay()
+            names.asksForNames = options.asks
+            names.showsPreset = options.showsPreset
+            self.names = names
+        }
     }
 
     func connect() {
@@ -171,13 +223,27 @@ final class RelaySession: @unchecked Sendable {
             device = try MIDIConnection(clientName: "sbdev relay", sourceName: options.inName, destinationName: options.outName) { [weak self] bytes in
                 self?.fromDevice(bytes)
             }
+            // The keyboard before the KeyLab port, for the same reason.
+            if let name = options.keyboardName {
+                keyboard = try MIDIConnection(clientName: "sbdev relay", sourceName: name, destinationName: name) { [weak self] bytes in
+                    self?.fromKeyboard(bytes)
+                }
+            }
             port = try VirtualMIDIPort(clientName: "sbdev relay", name: options.portName) { [weak self] bytes in
                 self?.fromHost(bytes)
+            }
+            if let name = options.keyLabPortName {
+                keyLabPort = try VirtualMIDIPort(clientName: "sbdev relay", name: name) { [weak self] bytes in
+                    self?.fromPlugin(bytes)
+                }
             }
         } catch {
             fail("\(error)")
         }
         log("Published a MIDI source and a MIDI destination named \"\(options.portName)\".")
+        if let keyboard, let name = options.keyLabPortName {
+            log("Published another pair named \"\(name)\", relayed to and from \"\(keyboard.source.name)\".")
+        }
         log("Listening to \"\(device!.source.name)\", sending to \"\(device!.destination.name)\". Type `help` for commands.")
         sendLocal(local.handshake.start())
     }
@@ -211,14 +277,88 @@ final class RelaySession: @unchecked Sendable {
 
     /// Prints each decision and sends what it says to send. Called with the lock held.
     private func carryOut(_ output: RotoRelayOutput, at time: Date) {
+        names?.isInPluginMode = relay.knobMode == .plugin
+        let now = time.timeIntervalSince(start)
         for decision in output.decisions {
-            log(relayLine(decision.direction, decision.bytes, decision.rule), at: time)
             switch decision.route {
-            case .toHost: sendToHost(decision.bytes)
-            case .toDevice: sendToDevice(decision.bytes, gap: decision.source == .relay)
-            case .forLocal, .dropped: break
+            case .toHost:
+                log(relayLine(decision.direction, decision.bytes, decision.rule), at: time)
+                sendToHost(decision.bytes)
+                if decision.source == .device, let extra = names?.fromDevice(decision.bytes, now: now) { carryOut(extra) }
+            case .toDevice:
+                // The host's names for an Arturia plugin's knobs are replaced on the way.
+                let changed = names?.fromHost(decision.bytes, now: now)
+                let bytes = changed?.message ?? decision.bytes
+                log(relayLine(decision.direction, bytes, decision.rule + (bytes == decision.bytes ? "" : "; name replaced")), at: time)
+                sendToDevice(bytes, gap: decision.source == .relay)
+                if let extra = changed?.output { carryOut(extra) }
+            case .forLocal, .dropped:
+                log(relayLine(decision.direction, decision.bytes, decision.rule), at: time)
             }
         }
+    }
+
+    /// Prints and sends what the name relay returned. Called with the lock held.
+    private func carryOut(_ output: ArturiaNameRelayOutput) {
+        for note in output.notes { log("   names: " + note) }
+        for message in output.toDevice {
+            log(relayLine("names → device", message, RotoOutgoingDescription.words(message)))
+            sendToDevice(message, gap: true)
+        }
+        for message in output.toInstrument {
+            log(relayLine("names → plugin", message, "control change \(message.count > 2 ? "\(message[1]) = \(message[2])" : "")"))
+            guard let keyLabPort else { continue }
+            do { try keyLabPort.send(message) } catch { log("   could not send to the plugin's port: \(error)") }
+        }
+    }
+
+    /// The keyboard's bytes go on to the plugin's port before anything else is done with them.
+    private func fromKeyboard(_ bytes: [UInt8]) {
+        let arrived = Date()
+        var failure: Error?
+        do { try keyLabPort?.send(bytes) } catch { failure = error }
+        lock.lock()
+        defer { lock.unlock() }
+        if let failure { log("   could not pass the keyboard's bytes on: \(failure)") }
+        // Notes, pressure, and the wheels are passed on without a line each.
+        if let status = bytes.first, status == 0xF0 || (0xB0...0xBF).contains(status) {
+            log(relayLine("keyboard → plugin", bytes, "passed on"), at: arrived)
+        }
+        names?.fromKeyboard(bytes, now: arrived.timeIntervalSince(start))
+    }
+
+    private func fromPlugin(_ bytes: [UInt8]) {
+        let arrived = Date()
+        var failure: Error?
+        do { try keyboard?.send(bytes) } catch { failure = error }
+        lock.lock()
+        defer { lock.unlock() }
+        log(relayLine("plugin → keyboard", bytes, "passed on"), at: arrived)
+        if let failure { log("   could not pass the plugin's bytes on: \(failure)") }
+        for message in pluginMessages.feed(bytes) {
+            if let parsed = ArturiaMk3Message.parse(message), let words = arturiaDescribe(parsed) { log("   " + words, at: arrived) }
+        }
+        names?.isInPluginMode = relay.knobMode == .plugin
+        if let output = names?.fromInstrument(bytes, now: arrived.timeIntervalSince(start)) { carryOut(output) }
+    }
+
+    /// Calls the name relay's `tick` every 50 ms, on a thread of its own, until the program exits.
+    func startClock() {
+        guard names != nil else { return }
+        let thread = Thread { [weak self] in
+            while let session = self {
+                session.tick()
+                Thread.sleep(forTimeInterval: 0.05)
+            }
+        }
+        thread.start()
+    }
+
+    private func tick() {
+        lock.lock()
+        defer { lock.unlock() }
+        names?.isInPluginMode = relay.knobMode == .plugin
+        if let output = names?.tick(now: Date().timeIntervalSince(start)) { carryOut(output) }
     }
 
     /// Sends the local owner's messages to the device, printing each. Called with the lock held.
@@ -253,6 +393,12 @@ final class RelaySession: @unchecked Sendable {
     private func status() -> String {
         "mode: knobs in \(relay.knobMode == .plugin ? "PLUGIN" : "MIX") mode, transport switches \(relay.transportSwitchesActive ? "active" : "not active")"
             + (relay.firmwareVersionReply == nil ? ", firmware version not known" : "")
+            + (names.map { names in
+                let plugin = !names.isConnected ? "no plugin has connected to the KeyLab port"
+                    : (names.isAnalogLab ? "Analog Lab V" : "a plugin that is not Analog Lab V") + " is on the KeyLab port"
+                    + (names.presetName.map { ", preset \"\($0)\"" } ?? "")
+                return "; \(plugin); host's plugin \(names.selectedPluginName.map { "\"\($0)\"" } ?? "none"); names \(names.isActive ? "on" : "off")"
+            } ?? "")
     }
 
     /// Runs one command typed at the keyboard. Returns false for `quit`.
@@ -273,6 +419,8 @@ final class RelaySession: @unchecked Sendable {
     }
 
     func close() {
+        keyboard?.close()
+        keyLabPort?.close()
         device?.close()
         port?.close()
     }
@@ -286,6 +434,7 @@ func relayLine(_ direction: String, _ bytes: [UInt8], _ rule: String) -> String 
 func relay(_ arguments: ArraySlice<String>) -> Never {
     let session = RelaySession(options: parseRelayOptions(arguments))
     session.connect()
+    session.startClock()
     var quit = false
     while let line = readLine() {
         if !session.run(line) { quit = true; break }
@@ -296,4 +445,19 @@ func relay(_ arguments: ArraySlice<String>) -> Never {
     }
     session.close()
     exit(0)
+}
+
+/// What a Roto-Control message the name relay sends says, for the log.
+enum RotoOutgoingDescription {
+    static func words(_ message: [UInt8]) -> String {
+        guard let (group, command, data) = RotoSysEx.unframe(message) else { return "" }
+        switch (group, command) {
+        case (0x0B, 0x0F) where data.count >= 8 + RotoSysEx.nameFieldLength:
+            return "SET MAPPED CONTROL NAME \(RotoSysEx.decode14(data[0], data[1])) \"\(RotoSysEx.decodeName(data[8...]))\""
+        case (0x0A, 0x16):
+            return "SET CURRENT TRACK NAME \"\(RotoSysEx.decodeName(data))\""
+        default:
+            return ""
+        }
+    }
 }

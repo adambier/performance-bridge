@@ -21,6 +21,9 @@ import Foundation
 //                  device's mode (docs/PLUGIN-MODE-PLAN.md; a prototype for sbdev); Foundation only
 //   ArturiaRotoDriver  an Arturia instrument as one macro plugin on the Roto-Control's PLUGIN
 //                  mode (docs/PLUGIN-MODE-PLAN.md, section 6; a prototype for sbdev); Foundation only
+//   ArturiaNameRelay   an Arturia plugin's own names put into a DAW integration's messages to the
+//                  Roto-Control (docs/PLUGIN-MODE-PLAN.md, section 10; a prototype for sbdev);
+//                  Foundation only
 //   MIDITransport  a MIDI connection through CoreMIDI (macOS only; elsewhere it lists no ports and
 //                  throws), and the conversion between MIDI 1.0 bytes and CoreMIDI's packets
 //   UDPTransport   a small UDP socket for talking to TotalMix FX (POSIX on macOS and Linux; not yet
@@ -60,6 +63,7 @@ var targets: [Target] = [
     .target(name: "ArturiaControl"),
     .target(name: "RotoRelay", dependencies: ["RotoControl"]),
     .target(name: "ArturiaRotoDriver", dependencies: ["RotoControl", "ArturiaControl"]),
+    .target(name: "ArturiaNameRelay", dependencies: ["RotoControl", "ArturiaControl"]),
     .target(name: "MIDITransport"),
     .target(name: "UDPTransport"),
     .target(name: "SurfaceCore", dependencies: ["OSCCodec", "TotalMixOSC"]),
@@ -69,7 +73,7 @@ var targets: [Target] = [
     .target(name: "E16Driver", dependencies: ["OSCCodec", "TotalMixOSC", "OXIE16", "SurfaceCore"]),
     .target(name: "BridgeEngine", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "MIDITransport", "UDPTransport",
                                                  "SurfaceCore", "RotoDriver", "LaunchControl", "LaunchControlDriver", "OXIE16", "E16Driver"]),
-    .executableTarget(name: "sbdev", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "LaunchControl", "ArturiaControl", "RotoRelay", "ArturiaRotoDriver", "MIDITransport", "UDPTransport",
+    .executableTarget(name: "sbdev", dependencies: ["OSCCodec", "TotalMixOSC", "RotoControl", "LaunchControl", "ArturiaControl", "RotoRelay", "ArturiaRotoDriver", "ArturiaNameRelay", "MIDITransport", "UDPTransport",
                                                    "SurfaceCore", "RotoDriver", "LaunchControlDriver", "OXIE16", "E16Driver"]),
 ]
 let products: [Product] = [
@@ -80,6 +84,7 @@ let products: [Product] = [
     .library(name: "ArturiaControl", targets: ["ArturiaControl"]),
     .library(name: "RotoRelay", targets: ["RotoRelay"]),
     .library(name: "ArturiaRotoDriver", targets: ["ArturiaRotoDriver"]),
+    .library(name: "ArturiaNameRelay", targets: ["ArturiaNameRelay"]),
     .library(name: "MIDITransport", targets: ["MIDITransport"]),
     .library(name: "UDPTransport", targets: ["UDPTransport"]),
     .library(name: "SurfaceCore", targets: ["SurfaceCore"]),
@@ -105,6 +110,7 @@ if includeTests {
     targets.append(.testTarget(name: "ArturiaControlTests", dependencies: ["ArturiaControl"]))
     targets.append(.testTarget(name: "RotoRelayTests", dependencies: ["RotoRelay", "RotoControl"]))
     targets.append(.testTarget(name: "ArturiaRotoDriverTests", dependencies: ["ArturiaRotoDriver", "RotoControl", "ArturiaControl"]))
+    targets.append(.testTarget(name: "ArturiaNameRelayTests", dependencies: ["ArturiaNameRelay", "RotoControl", "ArturiaControl"]))
     targets.append(.testTarget(name: "MIDITransportTests", dependencies: ["MIDITransport", "RotoControl"]))
     targets.append(.testTarget(name: "UDPTransportTests", dependencies: ["UDPTransport"]))
     targets.append(.testTarget(name: "SurfaceCoreTests", dependencies: ["SurfaceCore", "TotalMixOSC", "OSCCodec"]))

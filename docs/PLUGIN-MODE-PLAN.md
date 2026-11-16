@@ -631,6 +631,17 @@ was tested and how. What test 16 suggests:
       eight, and saying so when it did not.
     - A guide for users has to explain the asterisk that asking leaves by a preset's name
       (`docs/ARTURIA.md`, section 4).
+    - **The one program, written and not yet run** (2026-11-15): `sbdev relay --keyboard
+      NAME`, with the `ArturiaNameRelay` library. Bitwig's extension keeps the Roto-Control
+      through the relay as before; a second port under a KeyLab mk3's name goes to and from
+      the real keyboard; and for Analog Lab V, on the extension's first page, a knob's name
+      in the extension's LEARN PARAM and SET MAPPED CONTROL NAME is replaced with the
+      plugin's own, and the preset's name is sent as the track's. It asks one knob at a
+      time, only after the plugin's preset screen, only with a value reported since, and
+      never for a knob the user has turned. Its limits are in the library's comment: one
+      plugin, one page, and no telling two copies of the plugin apart. To find out in the
+      first run: whether the device takes a name sent after LEARN PARAM, where the track's
+      name shows, and whether the plugin reports a value the host changes.
     - What it would ask of a user: Performance Bridge running before the plugin loads (a
       plugin loaded earlier stays on the real keyboard, and one that loses its port shows
       nothing on the keyboard until it is loaded again), and one more controller in Bitwig's

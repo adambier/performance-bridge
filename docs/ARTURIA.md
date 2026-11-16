@@ -925,12 +925,15 @@ four times, the last time as Pigments).
   as Adam turned the keyboard's preset encoder, each preset's name and type in turn (fifty
   and more, "Classic Keys" to "Clav Delay").
 - **The asking changed the preset.** The tool asks about a knob by sending the value it holds
-  for it, and it asked before the plugin had sent its values. Control changes 19 and 16 went
-  out as 0 (405.3 s and 405.7 s) a second before the plugin reported those two controls at
-  25 and 109 (406.4 s), and control change 74 went out as 71, left from the first load,
-  where the plugin stood at 28. The plugin took all three: "Reverb Volume" came back as
-  "-70.0 dB", value 0. So asking before a value is known is not harmless once the route
-  through the DAW exists; a relay must ask only with a value the plugin has reported.
+  for it. On connecting, the plugin reported 0 for two knobs (404.6 s) and then for all nine
+  (406.3 s), before their real values (406.4 s: 28, 54, 80, 0, 0, 0, 0, 25, 109), and the
+  preset's screen after those (406.9 s). The tool also still held 71 for the first knob, from
+  the first load. So it sent control change 74 as 71 (404.9 s) and control changes 19 and 16
+  as 0 (405.3 s and 405.7 s), the last for a knob that stood at 25. The plugin took that one
+  at least: "Reverb Volume" came back as "-70.0 dB", value 0, and the preset was marked as
+  changed. So asking is not harmless once the route through the DAW exists. A relay must
+  drop the values it holds when the plugin connects, and ask only after the preset's screen
+  has come and the values have stopped.
 - **Third load: the tool's port** (the plugin let the port go at 578.5 s and connected again
   at 584.0 s).
 - **Pigments: the tool's port** (connected 633.7 s). Its messages carry `0D` where Analog Lab
